@@ -1,0 +1,2409 @@
+/* public/css/styles.css */
+
+/* --- Variables CSS --- */
+:root {
+    --primary-color: #FF4B4B; /* Un rojo vibrante */
+    --secondary-color: #333333;
+    --text-color: #555555;
+    --background-light: #f8f8f8;
+    --white: #ffffff;
+    --shadow: rgba(0, 0, 0, 0.1);
+    --dark-gray: #2c3e50; /* Para un footer más oscuro */
+    --light-gray-hover: #e0e0e0; /* Para efectos hover sutiles */
+    --info-blue: #17a2b8; /* Añadido para el botón de editar perfil si lo implementas */
+}
+
+/* --- Base Styles --- */
+body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    background-color: var(--background-light);
+    color: var(--text-color);
+    line-height: 1.6;
+    display: flex; /* Añadido para sticky footer */
+    flex-direction: column; /* Añadido para sticky footer */
+    min-height: 100vh; /* Añadido para sticky footer */
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px;
+}
+
+/* --- Navbar Styles --- */
+header {
+    background-color: var(--white);
+    padding: 15px 0;
+    box-shadow: 0 2px 8px var(--shadow);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.logo {
+    text-decoration: none;
+    margin-right: 20px; /* Espacio a la derecha del logo */
+    display: flex; /* Asegura que el contenedor del logo se comporte como flex para centrar la imagen si es necesario */
+    align-items: center; /* Centra verticalmente la imagen dentro del enlace si el logo tiene padding */
+}
+
+.logo img {
+    /* Controla el tamaño de tu imagen de logo */
+    height: 40px; /* **Ajusta esta altura según lo que necesites para tu diseño.** */
+    width: auto; /* Mantiene la proporción original de la imagen */
+    display: block; /* Elimina cualquier espacio extra debajo de la imagen */
+    max-height: 100%; /* Asegura que la imagen no exceda la altura de su contenedor (.logo) */
+}
+
+nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+}
+
+nav ul li {
+    margin-left: 25px;
+}
+
+nav ul li a {
+    text-decoration: none;
+    color: var(--secondary-color);
+    font-weight: 600;
+    transition: color 0.3s ease, transform 0.2s ease;
+    position: relative;
+    padding: 5px 0;
+}
+
+nav ul li a:hover {
+    color: var(--primary-color);
+    transform: translateY(-2px);
+}
+
+nav ul li a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 0;
+    height: 2px;
+    background-color: var(--primary-color);
+    transition: width 0.3s ease;
+}
+
+nav ul li a:hover::after {
+    width: 100%;
+}
+
+.nav-cta-button {
+    display: inline-block;
+    background-color: var(--primary-color);
+    color: var(--white);
+    padding: 10px 20px;
+    border-radius: 25px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95em;
+    transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.2);
+    margin-left: 25px;
+}
+
+.nav-cta-button:hover {
+    background-color: #e63946;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.3);
+}
+
+/* --- Hero Section Styles (Home Page) --- */
+.hero {
+    background: url('https://media.gq.com.mx/photos/5f342431356b187cffb84537/16:9/w_2560%2Cc_limit/GettyImages-1031437062.jpg') no-repeat center center/cover;
+    color: var(--white);
+    text-align: center;
+    padding: 120px 20px; /* Más padding para hacerlo más imponente */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 70vh; /* Altura mínima para que siempre se vea grande */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    position: relative; /* Para el overlay */
+}
+
+.hero h1 {
+    font-size: 4em;
+    margin-bottom: 20px;
+    font-weight: 700;
+    text-shadow: 3px 3px 6px rgba(0, 0, 0, 0.5);
+}
+
+.hero p {
+    font-size: 1.4em;
+    max-width: 800px;
+    margin: 0 auto 40px auto;
+    line-height: 1.6;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.hero .cta-button {
+    background-color: var(--secondary-color);
+    color: var(--white);
+    padding: 18px 35px;
+    border-radius: 50px;
+    font-size: 1.2em;
+    font-weight: 600;
+    transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    text-decoration: none; /* Asegurar que no tenga subrayado */
+}
+
+.hero .cta-button:hover {
+    background-color: #1a1a1a;
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* --- Features Section Styles (Home Page) --- */
+.features {
+    padding: 80px 0;
+    text-align: center;
+    background-color: var(--white);
+    margin-top: -40px;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 1;
+}
+
+.features h2 {
+    font-size: 3em;
+    color: var(--primary-color);
+    margin-bottom: 60px;
+    font-weight: 700;
+}
+
+.feature-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 40px;
+}
+
+.feature-item {
+    background-color: var(--background-light);
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.feature-item:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.feature-item i {
+    font-size: 3.5em;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+}
+
+.feature-item h3 {
+    color: var(--secondary-color);
+    font-size: 1.8em;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.feature-item p {
+    color: var(--text-color);
+    font-size: 1.05em;
+}
+
+/* --- Call to Action Section (Alternative - Home Page) Styles --- */
+.cta-alt {
+    background: linear-gradient(135deg, var(--primary-color) 0%, #e63946 100%); /* Degradado para CTA */
+    color: var(--white);
+    text-align: center;
+    padding: 80px 20px;
+    margin-top: 60px;
+    box-shadow: inset 0 5px 15px rgba(0, 0, 0, 0.2); /* Sombra interna para profundidad */
+}
+
+.cta-alt h2 {
+    font-size: 3em;
+    margin-bottom: 25px;
+    font-weight: 700;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.3);
+}
+
+.cta-alt p {
+    font-size: 1.3em;
+    margin-bottom: 50px;
+    max-width: 900px;
+    margin-left: auto;
+    margin-right: auto;
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.cta-alt .cta-button {
+    background-color: var(--white);
+    color: var(--primary-color);
+    padding: 18px 35px;
+    border-radius: 50px;
+    font-size: 1.2em;
+    font-weight: 700;
+    transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    text-decoration: none; /* Asegurar que no tenga subrayado */
+    letter-spacing: 0.5px; /* Espaciado de letras para CTA */
+}
+
+.cta-alt .cta-button:hover {
+    background-color: #f0f0f0; /* Un blanco roto al pasar el mouse */
+    color: #d1323f; /* Rojo más oscuro al pasar el mouse */
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+}
+
+/* --- Carousel Section (Home Page) --- */
+.image-carousel-section {
+    background-color: var(--background-light);
+    padding: 60px 20px;
+    text-align: center;
+    margin-top: 60px; /* Separación de la sección anterior */
+}
+
+.image-carousel-section h2 {
+    font-size: 2.8em;
+    color: var(--secondary-color);
+    margin-bottom: 40px;
+    font-weight: 700;
+}
+
+.carousel-container {
+    position: relative;
+    max-width: 900px;
+    margin: 0 auto;
+    overflow: hidden;
+    border-radius: 15px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    background-color: var(--white);
+    min-height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.carousel-slide {
+    display: flex;
+    width: 100%;
+    transition: transform 0.5s ease-in-out;
+}
+
+.carousel-slide img {
+    width: 100%;
+    display: block;
+    border-radius: 15px;
+    object-fit: cover;
+    flex-shrink: 0;
+    max-height: 400px;
+}
+
+.carousel-nav-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.6);
+    color: var(--white);
+    border: none;
+    padding: 15px;
+    cursor: pointer;
+    font-size: 1.5em;
+    border-radius: 50%;
+    transition: background-color 0.3s ease;
+    z-index: 10;
+}
+
+.carousel-nav-button:hover {
+    background-color: rgba(0, 0, 0, 0.8);
+}
+
+.prev-button {
+    left: 20px;
+}
+
+.next-button {
+    right: 20px;
+}
+
+/* --- Testimonials Section (Home Page) --- */
+.testimonials-section {
+    background-color: #f0f2f5;
+    padding: 80px 20px;
+    text-align: center;
+    margin-top: 60px; /* Separación de la sección anterior */
+}
+
+.testimonials-section h2 {
+    font-size: 2.8em;
+    color: var(--secondary-color);
+    margin-bottom: 40px;
+    font-weight: 700;
+}
+
+.testimonials-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+.testimonial-card {
+    background-color: var(--white);
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.testimonial-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+}
+
+.testimonial-card img {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 15px;
+    border: 3px solid var(--primary-color);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.testimonial-card p {
+    font-size: 1em;
+    font-style: italic;
+    color: var(--text-color);
+    margin-bottom: 15px;
+}
+
+.testimonial-card .author {
+    font-weight: 600;
+    color: var(--secondary-color);
+    font-size: 1.1em;
+}
+
+.testimonial-card .location {
+    font-size: 0.9em;
+    color: #888;
+}
+
+/* --- About Page Specific Styles --- */
+.hero-about {
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.7)), url('https://source.unsplash.com/random/1920x600/?team,mission,success') no-repeat center center/cover;
+    color: var(--white);
+    text-align: center;
+    padding: 80px 20px;
+    margin-bottom: 40px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.hero-about h1 {
+    font-size: 3.5em;
+    margin-bottom: 15px;
+    font-weight: 700;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.4);
+}
+
+.hero-about p {
+    font-size: 1.3em;
+    max-width: 800px;
+    margin: 0 auto;
+    text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.about-sections {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+    margin-bottom: 60px;
+}
+
+.about-card {
+    background-color: var(--white);
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px var(--shadow);
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.about-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.about-card i {
+    font-size: 3em;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+}
+
+.about-card h2 {
+    font-size: 1.8em;
+    color: var(--secondary-color);
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.about-card p {
+    font-size: 1em;
+    color: var(--text-color);
+    line-height: 1.7;
+}
+
+.team-section {
+    background-color: var(--white);
+    padding: 60px 0;
+    text-align: center;
+    margin-bottom: 60px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px var(--shadow);
+}
+
+.team-section h2 {
+    font-size: 2.5em;
+    color: var(--primary-color);
+    margin-bottom: 50px;
+    font-weight: 700;
+}
+
+.team-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 30px;
+    justify-content: center;
+}
+
+.team-member {
+    text-align: center;
+    background-color: var(--background-light);
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.team-member:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.12);
+}
+
+.team-member img {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--primary-color);
+    margin-bottom: 15px;
+}
+
+.team-member h3 {
+    font-size: 1.4em;
+    color: var(--secondary-color);
+    margin-bottom: 5px;
+}
+
+.team-member p {
+    font-size: 0.95em;
+    color: var(--text-color);
+    margin-bottom: 10px;
+}
+
+.member-social a {
+    color: var(--secondary-color);
+    font-size: 1.2em;
+    margin: 0 8px;
+    transition: color 0.3s ease;
+}
+
+.member-social a:hover {
+    color: var(--primary-color);
+}
+
+/* --- Footer Styles --- */
+footer {
+    background-color: var(--dark-gray);
+    color: var(--white);
+    padding: 40px 0;
+    font-size: 0.9em;
+    text-align: center;
+    box-shadow: 0 -2px 8px rgba(0, 0, 0, 0.15);
+    margin-top: auto; /* Para que el footer se quede abajo */
+}
+
+.footer-content {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: flex-start;
+    text-align: left;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 20px;
+}
+
+.footer-section {
+    flex: 1;
+    min-width: 200px;
+    margin: 15px;
+}
+
+.footer-section h3 {
+    color: var(--primary-color);
+    font-size: 1.2em;
+    margin-bottom: 15px;
+    font-weight: 700;
+}
+
+.footer-section p,
+.footer-section ul {
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 10px;
+}
+
+.footer-section ul {
+    list-style: none;
+    padding: 0;
+}
+
+.footer-section ul li {
+    margin-bottom: 8px;
+}
+
+.footer-section ul li a {
+    color: rgba(255, 255, 255, 0.8);
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.footer-section ul li a:hover {
+    color: var(--primary-color);
+}
+
+.social-links {
+    display: flex;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.social-links a {
+    color: var(--white);
+    font-size: 1.5em;
+    transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.social-links a:hover {
+    color: var(--primary-color);
+    transform: translateY(-3px);
+}
+
+.footer-bottom {
+    margin-top: 20px;
+    font-size: 0.85em;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.footer-bottom p {
+    margin: 5px 0;
+}
+
+/* --- Responsive Design --- */
+@media (max-width: 900px) {
+    .hero h1 {
+        font-size: 3em;
+    }
+
+    .hero p {
+        font-size: 1.2em;
+    }
+
+    .features h2,
+    .cta-alt h2,
+    .image-carousel-section h2,
+    .testimonials-section h2 {
+        font-size: 2.5em;
+    }
+
+    .feature-item {
+        padding: 30px;
+    }
+
+    .footer-content {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .footer-section {
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .social-links {
+        justify-content: center;
+    }
+
+    /* About Page Responsive */
+    .hero-about h1 {
+        font-size: 2.5em;
+    }
+    .hero-about p {
+        font-size: 1.1em;
+    }
+    .about-sections {
+        grid-template-columns: 1fr; /* Una columna en pantallas medianas */
+    }
+    .team-grid {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    }
+}
+
+@media (max-width: 768px) {
+    nav {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    nav .logo {
+        margin-bottom: 15px;
+    }
+
+    nav ul {
+        flex-direction: column;
+        width: 100%;
+        align-items: flex-start;
+    }
+
+    nav ul li {
+        margin: 8px 0;
+    }
+
+    .nav-cta-button {
+        margin-left: 0;
+        margin-top: 15px;
+        width: 100%;
+        text-align: center;
+    }
+
+    .hero {
+        padding: 80px 15px;
+        min-height: 50vh;
+    }
+
+    .hero h1 {
+        font-size: 2.5em;
+    }
+
+    .hero p {
+        font-size: 1em;
+    }
+
+    .hero .cta-button,
+    .cta-alt .cta-button {
+        padding: 15px 30px;
+        font-size: 1.1em;
+    }
+
+    .features,
+    .cta-alt,
+    .image-carousel-section,
+    .testimonials-section {
+        padding: 50px 15px;
+    }
+
+    .features h2,
+    .cta-alt h2,
+    .image-carousel-section h2,
+    .testimonials-section h2 {
+        font-size: 2em;
+    }
+
+    .feature-grid {
+        grid-template-columns: 1fr;
+        gap: 25px;
+    }
+
+    .feature-item {
+        padding: 30px;
+    }
+
+    .carousel-container {
+        min-height: 250px;
+    }
+
+    .carousel-slide img {
+        max-height: 250px;
+    }
+
+    .testimonials-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .testimonial-card {
+        padding: 25px;
+    }
+
+    /* About Page Responsive */
+    .hero-about {
+        padding: 60px 15px;
+    }
+    .about-card {
+        padding: 25px;
+    }
+    .team-member img {
+        width: 120px;
+        height: 120px;
+    }
+}
+
+@media (max-width: 480px) {
+    .container {
+        padding: 0 15px;
+    }
+
+    .hero h1 {
+        font-size: 2em;
+    }
+
+    .hero p {
+        font-size: 0.95em;
+    }
+
+    .features h2,
+    .cta-alt h2,
+    .image-carousel-section h2,
+    .testimonials-section h2 {
+        font-size: 1.8em;
+    }
+
+    .feature-item h3 {
+        font-size: 1.4em;
+    }
+
+    /* About Page Responsive */
+    .hero-about h1 {
+        font-size: 2em;
+    }
+    .hero-about p {
+        font-size: 0.95em;
+    }
+    .about-card h2 {
+        font-size: 1.5em;
+    }
+    .team-section h2 {
+        font-size: 2em;
+    }
+    .team-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* STYLES DE DEMO */
+
+/* --- Demo Page Specific Styles --- */
+.demo-section {
+    padding: 80px 0;
+    text-align: center;
+    background-color: var(--background-light);
+}
+
+.demo-section h1 {
+    font-size: 3.2em;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    font-weight: 700;
+}
+
+.demo-section p {
+    font-size: 1.15em;
+    color: var(--text-color);
+    max-width: 800px;
+    margin: 0 auto 40px auto;
+}
+
+.form-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 30px; /* Espacio entre los botones */
+    margin-bottom: 50px;
+    flex-wrap: wrap; /* Permite que los botones se envuelvan en pantallas pequeñas */
+}
+
+.form-button {
+    display: inline-flex; /* Permite alinear el ícono y el texto */
+    align-items: center;
+    background-color: var(--secondary-color);
+    color: var(--white);
+    padding: 15px 30px;
+    border-radius: 30px;
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 1.1em;
+    transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.form-button i {
+    margin-right: 10px; /* Espacio entre el ícono y el texto del botón */
+    font-size: 1.2em;
+}
+
+.form-button:hover {
+    background-color: #1a1a1a;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Estilo específico para el botón de Aliado si quieres que sea diferente */
+.form-buttons .form-button:first-child {
+    background-color: var(--primary-color); /* Rojo vibrante para el aliado */
+}
+
+.form-buttons .form-button:first-child:hover {
+    background-color: #e63946; /* Rojo ligeramente más oscuro al pasar el ratón */
+}
+
+.video-container {
+    position: relative;
+    width: 100%;
+    max-width: 900px; /* Ancho máximo para el video */
+    margin: 0 auto;
+    padding-bottom: 56.25%; /* Relación de aspecto 16:9 (altura / ancho = 0.5625) */
+    height: 0;
+    overflow: hidden;
+    border-radius: 15px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+    background-color: #000; /* Fondo negro para el contenedor del video */
+}
+
+.video-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+}
+
+/* --- Responsive Adjustments for Demo Page --- */
+@media (max-width: 768px) {
+    .demo-section {
+        padding: 60px 15px;
+    }
+    .demo-section h1 {
+        font-size: 2.5em;
+    }
+    .demo-section p {
+        font-size: 1em;
+        margin-bottom: 30px;
+    }
+    .form-buttons {
+        flex-direction: column; /* Apila los botones en pantallas pequeñas */
+        gap: 15px;
+        margin-bottom: 40px;
+    }
+    .form-button {
+        width: 90%; /* Ancho completo para botones apilados */
+        margin: 0 auto; /* Centra los botones apilados */
+        justify-content: center; /* Centra el contenido del botón */
+        font-size: 1em;
+        padding: 12px 25px;
+    }
+}
+
+@media (max-width: 480px) {
+    .demo-section h1 {
+        font-size: 2em;
+    }
+    .demo-section p {
+        font-size: 0.9em;
+    }
+}
+
+/* --- Contact Page Specific Styles --- */
+.content-section {
+    background-color: var(--white);
+    margin: 40px auto; /* Centrado y margen */
+    padding: 50px;
+    border-radius: 10px;
+    box-shadow: 0 4px 15px var(--shadow);
+    text-align: center;
+}
+
+.content-section h1 {
+    font-size: 2.8em;
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    font-weight: 700;
+}
+
+.content-section p {
+    font-size: 1.1em;
+    line-height: 1.8;
+    max-width: 800px;
+    margin: 0 auto 30px auto;
+}
+
+/* --- Contact Form Styles --- */
+.contact-form {
+    max-width: 650px; /* Un poco más ancho para mejor distribución */
+    margin: 40px auto;
+    padding: 40px; /* Más padding interno */
+    background-color: var(--background-light);
+    border-radius: 12px; /* Bordes más redondeados */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15); /* Sombra más pronunciada */
+    text-align: left; /* Alinea el contenido del formulario a la izquierda */
+}
+
+.contact-form label {
+    display: block;
+    text-align: left;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--secondary-color);
+    font-size: 1em;
+}
+
+.contact-form input[type="text"],
+.contact-form input[type="email"],
+.contact-form textarea {
+    width: calc(100% - 24px); /* Ajuste para padding */
+    padding: 14px 12px; /* Más padding */
+    margin-bottom: 25px; /* Más espacio entre campos */
+    border: 1px solid #ddd;
+    border-radius: 8px; /* Bordes más redondeados */
+    font-family: 'Poppins', sans-serif;
+    font-size: 1em;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    box-sizing: border-box; /* Incluye padding y border en el ancho total */
+}
+
+.contact-form input[type="text"]:focus,
+.contact-form input[type="email"]:focus,
+.contact-form textarea:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 75, 75, 0.2); /* Sombra de foco más suave */
+    outline: none; /* Elimina el contorno por defecto del navegador */
+}
+
+.contact-form textarea {
+    resize: vertical; /* Permite redimensionar verticalmente */
+    min-height: 150px; /* Altura mínima un poco mayor */
+}
+
+.contact-form button {
+    background-color: var(--primary-color);
+    color: var(--white);
+    padding: 15px 30px; /* Más padding para el botón */
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    font-size: 1.1em;
+    font-weight: 600;
+    transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    width: auto; /* Ancho automático, no 100% */
+    display: block; /* Ocupa su propia línea */
+    margin: 0 auto; /* Centrar el botón */
+}
+
+.contact-form button:hover {
+    background-color: #e63946;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.contact-info {
+    margin-top: 40px;
+    text-align: center;
+    font-size: 1.1em;
+    color: var(--secondary-color);
+}
+
+.contact-info a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.3s ease;
+}
+
+.contact-info a:hover {
+    text-decoration: underline;
+}
+
+/* --- Responsive Adjustments for Contact Page --- */
+@media (max-width: 900px) {
+    .content-section {
+        padding: 30px;
+    }
+    .content-section h1 {
+        font-size: 2.2em;
+    }
+    .content-section p {
+        font-size: 1em;
+    }
+    .contact-form {
+        padding: 30px;
+    }
+}
+
+@media (max-width: 768px) {
+    .contact-form input, .contact-form textarea, .contact-form button {
+        width: 100%; /* Asegura que los campos y botón se ajusten */
+    }
+}
+
+@media (max-width: 480px) {
+    .content-section {
+        padding: 20px;
+        margin: 20px auto;
+    }
+    .content-section h1 {
+        font-size: 1.8em;
+    }
+    .contact-form {
+        padding: 20px;
+    }
+    .contact-form input, .contact-form textarea {
+        padding: 10px;
+    }
+    .contact-form button {
+        padding: 12px 25px;
+        font-size: 1em;
+    }
+}
+
+/* --- Affiliate Page Specific Styles (demo.afiliado) --- */
+.affiliate-section {
+    flex-grow: 1; /* Permite que esta sección ocupe el espacio disponible */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 60px 20px;
+    background: linear-gradient(to bottom right, var(--background-light), #e0e0e0); /* Degradado suave */
+}
+
+.affiliate-card {
+    background-color: var(--white);
+    padding: 50px; /* Mayor padding */
+    border-radius: 15px; /* Más redondeado */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2); /* Sombra más pronunciada */
+    width: 100%;
+    max-width: 600px; /* Más ancho para formularios más complejos */
+    text-align: center;
+    animation: fadeInSlideUp 0.6s ease-out; /* Animación de entrada */
+}
+
+@keyframes fadeInSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.affiliate-card h1 {
+    font-size: 3em; /* Más grande */
+    color: var(--primary-color);
+    margin-bottom: 20px;
+    font-weight: 700;
+    text-shadow: 1px 1px 2px var(--shadow);
+}
+
+.affiliate-card p.subtitle {
+    font-size: 1.1em;
+    color: var(--text-color);
+    margin-bottom: 40px; /* Más espacio */
+    line-height: 1.7;
+}
+
+.input-group {
+    margin-bottom: 25px; /* Más espacio */
+    text-align: left;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--secondary-color);
+    font-weight: 600;
+    font-size: 1em; /* Ligeramente más grande */
+}
+
+.input-group input[type="text"],
+.input-group input[type="email"],
+.input-group input[type="tel"],
+.input-group textarea,
+.input-group select {
+    width: calc(100% - 24px); /* Ajuste para padding */
+    padding: 14px 12px; /* Más padding */
+    border: 1px solid #ccc; /* Borde más suave */
+    border-radius: 8px;
+    font-size: 1em;
+    color: var(--text-color);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    background-color: #fefefe;
+    box-sizing: border-box; /* Asegura que padding y border se incluyan en el ancho */
+}
+
+.input-group input[type="text"]:focus,
+.input-group input[type="email"]:focus,
+.input-group input[type="tel"]:focus,
+.input-group textarea:focus,
+.input-group select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(255, 75, 75, 0.25); /* Sombra de foco más intensa */
+    outline: none;
+}
+
+.input-group textarea {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    margin-top: -15px; /* Para acercarlo al campo anterior */
+    margin-bottom: 30px;
+}
+
+.checkbox-group input[type="checkbox"] {
+    margin-right: 10px;
+    width: 20px; /* Tamaño del checkbox */
+    height: 20px;
+    accent-color: var(--primary-color); /* Color del check */
+}
+
+.checkbox-group label {
+    font-size: 0.95em;
+    color: var(--text-color);
+}
+
+.checkbox-group label a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+}
+
+.checkbox-group label a:hover {
+    text-decoration: underline;
+}
+
+.form-button {
+    background-color: var(--primary-color);
+    color: var(--white);
+    padding: 18px 35px; /* Más grande */
+    border: none;
+    border-radius: 35px; /* Más redondeado */
+    font-size: 1.2em; /* Texto más grande */
+    font-weight: 700;
+    cursor: pointer;
+    width: auto; /* Permite que el botón se ajuste al contenido */
+    min-width: 200px;
+    transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.25); /* Sombra más grande */
+    margin-top: 30px;
+}
+
+.form-button:hover {
+    background-color: #e63946;
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+}
+
+/* Validation Errors (Laravel Blade) */
+.error-message {
+    color: var(--primary-color);
+    font-size: 0.85em;
+    margin-top: 5px;
+    text-align: left;
+    display: block;
+}
+
+/* --- Responsive Adjustments for Affiliate Page --- */
+@media (max-width: 768px) {
+    .affiliate-section {
+        padding: 40px 15px;
+    }
+    .affiliate-card {
+        padding: 30px;
+    }
+    .affiliate-card h1 {
+        font-size: 2.2em;
+    }
+    .affiliate-card p.subtitle {
+        font-size: 1em;
+        margin-bottom: 30px;
+    }
+    .input-group input,
+    .input-group textarea,
+    .input-group select {
+        padding: 12px 10px;
+    }
+    .form-button {
+        padding: 15px 25px;
+        font-size: 1.1em;
+    }
+}
+
+@media (max-width: 480px) {
+    .affiliate-card {
+        padding: 25px;
+    }
+    .affiliate-card h1 {
+        font-size: 1.8em;
+    }
+    .input-group input,
+    .input-group textarea,
+    .input-group select {
+        padding: 10px 8px;
+    }
+    .form-button {
+        padding: 12px 20px;
+        font-size: 1em;
+    }
+}
+
+/* --- Allies Contact Page Specific Styles (demo.aliados) --- */
+.allies-contact-section {
+    flex-grow: 1; /* Permite que esta sección ocupe el espacio disponible */
+    padding: 60px 20px;
+    background-color: var(--light-gray-bg); /* Fondo suave */
+    display: flex;
+    justify-content: center;
+    align-items: flex-start; /* Alinea arriba para que el contenido no quede flotando si el formulario es corto */
+}
+
+.contact-card {
+    background-color: var(--white);
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.18); /* Sombra más intensa */
+    width: 100%;
+    max-width: 650px; /* Ancho cómodo para el formulario */
+    text-align: center;
+    animation: fadeInScale 0.6s ease-out;
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.contact-card h1 {
+    font-size: 2.8em;
+    color: var(--primary-color);
+    margin-bottom: 15px;
+    font-weight: 700;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+}
+
+.contact-card p.subtitle {
+    font-size: 1.1em;
+    color: var(--text-color);
+    margin-bottom: 35px;
+    line-height: 1.6;
+}
+
+.form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* Dos columnas */
+    gap: 25px; /* Espacio entre campos */
+    margin-bottom: 20px;
+}
+
+.form-grid .input-group:last-child {
+    grid-column: 1 / -1; /* El campo de mensaje ocupa ambas columnas */
+}
+
+.input-group {
+    margin-bottom: 0; /* Ya tenemos gap en el grid */
+    text-align: left;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--secondary-color);
+    font-weight: 600;
+    font-size: 0.95em;
+}
+
+.input-group input[type="text"],
+.input-group input[type="email"],
+.input-group input[type="tel"],
+.input-group select,
+.input-group textarea {
+    width: calc(100% - 24px); /* Ajuste para padding */
+    padding: 12px 10px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    font-size: 1em;
+    color: var(--text-color);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    background-color: #fefefe;
+    box-sizing: border-box; /* Asegura que padding y border se incluyan en el ancho */
+}
+
+.input-group input[type="text"]:focus,
+.input-group input[type="email"]:focus,
+.input-group input[type="tel"]:focus,
+.input-group select:focus,
+.input-group textarea:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(255, 75, 75, 0.2);
+    outline: none;
+}
+
+.input-group textarea {
+    resize: vertical;
+    min-height: 120px;
+}
+
+.form-button {
+    background-color: var(--primary-color);
+    color: var(--white);
+    padding: 15px 30px;
+    border: none;
+    border-radius: 30px;
+    font-size: 1.1em;
+    font-weight: 600;
+    cursor: pointer;
+    width: auto;
+    min-width: 200px;
+    transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    margin-top: 25px;
+}
+
+.form-button:hover {
+    background-color: #e63946;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* Validation Errors (Laravel Blade) */
+.error-message {
+    color: var(--primary-color);
+    font-size: 0.85em;
+    margin-top: 5px;
+    text-align: left;
+    display: block;
+}
+
+/* --- Responsive Adjustments for Allies Contact Page --- */
+@media (max-width: 768px) {
+    .allies-contact-section {
+        padding: 40px 15px;
+    }
+    .contact-card {
+        padding: 30px;
+    }
+    .contact-card h1 {
+        font-size: 2.2em;
+    }
+    .contact-card p.subtitle {
+        font-size: 1em;
+        margin-bottom: 30px;
+    }
+    .form-grid {
+        grid-template-columns: 1fr; /* Una columna en móviles */
+        gap: 20px;
+    }
+    .input-group input,
+    .input-group select,
+    .input-group textarea {
+        padding: 10px 8px;
+    }
+    .form-button {
+        padding: 12px 20px;
+        font-size: 1em;
+    }
+}
+
+@media (max-width: 480px) {
+    .contact-card {
+        padding: 25px;
+    }
+    .contact-card h1 {
+        font-size: 1.8em;
+    }
+}
+
+/* ESTILOS DE LOGIN */
+
+/* Agrega esto a tu public/css/app.css o styles.css */
+.alert {
+    padding: 15px;
+    margin-bottom: 20px;
+    border: 1px solid transparent;
+    border-radius: 8px;
+    font-size: 0.95rem;
+}
+
+.alert-success {
+    color: #155724;
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+}
+
+.alert-danger { /* Útil para errores generales no vinculados a un campo específico */
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+}
+
+/* --- Wrapper y Contenedor del Login --- */
+.login-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    min-height: 100vh;
+    padding: 20px;
+    box-sizing: border-box; /* Incluye padding en el tamaño total */
+}
+
+.login-container {
+    max-width: 450px; /* Ancho máximo para el formulario */
+    width: 100%;
+    margin: auto; /* Centrar en pantallas más grandes */
+}
+
+/* --- Tarjeta de Login (Modernizada) --- */
+.login-card {
+    background-color: var(--card-background);
+    border-radius: 12px; /* Más redondeado */
+    box-shadow: 0 10px 30px var(--shadow-light); /* Sombra más pronunciada pero suave */
+    overflow: hidden; /* Asegura que los bordes redondeados se vean bien */
+    border: none; /* Elimina bordes predeterminados de Bootstrap */
+}
+
+.login-header {
+    background: linear-gradient(135deg, var(--primary-color) 0%, #0056b3 100%); /* Gradiente de color */
+    color: white;
+    padding: 40px 30px;
+    text-align: center;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+}
+
+.login-header h2 {
+    margin-top: 0;
+    margin-bottom: 10px;
+    font-size: 2.2rem; /* Título más grande */
+    font-weight: 700;
+}
+
+.login-header p {
+    font-size: 1rem;
+    opacity: 0.9;
+}
+
+.login-body {
+    padding: 30px;
+}
+
+/* --- Grupos de Formulario y Etiquetas (Labels) --- */
+.form-group {
+    margin-bottom: 25px; /* Más espacio entre campos */
+}
+
+.form-group label {
+    display: block; /* Ocupa su propia línea */
+    margin-bottom: 8px;
+    font-weight: 600; /* Más peso a las etiquetas */
+    color: var(--text-light);
+    font-size: 0.95rem;
+}
+
+/* --- Inputs de Formulario (Modernizados) --- */
+.form-control {
+    width: 100%;
+    padding: 12px 15px; /* Más padding para inputs */
+    border: 1px solid var(--border-color);
+    border-radius: 8px; /* Bordes más redondeados */
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.06); /* Sombra interna sutil */
+}
+
+.form-control::placeholder {
+    color: #a0a0a0;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    outline: none; /* Elimina el outline por defecto */
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.2); /* Anillo de enfoque sutil */
+}
+
+.form-control.is-invalid {
+    border-color: var(--error-color);
+    /* Mantener o ajustar background-image si usas íconos de Bootstrap por defecto */
+    background-image: none; /* Eliminar icono de validación de Bootstrap si no lo quieres */
+    padding-right: 15px; /* Ajustar padding si quitas el icono */
+}
+
+.invalid-feedback {
+    color: var(--error-color);
+    font-size: 0.85rem;
+    margin-top: 5px;
+    display: block; /* Asegura que se muestre */
+}
+
+/* --- Flex para "Recordarme" y "Olvidaste Contraseña" --- */
+.form-group-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px; /* Más espacio */
+}
+
+.form-check {
+    display: flex;
+    align-items: center;
+    margin-bottom: 0; /* Elimina margen inferior extra */
+}
+
+.form-check-input {
+    margin-right: 8px;
+    width: 18px; /* Tamaño del checkbox */
+    height: 18px;
+    border-radius: 4px; /* Ligero redondeo */
+    cursor: pointer;
+}
+
+.form-check-label {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    cursor: pointer;
+}
+
+/* --- Botones (Login, Olvidaste, Registro) --- */
+.btn-login {
+    width: 100%;
+    padding: 15px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    text-align: center;
+    text-decoration: none; /* En caso de que se use como <a> */
+    display: inline-block; /* En caso de que se use como <a> */
+}
+
+.btn-login:hover {
+    background-color: #0056b3; /* Un tono más oscuro */
+    box-shadow: 0 5px 15px rgba(0, 123, 255, 0.3); /* Sombra al pasar el ratón */
+}
+
+.forgot-password-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: color 0.2s ease;
+}
+
+.forgot-password-link:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+/* --- Footer del Formulario (para el botón de Registro) --- */
+.login-footer {
+    text-align: center;
+    margin-top: 30px;
+    font-size: 0.95rem;
+    color: var(--text-light);
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color); /* Línea divisoria sutil */
+}
+
+.btn-register-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+
+.btn-register-link:hover {
+    color: #0056b3;
+    text-decoration: underline;
+}
+
+/* --- Responsive Adjustments --- */
+@media (max-width: 768px) {
+    .login-header {
+        padding: 30px 20px;
+    }
+    .login-header h2 {
+        font-size: 1.8rem;
+    }
+    .login-body {
+        padding: 25px;
+    }
+}
+
+
+/* ESTILOS PARA EL NEWLETTER */
+
+/* Styles for Newsletter Section in Footer */
+.footer-section.newsletter {
+    flex: 1; /* Permite que ocupe espacio si usas flexbox en footer-content */
+    min-width: 250px; /* Asegura un ancho mínimo */
+}
+
+.footer-section.newsletter h3 {
+    margin-bottom: 15px;
+    color: var(--text-color-light); /* O el color que uses para los títulos del footer */
+}
+
+.footer-section.newsletter p {
+    margin-bottom: 15px;
+    font-size: 0.9em;
+    line-height: 1.5;
+    color: var(--text-color-light);
+}
+
+.newsletter-input-group {
+    display: flex;
+    margin-top: 10px;
+}
+
+.newsletter-input-group input[type="email"] {
+    flex-grow: 1;
+    padding: 10px 15px;
+    border: 1px solid #555;
+    border-radius: 5px 0 0 5px;
+    background-color: #333;
+    color: #eee;
+    font-size: 0.9em;
+}
+
+.newsletter-input-group input[type="email"]::placeholder {
+    color: #bbb;
+}
+
+.newsletter-input-group button {
+    padding: 10px 15px;
+    background-color: var(--primary-color); /* Tu color principal */
+    color: white;
+    border: none;
+    border-radius: 0 5px 5px 0;
+    cursor: pointer;
+    font-size: 0.9em;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.newsletter-input-group button:hover {
+    background-color: var(--primary-color-dark); /* Un tono más oscuro para el hover */
+}
+
+/* Para los mensajes de error/éxito */
+.error-message {
+    color: red;
+    font-size: 0.8em;
+    margin-top: 5px;
+    display: block;
+}
+
+.success-message {
+    color: green;
+    font-size: 0.8em;
+    margin-top: 5px;
+    display: block;
+}
+
+/* Asegúrate de que tu .footer-content tenga display: flex y flex-wrap: wrap para que las secciones se organicen bien */
+.footer-content {
+    display: flex;
+    flex-wrap: wrap; /* Permite que las secciones salten de línea en pantallas pequeñas */
+    justify-content: space-between;
+    gap: 30px; /* Espacio entre las columnas del footer */
+    padding-bottom: 30px;
+}
+
+/* Media Queries para responsividad, si es necesario */
+@media (max-width: 768px) {
+    .footer-section {
+        flex-basis: 48%; /* Dos columnas en pantallas medianas */
+    }
+    .footer-section.newsletter {
+        flex-basis: 100%; /* Ocupa todo el ancho en pantallas medianas/pequeñas */
+    }
+}
+
+@media (max-width: 480px) {
+    .footer-section {
+        flex-basis: 100%; /* Una columna en pantallas pequeñas */
+    }
+}
+
+/* ESTILOS PARA CONTENIDO DEL LOGIN */
+
+/* --- Contenedor Principal (Para centrar el formulario) --- */
+.login-container {
+    width: 100%;
+    max-width: 450px; /* Ancho máximo para el formulario */
+    padding: 20px;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* --- Tarjeta del Formulario (El cuadro blanco central) --- */
+.login-card {
+    background-color: rgba(255, 255, 255, 0.95); /* Fondo ligeramente transparente */
+    border-radius: 20px; /* Bordes más redondeados */
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2); /* Sombra más pronunciada */
+    padding: 45px; /* Más padding interno */
+    text-align: center;
+    width: 100%;
+    border: 1px solid rgba(255, 255, 255, 0.3); /* Borde sutil */
+    backdrop-filter: blur(8px); /* Efecto de desenfoque en el fondo del card */
+    animation: fadeInScale 0.6s ease-out; /* Animación de entrada */
+}
+
+@keyframes fadeInScale {
+    from {
+        opacity: 0;
+        transform: scale(0.95) translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+/* --- Encabezado de la Tarjeta (Logo, Título, Subtítulo) --- */
+.login-header {
+    margin-bottom: 35px; /* Más espacio debajo del encabezado */
+}
+
+.login-logo {
+    width: 130px; /* Tamaño ligeramente más grande para el logo */
+    height: auto;
+    margin-bottom: 25px;
+    filter: drop-shadow(0 5px 10px rgba(0,0,0,0.1)); /* Sombra sutil para el logo */
+}
+
+.login-header h2 {
+    font-size: 1.5em; /* Título más grande */
+    color: #ffffff;
+    margin-bottom: 12px; /* Más espacio entre título y subtítulo */
+    font-weight: 800; /* Fuente más gruesa */
+    letter-spacing: -0.5px;
+}
+
+.login-header p {
+    font-size: 1.05em; /* Subtítulo ligeramente más grande */
+    color: #ffffff;
+    line-height: 1.5;
+}
+
+/* --- Formulario --- */
+.login-form {
+    display: flex;
+    flex-direction: column; /* Organiza los elementos en columna */
+}
+
+.login-form .form-group {
+    margin-bottom: 25px; /* Más espacio entre campos */
+    text-align: left;
+}
+
+.login-form .form-group label {
+    display: block;
+    margin-bottom: 10px; /* Más espacio entre label e input */
+    font-weight: 300; /* Fuente más gruesa */
+    color: #2e2e2e;
+    font-size: 1em;
+    transition: color 0.2s ease;
+}
+
+.login-form .form-control {
+    width: 100%;
+    padding: 14px 18px; /* Más padding para inputs */
+    border: 1px solid #e0e0e0; /* Borde más suave */
+    border-radius: 10px; /* Bordes más redondeados para inputs */
+    font-size: 1.05em;
+    color: #444444;
+    background-color: #f9f9f9; /* Fondo ligero para inputs */
+    transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+    box-sizing: border-box;
+}
+
+.login-form .form-control:focus {
+    border-color: #FF4B4B;
+    box-shadow: 0 0 0 4px rgba(255, 75, 75, 0.25); /* Sombra de enfoque más sutil */
+    background-color: #fff;
+    outline: none;
+}
+
+.login-form .form-control.is-invalid {
+    border-color: #e3342f; /* Rojo de error */
+}
+
+.invalid-feedback {
+    color: #e3342f;
+    font-size: 0.88em; /* Mensaje de error ligeramente más grande */
+    margin-top: 6px;
+    display: block;
+    font-weight: 500;
+}
+
+/* --- Opciones del Formulario (Recordarme, Olvidé Contraseña) --- */
+.form-options {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 25px;
+    margin-bottom: 35px; /* Más espacio */
+    font-size: 0.95em;
+}
+
+.remember-me {
+    display: flex;
+    align-items: center;
+    color: #666;
+    cursor: pointer;
+}
+
+.remember-me input[type="checkbox"] {
+    margin-right: 10px; /* Más espacio */
+    accent-color: #FF4B4B;
+    width: 20px; /* Checkbox un poco más grande */
+    height: 20px;
+    border: 2px solid #ccc; /* Borde visible */
+    border-radius: 4px; /* Ligeramente redondeado */
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.remember-me input[type="checkbox"]:checked {
+    border-color: #FF4B4B;
+}
+
+.remember-me span {
+    font-weight: 500;
+}
+
+.forgot-password-link, .already-registered-link {
+    color: #FF4B4B;
+    text-decoration: none;
+    font-weight: 600; /* Texto más grueso */
+    transition: color 0.2s ease, text-decoration 0.2s ease;
+}
+
+.forgot-password-link:hover, .already-registered-link:hover {
+    color: #CC3333;
+    text-decoration: underline;
+}
+
+/* --- Botones --- */
+.btn {
+    display: block; /* Asegura que el botón ocupa todo el ancho disponible */
+    width: 100%;
+    padding: 15px 25px; /* Más padding para botones */
+    font-size: 1.15em; /* Texto de botón más grande */
+    font-weight: 700; /* Texto más grueso */
+    border-radius: 10px; /* Bordes más redondeados */
+    cursor: pointer;
+    text-decoration: none;
+    text-align: center;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    border: none;
+    letter-spacing: 0.5px;
+}
+
+.btn-primary {
+    background-color: #FF4B4B;
+    color: #fff;
+    box-shadow: 0 10px 20px rgba(255, 75, 75, 0.35); /* Sombra más profunda */
+}
+
+.btn-primary:hover {
+    background-color: #CC3333;
+    transform: translateY(-3px); /* Efecto de "lift" más notorio */
+    box-shadow: 0 15px 25px rgba(255, 75, 75, 0.45); /* Sombra aún más profunda */
+}
+
+/* --- Pie de página del formulario (Enlace de registro, política) --- */
+.login-footer {
+    margin-top: 40px; /* Más espacio superior */
+    font-size: 0.95em;
+    color: #777;
+    line-height: 1.5;
+}
+
+.login-footer a {
+    color: #FF4B4B;
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+
+.login-footer a:hover {
+    color: #CC3333;
+    text-decoration: underline;
+}
+
+/* --- Mensajes de Sesión (Éxito) --- */
+.alert {
+    padding: 15px 20px;
+    margin-bottom: 25px;
+    border-radius: 10px;
+    font-size: 0.98em;
+    text-align: left;
+    font-weight: 500;
+    animation: fadeIn 0.4s ease-out;
+}
+
+.alert-success {
+    background-color: #e6ffed; /* Verde más suave */
+    color: #218838; /* Verde más oscuro */
+    border: 1px solid #a3e0be;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- Ajuste para el botón central en forgot-password --- */
+.form-actions {
+    display: flex; /* Asegura que flexbox se aplica */
+    justify-content: space-between; /* Mantener por defecto para registro/login */
+    align-items: center;
+    margin-top: 30px;
+}
+
+/* Específico para olvidé contraseña, donde solo hay un botón y lo queremos centrado */
+.login-container .form-actions.center-button {
+    justify-content: center; /* Centra el botón si es el único elemento */
+}
+
+/* VISTAS PARA EL NAVBAR */
+
+/* --- Variables CSS (opcional pero muy recomendado) --- */
+:root {
+    --primary-color: #FF4500; /* Naranja rojizo, puedes ajustar */
+    --secondary-color: #1A1A2E; /* Azul oscuro casi negro */
+    --text-color: #E0E0E0; /* Gris claro para texto */
+    --accent-color: #6A0DAD; /* Púrpura para acentos o hover */
+    --background-light: #F8F8F8;
+    --background-dark: #2C3E50; /* Gris azulado oscuro */
+    --border-radius: 8px;
+    --transition-speed: 0.3s;
+}
+
+/* --- Estilos Generales y Reset Básico (ajusta si ya tienes uno) --- */
+body {
+    font-family: 'Poppins', sans-serif; /* Fuente moderna, importa desde Google Fonts */
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    background-color: var(--background-light); /* Para el fondo general */
+    color: var(--text-color); /* Color de texto por defecto */
+}
+
+/* --- Header Estilos --- */
+.main-header {
+    background-color: var(--background-dark); /* Fondo oscuro para el header */
+    padding: 1.2rem 0; /* Más padding vertical */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2); /* Sombra sutil para profundidad */
+    position: sticky; /* O fixed, dependiendo de si quieres que se mantenga visible al hacer scroll */
+    top: 0;
+    z-index: 1000; /* Asegura que esté por encima de otros elementos */
+}
+
+.header-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem; /* Padding horizontal para los bordes */
+    display: flex;
+    justify-content: space-between; /* Espacia el logo y la navegación */
+    align-items: center;
+}
+
+.header-logo img {
+    height: 50px; /* Ajusta el tamaño de tu logo */
+    vertical-align: middle; /* Alinea bien el logo */
+}
+
+.main-nav .nav-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center; /* Alinea los ítems de navegación */
+}
+
+.main-nav .nav-links li {
+    margin-left: 2.5rem; /* Espacio entre los ítems de navegación */
+}
+
+.main-nav .nav-item {
+    text-decoration: none;
+    color: var(--text-color);
+    font-weight: 500; /* Semibold */
+    font-size: 1.1rem;
+    position: relative; /* Para el efecto de subrayado */
+    transition: color var(--transition-speed) ease;
+}
+
+.main-nav .nav-item::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 3px;
+    bottom: -5px;
+    left: 50%;
+    background-color: var(--primary-color); /* Subrayado del color principal */
+    transition: width var(--transition-speed) ease-out, left var(--transition-speed) ease-out;
+    transform: translateX(-50%); /* Centra el subrayado */
+}
+
+.main-nav .nav-item:hover {
+    color: var(--primary-color); /* Color al pasar el ratón */
+}
+
+.main-nav .nav-item:hover::after {
+    width: 100%;
+    left: 0;
+    transform: translateX(0);
+}
+
+/* --- Botón CTA (Call to Action) --- */
+.cta-button {
+    background-color: var(--primary-color);
+    color: var(--background-dark); /* Color de texto que contraste con el botón */
+    padding: 0.8rem 1.8rem; /* Más padding para que sea más prominente */
+    border: none;
+    border-radius: var(--border-radius); /* Bordes ligeramente redondeados */
+    font-size: 1.1rem;
+    font-weight: 600; /* Bold */
+    cursor: pointer;
+    transition: background-color var(--transition-speed) ease, transform var(--transition-speed) ease;
+    text-decoration: none; /* Asegura que no tenga subrayado si es un <a> */
+    display: inline-block; /* Para que el padding funcione bien en <a> */
+    text-align: center;
+}
+
+.cta-button:hover {
+    background-color: var(--accent-color); /* Otro color al pasar el ratón */
+    transform: translateY(-2px); /* Pequeño efecto de elevación */
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.logout-form {
+    display: inline; /* Asegura que el formulario de logout no rompa la línea */
+}
+
+.logout-form .cta-button {
+    /* Puedes ajustar estilos específicos para el botón de logout si es necesario */
+    /* Por ejemplo, un padding ligeramente diferente para que coincida con el enlace de login si lo deseas */
+}
+
+/* --- Media Queries para Responsividad (ejemplo básico) --- */
+@media (max-width: 768px) {
+    .header-container {
+        flex-direction: column; /* Apila el logo y la navegación en pantallas pequeñas */
+        padding: 0 1rem;
+    }
+
+    .main-nav {
+        margin-top: 1rem; /* Espacio entre el logo y la navegación */
+        width: 100%;
+    }
+
+    .main-nav .nav-links {
+        flex-direction: column; /* Apila los enlaces verticalmente */
+        width: 100%;
+        gap: 0.8rem; /* Espacio entre los enlaces apilados */
+    }
+
+    .main-nav .nav-links li {
+        margin-left: 0;
+        width: 100%;
+        text-align: center; /* Centra los enlaces */
+    }
+
+    .main-nav .nav-item,
+    .cta-button {
+        display: block; /* Ocupan todo el ancho disponible */
+        padding: 0.8rem 0;
+    }
+}
+
+/* ESTILOS PARA LA VISTA DE FAQ */
+
+/* --- Variables CSS (si no las tienes ya del header) --- */
+:root {
+    --primary-color: #FF4500; /* Naranja rojizo */
+    --secondary-color: #1A1A2E; /* Azul oscuro casi negro */
+    --text-color: #818181; /* Un gris oscuro para el texto principal */
+    --light-text-color: #030303; /* Gris claro para texto en fondos oscuros */
+    --accent-color: #6A0DAD; /* Púrpura para acentos/hover */
+    --background-light: #F8F8F8; /* Fondo claro general */
+    --background-mid: #FFFFFF; /* Fondo blanco para tarjetas/items */
+    --border-color: #E0E0E0; /* Borde gris claro */
+    --shadow-color: rgba(0, 0, 0, 0.08); /* Sombra suave */
+    --border-radius: 8px;
+    --transition-speed: 0.3s;
+}
+
+/* --- Sección FAQ --- */
+.faq-section {
+    background-color: var(--background-light);
+    padding: 4rem 0; /* Padding superior e inferior generoso */
+    color: var(--text-color); /* Color de texto por defecto para la sección */
+}
+
+.faq-container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    text-align: center; /* Centra el título y la intro */
+}
+
+.faq-title {
+    font-size: 2.8rem;
+    color: var(--primary-color); /* Título principal con el color de acento */
+    margin-bottom: 1.5rem;
+    font-weight: 700; /* Negrita */
+}
+
+.faq-intro-text {
+    font-size: 1.15rem;
+    color: #555;
+    margin-bottom: 3rem;
+    line-height: 1.6;
+    max-width: 700px; /* Limita el ancho del texto introductorio */
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem; /* Espacio entre cada item FAQ */
+}
+
+.faq-item {
+    background-color: var(--background-mid); /* Fondo blanco para cada tarjeta */
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 15px var(--shadow-color); /* Sombra suave */
+    overflow: hidden; /* Para contener bien el contenido */
+    transition: box-shadow var(--transition-speed) ease;
+}
+
+.faq-item:hover {
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15); /* Sombra un poco más fuerte al pasar el ratón */
+}
+
+.faq-question {
+    display: flex;
+    justify-content: space-between; /* Icono a la derecha */
+    align-items: center;
+    width: 100%;
+    padding: 1.5rem 2rem;
+    background-color: transparent; /* Sin fondo de botón */
+    border: none;
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--secondary-color); /* Color del texto de la pregunta */
+    text-align: left;
+    cursor: pointer;
+    transition: background-color var(--transition-speed) ease, color var(--transition-speed) ease;
+}
+
+.faq-question:hover,
+.faq-question.active { /* Clase 'active' será añadida por JS */
+    background-color: var(--primary-color); /* Fondo al pasar el ratón o activo */
+    color: var(--light-text-color); /* Texto blanco al pasar el ratón o activo */
+}
+
+.faq-icon {
+    font-size: 1.8rem; /* Tamaño del icono + / - */
+    font-weight: 700;
+    margin-left: 1rem;
+    transition: transform var(--transition-speed) ease;
+}
+
+.faq-question.active .faq-icon {
+    transform: rotate(45deg); /* Gira el "+" a una "X" (o úsalo para rotar a un "-") */
+}
+
+.faq-answer {
+    padding: 0 2rem; /* Padding horizontal, vertical se controla con max-height */
+    max-height: 0; /* Inicialmente oculto */
+    overflow: hidden;
+    transition: max-height var(--transition-speed) ease-out, padding var(--transition-speed) ease-out;
+    background-color: #FDFDFD; /* Fondo ligeramente diferente para la respuesta */
+}
+
+.faq-answer.active { /* Clase 'active' será añadida por JS */
+    max-height: 200px; /* Suficiente para la mayoría de las respuestas, ajusta si es necesario */
+    padding-top: 1rem;
+    padding-bottom: 1.5rem;
+    border-top: 1px solid var(--border-color); /* Separador sutil */
+}
+
+.faq-answer p {
+    font-size: 1.1rem;
+    line-height: 1.7;
+    color: #444; /* Color de texto para la respuesta */
+}
+
+.faq-contact-prompt {
+    margin-top: 3.5rem;
+    font-size: 1.1rem;
+    color: #666;
+}
+
+.faq-contact-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color var(--transition-speed) ease;
+}
+
+.faq-contact-link:hover {
+    color: var(--accent-color);
+    text-decoration: underline;
+}
+
+/* --- Responsividad Básica (Ajusta según necesites) --- */
+@media (max-width: 768px) {
+    .faq-container {
+        padding: 0 1rem;
+    }
+
+    .faq-title {
+        font-size: 2.2rem;
+    }
+
+    .faq-intro-text {
+        font-size: 1rem;
+    }
+
+    .faq-question {
+        font-size: 1.1rem;
+        padding: 1.2rem 1.5rem;
+    }
+
+    .faq-icon {
+        font-size: 1.5rem;
+    }
+
+    .faq-answer {
+        padding: 0 1.5rem;
+    }
+
+    .faq-answer.active {
+        padding-top: 0.8rem;
+        padding-bottom: 1.2rem;
+    }
+}
+
+/* ESTILOS PARA LA VISTA DE ABOUT  */
+
+.hero-about {
+    /* Ruta de tu imagen como fondo */
+    background-image: url('assets/img/banner/about.jpg');
+    
+    /* Propiedades para que la imagen se vea bien como banner */
+    background-size: cover; /* Asegura que la imagen cubra todo el espacio, escalándola y recortando si es necesario */
+    background-position: center; /* Centra la imagen en el contenedor */
+    background-repeat: no-repeat; /* Evita que la imagen se repita */
+    
+    /* Altura del banner: ajusta el padding para controlar la altura */
+    padding: 120px 0; /* Padding superior e inferior para dar altura al banner. Ajusta este valor. */
+    
+    /* Estilos para el texto sobre el banner */
+    color: #fff; /* Color del texto (blanco para que resalte sobre fondos oscuros). Ajusta según tu imagen. */
+    text-align: center; /* Centra el texto horizontalmente */
+    
+    /* Opcional: para un efecto de superposición */
+    position: relative; /* Necesario para que el pseudo-elemento de superposición funcione */
+    z-index: 1; /* Asegura que el contenido esté por encima de la superposición */
+}
+
+/* Opcional: Capa semitransparente sobre la imagen para mejorar la legibilidad del texto */
+.hero-about::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5); /* Color negro con 50% de opacidad. Ajusta el color y la opacidad. */
+    z-index: -1; /* Coloca la superposición detrás del contenido */
+}
+
+/* Estilos para el título y el párrafo dentro del banner (opcional, para mejorar la apariencia) */
+.hero-about h1 {
+    font-size: 3em; /* Tamaño del título. Ajusta al que prefieras. */
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.7); /* Sombra para el texto, mejora la legibilidad */
+}
+
+.hero-about p {
+    font-size: 1.2em; /* Tamaño del párrafo. Ajusta al que prefieras. */
+    max-width: 800px; /* Limita el ancho del párrafo para mejor lectura */
+    margin: 0 auto; /* Centra el párrafo */
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.7); /* Sombra para el texto */
+}
+
+/* Estilos para el contenedor (si ya lo tienes, asegúrate de que no interfiera) */
+.hero-about .container {
+    max-width: 1200px; /* Ancho máximo del contenido */
+    margin: 0 auto; /* Centra el contenedor */
+    padding: 0 15px; /* Espacio a los lados */
+}
+
