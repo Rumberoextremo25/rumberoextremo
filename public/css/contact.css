@@ -1,0 +1,342 @@
+/* Variables de colores y tipografía (consistencia con el resto de la app) */
+:root {
+    --primary-color: #FF2E63; /* Rosa vibrante */
+    --secondary-color: #08D9D6; /* Azul/verde neón */
+    --dark-bg: #1B1B2F; /* Fondo oscuro casi negro */
+    --light-bg: #222831; /* Un gris oscuro para secciones */
+    --text-color-light: #EEEEEE; /* Texto claro */
+    --text-color-dark: #333333; /* Texto oscuro para contraste */
+    --gradient-1: linear-gradient(45deg, var(--primary-color), #FF7F50); /* Rosa a Naranja Coral */
+    --gradient-2: linear-gradient(135deg, var(--secondary-color), #4CAF50); /* Azul/Verde a Verde Esmeralda */
+    --shadow-light: 0 5px 15px rgba(0, 0, 0, 0.2);
+    --shadow-dark: 0 8px 25px rgba(0, 0, 0, 0.4);
+    --border-radius-lg: 15px;
+    --border-radius-md: 10px;
+    --transition-fast: 0.3s ease;
+    --transition-slow: 0.5s ease;
+}
+
+/* Estilos Generales para el cuerpo y encabezados (si no están en global-styles.css) */
+body {
+    font-family: 'Poppins', sans-serif;
+    color: var(--text-color-light);
+    background: linear-gradient(to bottom, #4B0082, #8A2BE2); /* Consistent gradient background */
+    background-attachment: fixed;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+    overflow-x: hidden;
+}
+
+h1, h2, h3 {
+    font-family: 'Montserrat', sans-serif;
+    color: var(--text-color-light);
+    margin-bottom: 1rem;
+    line-height: 1.2;
+}
+
+h1 {
+    font-size: 3.5rem;
+    font-weight: 800;
+    text-align: center;
+    color: var(--primary-color); /* Use primary color for main headings */
+    text-shadow: var(--shadow-dark);
+}
+
+h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 2.5rem;
+    color: var(--secondary-color); /* Use secondary color for sub-headings */
+    text-shadow: var(--shadow-light);
+}
+
+h3 {
+    font-size: 1.8rem;
+    font-weight: 600;
+}
+
+p {
+    font-size: 1.05rem;
+    margin-bottom: 1rem;
+    line-height: 1.7;
+    color: rgba(255, 255, 255, 0.85);
+}
+
+a {
+    color: var(--secondary-color);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+}
+a:hover {
+    color: var(--primary-color);
+    text-decoration: underline;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+}
+
+section {
+    padding: 6rem 0;
+    position: relative;
+    z-index: 1;
+    overflow: hidden;
+}
+
+/* --- Content Section --- */
+.content-section {
+    background-color: rgba(0, 0, 0, 0.4); /* Consistent transparent background */
+    padding-top: 120px; /* Space for fixed header */
+    padding-bottom: 60px;
+    text-align: center;
+}
+
+.content-section > p { /* Targeting the main intro paragraph */
+    max-width: 800px;
+    margin: 0 auto 3rem auto;
+    font-size: 1.2rem;
+}
+
+/* --- Contact Form --- */
+.contact-form {
+    background-color: var(--light-bg);
+    padding: 3rem;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-dark);
+    max-width: 700px;
+    margin: 0 auto 3rem auto;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+}
+
+.contact-form form {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.contact-form label {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--text-color-light);
+    text-align: left;
+    margin-bottom: 0.5rem;
+}
+
+.contact-form input[type="text"],
+.contact-form input[type="email"],
+.contact-form textarea {
+    width: 100%;
+    padding: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: var(--border-radius-md);
+    background-color: rgba(255, 255, 255, 0.1);
+    color: var(--text-color-light);
+    font-size: 1rem;
+    transition: border-color var(--transition-fast), background-color var(--transition-fast);
+    box-sizing: border-box; /* Include padding in width */
+}
+
+.contact-form input::placeholder,
+.contact-form textarea::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.contact-form input:focus,
+.contact-form textarea:focus {
+    outline: none;
+    border-color: var(--secondary-color);
+    background-color: rgba(255, 255, 255, 0.15);
+    box-shadow: 0 0 0 3px rgba(8, 217, 214, 0.3); /* Focus glow */
+}
+
+.contact-form textarea {
+    min-height: 120px;
+    resize: vertical; /* Allow vertical resizing */
+}
+
+.contact-form button[type="submit"] {
+    background: var(--gradient-1); /* Use primary gradient for submit button */
+    color: var(--text-color-light);
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: var(--border-radius-md);
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+    box-shadow: var(--shadow-light);
+    margin-top: 1rem;
+}
+
+.contact-form button[type="submit"]:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-dark);
+}
+
+/* Alert Messages (Success/Error) */
+.alert {
+    padding: 1rem;
+    border-radius: var(--border-radius-md);
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+    font-weight: 500;
+    text-align: center;
+}
+
+.alert-success {
+    background-color: rgba(76, 175, 80, 0.2); /* Green with transparency */
+    color: #4CAF50;
+    border: 1px solid #4CAF50;
+}
+
+.alert-danger {
+    background-color: rgba(255, 46, 99, 0.2); /* Red with transparency */
+    color: var(--primary-color);
+    border: 1px solid var(--primary-color);
+}
+
+.error-message {
+    color: var(--primary-color); /* Red for validation errors */
+    font-size: 0.9rem;
+    margin-top: 0.5rem;
+    display: block; /* Ensure it takes its own line */
+    text-align: left;
+}
+
+/* Contact Info Paragraph */
+.contact-info {
+    font-size: 1.1rem;
+    margin-top: 2rem;
+    margin-bottom: 3rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.contact-info a {
+    font-weight: 600;
+}
+
+/* --- Social Media Section --- */
+.social-media {
+    padding: 4rem 0;
+    background-color: var(--dark-bg); /* Darker background for this section */
+    border-radius: var(--border-radius-lg);
+    margin-top: 3rem; /* Space from above content */
+    box-shadow: var(--shadow-dark);
+}
+
+.social-media h2 {
+    margin-bottom: 2rem;
+    color: var(--text-color-light);
+}
+
+.social-media .social-links {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap; /* Allow wrapping on small screens */
+    gap: 2rem;
+}
+
+.social-media .social-links a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background-color: var(--light-bg);
+    color: var(--text-color-light);
+    font-size: 2.2rem;
+    transition: transform var(--transition-fast), background-color var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
+    box-shadow: var(--shadow-light);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.social-media .social-links a:hover {
+    transform: translateY(-5px) scale(1.1);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+}
+
+/* Specific social icon colors on hover */
+.social-media .social-links a.facebook:hover { background-color: #3b5998; color: white; }
+.social-media .social-links a.twitter:hover { background-color: #00acee; color: white; }
+.social-media .social-links a.instagram:hover { background-color: #C13584; color: white; }
+.social-media .social-links a.whatsapp:hover { background-color: #25D366; color: white; }
+.social-media .social-links a.youtube:hover { background-color: #FF0000; color: white; }
+
+
+/* --- Google Map Section --- */
+.google-map-section {
+    padding: 6rem 0;
+    background-color: var(--light-bg); /* Use light-bg for this section */
+    text-align: center;
+    margin-top: 3rem; /* Space from above content */
+    box-shadow: var(--shadow-dark);
+    border-radius: var(--border-radius-lg);
+}
+
+.google-map-section h2 {
+    margin-bottom: 2.5rem;
+    color: var(--primary-color);
+}
+
+.map-container {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 Aspect Ratio (divide 9 by 16 = 0.5625) */
+    height: 0;
+    overflow: hidden;
+    max-width: 100%;
+    background: var(--dark-bg); /* Placeholder background */
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-dark);
+}
+
+.map-container iframe {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: 0;
+    border-radius: var(--border-radius-md);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 992px) {
+    h1 { font-size: 3rem; }
+    h2 { font-size: 2rem; }
+    .content-section > p { font-size: 1.1rem; }
+    .contact-form { padding: 2rem; }
+    .contact-form label { font-size: 1rem; }
+    .contact-form input, .contact-form textarea, .contact-form button { font-size: 0.95rem; }
+    .social-media .social-links a { width: 50px; height: 50px; font-size: 1.8rem; }
+}
+
+@media (max-width: 768px) {
+    .container { padding: 0 1rem; }
+    section { padding: 4rem 0; }
+    h1 { font-size: 2.5rem; }
+    h2 { font-size: 1.8rem; }
+    .content-section { padding-top: 100px; }
+    .contact-form { padding: 1.5rem; margin-bottom: 2rem; }
+    .contact-info { font-size: 1rem; margin-top: 1.5rem; margin-bottom: 2rem; }
+    .social-media { padding: 3rem 0; margin-top: 2rem; }
+    .social-media .social-links { gap: 1.5rem; }
+    .social-media .social-links a { width: 45px; height: 45px; font-size: 1.6rem; }
+    .google-map-section { padding: 4rem 0; margin-top: 2rem; }
+}
+
+@media (max-width: 480px) {
+    h1 { font-size: 2rem; }
+    h2 { font-size: 1.5rem; }
+    .content-section > p { font-size: 0.95rem; margin-bottom: 2rem; }
+    .contact-form { padding: 1rem; }
+    .contact-form label { font-size: 0.9rem; }
+    .contact-form input, .contact-form textarea, .contact-form button { padding: 0.8rem; font-size: 0.9rem; }
+    .social-media .social-links { gap: 1rem; }
+    .social-media .social-links a { width: 40px; height: 40px; font-size: 1.4rem; }
+}

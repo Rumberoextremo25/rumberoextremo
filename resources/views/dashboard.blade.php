@@ -4,68 +4,48 @@
 
 @section('page_title', 'Vista General del Dashboard')
 
+@section('styles')
+    {{-- Importa Font Awesome si no está ya en tu layout principal --}}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    {{-- Enlaza el CSS específico de este dashboard --}}
+    <link rel="stylesheet" href="{{ asset('css/admin/admin.css') }}">
+    
+@endsection
+
 @section('content')
     <div class="dashboard-container">
-        {{-- Sección de Bienvenida (visible para todos los roles) --}}
+        {{-- Sección de Bienvenida --}}
         <div class="welcome-section">
             <h2 class="welcome-title">¡Hola, {{ Auth::user()->name }}!</h2>
-            <p class="welcome-message">Bienvenido al panel de Rumbero Extremo.</p>
+            <p class="welcome-message">Un placer verte por aquí.</p>
         </div>
 
-        {{-- Sección de Tarjetas de Resumen (KPIs) - Visibilidad por Rol --}}
-        @if(Auth::user()->role === 'admin')
-            {{-- Admin ve todas las cards --}}
-            <div class="dashboard-cards">
-                <div class="dashboard-card primary-card">
-                    <div class="icon"><i class="fas fa-users"></i></div>
-                    <div class="details">
-                        <div class="value">{{ number_format($totalUsers) }}</div>
-                        <div class="label">Total Usuarios</div>
-                    </div>
-                </div>
-                <div class="dashboard-card success-card">
-                    <div class="icon"><i class="fas fa-box"></i></div>
-                    <div class="details">
-                        <div class="value">{{ number_format($totalActiveProducts) }}</div>
-                        <div class="label">Productos Activos</div>
-                    </div>
-                </div>
-                <div class="dashboard-card info-card">
-                    <div class="icon"><i class="fas fa-dollar-sign"></i></div>
-                    <div class="details">
-                        <div class="value">${{ number_format($todaySales, 2) }}</div>
-                        <div class="label">Ventas Hoy</div>
-                    </div>
-                </div>
-                <div class="dashboard-card warning-card">
-                    <div class="icon"><i class="fas fa-chart-line"></i></div>
-                    <div class="details">
-                        <div class="value">{{ $customerSatisfaction }}%</div>
-                        <div class="label">Satisfacción Cliente</div>
-                    </div>
+        {{-- Sección de Tarjetas de Resumen (KPIs) --}}
+        <div class="dashboard-cards">
+            <div class="dashboard-card primary-card">
+                <div class="icon"><i class="fas fa-users"></i></div>
+                <div class="details">
+                    <div class="value">{{ number_format($totalUsers) }}</div>
+                    <div class="label">Usuarios Registrados</div>
                 </div>
             </div>
-        @elseif(Auth::user()->role === 'aliado')
-            {{-- Aliado ve solo 'Ventas Hoy' y 'Satisfacción Cliente' --}}
-            <div class="dashboard-cards">
-                <div class="dashboard-card info-card">
-                    <div class="icon"><i class="fas fa-dollar-sign"></i></div>
-                    <div class="details">
-                        <div class="value">${{ number_format($todaySales, 2) }}</div>
-                        <div class="label">Ventas Hoy</div>
-                    </div>
-                </div>
-                <div class="dashboard-card warning-card">
-                    <div class="icon"><i class="fas fa-chart-line"></i></div>
-                    <div class="details">
-                        <div class="value">{{ $customerSatisfaction }}%</div>
-                        <div class="label">Satisfacción Cliente</div>
-                    </div>
+            <div class="dashboard-card info-card">
+                <div class="icon"><i class="fas fa-chart-bar"></i></div>
+                <div class="details">
+                    <div class="value">{{ number_format($pageViews) }}</div>
+                    <div class="label">Visitas a la Página</div>
                 </div>
             </div>
-        @endif
+            <div class="dashboard-card success-card">
+                <div class="icon"><i class="fas fa-dollar-sign"></i></div>
+                <div class="details">
+                    <div class="value">${{ number_format($totalSales, 2) }}</div>
+                    <div class="label">Total de Ventas</div>
+                </div>
+            </div>
+        </div>
 
-        {{-- Sección de Últimas Actividades - Visibilidad y Contenido por Rol --}}
+        {{-- Sección de Últimas Actividades --}}
         <div class="latest-activity-section">
             <h3>Últimas Actividades</h3>
             <div class="activity-table-container">
@@ -73,34 +53,33 @@
                     <thead>
                         <tr>
                             <th>Actividad</th>
-                            <th>Usuario</th>
+                            @if(Auth::user()->user_type !== 'comun')
+                                <th>Usuario</th>
+                            @endif
                             <th>Fecha</th>
                             <th>Estado</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @if(Auth::user()->role === 'comun')
-                            {{-- Solo mostrar actividades relacionadas al perfil para usuarios 'comun' --}}
-                            @forelse ($latestProfileActivities as $activity) {{-- ¡Asegúrate de pasar esta variable desde el controlador! --}}
+                        @if(Auth::user()->user_type === 'comun')
+                            @forelse ($latestProfileActivities as $activity)
                                 <tr>
-                                    <td>{{ $activity['activity'] }}</td>
-                                    <td>{{ $activity['user'] }}</td>
-                                    <td>{{ $activity['date'] }}</td>
-                                    <td><span class="status-badge {{ $activity['status_class'] }}">{{ $activity['status'] }}</span></td>
+                                    <td data-label="Actividad">{{ $activity['activity'] }}</td>
+                                    <td data-label="Fecha">{{ $activity['date'] }}</td>
+                                    <td data-label="Estado"><span class="status-badge {{ $activity['status_class'] }}">{{ $activity['status'] }}</span></td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="4" class="text-center">No hay actividades recientes de tu perfil.</td>
+                                    <td colspan="3" class="text-center">No hay actividades recientes de tu perfil.</td>
                                 </tr>
                             @endforelse
                         @else
-                            {{-- Admin y Aliado ven todas las actividades (tu lógica original) --}}
                             @forelse ($latestActivities as $activity)
                                 <tr>
-                                    <td>{{ $activity['activity'] }}</td>
-                                    <td>{{ $activity['user'] }}</td>
-                                    <td>{{ $activity['date'] }}</td>
-                                    <td><span class="status-badge {{ $activity['status_class'] }}">{{ $activity['status'] }}</span></td>
+                                    <td data-label="Actividad">{{ $activity['activity'] }}</td>
+                                    <td data-label="Usuario">{{ $activity['user'] }}</td>
+                                    <td data-label="Fecha">{{ $activity['date'] }}</td>
+                                    <td data-label="Estado"><span class="status-badge {{ $activity['status_class'] }}">{{ $activity['status'] }}</span></td>
                                 </tr>
                             @empty
                                 <tr>
@@ -114,3 +93,8 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+    {{-- Enlaza el JavaScript específico de este dashboard --}}
+    <script src="{{ asset('js/admin/dashboard.js') }}"></script>
+@endpush

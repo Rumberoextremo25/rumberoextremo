@@ -1,0 +1,302 @@
+/* General Header Styling */
+.main-header {
+    background-color: rgba(0, 0, 0, 0.2); /* Slightly transparent background for the nav bar */
+    padding: 15px 50px; /* Adjust padding as needed */
+    position: fixed; /* Makes the header sticky at the top */
+    width: 100%;
+    top: 0;
+    left: 0;
+    z-index: 1000; /* Ensures the header stays on top of other content */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2); /* Subtle shadow for depth */
+}
+
+.header-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: 1200px; /* Max width to center content, adjust as desired */
+    margin: 0 auto; /* Center the container */
+}
+
+/* Logo Styling */
+.header-logo img {
+    height: 40px; /* Adjust logo height as needed */
+    vertical-align: middle; /* Aligns image nicely with text if any */
+}
+
+/* Main Navigation */
+.main-nav .nav-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 30px; /* Space between navigation items */
+    align-items: center; /* Vertically align nav items */
+}
+
+.main-nav .nav-links li {
+    margin: 0; /* Remove default list item margins */
+}
+
+/* Individual Navigation Items */
+.main-nav .nav-item {
+    text-decoration: none;
+    color: #FFFFFF;
+    font-weight: bold;
+    font-size: 16px;
+    padding: 5px 10px;
+    transition: color 0.3s ease;
+}
+
+.main-nav .nav-item:hover {
+    color: #FFD700; /* Example hover color (gold/yellow) */
+}
+
+/* Call-to-Action Button (Acceder/Logout) */
+.cta-button {
+    background-color: #8A2BE2; /* Blue Violet, or a similar purple */
+    color: #FFFFFF;
+    padding: 10px 20px;
+    border-radius: 20px; /* Rounded corners */
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 16px; /* Match other nav items or slightly larger */
+    border: none; /* Remove default button border */
+    cursor: pointer; /* Indicate it's clickable */
+    transition: background-color 0.3s ease;
+    white-space: nowrap; /* Prevent button text from wrapping */
+}
+
+.cta-button:hover {
+    background-color: #9932CC; /* Darker purple on hover */
+}
+
+/* Logout Form Styling (to make the button look consistent) */
+.logout-form {
+    margin: 0;
+    padding: 0;
+    display: inline-block; /* Keeps the form from taking full width */
+}
+
+/* Footer General Styling */
+footer {
+    background-color: rgba(0, 0, 0, 0.3); /* Slightly transparent dark background */
+    color: #FFFFFF; /* White text for the entire footer */
+    padding: 40px 20px 20px; /* Top, horizontal, and bottom padding */
+    font-family: Arial, sans-serif; /* Consistent font family */
+    position: relative;
+    bottom: 0;
+    width: 100%;
+}
+
+/* Footer Container for Centering and Max Width */
+footer .container {
+    max-width: 1200px; /* Matches header container for consistency */
+    margin: 0 auto; /* Centers the container */
+    padding: 0 15px; /* Inner padding for responsiveness */
+}
+
+/* Main Footer Content Layout (Sections) */
+.footer-content {
+    display: flex;
+    flex-wrap: wrap; /* Allows sections to wrap on smaller screens */
+    justify-content: space-between; /* Distributes sections evenly */
+    gap: 30px; /* Space between columns */
+    margin-bottom: 30px; /* Space above the bottom copyright section */
+}
+
+/* Individual Footer Sections */
+.footer-section {
+    flex: 1; /* Allows sections to grow and shrink */
+    min-width: 250px; /* Minimum width before wrapping */
+    padding: 10px;
+}
+
+.footer-section h3 {
+    color: #FFD700; /* Gold/Yellow for section headings */
+    font-size: 1.5em;
+    margin-bottom: 20px;
+    border-bottom: 2px solid rgba(255, 215, 0, 0.3); /* Subtle underline */
+    padding-bottom: 10px;
+}
+
+.footer-section p {
+    font-size: 0.95em;
+    line-height: 1.6;
+    color: #E0E0E0; /* Slightly off-white for body text */
+}
+
+/* About Us Section Specifics */
+.footer-section.about-us .logo img {
+    height: 50px; /* Adjust logo size in footer */
+    margin-bottom: 15px;
+}
+
+/* Quick Links Section */
+.footer-section.quick-links ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.footer-section.quick-links ul li {
+    margin-bottom: 10px;
+}
+
+.footer-section.quick-links ul li a {
+    text-decoration: none;
+    color: #E0E0E0; /* Off-white for links */
+    font-size: 0.9em;
+    transition: color 0.3s ease;
+}
+
+.footer-section.quick-links ul li a:hover {
+    color: #FFD700; /* Yellow on hover */
+}
+
+/* Connect Section - Social Links */
+.social-links {
+    display: flex;
+    gap: 15px; /* Space between social icons */
+    margin-top: 15px;
+}
+
+.social-links a {
+    color: #FFFFFF; /* White icons */
+    font-size: 28px; /* Larger icon size */
+    transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.social-links a:hover {
+    color: #FFD700; /* Yellow on hover */
+    transform: translateY(-3px); /* Slight lift effect */
+}
+
+/* Newsletter Section */
+.newsletter-input-group {
+    display: flex;
+    margin-top: 15px;
+    border-radius: 5px;
+    overflow: hidden; /* Ensures input and button stay within rounded corners */
+}
+
+.newsletter-input-group input[type="email"] {
+    flex-grow: 1; /* Allows input to take available space */
+    padding: 15px 20px; /* Aumenta el padding para hacer la barra más larga */
+    border: none;
+    outline: none;
+    background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent white background */
+    color: #333; /* Dark text for input */
+    font-size: 1.1em; /* Aumenta el tamaño de la fuente para que se vea más grande */
+    width: 100%; /* Asegura que la barra de texto ocupe todo el ancho disponible */
+    max-width: 300px; /* Puedes ajustar este valor para controlar la longitud máxima */
+}
+
+.newsletter-input-group input[type="email"]::placeholder {
+    color: #888;
+}
+
+.newsletter-input-group button {
+    background-color: #8A2BE2; /* Purple button */
+    color: #FFFFFF;
+    padding: 15px 30px; /* Aumenta el padding para hacer el botón más grande */
+    border: none;
+    cursor: pointer;
+    font-size: 1.1em; /* Aumenta el tamaño de la fuente para que el texto del botón sea más grande */
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+    min-width: 120px; /* Asegura que el botón sea visible completo, puedes ajustar el valor */
+}
+
+.newsletter-input-group button:hover {
+    background-color: #9932CC; /* Darker purple on hover */
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .newsletter-input-group {
+        flex-direction: column; /* Stack input and button */
+        align-items: center; /* Centra los elementos cuando están apilados */
+    }
+
+    .newsletter-input-group input[type="email"],
+    .newsletter-input-group button {
+        width: 100%; /* Ocupa el 100% del ancho disponible en pantallas pequeñas */
+        border-radius: 5px; /* Apply border-radius to both */
+        margin-bottom: 10px; /* Space between stacked input/button */
+        max-width: none; /* Elimina el max-width en pantallas pequeñas para que ocupe todo el ancho */
+    }
+}
+
+/* Error and Success Messages for Newsletter */
+.error-message {
+    color: #FF6347 !important; /* Tomato red for errors */
+    font-size: 0.8em;
+    display: block;
+    margin-top: 5px;
+}
+
+.success-message {
+    color: #3CB371 !important; /* Medium Sea Green for success */
+    font-size: 0.8em;
+    display: block;
+    margin-top: 5px;
+}
+
+/* Footer Bottom Section (Copyright) */
+.footer-bottom {
+    text-align: center;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1); /* Subtle separator line */
+    font-size: 0.85em;
+    color: #B0B0B0; /* Lighter grey for copyright text */
+}
+
+.footer-bottom p {
+    margin: 5px 0;
+}
+
+.footer-bottom .fas.fa-heart {
+    color: #FF6347; /* Red heart icon */
+    margin: 0 5px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .footer-content {
+        flex-direction: column; /* Stack sections vertically on small screens */
+        align-items: center; /* Center items when stacked */
+        text-align: center;
+    }
+
+    .footer-section {
+        min-width: 100%; /* Full width for sections */
+        margin-bottom: 20px;
+    }
+
+    .footer-section h3 {
+        text-align: center;
+    }
+
+    .footer-section.quick-links ul {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .social-links {
+        justify-content: center;
+    }
+
+    .newsletter-input-group {
+        flex-direction: column; /* Stack input and button */
+    }
+
+    .newsletter-input-group input[type="email"],
+    .newsletter-input-group button {
+        width: 100%;
+        border-radius: 5px; /* Apply border-radius to both */
+        margin-bottom: 10px; /* Space between stacked input/button */
+    }
+}

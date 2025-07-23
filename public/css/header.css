@@ -1,0 +1,210 @@
+/* Variables de colores y tipografía (consistencia con el resto de la app) */
+:root {
+    --primary-color: #FF2E63; /* Rosa vibrante */
+    --secondary-color: #08D9D6; /* Azul/verde neón */
+    --dark-bg: #1B1B2F; /* Fondo oscuro casi negro */
+    --light-bg: #222831; /* Un gris oscuro para secciones */
+    --text-color-light: #EEEEEE; /* Texto claro */
+    --text-color-dark: #333333; /* Texto oscuro para contraste */
+    --gradient-1: linear-gradient(45deg, var(--primary-color), #FF7F50); /* Rosa a Naranja Coral */
+    --gradient-2: linear-gradient(135deg, var(--secondary-color), #4CAF50); /* Azul/Verde a Verde Esmeralda */
+    --shadow-light: 0 5px 15px rgba(0, 0, 0, 0.2);
+    --shadow-dark: 0 8px 25px rgba(0, 0, 0, 0.4);
+    --border-radius-lg: 15px;
+    --border-radius-md: 10px;
+    --transition-fast: 0.3s ease;
+    --transition-slow: 0.5s ease;
+}
+
+/* --- Main Header Styles --- */
+.main-header {
+    background-color: var(--dark-bg); /* Dark background for the header */
+    padding: 1rem 0;
+    box-shadow: var(--shadow-dark); /* Stronger shadow for depth */
+    position: sticky; /* Make the header sticky */
+    top: 0;
+    z-index: 1000; /* Ensure it stays on top */
+    width: 100%;
+}
+
+.header-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.header-logo img {
+    height: 60px; /* Adjust logo size */
+    transition: transform var(--transition-fast);
+}
+
+.header-logo img:hover {
+    transform: scale(1.05);
+}
+
+.main-nav .nav-links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 1.5rem; /* Space between nav items */
+}
+
+.main-nav .nav-item {
+    color: var(--text-color-light);
+    text-decoration: none;
+    font-size: 1.05rem;
+    font-weight: 500;
+    padding: 0.5rem 0.8rem;
+    transition: color var(--transition-fast), background-color var(--transition-fast), transform var(--transition-fast);
+    border-radius: var(--border-radius-md); /* Slight roundness for hover effect */
+}
+
+.main-nav .nav-item:hover {
+    color: var(--primary-color); /* Highlight color on hover */
+    transform: translateY(-2px); /* Subtle lift effect */
+}
+
+/* Call-to-action Button (Acceder/Logout) */
+.cta-button {
+    background: var(--gradient-1); /* Gradient background for CTA */
+    color: var(--text-color-light);
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: var(--border-radius-md);
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-decoration: none; /* For anchor tags */
+    transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast);
+    white-space: nowrap; /* Prevent button text from wrapping */
+    box-shadow: 0 4px 15px rgba(255, 46, 99, 0.4);
+}
+
+.cta-button:hover {
+    background: var(--gradient-2); /* Different gradient on hover */
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(8, 217, 214, 0.5); /* Shadow matching hover gradient */
+}
+
+/* Hamburger menu icon for mobile */
+.menu-toggle {
+    display: none; /* Hidden by default on desktop */
+    flex-direction: column;
+    justify-content: space-between;
+    width: 30px;
+    height: 20px;
+    cursor: pointer;
+    z-index: 1001; /* Ensure it's above other elements */
+}
+
+.menu-toggle span {
+    display: block;
+    width: 100%;
+    height: 3px;
+    background-color: var(--text-color-light);
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+/* Animation for hamburger icon when active */
+.menu-toggle.active span:nth-child(1) {
+    transform: translateY(8.5px) rotate(45deg);
+}
+
+.menu-toggle.active span:nth-child(2) {
+    opacity: 0;
+}
+
+.menu-toggle.active span:nth-child(3) {
+    transform: translateY(-8.5px) rotate(-45deg);
+}
+
+
+/* --- Media Queries for Responsiveness --- */
+@media (max-width: 768px) {
+    .header-container {
+        padding: 0 1.5rem;
+    }
+
+    .main-nav {
+        position: fixed;
+        top: 0;
+        right: -100%; /* Start off-screen */
+        width: 70%; /* Adjust as needed */
+        height: 100%;
+        background-color: var(--light-bg); /* Sidebar background */
+        box-shadow: -5px 0 15px rgba(0, 0, 0, 0.3);
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        transition: right 0.4s ease-in-out;
+        z-index: 999;
+        padding-top: 60px; /* Space for the header */
+    }
+
+    .main-nav.active {
+        right: 0; /* Slide in */
+    }
+
+    .main-nav .nav-links {
+        flex-direction: column;
+        gap: 1.5rem;
+        width: 100%;
+        text-align: center;
+    }
+
+    .main-nav .nav-item,
+    .main-nav .cta-button {
+        display: block; /* Make links full width */
+        width: 80%; /* Adjust width for better appearance */
+        padding: 1rem;
+        margin: 0 auto; /* Center the block links */
+        font-size: 1.1rem;
+    }
+
+    .main-nav .nav-item:hover {
+        background-color: rgba(255, 255, 255, 0.08); /* Subtle background on hover */
+    }
+
+    .main-nav li:last-child .cta-button {
+        margin-top: 1rem; /* Space the button from other links */
+    }
+
+    .menu-toggle {
+        display: flex; /* Show hamburger icon */
+    }
+
+    /* Overlay when menu is open */
+    .overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0, 0, 0, 0.5);
+        z-index: 998;
+        display: none; /* Hidden by default */
+    }
+    .overlay.active {
+        display: block; /* Show when menu is active */
+    }
+}
+
+@media (max-width: 480px) {
+    .header-logo img {
+        height: 50px;
+    }
+    .main-nav {
+        width: 85%; /* Make sidebar wider on very small screens */
+    }
+    .main-nav .nav-item,
+    .main-nav .cta-button {
+        font-size: 1rem;
+        padding: 0.8rem;
+    }
+}

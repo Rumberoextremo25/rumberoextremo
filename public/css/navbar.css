@@ -1,0 +1,249 @@
+/* Importa fuentes: Poppins para texto general, Montserrat para títulos/logo */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800;900&display=swap');
+
+/* --- Variables de Color (Reutilizadas del footer, si las tienes en un archivo global, mejor) --- */
+:root {
+    --dark-bg: #1A0D2F; /* Fondo oscuro principal */
+    --darker-bg: #0D051A; /* Fondo aún más oscuro */
+    --text-light: #E0E0E0; /* Texto claro */
+    --text-muted: #AAAAAA; /* Texto gris suave */
+    --neon-magenta: #FF00FF; /* Color neón vibrante 1 */
+    --neon-cyan: #00FFFF; /* Color neón vibrante 2 */
+    --primary-color: var(--neon-magenta); /* Color primario para botones/acentos */
+}
+
+/* --- Reseteo Básico (Asegúrate de que no haya conflictos con resets globales) --- */
+.main-header, .main-header *, .main-header *::before, .main-header *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+/* --- Estilos del Header Principal --- */
+.main-header {
+    background: linear-gradient(90deg, var(--dark-bg) 0%, var(--darker-bg) 100%); /* Degradado oscuro */
+    color: var(--text-light);
+    padding: 15px 0; /* Padding superior e inferior */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); /* Sombra sutil para profundidad */
+    position: sticky; /* Se mantiene en la parte superior al hacer scroll */
+    top: 0;
+    left: 0;
+    width: 100%;
+    z-index: 1000; /* Asegura que esté por encima de otros elementos */
+    font-family: 'Poppins', sans-serif;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05); /* Línea sutil en la parte inferior */
+}
+
+.header-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 20px; /* Padding lateral */
+    display: flex;
+    justify-content: space-between; /* Espacio entre logo y navegación */
+    align-items: center; /* Centrado vertical */
+}
+
+/* --- Logo --- */
+.header-logo {
+    display: flex; /* Para alinear verticalmente la imagen si el logo es un icono + texto */
+    align-items: center;
+    text-decoration: none; /* Quitar subrayado del enlace */
+}
+
+.header-logo img {
+    max-height: 55px; /* Altura máxima del logo */
+    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.15)); /* Sombra para resaltar el logo */
+    transition: transform 0.3s ease;
+}
+
+.header-logo img:hover {
+    transform: scale(1.05); /* Pequeño zoom al pasar el mouse */
+}
+
+/* --- Navegación Principal --- */
+.main-nav .nav-links {
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 30px; /* Espacio entre los elementos de navegación */
+}
+
+.main-nav .nav-links li {
+    position: relative;
+}
+
+.main-nav .nav-links .nav-item {
+    color: var(--text-light);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 1rem;
+    padding: 8px 0; /* Padding vertical para el efecto de subrayado */
+    transition: color 0.3s ease, text-shadow 0.3s ease;
+    position: relative;
+    display: block; /* Asegura que el padding se aplique correctamente */
+}
+
+/* Efecto de subrayado neón al pasar el mouse */
+.main-nav .nav-links .nav-item::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0; /* Ajusta esto si hay padding o margin extra */
+    width: 0;
+    height: 3px; /* Grosor del subrayado */
+    background: linear-gradient(90deg, var(--neon-magenta), var(--neon-cyan)); /* Degradado neón */
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+.main-nav .nav-links .nav-item:hover {
+    color: var(--neon-cyan); /* Color de texto neón al pasar el mouse */
+    text-shadow: 0 0 8px rgba(0, 255, 255, 0.6); /* Resplandor neón */
+}
+
+.main-nav .nav-links .nav-item:hover::after {
+    width: 100%; /* El subrayado se extiende al 100% */
+}
+
+/* --- Botón CTA (Acceder/Logout) --- */
+.cta-button {
+    background: linear-gradient(45deg, var(--neon-magenta), var(--neon-cyan)); /* Degradado neón */
+    color: #FFFFFF;
+    padding: 10px 22px;
+    border-radius: 25px; /* Bordes redondeados */
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background-position 0.3s ease;
+    background-size: 200% auto; /* Para el efecto de hover */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+    border: none; /* Para el botón de submit */
+    cursor: pointer;
+    display: inline-block; /* Para que padding y transform funcionen bien */
+}
+
+.cta-button:hover {
+    transform: translateY(-3px); /* Pequeña elevación */
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 0, 255, 0.7); /* Sombra y resplandor */
+    background-position: right center; /* Mueve el degradado al pasar el mouse */
+}
+
+.logout-form button.cta-button {
+    /* Asegura que el botón de logout tenga el mismo estilo que el de acceder */
+    width: auto;
+}
+
+
+/* --- Menú Hamburguesa para Móviles (Oculto por defecto) --- */
+.menu-toggle {
+    display: none; /* Oculto en desktop */
+    flex-direction: column;
+    justify-content: space-between;
+    width: 30px;
+    height: 22px;
+    cursor: pointer;
+    z-index: 1100; /* Asegura que esté por encima del menú cuando se abre */
+}
+
+.menu-toggle span {
+    display: block;
+    width: 100%;
+    height: 3px;
+    background-color: var(--neon-cyan); /* Color neón para las barras */
+    border-radius: 2px;
+    transition: all 0.3s ease-in-out;
+}
+
+/* Animación de la hamburguesa a la 'X' */
+.menu-toggle.open span:nth-child(1) {
+    transform: translateY(9px) rotate(45deg);
+}
+
+.menu-toggle.open span:nth-child(2) {
+    opacity: 0;
+}
+
+.menu-toggle.open span:nth-child(3) {
+    transform: translateY(-10px) rotate(-45deg);
+}
+
+
+/* --- Media Queries para Responsividad --- */
+
+@media (max-width: 768px) {
+    .header-container {
+        padding: 0 15px;
+    }
+
+    .main-nav {
+        position: fixed; /* Menú de navegación fijo en móvil */
+        top: 0;
+        right: -100%; /* Oculto a la derecha */
+        width: 70%; /* Ancho del menú desplegable */
+        height: 100%;
+        background: var(--darker-bg); /* Fondo oscuro para el menú */
+        box-shadow: -5px 0 15px rgba(0, 0, 0, 0.5);
+        transition: right 0.4s ease-in-out;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
+        z-index: 999; /* Por debajo del toggle pero encima de otros elementos */
+    }
+
+    .main-nav.open {
+        right: 0; /* Muestra el menú al abrir */
+    }
+
+    .main-nav .nav-links {
+        flex-direction: column; /* Elementos de lista apilados verticalmente */
+        gap: 25px; /* Más espacio entre elementos */
+        text-align: center;
+        width: 100%;
+    }
+
+    .main-nav .nav-links li {
+        width: 100%;
+    }
+
+    .main-nav .nav-links .nav-item,
+    .cta-button {
+        font-size: 1.1rem; /* Textos más grandes para la legibilidad en móvil */
+        padding: 15px 0;
+        display: block; /* Asegura que ocupen el ancho completo */
+    }
+
+    .cta-button {
+        margin-top: 20px;
+        padding: 12px 25px;
+    }
+
+    /* Oculta el subrayado neón de los nav-item en mobile para un diseño más limpio */
+    .main-nav .nav-links .nav-item::after {
+        content: none;
+    }
+
+    .menu-toggle {
+        display: flex; /* Muestra el icono de hamburguesa en móvil */
+    }
+
+    /* Para ocultar el scroll del body cuando el menú está abierto */
+    body.no-scroll {
+        overflow: hidden;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-logo img {
+        max-height: 45px; /* Logo más pequeño en pantallas muy pequeñas */
+    }
+    .main-nav {
+        width: 80%; /* Menú un poco más ancho en teléfonos pequeños */
+    }
+    .main-nav .nav-links .nav-item,
+    .cta-button {
+        font-size: 1rem;
+    }
+}

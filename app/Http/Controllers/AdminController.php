@@ -4,55 +4,52 @@ namespace App\Http\Controllers;
 
 use App\Models\ActivityLog;
 use App\Models\Ally;
-use App\Models\AllyType;
-use App\Models\Product;
+use App\Models\Category;
+use App\Models\SubCategory;
+use App\Models\BusinessType;
 use App\Models\Sale;
 use App\Models\User;
 use App\Models\Order;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\DB;
+use Spatie\Permission\Models\Role;
 use Barryvdh\DomPDF\Facade\PDF;
 use Dotenv\Exception\ValidationException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class AdminController extends Controller
 {
-    /**
-     * Constructor del controlador.
-     * Puedes aplicar middleware aquí también si lo prefieres para todo el controlador.
-     */
     public function __construct()
     {
         //$this->middleware('auth'); // Puedes aplicar el middleware a todo el controlador
     }
 
-    // Métodos para el apartado de Admin general
     public function index()
     {
-        $user = Auth::user(); // Obtiene el usuario autenticado
-        $role = $user->role; // Obtiene el rol del usuario
+        $user = Auth::user();
+        $role = $user->user_type;
 
-        // Inicializa todas las variables que tu vista espera.
-        // Esto es crucial para evitar errores "Undefined variable" en Blade.
-        $totalUsers = 0;
-        $totalActiveProducts = 0;
-        $todaySales = 0.00;
+        $totalUsers = User::count();
+
+        $pageViews = 12345;
+ 
+        $totalSales = Sale::sum('total');
+
+        $latestActivities = [];
+        $latestProfileActivities = [];
+
+        $todaySalesSpecific = 0.00;
         $customerSatisfaction = 0;
-        $latestActivities = [];       // Actividades generales (para admin y aliado)
-        $latestProfileActivities = []; // Actividades solo para el usuario 'comun'
 
-        // --- Lógica condicional basada en el rol del usuario ---
         if ($role === 'admin') {
-            // **ADMIN:** Ve todas las cards y todas las actividades
-            $totalUsers = User::count();
-            // Asume que tienes un modelo Product y una columna 'status'
-            $totalActiveProducts = Product::where('status', 'active')->count();
-            // ASIGNACIÓN CORRECTA: Obtiene las ventas de hoy desde la tabla 'ventas' (modelo Sale)
-            $todaySales = Sale::whereDate('sale_date', Carbon::today())->sum('total');
-            // La satisfacción del cliente podría ser un cálculo más complejo o un valor fijo
-            $customerSatisfaction = 92; // Ejemplo: Podría venir de una tabla de configuración o promediar valoraciones
+
+            // Puedes mantener todaySales si quieres mostrar un "Ventas de Hoy" adicional
+            $todaySalesSpecific = Sale::whereDate('sale_date', Carbon::today())->sum('total');
+            $customerSatisfaction = 92; // Valor dummy o calculado
 
             // Obtén las últimas 10 actividades para el Admin (todas las actividades del sistema)
             $latestActivities = ActivityLog::latest()
@@ -60,68 +57,68 @@ class AdminController extends Controller
                 ->get()
                 ->map(fn($activity) => [
                     'activity' => $activity->description,
-                    'user' => $activity->performed_by, // Asume que ActivityLog tiene un campo 'performed_by'
-                    'date' => Carbon::parse($activity->created_at)->format('Y-m-d H:i'),
+                    'user' => $activity->performed_by ?? 'N/A', // Asegúrate de que 'performed_by' exista o usa un fallback
+                    'date' => Carbon::parse($activity->created_at)->format('d/m/Y H:i'),
                     'status' => ucfirst($activity->status),
-                    'status_class' => $this->getStatusClass($activity->status) // Usa un helper
+                    'status_class' => $this->getStatusClass($activity->status)
                 ]);
 
         } elseif ($role === 'aliado') {
-            // **ALIADO:** Ve solo 'Ventas Hoy' y 'Satisfacción Cliente' en las cards, y actividades generales
-            // Asume que puedes filtrar órdenes por un 'aliado_id' o similar
-            // Puedes ajustar esta lógica para que muestre ventas y satisfacción SOLO para los productos o eventos de ESE aliado
-            // ASIGNACIÓN CORRECTA: Obtiene las ventas de hoy para el aliado desde la tabla 'ventas' (modelo Sale)
-            $todaySales = Sale::whereDate('sale_date', Carbon::today())
-                                ->whereHas('product', function ($query) use ($user) {
-                                    $query->where('aliado_id', $user->id); // Asume que hay una relación Product->Aliado en el modelo Sale
-                                })
-                                ->sum('total');
 
-            // La satisfacción del cliente para este aliado
-            $customerSatisfaction = 88; // Ejemplo: Podría venir de las valoraciones de sus productos/eventos
 
-            // Obtén las últimas 10 actividades relevantes para el Aliado (ej. sus propios productos, sus ventas)
-            $latestActivities = ActivityLog::where('aliado_id', $user->id) // Asume que ActivityLog tiene un campo 'aliado_id'
+            // Ventas de hoy solo para este aliado
+            $todaySalesSpecific = Sale::whereDate('sale_date', Carbon::today())
+                ->whereHas('product', function ($query) use ($user) {
+                    // Asegúrate de que tu modelo 'Sale' tenga una relación con 'Product'
+                    // Y que 'Product' tenga una 'aliado_id' o 'user_id' para filtrar por el aliado
+                    $query->where('user_id', $user->id); // Asumiendo que el campo 'aliado_id' en la tabla productos es 'user_id'
+                })
+                ->sum('total');
+
+            $customerSatisfaction = 88; // Dummy o calculado para el aliado
+
+            // Actividades relevantes para el Aliado (ej. sus propios productos, sus ventas)
+            // Esto requiere que tu ActivityLog tenga una manera de vincular actividades a un 'aliado_id'
+            $latestActivities = ActivityLog::where('user_id', $user->id) // Asume que ActivityLog tiene un campo 'user_id' que es el aliado_id
                 ->latest()
                 ->limit(10)
                 ->get()
                 ->map(fn($activity) => [
                     'activity' => $activity->description,
-                    'user' => $activity->performed_by,
-                    'date' => Carbon::parse($activity->created_at)->format('Y-m-d H:i'),
+                    'user' => $user->firstname ?? $user->name, // Muestra el nombre del aliado
+                    'date' => Carbon::parse($activity->created_at)->format('d/m/Y H:i'),
                     'status' => ucfirst($activity->status),
                     'status_class' => $this->getStatusClass($activity->status)
                 ]);
 
         } elseif ($role === 'comun') {
-            // **USUARIO COMÚN:** No ve las cards, solo actividades relacionadas a su perfil
+            // USUARIO COMÚN: No tiene cards adicionales, solo actividades relacionadas a su perfil.
+            // Las 3 cards principales ($totalUsers, $pageViews, $totalSales) se muestran igual.
+
             // Obtén las últimas 10 actividades relacionadas directamente con este usuario
-            // Asegúrate de que tu modelo ActivityLog tenga una relación o una forma de filtrar por usuario
-            $latestProfileActivities = ActivityLog::where('user_id', $user->id) // Asume que ActivityLog tiene un campo 'user_id'
+            $latestProfileActivities = ActivityLog::where('user_id', $user->id)
                 ->latest()
                 ->limit(10)
                 ->get()
                 ->map(fn($activity) => [
                     'activity' => $activity->description,
-                    'user' => $user->name, // El usuario es él mismo
-                    'date' => Carbon::parse($activity->created_at)->format('Y-m-d H:i'),
+                    'user' => $user->firstname ?? $user->name, // El usuario es él mismo
+                    'date' => Carbon::parse($activity->created_at)->format('d/m/Y H:i'),
                     'status' => ucfirst($activity->status),
                     'status_class' => $this->getStatusClass($activity->status)
                 ]);
-            // Asegúrate de que $latestActivities esté vacío para el usuario común, ya que no se usará
-            $latestActivities = [];
         }
 
         // Retorna la vista con todas las variables necesarias.
-        // Las variables no usadas por un rol específico simplemente serán nulas o 0,
-        // lo cual es manejado por los @if en la vista.
+        // Las variables no usadas por un rol específico simplemente no serán renderizadas por Blade si no hay @if para ellas.
         return view('dashboard', compact(
             'totalUsers',
-            'totalActiveProducts',
-            'todaySales',
-            'customerSatisfaction',
+            'pageViews', // Nueva variable
+            'totalSales', // Nueva variable
             'latestActivities',
-            'latestProfileActivities' // Nueva variable para usuarios comunes
+            'latestProfileActivities',
+            'todaySalesSpecific', // Puedes usarla si decides añadir una card de ventas del día específica para admin/aliado
+            'customerSatisfaction' // Puedes usarla si decides añadir una card de satisfacción específica para admin/aliado
         ));
     }
 
@@ -184,43 +181,10 @@ class AdminController extends Controller
     {
         $user = Auth::user();
 
-        $notificationsEnabled = $user->notifications_enabled ?? true; // Las notificaciones suelen estar activas por defecto
-        $darkModeEnabled = $user->dark_mode_enabled ?? false;
-
-        // 3. Pasar estas variables a la vista.
-        return view('Admin.settings', compact( 'notificationsEnabled', 'darkModeEnabled'));
+        $darkModeEnabled = $user->dark_mode_enabled ?? false; 
+        
+        return view('Admin.settings', compact('user', 'darkModeEnabled'));
     }
-
-    public function updateDarkMode(Request $request)
-    {
-        $user = Auth::user();
-
-        // Valida que el 'enabled' sea un booleano (true/false)
-        $request->validate([
-            'enabled' => 'required|boolean',
-        ]);
-
-        // Actualiza la columna en la tabla de usuarios
-        $user->dark_mode_enabled = $request->input('enabled');
-        $user->save();
-
-        return response()->json(['message' => 'Preferencia de modo oscuro actualizada.', 'dark_mode_enabled' => $user->dark_mode_enabled]);
-    }
-
-    public function updateNotificationsPreference(Request $request)
-    {
-        $user = Auth::user();
-
-        $request->validate([
-            'enabled' => 'required|boolean',
-        ]);
-
-        $user->notifications_enabled = $request->input('enabled');
-        $user->save();
-
-        return response()->json(['message' => 'Preferencia de notificaciones actualizada.', 'notifications_enabled' => $user->notifications_enabled]);
-    }
-
     public function changePassword(Request $request)
     {
         $user = Auth::user();
@@ -255,92 +219,256 @@ class AdminController extends Controller
         return back()->with('success', '¡Tu contraseña ha sido cambiada exitosamente!');
     }
 
-    // Métodos para Aliados
-    public function aliadosIndex()
+    //METODOS PARA LA CREACION DE ALIADOS
+    public function indexAllies()
     {
-        $allies = Ally::all();
+        // Eager load relationships for displaying category, subcategory, business type names
+        $allies = Ally::with('category', 'subCategory', 'businessType', 'user')->get();
+        // Asegúrate de que la vista exista en resources/views/Admin/aliado/aliado.blade.php
         return view('Admin.aliado.aliado', compact('allies'));
     }
 
+    /**
+     * Muestra el formulario para crear un nuevo aliado.
+     */
     public function aliadosCreate()
     {
-        $allyTypes = AllyType::where('is_active', true)->orderBy('name')->get();
-
-        return view('Admin.aliado.create', compact('allyTypes'));
+        $categories = Category::all();
+        $businessTypes = BusinessType::all();
+        // Asegúrate de que la vista exista en resources/views/Admin/aliado/create.blade.php
+        return view('Admin.aliado.create', compact('categories', 'businessTypes'));
     }
 
+    /**
+     * Almacena un nuevo aliado en la base de datos, creando también su usuario y asignando un rol.
+     */
     public function storeAlly(Request $request)
     {
-        // 1. Valida los datos de la solicitud
+        // 1. Validar los datos del formulario (tanto para el usuario como para el aliado)
         $validatedData = $request->validate([
-            'company_name'      => 'required|string|max:255|unique:allies,company_name',
-            'company_rif'       => 'nullable|string|max:255|unique:allies,company_rif',
-            'service_category'  => 'required|string|max:255',
-            'status'            => ['required', Rule::in(['activo', 'pendiente', 'inactivo'])],
-            'contact_person_name' => 'required|string|max:255',
-            'contact_email'     => 'required|email|max:255|unique:allies,contact_email',
-            'contact_phone'     => 'required|string|max:20',
-            'contact_phone_alt' => 'nullable|string|max:20',
-            'company_address'   => 'nullable|string|max:500',
-            'website_url'       => 'nullable|url|max:255',
-            'discount'          => 'nullable|numeric|max:500', // Agregado 'numeric' para coincidir con el cast en el modelo
-            'notes'             => 'nullable|string',
-            'registered_at'     => 'required|date',
-            // Si user_id se pasa desde un campo oculto o seleccionable en el formulario, validarlo:
-            // 'user_id'           => 'nullable|exists:users,id',
+            // --- Datos del Usuario (nuevos campos del formulario) ---
+            'user_name'     => 'required|string|max:255', // Nombre para la cuenta de usuario
+            'user_email'    => 'required|string|email|max:255|unique:users,email', // Email para la cuenta, debe ser único en la tabla users
+            'user_password' => 'required|string|min:8|confirmed', // Contraseña para la cuenta, con confirmación
+
+            // --- Datos del Aliado (ya definidos) ---
+            'company_name'          => 'required|string|max:255|unique:allies,company_name',
+            'company_rif'           => 'nullable|string|max:255|unique:allies,company_rif',
+            'category_id'           => 'required|exists:categories,id',
+            'sub_category_id'       => 'nullable|exists:sub_categories,id',
+            'business_type_id'      => 'required|exists:business_types,id',
+            'status'                => ['required', Rule::in(['activo', 'pendiente', 'inactivo'])],
+            'contact_person_name'   => 'required|string|max:255',
+            'contact_email'         => 'required|email|max:255|unique:allies,contact_email', // Este email es el de contacto del aliado, distinto al de acceso
+            'contact_phone'         => 'required|string|max:20',
+            'contact_phone_alt'     => 'nullable|string|max:20',
+            'company_address'       => 'nullable|string|max:500',
+            'website_url'           => 'nullable|url|max:255',
+            'discount'              => 'nullable|string|max:500',
+            'notes'                 => 'nullable|string',
+            'registered_at'         => 'required|date',
         ], [
-            // Mensajes de validación personalizados
-            'company_name.required'             => 'El nombre de la empresa es obligatorio.',
-            'company_name.unique'               => 'Ya existe un aliado con este nombre.',
-            'company_rif.unique'                => 'Ya existe un aliado con este RIF.',
-            'service_category.required'         => 'Debe seleccionar un tipo de aliado.',
-            'status.required'                   => 'Debe seleccionar un estado para el aliado.',
-            'contact_person_name.required'      => 'La persona de contacto es obligatoria.',
-            'contact_email.required'            => 'El correo electrónico de contacto es obligatorio.',
-            'contact_email.email'               => 'Ingrese un correo electrónico válido.',
-            'contact_email.unique'              => 'Ya existe un aliado con este correo electrónico.',
-            'contact_phone.required'            => 'El teléfono principal es obligatorio.',
-            'registered_at.required'            => 'La fecha de registro es obligatoria.',
-            'registered_at.date'                => 'Ingrese una fecha de registro válida.',
-            'website_url.url'                   => 'El sitio web debe ser una URL válida.',
-            'discount.numeric'                  => 'El descuento debe ser un valor numérico.',
+            // --- Mensajes de Validación Personalizados ---
+            // Mensajes para el usuario
+            'user_name.required'        => 'El nombre de usuario es obligatorio.',
+            'user_email.required'       => 'El correo electrónico para la cuenta es obligatorio.',
+            'user_email.email'          => 'Ingrese un correo electrónico válido para la cuenta.',
+            'user_email.unique'         => 'Este correo electrónico ya está en uso por otra cuenta.',
+            'user_password.required'    => 'La contraseña es obligatoria.',
+            'user_password.min'         => 'La contraseña debe tener al menos :min caracteres.',
+            'user_password.confirmed'   => 'La confirmación de la contraseña no coincide.',
+
+            // Mensajes para el aliado (los que ya tenías)
+            'company_name.required'     => 'El nombre de la empresa es obligatorio.',
+            'company_name.unique'       => 'Ya existe un aliado con este nombre.',
+            'company_rif.unique'        => 'Ya existe un aliado con este RIF.',
+            'category_id.required'      => 'Debe ingresar una categoría.',
+            'category_id.exists'        => 'La categoría ingresada no es válida.',
+            'sub_category_id.exists'    => 'La subcategoría ingresada no es válida.',
+            'business_type_id.required' => 'Debe ingresar un tipo de negocio.',
+            'business_type_id.exists'   => 'El tipo de negocio ingresado no es válido.',
+            'status.required'           => 'Debe seleccionar un estado para el aliado.',
+            'contact_person_name.required' => 'La persona de contacto es obligatoria.',
+            'contact_email.required'    => 'El correo electrónico de contacto es obligatorio.',
+            'contact_email.email'       => 'Ingrese un correo electrónico válido.',
+            'contact_email.unique'      => 'Ya existe un aliado con este correo electrónico de contacto.',
+            'contact_phone.required'    => 'El teléfono principal es obligatorio.',
+            'registered_at.required'    => 'La fecha de registro es obligatoria.',
+            'registered_at.date'        => 'Ingrese una fecha de registro válida.',
+            'website_url.url'           => 'El sitio web debe ser una URL válida.',
         ]);
 
-        $validatedData['user_id'] = auth()->id(); // Asigna el ID del usuario autenticado
+        // Iniciar una transacción de base de datos
+        // Esto asegura que si falla la creación del usuario o del aliado, todo se revierta.
+        DB::beginTransaction();
 
-        $ally = Ally::create($validatedData);
+        try {
+            // 2. Crear el nuevo usuario
+            $user = User::create([
+                'name'     => $validatedData['user_name'],
+                'email'    => $validatedData['user_email'],
+                'password' => Hash::make($validatedData['user_password']),
+                // Puedes añadir 'email_verified_at' => now(), si quieres verificarlo al crearlo
+            ]);
 
-        // 3. Redirige al usuario a la vista de listado de aliados con un mensaje de éxito
-        return redirect()->route('aliado')->with('success', '¡Aliado añadido exitosamente!');
+            // 3. Asignar el rol 'ally' al usuario
+            // Asegúrate de que el rol 'ally' exista en tu base de datos (creado por un seeder de roles)
+            $role = Role::where('name', 'ally')->first();
+            if ($role) {
+                $user->assignRole($role);
+            } else {
+                // Si el rol 'ally' no existe, lanza una excepción para revertir la transacción.
+                throw new \Exception('El rol "ally" no está configurado en el sistema. Asegúrese de que existe.');
+            }
+
+            // 4. Asegurar que sub_category_id es null si no se proporcionó
+            if (empty($validatedData['sub_category_id'])) {
+                $validatedData['sub_category_id'] = null;
+            }
+
+            // 5. Crear el registro del aliado y asociarlo al usuario recién creado
+            $ally = Ally::create([
+                'user_id'             => $user->id, // ¡Asigna el ID del usuario recién creado!
+                'company_name'        => $validatedData['company_name'],
+                'company_rif'         => $validatedData['company_rif'],
+                'category_id'         => $validatedData['category_id'],
+                'sub_category_id'     => $validatedData['sub_category_id'],
+                'business_type_id'    => $validatedData['business_type_id'],
+                'contact_person_name' => $validatedData['contact_person_name'],
+                'contact_email'       => $validatedData['contact_email'],
+                'contact_phone'       => $validatedData['contact_phone'],
+                'contact_phone_alt'   => $validatedData['contact_phone_alt'],
+                'company_address'     => $validatedData['company_address'],
+                'website_url'         => $validatedData['website_url'],
+                'discount'            => $validatedData['discount'],
+                'notes'               => $validatedData['notes'],
+                'registered_at'       => $validatedData['registered_at'],
+                'status'              => $validatedData['status'],
+            ]);
+
+            // Si todo fue bien, confirmar la transacción
+            DB::commit();
+
+            // Redirigir con mensaje de éxito
+            return redirect()->route('aliados.index')->with('success', '¡Aliado y cuenta de usuario creados exitosamente!');
+
+        } catch (\Exception $e) {
+            // Si algo falla, revertir la transacción
+            DB::rollBack();
+
+            // Loggear el error para depuración
+            Log::error('Error al crear aliado y usuario: ' . $e->getMessage());
+
+            // Redirigir de vuelta con un mensaje de error y los datos antiguos
+            return back()->withInput()->with('error', 'Hubo un error al crear el aliado y la cuenta de usuario. Por favor, intente de nuevo.')->withErrors(['general' => $e->getMessage()]);
+        }
     }
 
+    /**
+     * Muestra el formulario para editar un aliado existente.
+     */
     public function alliesEdit(Ally $ally) // Laravel's Route Model Binding
     {
-        $allyTypes = AllyType::where('is_active', true)->orderBy('name')->get();
+        // Fetch all active categories and business types for the edit dropdowns
+        $categories = Category::all();
+        $businessTypes = BusinessType::all();
 
-        return view('Admin.aliado.edit', compact('ally', 'allyTypes'));
+        // Also fetch subcategories for the *currently selected* category of the ally
+        // Esto es necesario para pre-seleccionar la subcategoría correcta al cargar el formulario de edición
+        $currentSubCategories = $ally->category_id ?
+            SubCategory::where('category_id', $ally->category_id)->get() :
+            collect(); // Retorna una colección vacía si no hay categoría seleccionada
+
+        // Asegúrate de que la vista exista en resources/views/Admin/aliado/edit.blade.php
+        return view('Admin.aliado.edit', compact('ally', 'categories', 'businessTypes', 'currentSubCategories'));
     }
 
+    /**
+     * Actualiza el aliado especificado en el almacenamiento.
+     */
     public function updateAlly(Request $request, Ally $ally)
     {
+        // 1. Validar los datos de entrada para la actualización
         $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
-            'type' => 'required|string|max:255',
-            'contact_person' => 'nullable|string|max:255',
-            'contact_email' => 'nullable|email|max:255',
-            'phone' => 'nullable|string|max:20',
-            'status' => 'required|string|in:activo,inactivo,pendiente',
+            // No se validan los datos del usuario aquí, ya que el enfoque es actualizar solo el aliado.
+            // Si también quieres actualizar el usuario desde esta vista, deberías añadir esos campos
+            // de validación y la lógica de actualización del usuario aquí.
+
+            'company_name'          => 'required|string|max:255|unique:allies,company_name,' . $ally->id, // Excluir ID actual
+            'company_rif'           => 'nullable|string|max:255|unique:allies,company_rif,' . $ally->id,
+            'category_id'           => 'required|exists:categories,id',
+            'sub_category_id'       => 'nullable|exists:sub_categories,id',
+            'business_type_id'      => 'required|exists:business_types,id',
+            'status'                => ['required', Rule::in(['activo', 'pendiente', 'inactivo'])],
+            'contact_person_name'   => 'required|string|max:255',
+            'contact_email'         => 'required|email|max:255|unique:allies,contact_email,' . $ally->id,
+            'contact_phone'         => 'required|string|max:20',
+            'contact_phone_alt'     => 'nullable|string|max:20',
+            'company_address'       => 'nullable|string|max:500',
+            'website_url'           => 'nullable|url|max:255',
+            'discount'              => 'nullable|string|max:500',
+            'notes'                 => 'nullable|string',
+            'registered_at'         => 'required|date',
+        ], [
+            // Custom messages for update (similar to store)
+            'company_name.unique'       => 'Ya existe un aliado con este nombre.',
+            'company_rif.unique'        => 'Ya existe un aliado con este RIF.',
+            'contact_email.unique'      => 'Ya existe un aliado con este correo electrónico de contacto.',
+            'category_id.required'      => 'Debe seleccionar una categoría.',
+            'business_type_id.required' => 'Debe seleccionar un tipo de negocio.',
+            'category_id.exists'        => 'La categoría seleccionada no es válida.',
+            'sub_category_id.exists'    => 'La subcategoría seleccionada no es válida.',
+            'business_type_id.exists'   => 'El tipo de negocio seleccionado no es válido.',
+            // ... otros mensajes de validación
         ]);
 
+        // Asegurar que sub_category_id es null si no se proporcionó
+        if (empty($validatedData['sub_category_id'])) {
+            $validatedData['sub_category_id'] = null;
+        }
+
+        // Actualizar el registro del aliado
         $ally->update($validatedData);
 
-        return redirect()->route('aliado')->with('success', 'Aliado actualizado exitosamente.');
+        return redirect()->route('aliados.index')->with('success', 'Aliado actualizado exitosamente.');
     }
 
+    /**
+     * Elimina el aliado especificado del almacenamiento.
+     */
     public function destroyAlly(Ally $ally)
     {
-        $ally->delete();
-        return redirect()->route('aliado')->with('success', 'Aliado eliminado exitosamente.');
+        // ¡Importante! Si el user_id está en onDelete('cascade') en la migración de allies,
+        // al eliminar el aliado, el usuario asociado también será eliminado automáticamente.
+        // Si no quieres esto, deberías cambiar el onDelete o desvincular el usuario primero.
+        try {
+            $ally->delete();
+            return redirect()->route('aliados.index')->with('success', 'Aliado eliminado exitosamente.');
+        } catch (\Exception $e) {
+            Log::error('Error al eliminar aliado: ' . $e->getMessage());
+            return redirect()->route('aliados.index')->with('error', 'Hubo un error al eliminar el aliado.');
+        }
+    }
+
+    /**
+     * Obtiene subcategorías basadas en category_id para solicitudes AJAX.
+     * Este método es crucial para la carga dinámica de subcategorías en los formularios.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getSubcategories(Request $request)
+    {
+        $categoryId = $request->input('category_id');
+
+        if (!$categoryId) {
+            return response()->json([]); // Retorna un array vacío si no hay category_id
+        }
+
+        // Carga las subcategorías que pertenecen a la categoría seleccionada
+        $subcategories = SubCategory::where('category_id', $categoryId)->get(['id', 'name']); // Solo id y name
+
+        return response()->json($subcategories);
     }
 
     // Métodos para Usuarios
@@ -485,118 +613,6 @@ class AdminController extends Controller
     {
         $user->delete();
         return redirect()->route('users')->with('success', 'Usuario eliminado exitosamente.');
-    }
-
-    // Métodos para Productos
-    public function productsIndex()
-    {
-        $products = Product::all(); // Obtiene todos los productos de la BD
-
-        return view('Admin.producto.product', compact('products'));
-    }
-
-    /**
-     * Muestra el formulario para crear un nuevo producto.
-     */
-    public function productsCreate()
-    {
-        // Si tienes aliados, podrías pasarlos a la vista para un select
-        $allies = Ally::all();
-
-        return view('Admin.producto.create', compact('allies'));
-    }
-
-    /**
-     * Almacena un nuevo producto en la base de datos.
-     */
-    public function storeProduct(Request $request)
-    {
-        // 1. Validar los datos de entrada
-        $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
-            'ally_name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'base_price' => 'required|numeric|min:0',
-            'discount_percentage' => 'nullable|integer|min:0|max:100',
-            'status' => 'required|string|in:Disponible,No Disponible,Agotado',
-            // 'image_path' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Para carga de imagen
-        ]);
-
-        // 2. Calcular el precio final
-        $basePrice = $validatedData['base_price'];
-        $discount = $validatedData['discount_percentage'] ?? 0;
-        $finalPrice = $basePrice * (1 - ($discount / 100));
-
-        // 3. Crear el producto en la base de datos
-        Product::create([
-            'name' => $validatedData['name'],
-            'ally_name' => $validatedData['ally_name'],
-            'description' => $validatedData['description'],
-            'base_price' => $basePrice,
-            'discount_percentage' => $discount,
-            'final_price' => $finalPrice,
-            'status' => $validatedData['status'],
-            // 'image_path' => $imagePath, // Si manejas carga de imagen
-        ]);
-
-        // 4. Redirigir con un mensaje de éxito
-        return redirect()->route('products')->with('success', 'Producto añadido exitosamente.');
-    }
-    public function editProductForm(Product $product)
-    {
-        // Si tienes aliados, podrías pasarlos a la vista
-        $allies = Ally::all();
-        //return view('admin.products.edit', compact('product', 'allies'));
-        return view('Admin.producto.edit', compact('product', 'allies'));
-    }
-
-    /**
-     * Actualiza un producto existente en la base de datos.
-     * @param Request $request
-     * @param Product $product Laravel automáticamente inyectará la instancia del producto.
-     */
-    public function updateProduct(Request $request, Product $product)
-    {
-        // 1. Validar los datos de entrada
-        $validatedData = $request->validate([
-            'name' => 'required|string|max:255',
-            'ally_name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'base_price' => 'required|numeric|min:0',
-            'discount_percentage' => 'nullable|integer|min:0|max:100',
-            'status' => 'required|string|in:Disponible,No Disponible,Agotado',
-            // 'image_path' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Para carga de imagen
-        ]);
-
-        // 2. Calcular el precio final
-        $basePrice = $validatedData['base_price'];
-        $discount = $validatedData['discount_percentage'] ?? 0;
-        $finalPrice = $basePrice * (1 - ($discount / 100));
-
-        // 3. Actualizar el producto en la base de datos
-        $product->update([
-            'name' => $validatedData['name'],
-            'ally_name' => $validatedData['ally_name'],
-            'description' => $validatedData['description'],
-            'base_price' => $basePrice,
-            'discount_percentage' => $discount,
-            'final_price' => $finalPrice,
-            'status' => $validatedData['status'],
-            // 'image_path' => $imagePath, // Si manejas carga de imagen
-        ]);
-
-        // 4. Redirigir con un mensaje de éxito
-        return redirect()->route('products')->with('success', 'Producto actualizado exitosamente.');
-    }
-
-    /**
-     * Elimina un producto de la base de datos.
-     * @param Product $product Laravel automáticamente inyectará la instancia del producto.
-     */
-    public function destroyProduct(Product $product)
-    {
-        $product->delete();
-        return redirect()->route('products')->with('success', 'Producto eliminado exitosamente.');
     }
 
     // Métodos para Perfil

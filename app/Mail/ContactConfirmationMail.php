@@ -44,6 +44,13 @@ class ContactConfirmationMail extends Mailable
         );
     }
 
+    // Si es necesario para inlinar CSS (Laravel 8 o si no se inlina automáticamente)
+    public function build()
+    {
+        return $this->markdown('emails.contact-confirmation')
+                    ->withCss(resource_path('css/emails.css')); // Ruta a tu archivo CSS
+    }
+
     /**
      * Get the attachments for the message.
      *

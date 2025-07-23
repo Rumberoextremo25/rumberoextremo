@@ -43,6 +43,13 @@ class NewsletterConfirmationMail extends Mailable
         );
     }
 
+    // Agrega este método para especificar el CSS
+    public function build()
+    {
+        return $this->markdown('emails.newsletter-welcome')
+                    ->withCss(resource_path('css/emails.css')); // Ruta a tu archivo CSS
+    }
+
     /**
      * Get the attachments for the message.
      *

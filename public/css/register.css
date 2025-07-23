@@ -1,0 +1,284 @@
+/* General Body Styling for Guest Layout */
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #1a1a2e 0%, #8A2BE2 100%); /* Degradado de oscuro a morado */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    margin: 0;
+    color: #E0E0E0; /* Texto claro */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow: hidden; /* Evita barras de desplazamiento innecesarias */
+    position: relative;
+}
+
+/* Background Overlay/Effect (Optional: for subtle texture or pattern) */
+body::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url('https://placehold.co/1920x1080/000000/FFFFFF?text=Rumbero+Extremo+Pattern') repeat; /* Placeholder pattern */
+    opacity: 0.05; /* Muy sutil */
+    z-index: 0;
+}
+
+/* Login Container - Centers the card (Reused for Register) */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    min-height: 100vh;
+    z-index: 1; /* Asegura que esté por encima del fondo */
+    padding: 20px; /* Padding para pantallas pequeñas */
+    box-sizing: border-box;
+}
+
+/* Login Card - The main form box (Reused for Register) */
+.login-card {
+    background-color: rgba(25, 25, 45, 0.95); /* Fondo oscuro con transparencia */
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6); /* Sombra más pronunciada para efecto 3D */
+    padding: 25px; /* Reduced padding to make card smaller */
+    max-width: 350px; /* Reduced max-width to make card smaller */
+    width: 100%;
+    text-align: center;
+    border: 1px solid rgba(255, 215, 0, 0.3); /* Borde sutil dorado */
+    animation: fadeIn 1s ease-out; /* Animación de entrada */
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Login Header (Reused for Register) */
+.login-header {
+    margin-bottom: 20px; /* Adjusted margin for smaller card */
+}
+
+.login-header h2 {
+    font-family: 'Montserrat', sans-serif;
+    color: #FFD700; /* Dorado/Amarillo para el título */
+    font-size: 2em; /* Slightly smaller font size for title */
+    margin-bottom: 5px; /* Adjusted margin */
+    text-shadow: 0 0 15px rgba(255, 215, 0, 0.4); /* Efecto de brillo */
+}
+
+.login-header p {
+    font-size: 0.95em; /* Slightly smaller font size for paragraph */
+    color: #B0B0B0; /* Gris más claro */
+}
+
+/* Alert Messages (e.g., session status) */
+.alert {
+    background-color: rgba(60, 179, 113, 0.8); /* Medium Sea Green */
+    color: #FFFFFF;
+    padding: 15px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    font-weight: 500;
+    border: 1px solid #3CB371;
+}
+
+/* Form Group Styling (Reused for Register) */
+.form-group {
+    margin-bottom: 18px; /* Adjusted margin for smaller card */
+    text-align: left; /* Alinea etiquetas a la izquierda */
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px; /* Adjusted margin */
+    font-weight: 600;
+    color: #FFD700; /* Dorado para las etiquetas */
+    font-size: 0.9em; /* Slightly smaller font size */
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px 12px; /* Reduced padding */
+    border: 1px solid rgba(138, 43, 226, 0.5); /* Borde morado sutil */
+    border-radius: 8px; /* Slightly smaller border-radius */
+    background-color: rgba(40, 40, 60, 0.7); /* Fondo de input más oscuro */
+    color: #FFFFFF;
+    font-size: 0.9em; /* Slightly smaller font size */
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    box-sizing: border-box; /* Incluye padding y borde en el ancho total */
+}
+
+.form-control::placeholder {
+    color: #888;
+    opacity: 0.7;
+}
+
+.form-control:focus {
+    border-color: #FFD700; /* Borde dorado al enfocar */
+    box-shadow: 0 0 8px rgba(255, 215, 0, 0.3); /* Brillo al enfocar */
+    outline: none;
+}
+
+/* Invalid Feedback for errors */
+.form-control.is-invalid {
+    border-color: #FF6347; /* Rojo para errores */
+}
+
+.invalid-feedback {
+    color: #FF6347; /* Rojo para mensajes de error */
+    font-size: 0.75em; /* Slightly smaller font size */
+    margin-top: 3px; /* Adjusted margin */
+    display: block;
+}
+
+/* Form Actions (Specific to Register for button and link alignment) */
+.form-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px; /* Adjusted margin for better spacing */
+    margin-bottom: 10px; /* Space before the footer */
+    flex-wrap: wrap; /* Allow items to wrap on smaller screens */
+    gap: 8px; /* Reduced gap */
+}
+
+.already-registered-link {
+    color: #FFD700; /* Dorado para el enlace */
+    text-decoration: none;
+    font-size: 0.85em; /* Slightly smaller font size */
+    transition: color 0.3s ease, text-decoration 0.3s ease;
+}
+
+.already-registered-link:hover {
+    color: #9932CC; /* Morado oscuro al pasar el ratón */
+    text-decoration: underline;
+}
+
+/* Submit Button (Reused from Login, but adjusted for flex context) */
+.btn-primary {
+    background: linear-gradient(90deg, #8A2BE2 0%, #9932CC 100%); /* Degradado morado */
+    color: #FFFFFF;
+    padding: 10px 20px; /* Reduced padding */
+    border: none;
+    border-radius: 18px; /* Slightly smaller border-radius */
+    font-size: 1em; /* Slightly smaller font size */
+    font-weight: bold;
+    cursor: pointer;
+    flex-grow: 1; /* Allows button to grow */
+    max-width: 200px; /* Increased max width for the button */
+    transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    letter-spacing: 0.7px; /* Slightly reduced letter spacing */
+    text-transform: uppercase;
+    box-shadow: 0 3px 10px rgba(138, 43, 226, 0.4); /* Slightly smaller shadow */
+}
+
+.btn-primary:hover {
+    background: linear-gradient(90deg, #9932CC 0%, #8A2BE2 100%); /* Invertir degradado al pasar el ratón */
+    transform: translateY(-2px); /* Slightly reduced elevation effect */
+    box-shadow: 0 5px 12px rgba(138, 43, 226, 0.6);
+}
+
+.btn-primary:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(138, 43, 226, 0.4);
+}
+
+/* Login Footer (Reused for Register) */
+.login-footer {
+    margin-top: 20px; /* Adjusted margin */
+    font-size: 0.8em; /* Slightly smaller font for legal text */
+    color: #B0B0B0;
+}
+
+.login-footer a {
+    color: #FFD700; /* Dorado para los enlaces de política */
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s ease, text-decoration 0.3s ease;
+}
+
+.login-footer a:hover {
+    color: #9932CC; /* Morado oscuro al pasar el ratón */
+    text-decoration: underline;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .login-card {
+        padding: 20px; /* Further reduced padding */
+        margin: 0 10px; /* Margen en los lados para pantallas más pequeñas */
+    }
+
+    .login-header h2 {
+        font-size: 1.6em; /* Adjusted font size */
+    }
+
+    .login-header p {
+        font-size: 0.85em; /* Adjusted font size */
+    }
+
+    .form-control {
+        padding: 8px 10px; /* Further reduced padding */
+        font-size: 0.85em; /* Adjusted font size */
+    }
+
+    .form-actions {
+        flex-direction: column; /* Apila los elementos en pantallas pequeñas */
+        align-items: center; /* Centra los elementos apilados */
+        gap: 12px; /* Adjusted gap */
+    }
+
+    .btn-primary {
+        padding: 8px 18px; /* Further reduced padding */
+        font-size: 0.95em; /* Adjusted font size */
+        max-width: 100%; /* Permite que el botón ocupe todo el ancho */
+    }
+
+    .already-registered-link {
+        text-align: center; /* Centra el texto del enlace */
+        width: 100%; /* Ocupa todo el ancho */
+        font-size: 0.8em; /* Adjusted font size */
+    }
+
+    .login-footer {
+        font-size: 0.7em; /* Further reduce font size for legal text on small screens */
+    }
+}
+
+@media (max-width: 480px) {
+    .login-card {
+        padding: 15px; /* Smallest padding for very small screens */
+    }
+
+    .login-header h2 {
+        font-size: 1.3em;
+    }
+
+    .login-header p {
+        font-size: 0.75em;
+    }
+
+    .form-group label {
+        font-size: 0.8em;
+    }
+
+    .form-control {
+        padding: 6px 8px;
+        font-size: 0.8em;
+    }
+
+    .btn-primary {
+        font-size: 0.85em;
+        padding: 6px 12px;
+    }
+}

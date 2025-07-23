@@ -1,17 +1,18 @@
-{{-- resources/views/partials/admin-toolbar.blade.php --}}
+{{-- resources/views/layouts/partials/admin-toolbar.blade.php --}}
 
-<div class="topbar">
-    <h1>@yield('page_title_toolbar', 'Panel Administractivo')</h1>
-    <div class="search-profile">
+<header class="topbar">
+    <h1>@yield('page_title_toolbar', 'Panel Administrativo')</h1>
+    <div class="right-section"> {{-- Nuevo contenedor para flexibilidad --}}
         <div class="search-box">
             <i class="fas fa-search"></i>
             <input type="text" placeholder="Buscar..." id="globalSearchInput">
         </div>
-        <div class="profile-info">
-            {{-- Muestra el nombre del usuario autenticado (ejemplo) --}}
-            <span style="margin-right: 10px; color: var(--secondary-color);">Hola, {{ Auth::user()->name ?? 'Administrador' }}</span>
-            {{-- Puedes usar la imagen de perfil del usuario o un placeholder --}}
-            <img src="{{ Auth::user()->avatar_url ?? 'assets/img/logos/usuario.png' }}" alt="Avatar de Usuario" class="avatar">
-        </div>
+        {{-- Enlace clickeable para el perfil --}}
+        <a href="{{ route('profile') }}" class="profile-link">
+            <span class="user-name">Hola, {{ Auth::user()->name ?? 'Administrador' }}</span>
+            {{-- Asegúrate de que Auth::user()->profile_photo_path exista y sea una URL válida --}}
+            {{-- Si no tienes una foto de perfil, puedes usar un avatar predeterminado o las iniciales --}}
+            <img src="{{ Auth::user()->profile_photo_path ?? asset('assets/img/default-avatar.png') }}" alt="Avatar de Usuario" class="avatar">
+        </a>
     </div>
-</div>
+</header>

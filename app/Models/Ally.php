@@ -4,69 +4,86 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo; // Importar la relación BelongsTo
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Ally extends Model
 {
     use HasFactory;
 
-    /**
-     * El nombre de la tabla asociada al modelo.
-     * Por defecto es el nombre del modelo en plural (allies), pero es buena práctica especificarlo.
-     *
-     * @var string
-     */
+    // Nombre de la tabla asociada en la base de datos.
     protected $table = 'allies';
 
-    /**
-     * Los atributos que son asignables masivamente.
-     * Estos campos corresponden directamente a las columnas de la tabla `allies`.
-     *
-     * @var array<int, string>
-     */
+    // Atributos que se pueden asignar masivamente (mass assignable).
+    // Estos campos corresponden a las columnas de tu tabla 'allies'.
     protected $fillable = [
-        'user_id', // Clave foránea que conecta al usuario
-        'company_name', // Renombrado de 'name' para mayor claridad
-        'company_rif', // Renombrado de 'rif' para mayor claridad
-        'service_category', // Renombrado de 'type' para mayor claridad
-        'contact_person_name', // Renombrado de 'contact_person' para mayor claridad
+        'user_id',
+        'company_name',
+        'company_rif',
+        'contact_person_name',
         'contact_email',
-        'contact_phone', // Renombrado de 'phone'
-        'contact_phone_alt', // Renombrado de 'phone_alt'
-        'company_address', // Renombrado de 'address'
-        'website_url', // Renombrado de 'website'
-        'discount', // Renombrado de 'discount_offer'
+        'contact_phone',
+        'contact_phone_alt',
+        'company_address',
+        'website_url',
+        'discount',
         'notes',
-        'registered_at', // Renombrado de 'registration_date'
+        'registered_at',
         'status',
+        'category_id',
+        'sub_category_id',
+        'business_type_id',
+        'bank_name',
+        'account_number',
+        'account_type',
+        'id_number',
+        'account_holder_name',
     ];
 
+    // --- Definición de las Relaciones del Modelo ---
+
     /**
-     * Los atributos que deberían ser casteados a tipos nativos de PHP.
-     * Esto facilita el manejo de fechas, números y otros tipos de datos.
-     *
-     * @var array<string, string>
+     * Un aliado pertenece a una categoría.
+     * Permite acceder a los detalles de la categoría a la que pertenece el aliado.
      */
-    protected $casts = [
-        'registered_at' => 'datetime', // Aseguramos que se castee a un objeto Carbon
-        'discount' => 'float',         // Casteamos el descuento como flotante si puede tener decimales
-    ];
-
-    // Si tu clave primaria no es 'id' o no es auto-incremental, defínela aquí.
-    // protected $primaryKey = 'ally_id';
-    // public $incrementing = false;
-    // protected $keyType = 'string';
-
-    // --- Relaciones Eloquent ---
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(Category::class);
+    }
 
     /**
-     * Define la relación inversa con el modelo User.
-     * Un perfil de aliado pertenece a un único usuario.
-     *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * Un aliado puede pertenecer a una subcategoría (es opcional).
+     * Permite acceder a los detalles de la subcategoría del aliado.
+     */
+    public function subCategory(): BelongsTo
+    {
+        return $this->belongsTo(SubCategory::class);
+    }
+
+    /**
+     * Un aliado pertenece a un tipo de negocio específico.
+     * Permite acceder a los detalles del tipo de negocio del aliado.
+     */
+    public function businessType(): BelongsTo
+    {
+        return $this->belongsTo(BusinessType::class);
+    }
+
+    /**
+     * Un aliado está asociado con un usuario en el sistema.
+     * Permite acceder a los detalles del usuario que gestiona o es el representante del aliado.
      */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
+
+    // --- Casteo de Atributos ---
+    // Define cómo ciertos atributos deben ser convertidos al ser accedidos o guardados.
+    protected $casts = [
+        'registered_at' => 'datetime', // Convierte el campo 'registered_at' a un objeto Carbon (fecha y hora).
+        'discount' => 'string',        // Asegura que el campo 'discount' se maneje como un string.
+    ];
+
+    // Aquí puedes añadir cualquier otro método, accesor, mutador o lógica de negocio
+    // que sea relevante para el modelo Ally.
 }

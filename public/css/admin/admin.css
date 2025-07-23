@@ -1,0 +1,796 @@
+/* resources/css/app.css */
+
+/* --- Variables de Tema (Light Mode por defecto) --- */
+:root {
+    --primary-color: #530cbf; /* Púrpura principal */
+    --secondary-color: #7628a7; /* Púrpura secundario (para degradados o acentos) */
+    --accent-color: #ffc107; /* Amarillo/Naranja de acento */
+
+    --text-color: #333; /* Color de texto oscuro */
+    --text-color-light: #777; /* Color de texto más claro */
+    --heading-color: #222; /* Color para títulos */
+
+    --background-color: #f0f2f5; /* Fondo general muy claro */
+    --card-background: #ffffff; /* Fondo de tarjetas y paneles */
+    --border-color: #e0e0e0; /* Color de borde sutil */
+    --input-background: #fdfdfd; /* Fondo de inputs */
+    --input-border: #dcdcdc; /* Borde de inputs */
+
+    --success-color: #28a745; /* Verde para éxito */
+    --danger-color: #dc3545; /* Rojo para peligro */
+    --info-color: #007bff; /* Azul para información */
+    --warning-color: #ffc107; /* Amarillo para advertencia */
+
+    --shadow-subtle: 0 1px 4px rgba(0, 0, 0, 0.04); /* Sombra suave para tarjetas */
+    --shadow-medium: 0 3px 10px rgba(0, 0, 0, 0.08); /* Sombra media */
+    --transition-speed: 0.2s ease; /* Velocidad de transición general */
+
+    --border-radius-lg: 1rem; /* Radio de borde grande */
+    --border-radius-md: 0.75rem; /* Radio de borde medio */
+    --border-radius-sm: 0.5rem; /* Radio de borde pequeño */
+    --border-radius-base: 0.5rem; /* Nueva variable para el borde del input de búsqueda */
+
+    --primary-rgb: 83, 12, 191;
+    --info-rgb: 0, 123, 255;
+    --danger-rgb: 220, 53, 69;
+    --warning-rgb: 255, 193, 7;
+    --success-rgb: 40, 167, 69;
+
+    /* Colores específicos del sidebar */
+    --sidebar-bg: #2a213a; /* Fondo oscuro del sidebar */
+    --sidebar-link-color: #e0e0e0; /* Color de texto de enlaces */
+    --sidebar-link-hover-bg: rgba(255, 255, 255, 0.1); /* Fondo al pasar el ratón */
+    --sidebar-link-active-bg: var(--primary-color); /* Fondo de enlace activo */
+    --sidebar-link-active-shadow: 0 4px 10px rgba(var(--primary-rgb), 0.3); /* Sombra de enlace activo */
+    --sidebar-border-radius: 1.2rem; /* Bordes redondeados del sidebar */
+}
+
+/* --- Modo Oscuro --- */
+body.dark-mode {
+    --text-color: #e0e0e0;
+    --text-color-light: #a0a0a0;
+    --heading-color: #f0f0f0;
+    --background-color: #1a1a2a;
+    --card-background: #222233;
+    --border-color: #333344;
+    --input-background: #3a3a4a;
+    --input-border: #4a4a5a;
+
+    --shadow-subtle: 0 1px 4px rgba(0, 0, 0, 0.1);
+    --shadow-medium: 0 3px 10px rgba(0, 0, 0, 0.15);
+
+    --sidebar-bg: #1e1e2e;
+    --sidebar-link-hover-bg: rgba(255, 255, 255, 0.08);
+    --sidebar-link-active-bg: #9b59b6; /* Un tono más claro para el modo oscuro */
+    --sidebar-link-active-shadow: 0 4px 10px rgba(155, 89, 182, 0.3);
+}
+
+/* --- Estilos Globales del Body --- */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    line-height: 1.6;
+    margin: 0;
+    display: flex; /* Contenedor principal usa Flexbox */
+    min-height: 100vh;
+    transition: background-color var(--transition-speed), color var(--transition-speed);
+}
+
+/* --- Sidebar --- */
+.sidebar {
+    width: 260px; /* Ancho del sidebar */
+    flex-shrink: 0;
+    background-color: var(--sidebar-bg);
+    color: var(--sidebar-link-color);
+    padding: 1.5rem 1rem;
+    border-top-right-radius: var(--sidebar-border-radius);
+    border-bottom-right-radius: var(--sidebar-border-radius);
+    box-shadow: var(--shadow-medium);
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto; /* Permite scroll si el contenido es largo */
+    position: sticky; /* Fija el sidebar */
+    top: 0;
+    height: 100vh; /* Ocupa toda la altura de la ventana */
+    transition: width 0.3s ease, background-color var(--transition-speed);
+}
+
+.sidebar-header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar-header img {
+    max-width: 150px; /* Ajusta el tamaño del logo */
+    height: auto;
+}
+
+.sidebar-nav ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-nav li {
+    margin-bottom: 0.75rem;
+}
+
+.sidebar-nav a {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.8rem 1.2rem;
+    border-radius: var(--border-radius-md);
+    color: var(--sidebar-link-color);
+    text-decoration: none;
+    font-weight: 500;
+    transition: background-color var(--transition-speed), color var(--transition-speed), transform 0.1s ease;
+}
+
+.sidebar-nav a i {
+    font-size: 1.1rem;
+    color: var(--text-color-light); /* Color de icono por defecto */
+    transition: color var(--transition-speed);
+}
+
+.sidebar-nav a:hover {
+    background-color: var(--sidebar-link-hover-bg);
+    transform: translateX(3px);
+}
+
+.sidebar-nav a.active {
+    background-color: var(--sidebar-link-active-bg);
+    color: white;
+    font-weight: 600;
+    box-shadow: var(--sidebar-link-active-shadow);
+    transform: translateX(0); /* Resetea el transform para el activo */
+}
+
+.sidebar-nav a.active i {
+    color: white; /* Icono blanco para enlace activo */
+}
+
+/* --- Nuevas clases para el sidebar (Divisor y Encabezado de Sección) --- */
+.sidebar-divider {
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin: 1.5rem 0;
+}
+
+.sidebar-heading {
+    color: var(--text-color-light);
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    padding: 0.5rem 1.2rem;
+    margin-bottom: 0.5rem;
+}
+
+
+/* --- Contenido Principal --- */
+.main-content {
+    flex-grow: 1; /* Ocupa el espacio restante */
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem 2rem; /* Padding general para el contenido */
+    box-sizing: border-box;
+    overflow-y: auto; /* Permite scroll en el contenido principal */
+}
+
+/* --- Barra Superior (Topbar) - ESTILOS ACTUALIZADOS --- */
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.2rem 2rem; /* Ajustado para coincidir con el diseño */
+    background-color: var(--card-background); /* Usar el color de fondo de las tarjetas */
+    border-radius: var(--border-radius-lg); /* Bordes redondeados como en la imagen */
+    box-shadow: var(--shadow-subtle); /* Sombra sutil */
+    border: 1px solid var(--border-color); /* Borde suave */
+    color: var(--text-color);
+    transition: background-color var(--transition-speed), color var(--transition-speed), box-shadow var(--transition-speed);
+    min-height: 70px; /* Altura mínima para una apariencia consistente */
+    margin-bottom: 2rem; /* Margen inferior para separar del contenido */
+}
+
+.topbar h1 {
+    margin: 0;
+    font-size: 1.6rem; /* Tamaño de título ligeramente más pequeño */
+    font-weight: 600;
+    color: var(--heading-color);
+}
+
+.topbar .right-section { /* Nuevo contenedor para búsqueda y perfil */
+    display: flex;
+    align-items: center;
+    gap: 20px; /* Espacio entre la caja de búsqueda y el perfil */
+}
+
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-box i {
+    position: absolute;
+    left: 15px;
+    color: var(--text-color-light);
+    font-size: 0.9rem;
+}
+
+.search-box input {
+    width: 250px; /* Ancho ajustable */
+    padding: 0.75rem 1rem 0.75rem 45px; /* Padding para el icono */
+    border: 1px solid var(--input-border);
+    border-radius: var(--border-radius-md); /* Usar variable para el radio */
+    background-color: var(--input-background);
+    color: var(--text-color);
+    font-size: 0.9rem;
+    transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+}
+
+.search-box input::placeholder {
+    color: var(--text-color-light);
+    opacity: 0.7;
+}
+
+.search-box input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1); /* Usar variable RGB */
+}
+
+.profile-link { /* Contenedor para la imagen y el nombre que será clickeable */
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--text-color); /* Color del texto por defecto */
+    transition: color var(--transition-speed);
+}
+
+.profile-link:hover {
+    color: var(--primary-color); /* Color al pasar el ratón */
+}
+
+.profile-link .user-name {
+    font-weight: 600;
+    font-size: 0.95rem;
+    color: var(--text-color); /* Asegura que el color sea el correcto */
+    white-space: nowrap; /* Evita que el nombre se rompa en varias líneas */
+}
+
+/* Estilos para el avatar */
+.avatar {
+    width: 40px; /* Tamaño del avatar */
+    height: 40px;
+    border-radius: 50%; /* Circular */
+    object-fit: cover; /* Asegura que la imagen cubra el área sin distorsionarse */
+    border: 2px solid var(--primary-color); /* Borde con el color principal */
+    transition: transform 0.2s ease, border-color var(--transition-speed);
+}
+
+.profile-link:hover .avatar {
+    transform: scale(1.05); /* Ligeramente más grande al pasar el ratón */
+    border-color: var(--accent-color); /* Cambio de color de borde al pasar el ratón */
+}
+
+
+/* --- Contenido de la Página (donde se inyecta @yield('content')) --- */
+.page-content {
+    flex-grow: 1;
+    /* El padding y el margen de las secciones internas (como users-section-container)
+       deben manejar su propio espaciado dentro de .page-content */
+}
+
+
+/* --- Responsive Design --- */
+@media (max-width: 1024px) {
+    .sidebar {
+        width: 220px; /* Un poco más angosto en tablets */
+        padding: 1.2rem 0.8rem;
+    }
+    .main-content {
+        padding: 1rem 1.5rem;
+    }
+    .topbar { /* Cambiado de .top-bar a .topbar */
+        padding: 1rem 1.5rem;
+    }
+    .topbar .search-box input { /* Cambiado de .search-bar a .search-box */
+        max-width: 250px;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        flex-direction: column; /* Apila el sidebar y el contenido */
+    }
+    .sidebar {
+        width: 100%;
+        height: auto;
+        border-radius: 0; /* Sin bordes redondeados en móvil para ocupar todo el ancho */
+        padding: 1rem;
+        box-shadow: var(--shadow-subtle);
+        position: relative; /* Ya no es sticky, se desplaza con el contenido */
+        overflow-y: visible;
+    }
+    .sidebar-header {
+        margin-bottom: 1rem;
+        padding-bottom: 0.5rem;
+    }
+    .sidebar-nav ul {
+        display: flex;
+        flex-wrap: wrap; /* Los elementos del menú se envuelven */
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    .sidebar-nav li {
+        margin-bottom: 0;
+    }
+    .sidebar-nav a {
+        padding: 0.6rem 1rem;
+        font-size: 0.9rem;
+        gap: 0.5rem;
+    }
+    .sidebar-nav a i {
+        font-size: 1rem;
+    }
+
+    .main-content {
+        padding: 0.8rem;
+    }
+    .topbar { /* Cambiado de .top-bar a .topbar */
+        flex-direction: column; /* Apila elementos en la barra superior */
+        align-items: flex-start;
+        padding: 0.8rem 1rem;
+        margin-bottom: 1.2rem;
+    }
+    .topbar .search-box { /* Cambiado de .search-bar a .search-box */
+        width: 100%;
+        max-width: 100%;
+        margin-right: 0;
+        margin-bottom: 0.8rem;
+    }
+    .topbar .user-info {
+        width: 100%;
+        justify-content: flex-end; /* Alinea la info de usuario a la derecha */
+    }
+}
+
+@media (max-width: 480px) {
+    .sidebar-header img {
+        max-width: 120px;
+    }
+    .sidebar-nav a {
+        padding: 0.5rem 0.8rem;
+        font-size: 0.85rem;
+    }
+    .sidebar-nav a i {
+        font-size: 0.9rem;
+    }
+    .topbar .search-box { /* Cambiado de .search-bar a .search-box */
+        padding: 0.4rem 0.8rem;
+    }
+    .topbar .search-box input { /* Cambiado de .search-bar a .search-box */
+        font-size: 0.85rem;
+    }
+    .topbar .user-info .user-name {
+        font-size: 0.9rem;
+    }
+    .topbar .user-info .user-avatar {
+        width: 35px;
+        height: 35px;
+        font-size: 1rem;
+    }
+}
+
+/* --- Estilos de Dashboard (Añadidos desde admin-dashboard-styles) --- */
+/* Contenedor principal del dashboard */
+.dashboard-container {
+    padding: 1.5rem; /* Ajustado para más espacio interno */
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Sección de Bienvenida (Adaptada a estilo de tarjeta) */
+.welcome-section {
+    background-color: var(--card-background); /* Fondo de tarjeta */
+    color: var(--text-color); /* Color de texto normal */
+    padding: 2rem 2.5rem;
+    border-radius: var(--border-radius-lg);
+    margin-bottom: 2rem;
+    box-shadow: var(--shadow-subtle); /* Sombra suave */
+    border: 1px solid var(--border-color); /* Borde sutil */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    min-height: 120px; /* Altura un poco menor */
+    text-align: left; /* Alineado a la izquierda como el título de la tabla */
+    position: relative; /* Para posibles elementos decorativos si se añaden */
+    overflow: hidden; /* Para asegurar que los pseudo-elementos no se desborden */
+}
+
+/* Eliminar pseudo-elementos si no se desean en el nuevo estilo de bienvenida */
+.welcome-section::before,
+.welcome-section::after {
+    content: none; /* Eliminar las formas de fondo del degradado anterior */
+}
+
+.welcome-title {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+    color: var(--primary-color); /* Título con color primario */
+    text-shadow: none; /* Sin sombra de texto */
+}
+
+.welcome-message {
+    font-size: 1rem;
+    line-height: 1.5;
+    color: var(--text-color-light); /* Mensaje con color de texto más claro */
+    max-width: none; /* Sin límite de ancho */
+    margin: 0; /* Sin margen auto */
+}
+
+/* Sección de Tarjetas de Resumen (KPIs) */
+.dashboard-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Ajustado minmax para más flexibilidad */
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.dashboard-card {
+    background-color: var(--card-background);
+    border-radius: var(--border-radius-md); /* Bordes redondeados */
+    box-shadow: var(--shadow-subtle); /* Sombra suave */
+    padding: 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    transition: all var(--transition-speed);
+    border: 1px solid var(--border-color); /* Borde sutil */
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-3px); /* Menor elevación al pasar el ratón */
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.08); /* Sombra más pronunciada al pasar el ratón */
+    border-color: var(--primary-color);
+}
+
+.dashboard-card .icon {
+    font-size: 2rem; /* Tamaño de icono ligeramente más pequeño */
+    width: 55px; /* Tamaño del círculo de icono */
+    height: 55px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    background-color: var(--primary-color); /* Color de fondo del icono */
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.dashboard-card.primary-card .icon { background-color: var(--primary-color); }
+.dashboard-card.info-card .icon { background-color: var(--info-color); }
+.dashboard-card.warning-card .icon { background-color: var(--warning-color); }
+.dashboard-card.success-card .icon { background-color: var(--success-color); }
+
+.dashboard-card .details {
+    flex-grow: 1;
+    text-align: right;
+    position: relative;
+    z-index: 1;
+}
+
+.dashboard-card .value {
+    font-size: 2.2rem; /* Tamaño de valor ligeramente más pequeño */
+    font-weight: 700;
+    color: var(--heading-color);
+    margin-bottom: 0.2rem;
+    line-height: 1.1;
+}
+
+.dashboard-card .label {
+    font-size: 0.85rem; /* Tamaño de etiqueta ligeramente más pequeño */
+    color: var(--text-color-light);
+    text-transform: uppercase;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+}
+
+/* Eliminar pseudo-elementos de las tarjetas si no se desean */
+.dashboard-card::before {
+    content: none;
+}
+.dashboard-card:hover::before {
+    transform: none;
+}
+
+/* Sección de Últimas Actividades (Tabla) */
+.latest-activity-section {
+    background-color: var(--card-background);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-subtle);
+    padding: 2rem;
+    border: 1px solid var(--border-color);
+    transition: background-color var(--transition-speed), border-color var(--transition-speed);
+}
+
+.latest-activity-section h3 {
+    font-size: 1.8rem;
+    color: var(--primary-color); /* Título de sección con color primario */
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 2px solid var(--primary-color);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+.latest-activity-section h3::before {
+    content: "\f0ae"; /* Icono de Font Awesome para lista */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+    color: var(--accent-color);
+    font-size: 1.6rem;
+}
+
+.activity-table-container {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: var(--border-radius-md);
+    border: 1px solid var(--border-color);
+}
+
+.activity-table-container table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 500px;
+    font-size: 0.9rem;
+}
+
+.activity-table-container th,
+.activity-table-container td {
+    padding: 0.9rem 1.2rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-color);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.activity-table-container thead th {
+    background-color: var(--primary-color); /* Encabezado de tabla con color primario */
+    color: white;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.05em;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+body.dark-mode .activity-table-container thead th {
+    background-color: var(--secondary-color);
+}
+
+.activity-table-container tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.activity-table-container tbody tr:hover {
+    background-color: var(--background-color);
+    transform: translateX(0); /* Eliminar el movimiento lateral */
+    transition: background-color var(--transition-speed), box-shadow 0.2s ease; /* Transición de sombra */
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05); /* Sombra al pasar el ratón */
+    cursor: pointer;
+}
+body.dark-mode .activity-table-container tbody tr:hover {
+    background-color: #3a3a4a;
+}
+
+.status-badge {
+    padding: 0.3em 0.7em;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: white;
+    display: inline-block;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.status-badge.completed { background-color: var(--success-color); }
+.status-badge.pending { background-color: var(--warning-color); }
+.status-badge.failed { background-color: var(--danger-color); }
+.status-badge.info { background-color: var(--info-color); }
+
+.text-center {
+    text-align: center;
+    color: var(--text-color-light);
+    font-style: italic;
+    padding: 1rem 0;
+}
+
+/* Responsive Design para Dashboard */
+@media (max-width: 1024px) {
+    .dashboard-container {
+        padding: 0.8rem;
+    }
+    .welcome-section {
+        padding: 1.5rem 2rem;
+        margin-bottom: 1.5rem;
+    }
+    .welcome-title {
+        font-size: 1.8rem;
+    }
+    .welcome-message {
+        font-size: 0.9rem;
+    }
+    .dashboard-cards {
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.2rem;
+        margin-bottom: 1.5rem;
+    }
+    .dashboard-card {
+        padding: 1.2rem;
+    }
+    .dashboard-card .icon {
+        font-size: 1.8rem;
+        width: 50px;
+        height: 50px;
+    }
+    .dashboard-card .value {
+        font-size: 2rem;
+    }
+    .dashboard-card .label {
+        font-size: 0.85rem;
+    }
+    .latest-activity-section {
+        padding: 1.5rem;
+    }
+    .latest-activity-section h3 {
+        font-size: 1.6rem;
+        margin-bottom: 1.2rem;
+    }
+    .latest-activity-section h3::before {
+        font-size: 1.4rem;
+    }
+    .activity-table-container th,
+    .activity-table-container td {
+        padding: 0.8rem 1rem;
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-container {
+        padding: 0.5rem;
+    }
+    .welcome-section {
+        padding: 1rem;
+        margin-bottom: 1rem;
+        min-height: 100px;
+    }
+    .welcome-title {
+        font-size: 1.5rem;
+    }
+    .welcome-message {
+        font-size: 0.85rem;
+    }
+    .dashboard-cards {
+        grid-template-columns: 1fr; /* Una columna en móviles */
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+    .dashboard-card {
+        padding: 1rem;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
+    .dashboard-card .icon {
+        font-size: 1.5rem;
+        width: 45px;
+        height: 45px;
+    }
+    .dashboard-card .value {
+        font-size: 1.8rem;
+    }
+    .dashboard-card .label {
+        font-size: 0.8rem;
+    }
+    .latest-activity-section {
+        padding: 1rem;
+    }
+    .latest-activity-section h3 {
+        font-size: 1.4rem;
+        margin-bottom: 1rem;
+    }
+    .latest-activity-section h3::before {
+        font-size: 1.2rem;
+    }
+
+    /* Tabla como "cards" en móvil */
+    .activity-table-container {
+        border: none;
+        overflow-x: hidden;
+    }
+    .activity-table-container table {
+        border-spacing: 0 0.7rem;
+        min-width: unset;
+        width: 100%;
+    }
+    .activity-table-container thead {
+        display: none;
+    }
+    .activity-table-container tbody tr {
+        display: block;
+        margin-bottom: 0.8rem;
+        background-color: var(--card-background);
+        border-radius: var(--border-radius-md);
+        box-shadow: var(--shadow-subtle);
+        border: 1px solid var(--border-color);
+        padding: 0.8rem;
+    }
+    body.dark-mode .activity-table-container tbody tr {
+        background-color: var(--card-background);
+    }
+    .activity-table-container tbody tr:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 12px rgba(0,0,0,0.1);
+    }
+    .activity-table-container td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.6rem 0.4rem;
+        border-bottom: 1px dashed var(--border-color);
+        font-size: 0.8rem;
+        white-space: normal;
+        word-break: break-word;
+        text-overflow: unset;
+    }
+    .activity-table-container td:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+    .activity-table-container td::before {
+        content: attr(data-label);
+        font-weight: 600;
+        color: var(--heading-color);
+        flex-shrink: 0;
+        margin-right: 0.6rem;
+        font-size: 0.75rem;
+        text-transform: uppercase;
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-card .value {
+        font-size: 1.5rem;
+    }
+    .dashboard-card .label {
+        font-size: 0.75rem;
+    }
+    .activity-table-container td {
+        font-size: 0.75rem;
+    }
+    .activity-table-container td::before {
+        font-size: 0.7rem;
+    }
+}

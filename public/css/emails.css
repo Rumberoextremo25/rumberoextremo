@@ -1,0 +1,256 @@
+/* General Body and Container Styles */
+body {
+    font-family: 'Poppins', sans-serif; /* Fuente principal */
+    line-height: 1.6;
+    color: #E0E0E0; /* Texto claro por defecto */
+    background-color: #1a1a2e; /* Fondo oscuro principal */
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+.email-container {
+    max-width: 600px; /* Ancho máximo para el contenido del correo */
+    margin: 20px auto; /* Centrar el correo */
+    background-color: #2a2a40; /* Fondo ligeramente más claro para el contenido */
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); /* Sombra sutil */
+    overflow: hidden; /* Asegura que el contenido no se desborde */
+    border: 1px solid rgba(255, 215, 0, 0.1); /* Borde sutil dorado */
+}
+
+/* Header Section */
+.email-header {
+    background-color: #8A2BE2; /* Morado vibrante */
+    padding: 30px 20px;
+    text-align: center;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+.email-header h1 {
+    font-family: 'Montserrat', sans-serif;
+    color: #FFFFFF; /* Texto blanco para el título */
+    font-size: 2.2em;
+    margin: 0;
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Content Section */
+.email-content {
+    padding: 30px;
+    color: #E0E0E0;
+    font-size: 1em;
+}
+
+.email-content h1, .email-content h2 {
+    font-family: 'Montserrat', sans-serif;
+    color: #FFD700; /* Dorado para los encabezados de contenido */
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.email-content p {
+    margin-bottom: 1em;
+}
+
+/* Button Styling (for mail::button component) */
+.button {
+    display: inline-block; /* Importante para que el padding y margin funcionen */
+    background-color: #FFD700; /* Botón dorado */
+    color: #1a1a2e !important; /* Texto oscuro para el botón, ¡importante para anular estilos por defecto! */
+    padding: 12px 25px;
+    border-radius: 25px; /* Bordes redondeados */
+    text-decoration: none; /* Sin subrayado */
+    font-weight: bold;
+    font-size: 1.1em;
+    margin-top: 20px;
+    transition: background-color 0.3s ease; /* Transición suave para hover */
+}
+
+.button:hover {
+    background-color: #FFC107; /* Dorado más claro al pasar el ratón */
+}
+
+/* Footer Section */
+.email-footer {
+    background-color: #1f1f3a; /* Fondo oscuro para el pie de página */
+    padding: 20px;
+    text-align: center;
+    font-size: 0.85em;
+    color: #B0B0B0; /* Gris más claro para el texto del pie de página */
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    border-top: 1px solid rgba(255, 215, 0, 0.05); /* Línea divisoria sutil */
+}
+
+.email-footer p {
+    margin: 5px 0;
+}
+
+.email-footer a {
+    color: #8A2BE2; /* Enlaces morados en el pie de página */
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.email-footer a:hover {
+    color: #9932CC; /* Morado más oscuro al pasar el ratón */
+}
+
+/* Responsive Adjustments (Limited for email clients) */
+@media screen and (max-width: 600px) {
+    .email-container {
+        width: 100% !important;
+        margin: 0 !important;
+        border-radius: 0 !important; /* Eliminar bordes redondeados en móviles para ocupar todo el ancho */
+    }
+    .email-content, .email-header, .email-footer {
+        padding: 20px !important; /* Ajustar padding en móviles */
+    }
+    .email-header h1 {
+        font-size: 1.8em !important;
+    }
+    .button {
+        display: block !important; /* Botón a ancho completo en móviles */
+        width: calc(100% - 40px) !important; /* Ajustar ancho con padding */
+        text-align: center !important;
+        margin-left: 20px !important;
+        margin-right: 20px !important;
+    }
+}
+
+/* ESTILOS PARA EL CONTACTS */
+
+.email-container {
+    max-width: 600px; /* Ancho máximo para el contenido del correo */
+    margin: 20px auto; /* Centrar el correo */
+    background-color: #2a2a40; /* Fondo ligeramente más claro para el contenido */
+    border-radius: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); /* Sombra sutil */
+    overflow: hidden; /* Asegura que el contenido no se desborde */
+    border: 1px solid rgba(255, 215, 0, 0.1); /* Borde sutil dorado */
+}
+
+/* Header Section */
+.email-header {
+    background-color: #8A2BE2; /* Morado vibrante */
+    padding: 30px 20px;
+    text-align: center;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+}
+
+.email-header h1 {
+    font-family: 'Montserrat', sans-serif;
+    color: #FFFFFF; /* Texto blanco para el título */
+    font-size: 2.2em;
+    margin: 0;
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+/* Content Section */
+.email-content {
+    padding: 30px;
+    color: #E0E0E0;
+    font-size: 1em;
+}
+
+.email-content h1, .email-content h2 {
+    font-family: 'Montserrat', sans-serif;
+    color: #FFD700; /* Dorado para los encabezados de contenido */
+    margin-top: 0;
+    margin-bottom: 15px;
+}
+
+.email-content p {
+    margin-bottom: 1em;
+}
+
+/* Specific styles for contact message summary */
+.message-summary {
+    background-color: rgba(40, 40, 60, 0.7); /* Fondo más oscuro para el resumen */
+    border-left: 5px solid #FFD700; /* Borde dorado a la izquierda */
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 25px;
+    margin-bottom: 25px;
+}
+
+.message-summary strong {
+    color: #FFD700; /* Dorado para los títulos de los campos (Asunto, Mensaje) */
+}
+
+.message-summary p {
+    margin: 0.5em 0;
+}
+
+/* Button Styling (for mail::button component) */
+.button {
+    display: inline-block; /* Importante para que el padding y margin funcionen */
+    background-color: #FFD700; /* Botón dorado */
+    color: #1a1a2e !important; /* Texto oscuro para el botón, ¡importante para anular estilos por defecto! */
+    padding: 12px 25px;
+    border-radius: 25px; /* Bordes redondeados */
+    text-decoration: none; /* Sin subrayado */
+    font-weight: bold;
+    font-size: 1.1em;
+    margin-top: 20px;
+    transition: background-color 0.3s ease; /* Transición suave para hover */
+}
+
+.button:hover {
+    background-color: #FFC107; /* Dorado más claro al pasar el ratón */
+}
+
+/* Footer Section */
+.email-footer {
+    background-color: #1f1f3a; /* Fondo oscuro para el pie de página */
+    padding: 20px;
+    text-align: center;
+    font-size: 0.85em;
+    color: #B0B0B0; /* Gris más claro para el texto del pie de página */
+    border-bottom-left-radius: 10px;
+    border-bottom-right-radius: 10px;
+    border-top: 1px solid rgba(255, 215, 0, 0.05); /* Línea divisoria sutil */
+}
+
+.email-footer p {
+    margin: 5px 0;
+}
+
+.email-footer a {
+    color: #8A2BE2; /* Enlaces morados en el pie de página */
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.email-footer a:hover {
+    color: #9932CC; /* Morado más oscuro al pasar el ratón */
+}
+
+/* Responsive Adjustments (Limited for email clients) */
+@media screen and (max-width: 600px) {
+    .email-container {
+        width: 100% !important;
+        margin: 0 !important;
+        border-radius: 0 !important; /* Eliminar bordes redondeados en móviles para ocupar todo el ancho */
+    }
+    .email-content, .email-header, .email-footer {
+        padding: 20px !important; /* Ajustar padding en móviles */
+    }
+    .email-header h1 {
+        font-size: 1.8em !important;
+    }
+    .button {
+        display: block !important; /* Botón a ancho completo en móviles */
+        width: calc(100% - 40px) !important; /* Ajustar ancho con padding */
+        text-align: center !important;
+        margin-left: 20px !important;
+        margin-right: 20px !important;
+    }
+    .message-summary {
+        padding: 15px !important;
+    }
+}

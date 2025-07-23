@@ -1,0 +1,276 @@
+/* resources/css/admin/settings/settings.css */
+
+/*
+   Nota: Este archivo asume que las variables de tema (ej. --primary-color, --card-background,
+   --text-color, --heading-color, --border-color, --shadow-subtle, --shadow-medium,
+   --transition-speed, --border-radius-md, --border-radius-lg, etc.)
+   están definidas y cargadas previamente desde tu archivo CSS principal (app.css).
+*/
+
+:root {
+    /* Asegúrate de que estas variables estén definidas globalmente en tu app.css
+       o en un archivo CSS que se cargue antes de este.
+       Las he incluido aquí temporalmente para referencia si no están en app.css. */
+    --primary-color: #530cbf; /* Morado principal */
+    --secondary-color: #7628a7; /* Morado secundario */
+    --success-color: #28a745; /* Verde para éxito */
+    --danger-color: #dc3545; /* Rojo para peligro */
+    --warning-color: #ffc107; /* Amarillo para advertencia */
+    --info-color: #17a2b8; /* Azul claro para información */
+    --text-color: #343a40; /* Color de texto oscuro */
+    --light-text-color: #6c757d; /* Color de texto más claro */
+    --border-color: #dee2e6; /* Color de borde general */
+    --background-color: #f8f9fa; /* Fondo claro */
+    --background-color-alt: #f0f2f5; /* Fondo alternativo para filas de tabla */
+    --card-background: #ffffff; /* Fondo de tarjeta */
+    --input-background: #ffffff; /* Fondo de input */
+    --input-border: #ced4da; /* Borde de input */
+    --hover-background-color: #e9ecef; /* Color de fondo al pasar el ratón */
+    --spacing-unit: 1rem; /* 16px */
+    --border-radius-sm: 0.25rem; /* 4px */
+    --border-radius-md: 0.5rem; /* 8px */
+    --border-radius-lg: 1rem; /* 16px */
+    --shadow-subtle: 0 4px 8px rgba(0, 0, 0, 0.05); /* Sombra sutil */
+    --shadow-medium: 0 8px 16px rgba(0, 0, 0, 0.1); /* Sombra media */
+    --transition-speed: 0.3s;
+
+    /* Variables RGB para sombras con transparencia */
+    --primary-rgb: 83, 12, 191;
+    --secondary-rgb: 118, 40, 167;
+    --success-rgb: 40, 167, 69;
+    --danger-rgb: 220, 53, 69;
+    --info-rgb: 23, 162, 184;
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    font-family: 'Inter', sans-serif; /* Fuente moderna, o Montserrat/Poppins si es global */
+    margin: 0;
+}
+
+.account-settings-container {
+    max-width: 800px; /* Ancho moderado para la página de ajustes */
+    margin: 3rem auto;
+    padding: 2.5rem;
+    background-color: var(--card-background);
+    border-radius: var(--border-radius-lg);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease-in-out;
+}
+
+.account-settings-container h1 {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    margin-bottom: 2.5rem;
+    font-weight: 800;
+    text-align: center;
+    letter-spacing: -0.03em;
+}
+
+.settings-card {
+    background-color: var(--background-color-alt); /* Fondo ligeramente diferente para la tarjeta de ajustes */
+    padding: 2rem;
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-subtle);
+    border: 1px solid var(--border-color);
+    margin-bottom: 2rem; /* Espacio entre tarjetas de ajustes si hubiera más */
+}
+
+.settings-card h3 {
+    font-size: 1.8rem;
+    color: var(--heading-color);
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.settings-card h3 i {
+    color: var(--secondary-color);
+    font-size: 1.5rem;
+}
+
+/* Reutilizando estilos de formulario de otras vistas (banner.css, profile.css) */
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    color: var(--heading-color);
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+}
+
+.form-control { /* Usado en el HTML original */
+    width: 100%;
+    padding: 0.9rem 1.2rem;
+    border: 1px solid var(--input-border);
+    border-radius: var(--border-radius-md);
+    font-size: 1rem;
+    color: var(--text-color);
+    background-color: var(--input-background);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    box-sizing: border-box;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.2);
+    background-color: var(--card-background);
+}
+
+/* Mensajes de error de validación (text-danger en el blade) */
+.text-danger {
+    color: var(--danger-color);
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+    display: block;
+}
+
+/* Botón de actualización de contraseña */
+.modern-button {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.9rem 2rem;
+    border: none;
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 700;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.8rem;
+    text-decoration: none;
+    box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.2);
+    margin-top: 1.5rem; /* Espacio superior para el botón */
+}
+
+.modern-button:hover {
+    background-color: var(--secondary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(var(--secondary-rgb), 0.3);
+}
+
+.modern-button i {
+    font-size: 1.1rem;
+}
+
+/* Mensajes flash (alertas) - Reutilizados */
+.alert {
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid transparent;
+    border-radius: var(--border-radius-md);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.alert-success {
+    background-color: rgba(var(--success-rgb), 0.1);
+    color: var(--success-color);
+    border-color: rgba(var(--success-rgb), 0.4);
+}
+
+.alert-danger {
+    background-color: rgba(var(--danger-rgb), 0.1);
+    color: var(--danger-color);
+    border-color: rgba(var(--danger-rgb), 0.4);
+}
+
+.alert .fas { /* Iconos dentro de las alertas */
+    font-size: 1.1rem;
+    margin-right: 0.5rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .account-settings-container {
+        padding: 1.8rem;
+        margin: 1.5rem auto;
+        max-width: 95%;
+    }
+    .account-settings-container h1 {
+        font-size: 2rem;
+        margin-bottom: 2rem;
+    }
+    .settings-card {
+        padding: 1.5rem;
+    }
+    .settings-card h3 {
+        font-size: 1.5rem;
+        margin-bottom: 1.2rem;
+    }
+    .settings-card h3 i {
+        font-size: 1.3rem;
+    }
+    .form-group label {
+        font-size: 0.9rem;
+        margin-bottom: 0.5rem;
+    }
+    .form-control {
+        padding: 0.8rem 1rem;
+        font-size: 0.95rem;
+    }
+    .modern-button {
+        width: 100%;
+        justify-content: center;
+        padding: 0.8rem 1.5rem;
+        font-size: 0.95rem;
+        margin-top: 1rem;
+    }
+    .alert {
+        padding: 1rem 1.2rem;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .account-settings-container {
+        padding: 1.2rem;
+        margin: 1rem auto;
+    }
+    .account-settings-container h1 {
+        font-size: 1.8rem;
+        margin-bottom: 1.5rem;
+    }
+    .settings-card {
+        padding: 1rem;
+    }
+    .settings-card h3 {
+        font-size: 1.3rem;
+        margin-bottom: 1rem;
+        gap: 0.6rem;
+    }
+    .settings-card h3 i {
+        font-size: 1.1rem;
+    }
+    .form-group label {
+        font-size: 0.85rem;
+    }
+    .form-control {
+        padding: 0.7rem 0.9rem;
+        font-size: 0.9rem;
+    }
+    .modern-button {
+        padding: 0.7rem 1.2rem;
+        font-size: 0.9rem;
+    }
+    .alert {
+        font-size: 0.85rem;
+    }
+}

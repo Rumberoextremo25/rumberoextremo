@@ -5,6 +5,10 @@ use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SalesController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\BannerController;
+use App\Http\Controllers\Admin\CommercialAllyController;
+use App\Http\Controllers\Admin\PromotionController;
 
 //RUTAS DE LAS VISTAS DE LA LANDING UBICADAS EN EL CONTROLADOR DE PAGE
 Route::get('/', [PageController::class, 'index'])->name('welcome');
@@ -34,51 +38,32 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
 });
 
-
-Route::get('/reportes', [AdminController::class, 'reports'])->name('reportes');
-Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
-
-// Rutas para los Aliados
-Route::get('/aliados', [AdminController::class, 'aliadosIndex'])->name('aliado');
-Route::get('/aliados/crear', [AdminController::class, 'aliadosCreate'])->name('create');
-// Para rutas de actualización, es buena práctica usar un parámetro en la URL
-Route::get('/aliados/{id}/editar', [AdminController::class, 'aliadosUpdate'])->name('update');
-
 // Rutas para los Usuarios
-    Route::get('/admin/users', [AdminController::class, 'usersIndex'])->name('users');
+Route::get('/admin/users', [AdminController::class, 'usersIndex'])->name('users');
 
-    // Ruta para mostrar el formulario de añadir nuevo usuario
-    Route::get('/admin/users/create', [AdminController::class, 'create'])->name('add-user');
-    Route::post('/admin/users', [AdminController::class, 'store'])->name('users.store');
+// Ruta para mostrar el formulario de añadir nuevo usuario
+Route::get('/admin/users/create', [AdminController::class, 'create'])->name('add-user');
+Route::post('/admin/users', [AdminController::class, 'store'])->name('users.store');
 
-    // Rutas para ver, editar y eliminar un usuario específico
-    Route::get('/admin/users/{user}', [AdminController::class, 'show'])->name('users.show');
-    Route::get('/admin/users/{user}/edit', [AdminController::class, 'edit'])->name('users.edit');
-    Route::put('/admin/users/{user}', [AdminController::class, 'update'])->name('users.update');
-    Route::delete('/admin/users/{user}', [AdminController::class, 'destroy'])->name('users.destroy');
-
-// Rutas para la vista de Productos
-Route::get('/products', [AdminController::class, 'productsIndex'])->name('products');
-Route::get('/products/create', [AdminController::class, 'productsCreate'])->name('products.create');
-Route::post('/products', [AdminController::class, 'storeProduct'])->name('products.store');
-Route::get('/products/{product}/edit', [AdminController::class, 'editProductForm'])->name('products.edit');
-Route::put('/products/{product}', [AdminController::class, 'updateProduct'])->name('products.update');
-Route::delete('/products/{product}', [AdminController::class, 'destroyProduct'])->name('products.destroy');
+// Rutas para ver, editar y eliminar un usuario específico
+Route::get('/admin/users/{user}', [AdminController::class, 'show'])->name('users.show');
+Route::get('/admin/users/{user}/edit', [AdminController::class, 'edit'])->name('users.edit');
+Route::put('/admin/users/{user}', [AdminController::class, 'update'])->name('users.update');
+Route::delete('/admin/users/{user}', [AdminController::class, 'destroy'])->name('users.destroy');
 
 // RUTAS PARA LA VISTA DE ALIADOS
-
-Route::get('/aliados', [AdminController::class, 'aliadosIndex'])->name(name: 'aliado');
-Route::get('/aliado/crear', [AdminController::class, 'aliadosCreate'])->name(name: 'create');
-Route::post('/aliados', [AdminController::class, 'storeAlly'])->name(name: 'aliado.store');
-Route::get('/aliados/{ally}/edit', [AdminController::class, 'alliesEdit'])->name(name: 'aliado.edit');
-Route::put('/aliados/{ally}', [AdminController::class, 'updateAlly'])->name(name: 'aliado.update');
-Route::delete('/aliados/{ally}', [AdminController::class, 'destroyAlly'])->name(name: 'aliado.destroy');
+Route::get('/aliados', [AdminController::class, 'indexAllies'])->name('aliados.index');
+Route::get('/aliados/crear', [AdminController::class, 'aliadosCreate'])->name('aliados.create');
+Route::post('/aliados', [AdminController::class, 'storeAlly'])->name('aliados.store');
+Route::get('/aliados/{ally}/editar', [AdminController::class, 'alliesEdit'])->name('aliado.edit');
+Route::put('/aliados/{ally}', [AdminController::class, 'updateAlly'])->name('aliados.update');
+Route::delete('/aliados/{ally}', [AdminController::class, 'destroyAlly'])->name('aliados.destroy');
+Route::get('/get-subcategories', [AdminController::class, 'getSubcategories'])->name('get.subcategories');
 
 
 // Rutas para reportes de ventas
-Route::get('/reports/sales', [SalesController::class, 'index'])->name('reports.sales');
-// Ruta para descargar el reporte de ventas en PDF
-Route::get('/reports/sales/pdf', [SalesController::class, 'downloadPdf'])->name('reports.sales.pdf');
+Route::get('/reports/sales', [AdminController::class, 'reports'])->name('reports.sales');
+//Route::get('/reports/sales/pdf', [SalesController::class, 'downloadPdf'])->name('reports.sales.pdf');
 
 // Rutas para el Perfil (asumiendo que es el perfil del admin logueado)
 Route::middleware(['auth'])->group(function () {
@@ -92,9 +77,22 @@ Route::middleware(['auth',])->prefix('admin')->group(function () {
     Route::get('/settings', [AdminController::class, 'settings'])->name('admin.settings');
     Route::post('/admin/settings/password', [AdminController::class, 'changePassword'])->name('admin.password.change');
 
-    // Rutas para Notificaciones y Modo Oscuro
-    Route::post('/settings/toggle-notifications', [AdminController::class, 'toggleNotifications'])->name('admin.settings.toggle-notifications');
-    Route::post('/settings/toggle-dark-mode', [AdminController::class, 'toggleDarkMode'])->name('admin.settings.toggle-dark-mode');
+});
+
+//Rutas para carga de Aliados comerciales, Promocion y Banners
+    // Asumo que ya tienes un sistema de autenticación de Laravel (ej. Breeze, Jetstream, o auth scaffolding)
+Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () {
+    // Dashboard principal
+    Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Rutas para Banners
+    Route::resource('banners', BannerController::class);
+
+    // Rutas para Aliados Comerciales
+    Route::resource('commercial-allies', CommercialAllyController::class);
+
+    // Rutas para Promociones
+    Route::resource('promotions', PromotionController::class);
 });
 
 require __DIR__ . '/auth.php';

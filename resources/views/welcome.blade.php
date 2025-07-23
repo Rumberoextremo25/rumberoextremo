@@ -4,6 +4,12 @@
 
 @section('title', 'Rumbero Extremo App - Tu Noche Perfecta Comienza Aquí')
 
+@push('styles') {{-- Agregamos el CSS específico de esta vista --}}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/welcome.css') }}">
+@endpush
+
 @section('content')
     <section class="hero">
         <div class="container">
@@ -70,21 +76,21 @@
             <h2>Lo Que Dicen Nuestros Rumberos</h2>
             <div class="testimonials-grid">
                 <div class="testimonial-card">
-                    <img src="https://via.placeholder.com/80x80/FF4B4B/FFFFFF?text=JD" alt="Foto de Juan David">
+                    <img src="https://via.placeholder.com/80x80/FF2E63/FFFFFF?text=JD" alt="Foto de Juan David">
                     <p>"¡Increíble! Desde que uso Rumbero Extremo no me pierdo ni un evento. Es la mejor forma de saber
                         dónde está la rumba."</p>
                     <span class="author">Juan David M.</span>
                     <span class="location">Caracas, Venezuela</span>
                 </div>
                 <div class="testimonial-card">
-                    <img src="https://via.placeholder.com/80x80/333333/FFFFFF?text=MV" alt="Foto de María Virginia">
+                    <img src="https://via.placeholder.com/80x80/08D9D6/FFFFFF?text=MV" alt="Foto de María Virginia">
                     <p>"Me encanta descubrir nuevos locales y DJs. La app es súper fácil de usar y me ha conectado con
                         la movida nocturna."</p>
                     <span class="author">María Virginia L.</span>
                     <span class="location">Valencia, Venezuela</span>
                 </div>
                 <div class="testimonial-card">
-                    <img src="https://via.placeholder.com/80x80/555555/FFFFFF?text=RP" alt="Foto de Ricardo Pérez">
+                    <img src="https://via.placeholder.com/80x80/FF2E63/FFFFFF?text=RP" alt="Foto de Ricardo Pérez">
                     <p>"Perfecta para planificar mis noches. Siempre encuentro algo emocionante que hacer. ¡Rumbero
                         Extremo es la clave!"</p>
                     <span class="author">Ricardo P.</span>
@@ -102,8 +108,8 @@
             <a href="{{ route('register') }}" class="cta-button">Regístrate Gratis Ahora</a>
         </div>
     </section>
-@endsection {{-- Cierra la sección de contenido principal --}}
-
-@section('scripts') {{-- Define los scripts específicos para esta vista (el carrusel) --}}
-    <script src="{{ asset('js/admin-dashboard.js') }}"></script>
 @endsection
+
+@push('scripts') {{-- Agregamos el JS específico de esta vista --}}
+    <script src="{{ asset('js/welcome.js') }}"></script>
+@endpush

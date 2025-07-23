@@ -4,6 +4,12 @@
 
 @section('title', 'Demo - Rumbero Extremo App')
 
+@push('styles') {{-- Agregamos el CSS específico de esta vista --}}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/demo.css') }}">
+@endpush
+
 @section('content')
     <section class="content-section">
         <div class="container">
@@ -21,7 +27,7 @@
             </div>
 
             <div class="video-container">
-                <iframe width="560" height="315" src="https://www.youtube.com/embed/92ONIEfifGc?si=25olLhg_WeKYG8wd"
+                <iframe width="560" height="315" src="https://www.youtube.com/embed/dQw4w9WgXcQ"
                     title="YouTube video player" frameborder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
@@ -30,3 +36,7 @@
         </div>
     </section>
 @endsection
+
+@push('scripts') {{-- Agregamos el JS específico de esta vista --}}
+    <script src="{{ asset('js/demo.js') }}"></script>
+@endpush

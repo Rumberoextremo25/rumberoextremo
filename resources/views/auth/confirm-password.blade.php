@@ -1,4 +1,4 @@
-@extends('layouts.app') {{-- Asegúrate de que esto apunte a tu layout principal --}}
+@extends('layouts.guest') {{-- Asegúrate de que esto apunte a tu layout principal --}}
 
 @section('title', 'Confirmar Contraseña - Rumbero Extremo') {{-- Título específico para esta página --}}
 

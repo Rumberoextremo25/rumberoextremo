@@ -15,5 +15,8 @@ class DatabaseSeeder extends Seeder
     {
         $this->call(AllyTypeSeeder::class);
         $this->call(RolesAndPermissionsSeeder::class);
+        $this->call(BusinessTypeSeeder::class);
+        $this->call(CategorySeeder::class);
+        $this->call(SubCategorySeeder::class);
     }
 }

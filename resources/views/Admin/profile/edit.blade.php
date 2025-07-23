@@ -2,7 +2,14 @@
 
 @section('title', 'Rumbero Extremo - Actualizar Perfil')
 
-@section('page_title', 'Actualizar Perfil')
+@section('page_title_toolbar', 'Actualizar Perfil')
+
+@push('styles')
+    {{-- Asegúrate de que Font Awesome esté cargado en tu layout global, si no, puedes añadirlo aquí --}}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    {{-- Enlaza al archivo CSS específico para la vista de perfil (que ahora incluye edición) --}}
+    <link rel="stylesheet" href="{{ asset('css/admin/profile.css') }}">
+@endpush
 
 @section('content')
     <div class="dashboard-container">
@@ -174,11 +181,13 @@
     </div>
 @endsection
 
-@section('scripts')
+@push('scripts')
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // Mostrar/ocultar sección de aliado
-            const isAlly = @json(Auth::user()->is_ally ?? false); // Pasa la variable 'is_ally' desde el controlador
+            // Nota: La variable 'is_ally' debe ser pasada desde el controlador a la vista.
+            // Ejemplo: return view('admin.profile.edit', ['is_ally' => Auth::user()->is_ally]);
+            const isAlly = @json(Auth::user()->is_ally ?? false);
             const allyFieldsSection = document.getElementById('ally_fields_section');
             if (allyFieldsSection) { // Verifica si el elemento existe antes de manipularlo
                 if (isAlly) {
@@ -225,4 +234,4 @@
             }
         });
     </script>
-@endsection
+@endpush

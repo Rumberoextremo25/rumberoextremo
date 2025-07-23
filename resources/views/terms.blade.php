@@ -2,6 +2,12 @@
 
 @section('title', 'Términos y Condiciones - Rumbero Extremo App')
 
+@push('styles') {{-- Agregamos el CSS específico de esta vista --}}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/terms.css') }}"> {{-- ¡Asegúrate de que este sea 'terms.css'! --}}
+@endpush
+
 @section('content')
 <section class="content-section">
     <div class="container policy-container"> {{-- Reutilizamos la clase policy-container para los estilos --}}
@@ -62,3 +68,7 @@
     </div>
 </section>
 @endsection
+
+@push('scripts') {{-- Agregamos el JS específico de esta vista --}}
+    <script src="{{ asset('js/terms.js') }}"></script> {{-- ¡Asegúrate de que este sea 'terms.js'! --}}
+@endpush

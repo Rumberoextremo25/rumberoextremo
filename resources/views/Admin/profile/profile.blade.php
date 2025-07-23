@@ -1,11 +1,19 @@
 @extends('layouts.admin')
 
-@section('title', 'Perfil de Usuario')
+@section('title', 'Mi Perfil')
 
-@section('page_title', 'Mi Perfil')
+@section('page_title', 'Mi Perfil de Usuario') {{-- Asegúrate de que tu layout.admin.blade.php tenga un @yield('page_title') --}}
+
+@push('styles')
+    {{-- Asegúrate de que Font Awesome esté cargado en tu layout global, si no, puedes añadirlo aquí --}}
+    {{-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css"> --}}
+
+    {{-- Enlaza al archivo CSS específico para la vista de perfil --}}
+    <link rel="stylesheet" href="{{ asset('css/admin/profile.css') }}">
+@endpush
 
 @section('content')
-    <div class="dashboard-container"> {{-- Contenedor principal para mantener la consistencia con el dashboard --}}
+    <div class="dashboard-container"> {{-- Contenedor principal ajustado para ser más angosto --}}
 
         {{-- Sección del Encabezado del Perfil --}}
         <div class="profile-hero-section">
@@ -18,18 +26,16 @@
             <div class="profile-header-info">
                 <h2 class="profile-display-name">{{ Auth::user()->name }}</h2>
                 <p class="profile-role-tag">{{ Auth::user()->role ?? 'Usuario' }}</p> {{-- Asume un campo 'role' --}}
-                <a href="{{ route('profile.edit') }}" class="btn btn-primary mt-3">
+                <a href="{{ route('profile.edit') }}" class="btn btn-primary">
                     <i class="fas fa-edit"></i> Editar Perfil
                 </a>
             </div>
         </div>
 
-        ---
-
         <div class="profile-grid">
             {{-- Tarjeta de Información Personal --}}
             <div class="profile-card">
-                <h3 class="card-title"><i class="fas fa-id-card me-2"></i> Información Personal</h3>
+                <h3 class="card-title"><i class="fas fa-id-card"></i> Información Personal</h3>
                 <div class="detail-group">
                     <div class="detail-item">
                         <strong>Tipo de Usuario:</strong>
@@ -53,7 +59,7 @@
 
             {{-- Tarjeta de Información de Contacto --}}
             <div class="profile-card">
-                <h3 class="card-title"><i class="fas fa-address-book me-2"></i> Información de Contacto</h3>
+                <h3 class="card-title"><i class="fas fa-address-book"></i> Información de Contacto</h3>
                 <div class="detail-group">
                     <div class="detail-item">
                         <strong>Correo Electrónico:</strong>
@@ -75,10 +81,9 @@
             </div>
 
             {{-- Tarjeta de Información del Aliado (Condicional) --}}
-            {{-- Asumiendo que tienes un campo `is_ally` booleano en tu modelo User o una lógica similar --}}
             @if (Auth::user()->is_ally ?? false)
                 <div class="profile-card allied-info-card">
-                    <h3 class="card-title"><i class="fas fa-handshake me-2"></i> Información del Aliado</h3>
+                    <h3 class="card-title"><i class="fas fa-handshake"></i> Información del Aliado</h3>
                     <div class="detail-group">
                         <div class="detail-item">
                             <strong>Nombre de la Empresa:</strong>
@@ -93,11 +98,11 @@
                             <span>{{ Auth::user()->service_category ?? 'N/A' }}</span>
                         </div>
                         <div class="detail-item">
-                            <strong>Fecha de Registro como Aliado:</strong>
+                            <strong>Fecha de Registro:</strong>
                             <span>{{ Auth::user()->allied_registered_at ? \Carbon\Carbon::parse(Auth::user()->allied_registered_at)->format('d/m/Y') : 'N/A' }}</span>
                         </div>
                         <div class="detail-item">
-                            <strong>URL del Sitio Web:</strong>
+                            <strong>Sitio Web:</strong>
                             <span>
                                 @if(Auth::user()->website_url)
                                     <a href="{{ Auth::user()->website_url }}" target="_blank">{{ Auth::user()->website_url }}</a>
@@ -108,7 +113,7 @@
                         </div>
                         <div class="detail-item">
                             <strong>Descuento Rumbero Extremo:</strong>
-                            <span>{{ Auth::user()->discount ?? 'N/A' }}</span>
+                            <span>{{ Auth::user()->discount ? number_format(Auth::user()->discount, 0) . '%' : 'N/A' }}</span>
                         </div>
                     </div>
                 </div>
@@ -116,7 +121,7 @@
 
             {{-- Tarjeta de Seguridad y Preferencias (Opcional) --}}
             <div class="profile-card">
-                <h3 class="card-title"><i class="fas fa-lock me-2"></i> Seguridad y Preferencias</h3>
+                <h3 class="card-title"><i class="fas fa-shield-alt"></i> Seguridad y Preferencias</h3>
                 <div class="detail-group">
                     <div class="detail-item">
                         <strong>Último Acceso:</strong>
@@ -130,8 +135,8 @@
                             {{ (Auth::user()->two_factor_enabled ?? false) ? 'Activa' : 'Inactiva' }}
                         </span>
                     </div>
-                    <div class="d-flex justify-content-end mt-3">
-                        <a href="{{ route('password.change') }}" class="btn btn-secondary btn-sm">Cambiar Contraseña</a>
+                    <div class="d-flex justify-content-end">
+                        <a href="{{ route('password.change') }}" class="btn btn-secondary">Cambiar Contraseña</a>
                     </div>
                 </div>
             </div>
@@ -139,32 +144,7 @@
     </div>
 @endsection
 
-@section('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Lógica para activar el enlace "Perfil" en la sidebar (si tu sidebar tiene esta estructura)
-            const sidebarLinks = document.querySelectorAll('.sidebar ul li a');
-            sidebarLinks.forEach(link => {
-                link.classList.remove('active');
-                if (link.href && link.href.includes('/profile')) { // Ajusta la ruta si es diferente en tu sidebar
-                    link.classList.add('active');
-                }
-            });
-
-            const body = document.body;
-            const savedTheme = localStorage.getItem('theme'); // Asume que guardas el tema en localStorage
-            if (savedTheme === 'dark-mode') {
-                body.classList.add('dark-mode');
-            } else {
-                body.classList.remove('dark-mode');
-            }
-
-            const editButton = document.getElementById('editProfileButton'); // Este ID no está en tu HTML, asegúrate de añadirlo al botón de editar si lo quieres usar.
-            if (editButton) {
-                editButton.addEventListener('click', (e) => {
-                    e.preventDefault();
-                });
-            }
-        });
-    </script>
-@endsection
+@push('scripts')
+    {{-- Enlaza al archivo JavaScript específico para la vista de perfil --}}
+    <script src="{{ asset('js/admin/profile/profile.js') }}"></script>
+@endpush

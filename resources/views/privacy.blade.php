@@ -2,6 +2,12 @@
 
 @section('title', 'Políticas de Privacidad - Rumbero Extremo App')
 
+@push('styles') {{-- Agregamos el CSS específico de esta vista --}}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/policy.css') }}">
+@endpush
+
 @section('content')
 <section class="content-section">
     <div class="container policy-container">
@@ -72,86 +78,6 @@
 </section>
 @endsection
 
-{{-- Puedes agregar estilos específicos para estas páginas en tu app.css o un archivo dedicado --}}
-<style>
-    /* Estilos básicos para las páginas de políticas */
-    .policy-container {
-        max-width: 900px;
-        margin: 40px auto;
-        padding: 30px;
-        background-color: var(--card-bg-color, #fff); /* Usa una variable CSS si la tienes */
-        border-radius: 8px;
-        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-        color: var(--text-color, #333);
-    }
-
-    .policy-container h1 {
-        font-size: 2.5em;
-        color: var(--primary-color, #ff5722);
-        margin-bottom: 20px;
-        text-align: center;
-        font-weight: 700;
-    }
-
-    .policy-container .last-updated {
-        text-align: center;
-        font-size: 0.9em;
-        color: var(--text-color-light, #666);
-        margin-bottom: 40px;
-        font-style: italic;
-    }
-
-    .policy-section {
-        margin-bottom: 30px;
-        line-height: 1.7;
-    }
-
-    .policy-section h2 {
-        font-size: 1.8em;
-        color: var(--primary-color-dark, #e64a19);
-        margin-bottom: 15px;
-        border-bottom: 2px solid var(--primary-color-light, #ff8a65);
-        padding-bottom: 8px;
-        font-weight: 600;
-    }
-
-    .policy-section p {
-        margin-bottom: 15px;
-    }
-
-    .policy-section ul {
-        list-style-type: disc;
-        margin-left: 30px;
-        margin-bottom: 15px;
-    }
-
-    .policy-section ul li {
-        margin-bottom: 8px;
-    }
-
-    .policy-section a {
-        color: var(--link-color, #007bff);
-        text-decoration: none;
-    }
-
-    .policy-section a:hover {
-        text-decoration: underline;
-    }
-
-    .policy-contact {
-        margin-top: 40px;
-        padding-top: 20px;
-        border-top: 1px solid #eee;
-        text-align: center;
-        font-size: 0.95em;
-        color: var(--text-color-light, #555);
-    }
-    .policy-contact ul {
-        list-style: none;
-        padding: 0;
-        margin-top: 10px;
-    }
-    .policy-contact ul li {
-        margin-bottom: 5px;
-    }
-</style>
+@push('scripts') {{-- Agregamos el JS específico de esta vista --}}
+    <script src="{{ asset('js/policy.js') }}"></script>
+@endpush

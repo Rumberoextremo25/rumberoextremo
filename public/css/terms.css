@@ -1,0 +1,196 @@
+/* General Body Styling */
+body {
+    font-family: 'Poppins', sans-serif; /* Usamos Poppins para el cuerpo */
+    background-color: #1a1a2e; /* Un fondo oscuro profundo */
+    color: #E0E0E0; /* Texto claro para contraste */
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* Main Content Section */
+.content-section {
+    padding: 80px 20px 40px; /* Padding superior para evitar que el header fijo lo cubra */
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.7) 0%, rgba(26, 26, 46, 0.9) 100%); /* Degradado sutil */
+    min-height: calc(100vh - 100px); /* Asegura que ocupe al menos la altura de la ventana */
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+/* Policy Container - The main content box */
+.policy-container {
+    background-color: rgba(25, 25, 45, 0.9); /* Fondo ligeramente más claro y transparente para el contenido */
+    border-radius: 15px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5); /* Sombra más pronunciada */
+    padding: 40px;
+    max-width: 900px; /* Ancho máximo para legibilidad */
+    width: 100%;
+    margin: 20px auto; /* Centra el contenedor y añade margen */
+    border: 1px solid rgba(255, 215, 0, 0.2); /* Borde sutil dorado */
+}
+
+/* Main Title */
+.policy-container h1 {
+    font-family: 'Montserrat', sans-serif; /* Montserrat para títulos */
+    color: #FFD700; /* Dorado/Amarillo para el título principal */
+    font-size: 3em;
+    text-align: center;
+    margin-bottom: 20px;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.3); /* Sombra de texto sutil */
+}
+
+/* Last Updated Text */
+.policy-container .last-updated {
+    text-align: center;
+    font-size: 0.9em;
+    color: #B0B0B0; /* Gris más claro */
+    margin-bottom: 40px;
+    font-style: italic;
+}
+
+/* Individual Policy Sections */
+.policy-section {
+    background-color: rgba(30, 30, 50, 0.7); /* Fondo para cada sección */
+    border-radius: 10px;
+    padding: 30px;
+    margin-bottom: 30px;
+    border-left: 5px solid #8A2BE2; /* Borde morado a la izquierda */
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.policy-section:hover {
+    transform: translateY(-5px); /* Efecto de elevación al pasar el ratón */
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+}
+
+/* Section Headings */
+.policy-section h2 {
+    font-family: 'Montserrat', sans-serif;
+    color: #FFD700; /* Dorado/Amarillo para subtítulos */
+    font-size: 1.8em;
+    margin-top: 0;
+    margin-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 215, 0, 0.1); /* Línea divisoria sutil */
+    padding-bottom: 10px;
+}
+
+/* Paragraphs within sections */
+.policy-section p {
+    font-size: 1em;
+    color: #E0E0E0;
+    margin-bottom: 15px;
+}
+
+/* Unordered Lists */
+.policy-section ul {
+    list-style: none; /* Elimina los puntos por defecto */
+    padding: 0;
+    margin: 15px 0;
+}
+
+.policy-section ul li {
+    position: relative;
+    padding-left: 25px; /* Espacio para el icono personalizado */
+    margin-bottom: 10px;
+    color: #E0E0E0;
+}
+
+.policy-section ul li::before {
+    content: '\f058'; /* Icono de Font Awesome para un checkmark (fa-check-circle) */
+    font-family: 'Font Awesome 6 Free'; /* Asegúrate de que Font Awesome esté cargado */
+    font-weight: 900; /* Para iconos sólidos */
+    color: #3CB371; /* Verde para el checkmark */
+    position: absolute;
+    left: 0;
+    top: 0;
+}
+
+/* Contact Section */
+.policy-contact {
+    background-color: rgba(30, 30, 50, 0.7);
+    border-radius: 10px;
+    padding: 30px;
+    margin-top: 40px;
+    text-align: center;
+    border: 1px dashed rgba(138, 43, 226, 0.3); /* Borde punteado morado */
+}
+
+.policy-contact p {
+    font-size: 1.1em;
+    color: #E0E0E0;
+    margin-bottom: 15px;
+}
+
+.policy-contact ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.policy-contact ul li {
+    margin-bottom: 10px;
+}
+
+.policy-contact ul li a {
+    color: #FFD700; /* Enlaces dorados */
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s ease, text-decoration 0.3s ease;
+}
+
+.policy-contact ul li a:hover {
+    color: #9932CC; /* Morado oscuro al pasar el ratón */
+    text-decoration: underline;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .content-section {
+        padding: 60px 15px 30px;
+    }
+
+    .policy-container {
+        padding: 25px;
+        margin: 15px auto;
+    }
+
+    .policy-container h1 {
+        font-size: 2.2em;
+    }
+
+    .policy-section {
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .policy-section h2 {
+        font-size: 1.5em;
+    }
+
+    .policy-section ul li {
+        padding-left: 20px;
+    }
+
+    .policy-contact {
+        padding: 20px;
+        margin-top: 30px;
+    }
+}
+
+@media (max-width: 480px) {
+    .policy-container h1 {
+        font-size: 1.8em;
+    }
+
+    .policy-section h2 {
+        font-size: 1.3em;
+    }
+
+    .policy-section p,
+    .policy-contact p {
+        font-size: 0.95em;
+    }
+}

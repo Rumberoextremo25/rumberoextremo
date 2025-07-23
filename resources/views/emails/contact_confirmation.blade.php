@@ -1,18 +1,33 @@
-@component('mail::message')
-# ¡Hola {{ $contactData['name'] }}!
+@component('mail::layout')
+    {{-- Header del correo --}}
+    @slot('header')
+        <div class="email-header">
+            <h1>¡Hola {{ $contactData['name'] ?? '!' }}</h1> {{-- Usar null coalescing para seguridad --}}
+        </div>
+    @endslot
 
-Hemos recibido tu mensaje en Rumbero Extremo. Agradecemos que te hayas puesto en contacto con nosotros.
+    {{-- Contenido principal del correo --}}
+    @slot('body')
+        <div class="email-content">
+            <p>Hemos recibido tu mensaje en Rumbero Extremo. Agradecemos que te hayas puesto en contacto con nosotros.</p>
 
-Aquí está un resumen de tu mensaje:
+            <div class="message-summary">
+                <p><strong>Asunto:</strong> {{ $contactData['subject'] ?? 'N/A' }}</p>
+                <p><strong>Mensaje:</strong></p>
+                <p>{{ $contactData['message_content'] }}</p>
+            </div>
 
-**Asunto:** {{ $contactData['subject'] ?? 'N/A' }}
-**Mensaje:**
-{{ $contactData['message_content'] }}
+            <p>Nos pondremos en contacto contigo lo antes posible.</p>
 
-Nos pondremos en contacto contigo lo antes posible.
+            <p>¡Gracias por ser parte de la rumba!</p>
+        </div>
+    @endslot
 
-¡Gracias por ser parte de la rumba!
-
-Saludos,
-El equipo de Rumbero Extremo
+    {{-- Footer del correo --}}
+    @slot('footer')
+        <div class="email-footer">
+            <p>&copy; {{ date('Y') }} Rumbero Extremo. Todos los derechos reservados.</p>
+            <p><a href="{{ url('/privacy') }}">Política de Privacidad</a> | <a href="{{ url('/terms') }}">Términos y Condiciones</a></p>
+        </div>
+    @endslot
 @endcomponent

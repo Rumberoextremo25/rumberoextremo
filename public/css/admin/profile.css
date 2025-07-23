@@ -1,0 +1,918 @@
+/* resources/css/admin/profile/profile.css */
+
+/*
+   Nota: Este archivo asume que las variables de tema (ej. --primary-color, --card-background)
+   están definidas y cargadas previamente desde tu archivo CSS principal (app.css).
+*/
+
+.dashboard-container {
+    max-width: 1000px; /* Ajustado para el ancho del contenido del perfil */
+    margin: 3rem auto;
+    padding: 2rem;
+    box-sizing: border-box; /* Incluye padding en el ancho total */
+}
+
+/* Sección del Encabezado del Perfil (Hero Section) */
+.profile-hero-section {
+    background-color: var(--card-background);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-subtle);
+    border: 1px solid var(--border-color);
+    padding: 2.5rem;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
+}
+
+.profile-avatar-wrapper {
+    position: relative;
+    flex-shrink: 0; /* Evita que el avatar se encoja */
+}
+
+.profile-avatar-lg {
+    width: 120px; /* Tamaño grande para el avatar de perfil */
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid var(--primary-color); /* Borde más prominente */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    transition: transform 0.3s ease, border-color 0.3s ease;
+}
+
+.profile-avatar-lg:hover {
+    transform: scale(1.03);
+    border-color: var(--accent-color);
+}
+
+.user-status-indicator {
+    position: absolute;
+    bottom: 8px;
+    right: 8px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: #ccc; /* Default */
+    border: 3px solid var(--card-background); /* Borde para contrastar con el fondo */
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.1);
+}
+
+.user-status-indicator.online {
+    background-color: var(--success-color); /* Verde para online */
+}
+/* Añade más estados si es necesario (e.g., .offline, .away) */
+
+.profile-header-info {
+    flex-grow: 1;
+}
+
+.profile-display-name {
+    font-size: 2.5rem; /* Título grande para el nombre */
+    font-weight: 700;
+    color: var(--heading-color);
+    margin: 0 0 0.5rem 0;
+    line-height: 1.2;
+}
+
+.profile-role-tag {
+    display: inline-block;
+    background-color: var(--secondary-color); /* Color de rol */
+    color: white;
+    padding: 0.4rem 1rem;
+    border-radius: var(--border-radius-md);
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+/* Botón de Editar Perfil en el encabezado */
+.profile-hero-section .btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.8rem 1.5rem;
+    border-radius: var(--border-radius-md);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.95rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.7rem;
+    transition: background-color var(--transition-speed), transform 0.2s ease, box-shadow var(--transition-speed);
+    border: none;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.profile-hero-section .btn-primary:hover {
+    background-color: var(--secondary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(var(--primary-rgb), 0.2);
+}
+
+/* Grid para las tarjetas de información */
+.profile-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr)); /* Dos columnas en desktop, adaptable */
+    gap: 2rem; /* Espacio entre las tarjetas */
+}
+
+.profile-card {
+    background-color: var(--card-background);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-subtle);
+    border: 1px solid var(--border-color);
+    padding: 2rem;
+    transition: all var(--transition-speed);
+}
+
+.profile-card:hover {
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-medium);
+}
+
+.card-title {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid var(--border-color);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+
+.card-title i {
+    color: var(--accent-color); /* Color de acento para los iconos de título */
+    font-size: 1.3rem;
+}
+
+.detail-group {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem; /* Espacio entre cada par de detalle */
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between; /* Alinea texto a izquierda y valor a derecha */
+    align-items: baseline;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px dashed var(--border-color); /* Línea punteada sutil */
+}
+
+.detail-item:last-child {
+    border-bottom: none; /* Eliminar borde del último elemento */
+    padding-bottom: 0;
+}
+
+.detail-item strong {
+    font-weight: 600;
+    color: var(--heading-color);
+    flex-shrink: 0; /* Evita que el label se encoja */
+    margin-right: 1rem; /* Espacio entre label y valor */
+    font-size: 0.95rem;
+}
+
+.detail-item span {
+    color: var(--text-color);
+    font-size: 0.95rem;
+    text-align: right;
+    word-break: break-word; /* Permite que el texto largo se rompa */
+}
+
+.detail-item a {
+    color: var(--info-color);
+    text-decoration: none;
+    transition: color var(--transition-speed);
+}
+.detail-item a:hover {
+    color: var(--primary-color);
+    text-decoration: underline;
+}
+
+/* Estilos específicos para la tarjeta de información del aliado */
+.allied-info-card {
+    /* Puede tener estilos adicionales si es necesario,
+       o simplemente heredar de .profile-card */
+    background-color: var(--card-background);
+    border-color: var(--info-color); /* Borde distintivo para aliados */
+}
+body.dark-mode .allied-info-card {
+    border-color: var(--info-color);
+}
+
+
+/* Reutilizar estilos de badge de users.css si son consistentes */
+.status-badge {
+    padding: 0.3em 0.7em;
+    border-radius: var(--border-radius-sm);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: white;
+    display: inline-block;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    white-space: nowrap;
+}
+
+.status-badge.status-success { background-color: var(--success-color); }
+.status-badge.status-danger { background-color: var(--danger-color); }
+.status-badge.status-warning { background-color: var(--warning-color); }
+.status-badge.status-info { background-color: var(--info-color); }
+
+
+/* Estilos para botones dentro de tarjetas (ej. Cambiar Contraseña) */
+.profile-card .btn-secondary {
+    background-color: var(--secondary-color);
+    color: white;
+    padding: 0.6rem 1.2rem;
+    border-radius: var(--border-radius-md);
+    text-decoration: none;
+    font-weight: 500;
+    font-size: 0.9rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: background-color var(--transition-speed), transform 0.1s ease;
+    border: none;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.profile-card .btn-secondary:hover {
+    background-color: #6a2190; /* Tono más oscuro del secundario */
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(var(--secondary-rgb), 0.2);
+}
+
+.d-flex.justify-content-end {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 1.5rem; /* Espacio para el botón */
+}
+
+
+/* Responsive Design para la vista de Perfil */
+@media (max-width: 1024px) {
+    .dashboard-container {
+        padding: 1.5rem;
+        margin: 2rem auto;
+    }
+    .profile-hero-section {
+        padding: 2rem;
+        gap: 1.5rem;
+    }
+    .profile-avatar-lg {
+        width: 100px;
+        height: 100px;
+    }
+    .user-status-indicator {
+        width: 18px;
+        height: 18px;
+        bottom: 6px;
+        right: 6px;
+    }
+    .profile-display-name {
+        font-size: 2.2rem;
+    }
+    .profile-role-tag {
+        font-size: 0.85rem;
+        padding: 0.3rem 0.8rem;
+    }
+    .profile-hero-section .btn-primary {
+        padding: 0.7rem 1.3rem;
+        font-size: 0.9rem;
+    }
+    .profile-grid {
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+    .profile-card {
+        padding: 1.8rem;
+    }
+    .card-title {
+        font-size: 1.4rem;
+    }
+    .card-title i {
+        font-size: 1.2rem;
+    }
+    .detail-item strong,
+    .detail-item span {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-container {
+        padding: 1rem;
+        margin: 1.5rem auto;
+    }
+    .profile-hero-section {
+        flex-direction: column; /* Apila el avatar y la info */
+        text-align: center;
+        padding: 1.5rem;
+        gap: 1rem;
+    }
+    .profile-display-name {
+        font-size: 2rem;
+    }
+    .profile-role-tag {
+        margin-bottom: 1rem;
+    }
+    .profile-grid {
+        grid-template-columns: 1fr; /* Una columna en móvil */
+        gap: 1.2rem;
+    }
+    .profile-card {
+        padding: 1.5rem;
+    }
+    .card-title {
+        font-size: 1.3rem;
+        margin-bottom: 1.2rem;
+    }
+    .card-title i {
+        font-size: 1.1rem;
+    }
+    .detail-item {
+        flex-direction: column; /* Apila label y valor */
+        align-items: flex-start;
+        gap: 0.2rem;
+        padding-bottom: 0.8rem;
+    }
+    .detail-item strong {
+        margin-right: 0;
+        font-size: 0.85rem;
+        text-align: left;
+    }
+    .detail-item span {
+        text-align: left;
+        font-size: 0.9rem;
+    }
+    .d-flex.justify-content-end {
+        justify-content: center; /* Centra el botón en móvil */
+    }
+}
+
+@media (max-width: 480px) {
+    .profile-hero-section {
+        padding: 1rem;
+    }
+    .profile-avatar-lg {
+        width: 90px;
+        height: 90px;
+    }
+    .user-status-indicator {
+        width: 16px;
+        height: 16px;
+        bottom: 4px;
+        right: 4px;
+    }
+    .profile-display-name {
+        font-size: 1.8rem;
+    }
+    .profile-role-tag {
+        font-size: 0.8rem;
+    }
+    .profile-hero-section .btn-primary {
+        padding: 0.6rem 1rem;
+        font-size: 0.85rem;
+    }
+    .profile-card {
+        padding: 1.2rem;
+    }
+    .card-title {
+        font-size: 1.2rem;
+    }
+    .card-title i {
+        font-size: 1rem;
+    }
+    .detail-item strong,
+    .detail-item span {
+        font-size: 0.8rem;
+    }
+    .profile-card .btn-secondary {
+        padding: 0.5rem 1rem;
+        font-size: 0.8rem;
+    }
+}
+
+/* --- Estilos para la Vista de Edición de Perfil (profile.edit) --- */
+.form-card {
+    /* Hereda de .profile-card pero puede tener ajustes específicos */
+    padding: 2.5rem; /* Más padding para formularios */
+}
+
+.form-card .card-title {
+    margin-bottom: 2rem; /* Más espacio debajo del título del formulario */
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--primary-color); /* Borde más fuerte */
+}
+
+.form-section-group {
+    background-color: var(--background-color); /* Fondo ligeramente diferente para agrupar campos */
+    border-radius: var(--border-radius-md);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    border: 1px solid var(--border-color);
+}
+body.dark-mode .form-section-group {
+    background-color: var(--input-background);
+    border-color: var(--input-border);
+}
+
+.form-section-group h4 {
+    font-size: 1.3rem;
+    color: var(--heading-color);
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+    position: relative;
+    padding-left: 1.5rem;
+}
+.form-section-group h4::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 8px;
+    height: 8px;
+    background-color: var(--accent-color);
+    border-radius: 50%;
+}
+
+.avatar-upload-group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 2rem;
+    gap: 0.8rem;
+}
+
+.avatar-preview-wrapper {
+    position: relative;
+    width: 150px; /* Tamaño del contenedor de la imagen */
+    height: 150px;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 3px solid var(--primary-color);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+.avatar-preview-wrapper:hover {
+    transform: scale(1.02);
+    border-color: var(--accent-color);
+    box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+}
+
+.form-control-file {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    cursor: pointer;
+    z-index: 5; /* Para que sea clickeable */
+}
+
+.form-text-hint {
+    font-size: 0.85rem;
+    color: var(--text-color-light);
+    text-align: center;
+    margin-top: 0.5rem;
+}
+
+/* Estilos de formulario generales (reutilizados de users.css si son consistentes) */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem 2rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--heading-color);
+    margin-bottom: 0.2rem;
+}
+
+.form-control {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--input-border);
+    border-radius: var(--border-radius-md);
+    background-color: var(--input-background);
+    color: var(--text-color);
+    font-size: 1rem;
+    transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+    box-sizing: border-box;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
+}
+
+textarea.form-control {
+    resize: vertical;
+    min-height: 100px;
+}
+
+.invalid-feedback {
+    color: var(--danger-color);
+    font-size: 0.85rem;
+    margin-top: 0.2rem;
+    display: none; /* Por defecto oculto, Bootstrap lo muestra con .is-invalid */
+}
+.invalid-feedback.d-block { /* Para forzar la visualización sin Bootstrap */
+    display: block;
+}
+
+.form-control.is-invalid {
+    border-color: var(--danger-color);
+}
+
+.required-asterisk {
+    color: var(--danger-color);
+    font-size: 1rem;
+    margin-left: 0.2rem;
+    vertical-align: middle;
+}
+
+.full-width-field {
+    grid-column: 1 / -1; /* Ocupa todo el ancho en el grid */
+}
+
+/* Botones de acción del formulario */
+.form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: flex-end; /* Alinea a la derecha */
+    margin-top: 2.5rem;
+}
+
+.form-actions .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    padding: 0.8rem 1.8rem;
+    border-radius: var(--border-radius-md);
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: background-color var(--transition-speed), transform 0.1s ease, box-shadow var(--transition-speed);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+    color: white;
+}
+
+.form-actions .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.form-actions .btn-secondary {
+    background-color: var(--secondary-color);
+}
+.form-actions .btn-secondary:hover {
+    background-color: #6a2190;
+}
+
+.form-actions .btn-primary {
+    background-color: var(--primary-color);
+}
+.form-actions .btn-primary:hover {
+    background-color: #450a9c;
+}
+
+/* Estilos para alertas de sesión (si no usas Bootstrap directamente) */
+.alert {
+    padding: 1rem 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid transparent;
+    border-radius: var(--border-radius-md);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.95rem;
+    font-weight: 500;
+}
+
+.alert-success {
+    background-color: rgba(var(--success-rgb), 0.1);
+    color: var(--success-color);
+    border-color: rgba(var(--success-rgb), 0.3);
+}
+
+.alert-danger {
+    background-color: rgba(var(--danger-rgb), 0.1);
+    color: var(--danger-color);
+    border-color: rgba(var(--danger-rgb), 0.3);
+}
+
+.alert-heading {
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    color: inherit; /* Hereda el color del alert */
+}
+
+.alert ul {
+    margin: 0;
+    padding-left: 1.2rem;
+}
+
+.alert li {
+    margin-bottom: 0.3rem;
+}
+
+.alert .btn-close {
+    background: none;
+    border: none;
+    font-size: 1.2rem;
+    color: inherit;
+    opacity: 0.7;
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+    padding: 0.5rem; /* Aumenta el área de clic */
+    line-height: 1; /* Asegura que el 'x' esté centrado */
+}
+
+.alert .btn-close:hover {
+    opacity: 1;
+}
+
+/* Responsive para la vista de edición de perfil */
+@media (max-width: 1024px) {
+    .form-card {
+        padding: 2rem;
+    }
+    .form-section-group {
+        padding: 1.2rem;
+    }
+    .form-section-group h4 {
+        font-size: 1.2rem;
+        margin-bottom: 1.2rem;
+    }
+    .avatar-preview-wrapper {
+        width: 120px;
+        height: 120px;
+    }
+    .form-label {
+        font-size: 0.9rem;
+    }
+    .form-control {
+        padding: 0.7rem 0.9rem;
+        font-size: 0.95rem;
+    }
+    .form-actions .btn {
+        padding: 0.7rem 1.5rem;
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .form-card {
+        padding: 1.5rem;
+    }
+    .form-section-group {
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    .form-section-group h4 {
+        font-size: 1.1rem;
+        margin-bottom: 1rem;
+    }
+    .avatar-upload-group {
+        margin-bottom: 1.5rem;
+    }
+    .avatar-preview-wrapper {
+        width: 100px;
+        height: 100px;
+    }
+    .form-grid {
+        grid-template-columns: 1fr; /* Una columna en móvil */
+        gap: 1rem;
+    }
+    .form-label {
+        font-size: 0.85rem;
+    }
+    .form-control {
+        padding: 0.6rem 0.8rem;
+        font-size: 0.9rem;
+    }
+    textarea.form-control {
+        min-height: 80px;
+    }
+    .form-actions {
+        flex-direction: column;
+        gap: 0.8rem;
+        margin-top: 1.5rem;
+    }
+    .form-actions .btn {
+        width: 100%;
+        justify-content: center;
+        padding: 0.9rem 1.5rem;
+        font-size: 0.95rem;
+    }
+    .alert {
+        padding: 0.8rem 1rem;
+        font-size: 0.85rem;
+    }
+    .alert-heading {
+        font-size: 1rem;
+    }
+    .alert ul {
+        padding-left: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .form-card {
+        padding: 1rem;
+    }
+    .form-section-group {
+        padding: 0.8rem;
+    }
+    .form-section-group h4 {
+        font-size: 1rem;
+    }
+    .avatar-preview-wrapper {
+        width: 80px;
+        height: 80px;
+    }
+    .form-text-hint {
+        font-size: 0.75rem;
+    }
+    .form-group label {
+        font-size: 0.8rem;
+    }
+    .form-control {
+        padding: 0.5rem 0.7rem;
+        font-size: 0.85rem;
+    }
+    textarea.form-control {
+        min-height: 60px;
+    }
+    .form-actions .btn {
+        padding: 0.7rem 1.2rem;
+        font-size: 0.85rem;
+    }
+    .alert {
+        font-size: 0.75rem;
+    }
+    .alert-heading {
+        font-size: 0.9rem;
+    }
+}
+
+/* --- Estilos para la Vista de Cambio de Contraseña (password-change) --- */
+.password-change-section {
+    max-width: 600px; /* Un poco más angosto para el formulario de contraseña */
+    margin: 3rem auto;
+    padding: 2.5rem;
+    background-color: var(--card-background);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-subtle);
+    border: 1px solid var(--border-color);
+}
+
+.password-change-section .card-title {
+    font-size: 1.8rem; /* Título ligeramente más pequeño que el de perfil */
+    color: var(--primary-color);
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid var(--primary-color);
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+}
+.password-change-section .card-title i {
+    color: var(--accent-color);
+    font-size: 1.6rem;
+}
+
+/* Reutiliza .form-group, .form-label, .form-control */
+.password-change-section .form-group {
+    margin-bottom: 1.5rem; /* Espacio entre grupos de formulario */
+}
+
+.password-change-section .error-message {
+    color: var(--danger-color);
+    font-size: 0.85rem;
+    margin-top: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+.password-change-section .error-message i {
+    font-size: 1rem;
+}
+
+/* Botones de acción del formulario */
+.password-change-section .form-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: flex-end; /* Alinea a la derecha */
+    margin-top: 2rem;
+}
+
+.password-change-section .submit-btn {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.8rem 1.8rem;
+    border-radius: var(--border-radius-md);
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: background-color var(--transition-speed), transform 0.1s ease, box-shadow var(--transition-speed);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.08);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+}
+
+.password-change-section .submit-btn:hover {
+    background-color: #450a9c; /* Tono más oscuro del primario */
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+}
+
+.password-change-section .cancel-link {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.8rem 1.2rem;
+    color: var(--text-color-light);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color var(--transition-speed);
+}
+
+.password-change-section .cancel-link:hover {
+    color: var(--primary-color);
+    text-decoration: underline;
+}
+
+/* Responsive para la vista de cambio de contraseña */
+@media (max-width: 768px) {
+    .password-change-section {
+        padding: 1.5rem;
+        margin: 1.5rem auto;
+    }
+    .password-change-section .card-title {
+        font-size: 1.5rem;
+        margin-bottom: 1.5rem;
+    }
+    .password-change-section .form-group {
+        margin-bottom: 1.2rem;
+    }
+    .password-change-section .form-actions {
+        flex-direction: column;
+        gap: 0.8rem;
+        margin-top: 1.5rem;
+    }
+    .password-change-section .submit-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 0.9rem 1.5rem;
+    }
+    .password-change-section .cancel-link {
+        width: 100%;
+        text-align: center;
+        justify-content: center;
+        padding: 0.7rem 1.2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .password-change-section {
+        padding: 1rem;
+    }
+    .password-change-section .card-title {
+        font-size: 1.3rem;
+        margin-bottom: 1rem;
+    }
+    .password-change-section .submit-btn {
+        padding: 0.7rem 1.2rem;
+        font-size: 0.9rem;
+    }
+    .password-change-section .cancel-link {
+        font-size: 0.9rem;
+    }
+}

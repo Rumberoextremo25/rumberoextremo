@@ -1,6 +1,11 @@
-@extends('layouts.app') {{-- Reemplaza 'layouts.app' con el nombre de tu layout principal si es diferente --}}
+@extends('layouts.app')
 
-@section('title', 'Preguntas Frecuentes - Rumbero Extremo') {{-- Opcional: Define un título específico para esta página --}}
+@section('title', 'Preguntas Frecuentes - Rumbero Extremo')
+
+@push('styles')
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/faq.css') }}">
+@endpush
 
 @section('content')
     <section class="faq-section">
@@ -196,52 +201,16 @@
                         </p>
                     </div>
                 </div>
-
-                {{-- Añade más preguntas y respuestas aquí --}}
-
-            </div> {{-- Fin .faq-list --}}
+            </div>
 
             <p class="faq-contact-prompt">
                 ¿Aún tienes preguntas? <a href="{{ url('/contact') }}" class="faq-contact-link">Contáctanos
                     directamente</a>.
             </p>
-
-        </div> {{-- Fin .faq-container --}}
+        </div>
     </section>
 @endsection
 
 @push('scripts')
-    {{-- El JavaScript para la funcionalidad de acordeón --}}
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            const faqQuestions = document.querySelectorAll('.faq-question');
-
-            faqQuestions.forEach(question => {
-                question.addEventListener('click', () => {
-                    // Cierra todas las otras respuestas abiertas (opcional, pero mejora la UX)
-                    faqQuestions.forEach(otherQuestion => {
-                        if (otherQuestion !== question && otherQuestion.classList.contains(
-                                'active')) {
-                            otherQuestion.classList.remove('active');
-                            otherQuestion.nextElementSibling.classList.remove('active');
-                        }
-                    });
-
-                    // Alternar la clase 'active' en la pregunta y la respuesta
-                    question.classList.toggle('active');
-                    const answer = question
-                        .nextElementSibling; // La respuesta es el siguiente hermano del botón
-                    answer.classList.toggle('active');
-
-                    // Cambiar el signo del icono
-                    const icon = question.querySelector('.faq-icon');
-                    if (question.classList.contains('active')) {
-                        icon.textContent = '–'; // Cambiar a signo de resta
-                    } else {
-                        icon.textContent = '+'; // Cambiar a signo de suma
-                    }
-                });
-            });
-        });
-    </script>
+    <script src="{{ asset('js/faq.js') }}"></script>
 @endpush

@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\SubcategoryController; // Asegúrate de importarlo
 use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ProductController;
+use App\Http\Controllers\Api\AliadoController;
+use App\Http\Controllers\Api\HomeController;
 
 /*
 |--------------------------------------------------------------------------
@@ -36,3 +38,12 @@ Route::post('populate-db', function () {
     \Illuminate\Support\Facades\Artisan::call('migrate:fresh --seed');
     return response()->json(['success' => true, 'message' => 'Base de datos refrescada y sembrada.']);
 });
+
+// Ruta para obtener todos los aliados (GET /api/aliados)
+Route::get('/aliados', [AliadoController::class, 'index']);
+
+// Opcional: Ruta para obtener un solo aliado por ID (GET /api/aliados/{id})
+Route::get('/aliados/{id}', [AliadoController::class, 'show']);
+
+//Rutas para el HomeFragment de la Aplicación
+Route::get('home-data', [HomeController::class, 'index']);

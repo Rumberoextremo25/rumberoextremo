@@ -4,156 +4,12 @@
 
 @section('page_title', 'Detalles del Usuario')
 
-@section('styles')
-    {{-- Font Awesome para iconos --}}
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-    {{-- Google Fonts - Inter --}}
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
-    <style>
-        .user-details-section {
-            background-color: #ffffff;
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-            margin-top: 30px;
-            font-family: 'Inter', sans-serif;
-            max-width: 800px; /* Limita el ancho para mejor legibilidad */
-            margin-left: auto;
-            margin-right: auto;
-        }
-
-        .user-details-section h2 {
-            font-size: 28px;
-            color: #333;
-            margin-bottom: 25px;
-            text-align: center;
-            font-weight: 700;
-        }
-
-        .user-info-grid {
-            display: grid;
-            grid-template-columns: 1fr;
-            gap: 20px;
-            margin-bottom: 30px;
-        }
-
-        @media (min-width: 768px) {
-            .user-info-grid {
-                grid-template-columns: 1fr 1fr; /* Dos columnas en pantallas más grandes */
-            }
-        }
-
-        .info-group {
-            background-color: #f8f9fa;
-            padding: 15px 20px;
-            border-radius: 8px;
-            border: 1px solid #e0e0e0;
-        }
-
-        .info-group label {
-            display: block;
-            font-weight: 600;
-            color: #555;
-            margin-bottom: 5px;
-            font-size: 14px;
-        }
-
-        .info-group p {
-            margin: 0;
-            font-size: 16px;
-            color: #333;
-            word-wrap: break-word; /* Para manejar textos largos */
-        }
-
-        .info-group.full-width {
-            grid-column: 1 / -1; /* Ocupa todo el ancho en el grid */
-        }
-
-        /* Estilos para los diferentes estados */
-        .status-badge {
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 13px;
-            font-weight: 500;
-            text-transform: capitalize;
-            color: white;
-        }
-
-        .status-activo { background-color: #28a745; } /* Green */
-        .status-inactivo { background-color: #dc3545; } /* Red */
-        .status-pendiente { background-color: #ffc107; color: #333; } /* Yellow */
-        .status-banned { background-color: #6c757d; } /* Gray */
-
-        /* Estilos para los tipos de usuario */
-        .type-badge {
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 13px;
-            font-weight: 500;
-            text-transform: capitalize;
-            background-color: #007bff;
-            color: white;
-        }
-
-        .type-admin { background-color: #6f42c1; } /* Purple */
-        .type-comun { background-color: #17a2b8; } /* Cyan */
-        .type-aliado { background-color: #fd7e14; } /* Orange */
-        .type-afiliado { background-color: #20c997; } /* Teal */
-
-        .button-group {
-            display: flex;
-            justify-content: center;
-            gap: 15px;
-            margin-top: 20px;
-        }
-
-        .button-group .btn {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-size: 16px;
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            transition: background-color 0.2s ease, transform 0.1s ease;
-        }
-
-        .button-group .btn:hover {
-            transform: translateY(-1px);
-        }
-
-        .btn-back {
-            background-color: #6c757d;
-            color: white;
-        }
-
-        .btn-back:hover {
-            background-color: #5a6268;
-        }
-
-        .btn-edit {
-            background-color: #007bff;
-            color: white;
-        }
-
-        .btn-edit:hover {
-            background-color: #0056b3;
-        }
-
-        .btn-delete {
-            background-color: #dc3545;
-            color: white;
-        }
-
-        .btn-delete:hover {
-            background-color: #c82333;
-        }
-    </style>
-@endsection
+@push('styles') {{-- Agregamos el CSS específico de esta vista --}}
+    {{-- Asegúrate de que Font Awesome esté en tu layout admin global para evitar duplicados --}}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    {{-- Enlazamos al nuevo archivo CSS para los detalles del usuario --}}
+    <link rel="stylesheet" href="{{ asset('css/admin/users/details.css') }}">
+@endpush
 
 @section('content')
     <div class="user-details-section">
@@ -225,5 +81,6 @@
 @endsection
 
 @push('scripts')
-    {{-- Aquí puedes añadir scripts si fuera necesario para esta vista en particular --}}
+    {{-- Si tienes JS específico para el detalle del usuario, iría aquí. --}}
+    {{-- Por ahora, no se requiere ningún script específico para esta vista según tu ejemplo. --}}
 @endpush

@@ -41,6 +41,9 @@ class User extends Authenticatable // Quita `implements MustVerifyEmail` si no l
         'status',           // ¡Añadido!
         'registration_date',// ¡Añadido!
         'notes',
+        'notifications_enabled',
+        'two_factor_secret',
+        'two_factor_enabled',
     ];
 
     /**
@@ -51,7 +54,7 @@ class User extends Authenticatable // Quita `implements MustVerifyEmail` si no l
     protected $hidden = [
         'password',
         'remember_token',
-        // 'two_factor_secret', // Descomenta si usas 2FA con Laravel Fortify
+        'two_factor_secret', // Descomenta si usas 2FA con Laravel Fortify
         // 'two_factor_recovery_codes', // Descomenta si usas 2FA con Laravel Fortify
     ];
 
@@ -80,16 +83,17 @@ class User extends Authenticatable // Quita `implements MustVerifyEmail` si no l
      *
      * @return string
      */
-    public function getProfilePhotoUrlAttribute(): string
+    // Nuevo Accessor para la URL de la foto de perfil
+    public function getProfilePhotoUrlAttribute()
     {
-        if ($this->profile_photo_path) {
-            // Asegúrate de que tu disco 'public' esté vinculado: php artisan storage:link
-            // La importación de la fachada Storage es CRÍTICA aquí.
+        // Verifica si el usuario tiene una ruta de foto de perfil y si el archivo existe
+        if ($this->profile_photo_path && Storage::disk('public')->exists($this->profile_photo_path)) {
+            // Asume que 'profile_photo_path' guarda algo como 'avatars/nombre-de-imagen.jpg'
             return Storage::disk('public')->url($this->profile_photo_path);
         }
 
-        // Genera un avatar con ui-avatars.com usando el nombre del usuario
-        return 'https://ui-avatars.com/api/?name=' . urlencode($this->name) . '&color=FFFFFF&background=FF4B4B';
+        // Si no hay foto o no existe, devuelve una imagen por defecto
+        return asset('assets/img/logos/usuario.png');
     }
 
     // --- Relaciones Eloquent ---

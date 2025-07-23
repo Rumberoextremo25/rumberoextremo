@@ -1,0 +1,331 @@
+/* resources/css/admin/reports/reports.css */
+
+/*
+   Nota: Este archivo asume que las variables de tema (ej. --primary-color, --card-background,
+   --text-color, --heading-color, --border-color, --shadow-subtle, --shadow-medium,
+   --transition-speed, --border-radius-md, --border-radius-lg, etc.)
+   están definidas y cargadas previamente desde tu archivo CSS principal (app.css).
+*/
+
+:root {
+    /* Asegúrate de que estas variables estén definidas globalmente en tu app.css
+       o en un archivo CSS que se cargue antes de este.
+       Las he incluido aquí temporalmente para referencia si no están en app.css. */
+    --primary-color: #530cbf; /* Morado principal */
+    --secondary-color: #7628a7; /* Morado secundario */
+    --success-color: #28a745; /* Verde para éxito */
+    --danger-color: #dc3545; /* Rojo para peligro */
+    --warning-color: #ffc107; /* Amarillo para advertencia */
+    --info-color: #17a2b8; /* Azul claro para información */
+    --text-color: #343a40; /* Color de texto oscuro */
+    --light-text-color: #6c757d; /* Color de texto más claro */
+    --border-color: #dee2e6; /* Color de borde general */
+    --background-color: #f8f9fa; /* Fondo claro */
+    --background-color-alt: #f0f2f5; /* Fondo alternativo para filas de tabla */
+    --card-background: #ffffff; /* Fondo de tarjeta */
+    --input-background: #ffffff; /* Fondo de input */
+    --input-border: #ced4da; /* Borde de input */
+    --hover-background-color: #e9ecef; /* Color de fondo al pasar el ratón */
+    --spacing-unit: 1rem; /* 16px */
+    --border-radius-sm: 0.25rem; /* 4px */
+    --border-radius-md: 0.5rem; /* 8px */
+    --border-radius-lg: 1rem; /* 16px */
+    --shadow-subtle: 0 4px 8px rgba(0, 0, 0, 0.05); /* Sombra sutil */
+    --shadow-medium: 0 8px 16px rgba(0, 0, 0, 0.1); /* Sombra media */
+    --transition-speed: 0.3s;
+
+    /* Variables RGB para sombras con transparencia */
+    --primary-rgb: 83, 12, 191;
+    --secondary-rgb: 118, 40, 167;
+    --success-rgb: 40, 167, 69;
+    --danger-rgb: 220, 53, 69;
+    --info-rgb: 23, 162, 184;
+}
+
+body {
+    background-color: var(--background-color);
+    color: var(--text-color);
+    font-family: 'Inter', sans-serif; /* Usando Inter por consistencia, si deseas Montserrat/Poppins, asegúrate de que esté cargado globalmente */
+    margin: 0;
+}
+
+.reports-container {
+    max-width: 1200px; /* Ancho amplio para los reportes */
+    margin: 3rem auto;
+    padding: 2.5rem;
+    background-color: var(--card-background);
+    border-radius: var(--border-radius-lg);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease-in-out;
+}
+
+.reports-container h1 {
+    font-size: 2.5rem;
+    color: var(--primary-color);
+    margin-bottom: 2.5rem;
+    font-weight: 800;
+    text-align: center;
+    letter-spacing: -0.03em;
+}
+
+.reports-card {
+    background-color: var(--background-color-alt); /* Fondo ligeramente diferente para la tarjeta de reportes */
+    padding: 2rem;
+    border-radius: var(--border-radius-md);
+    box-shadow: var(--shadow-subtle);
+    border: 1px solid var(--border-color);
+    margin-bottom: 2rem;
+}
+
+.reports-card h3 {
+    font-size: 1.8rem;
+    color: var(--heading-color);
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    padding-bottom: 0.8rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.reports-card h3 i {
+    color: var(--secondary-color);
+    font-size: 1.5rem;
+}
+
+/* Grid de acciones para filtros y botones */
+.reports-actions-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Columnas adaptables */
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
+    align-items: flex-end; /* Alinea los elementos en la parte inferior */
+}
+
+.form-group {
+    margin-bottom: 0; /* Eliminar margen inferior si ya está en el grid */
+}
+
+.form-group label {
+    display: block;
+    color: var(--heading-color);
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin-bottom: 0.6rem;
+}
+
+.form-control,
+.form-select {
+    width: 100%;
+    padding: 0.8rem 1rem;
+    border: 1px solid var(--input-border);
+    border-radius: var(--border-radius-md);
+    font-size: 1rem;
+    color: var(--text-color);
+    background-color: var(--input-background);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+    box-sizing: border-box;
+    -webkit-appearance: none; /* Eliminar estilo por defecto en select */
+    -moz-appearance: none;
+    appearance: none;
+}
+
+.form-control:focus,
+.form-select:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 4px rgba(var(--primary-rgb), 0.2);
+    background-color: var(--card-background);
+}
+
+.select-wrapper {
+    position: relative;
+}
+
+.select-wrapper::after {
+    content: '\f078'; /* Icono de flecha hacia abajo de Font Awesome */
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(calc(-50% + 0.3rem)); /* Ajuste para alinear con el texto */
+    color: var(--light-text-color);
+    pointer-events: none; /* Asegura que el clic pase al select */
+    font-size: 0.8rem;
+}
+
+/* Botones de acción (reutilizando .modern-button) */
+.modern-button {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 0.9rem 1.5rem; /* Ajustado para el grid */
+    border: none;
+    border-radius: var(--border-radius-md);
+    cursor: pointer;
+    font-size: 0.95rem;
+    font-weight: 700;
+    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center; /* Centrar contenido del botón */
+    gap: 0.6rem;
+    text-decoration: none;
+    box-shadow: 0 4px 12px rgba(var(--primary-rgb), 0.2);
+    width: 100%; /* Ocupa todo el ancho disponible en su celda de grid */
+}
+
+.modern-button:hover {
+    background-color: var(--secondary-color);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(var(--secondary-rgb), 0.3);
+}
+
+.modern-button i {
+    font-size: 1rem;
+}
+
+.modern-button.today-report {
+    background-color: var(--info-color);
+    box-shadow: 0 4px 12px rgba(var(--info-rgb), 0.2);
+}
+.modern-button.today-report:hover {
+    background-color: #0056b3;
+    box-shadow: 0 6px 16px rgba(var(--info-rgb), 0.3);
+}
+
+.modern-button.download-pdf {
+    background-color: var(--danger-color);
+    box-shadow: 0 4px 12px rgba(var(--danger-rgb), 0.2);
+}
+.modern-button.download-pdf:hover {
+    background-color: #bd2130;
+    box-shadow: 0 6px 16px rgba(var(--danger-rgb), 0.3);
+}
+
+/* Contenedor del gráfico */
+.chart-container {
+    position: relative;
+    width: 100%;
+    height: 400px; /* Altura fija para el gráfico */
+    background-color: var(--input-background);
+    border-radius: var(--border-radius-md);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-subtle);
+    border: 1px solid var(--border-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .reports-container {
+        padding: 2rem;
+        margin: 2rem auto;
+    }
+    .reports-container h1 {
+        font-size: 2.2rem;
+    }
+    .reports-card {
+        padding: 1.8rem;
+    }
+    .reports-card h3 {
+        font-size: 1.6rem;
+    }
+    .reports-actions-grid {
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1.2rem;
+    }
+    .form-group label {
+        font-size: 0.9rem;
+    }
+    .form-control,
+    .form-select {
+        padding: 0.7rem 0.9rem;
+        font-size: 0.95rem;
+    }
+    .modern-button {
+        padding: 0.8rem 1.2rem;
+        font-size: 0.9rem;
+    }
+    .chart-container {
+        height: 350px;
+        padding: 1.2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .reports-container {
+        padding: 1.5rem;
+        margin: 1.5rem auto;
+        max-width: 95%;
+    }
+    .reports-container h1 {
+        font-size: 2rem;
+        margin-bottom: 2rem;
+    }
+    .reports-card {
+        padding: 1.5rem;
+    }
+    .reports-card h3 {
+        font-size: 1.4rem;
+        margin-bottom: 1.2rem;
+    }
+    .reports-actions-grid {
+        grid-template-columns: 1fr; /* Una columna en móvil */
+        gap: 1rem;
+    }
+    .form-group label {
+        font-size: 0.85rem;
+    }
+    .form-control,
+    .form-select {
+        padding: 0.7rem 0.8rem;
+        font-size: 0.9rem;
+    }
+    .modern-button {
+        padding: 0.8rem 1.5rem;
+        font-size: 0.95rem;
+    }
+    .chart-container {
+        height: 300px;
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .reports-container {
+        padding: 1rem;
+        margin: 1rem auto;
+    }
+    .reports-container h1 {
+        font-size: 1.8rem;
+        margin-bottom: 1.5rem;
+    }
+    .reports-card {
+        padding: 1rem;
+    }
+    .reports-card h3 {
+        font-size: 1.2rem;
+        margin-bottom: 1rem;
+    }
+    .form-group label {
+        font-size: 0.8rem;
+    }
+    .form-control,
+    .form-select {
+        padding: 0.6rem 0.7rem;
+        font-size: 0.85rem;
+    }
+    .modern-button {
+        padding: 0.7rem 1.2rem;
+        font-size: 0.9rem;
+    }
+    .chart-container {
+        height: 250px;
+        padding: 0.8rem;
+    }
+}

@@ -1,0 +1,221 @@
+/* General Body Styling */
+body {
+    font-family: 'Poppins', sans-serif; /* Using Poppins for body text */
+    background-color: #000000; /* Deep dark background */
+    color: #E0E0E0; /* Light text for contrast */
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+/* FAQ Section */
+.faq-section {
+    padding: 80px 20px 40px; /* Top padding to clear fixed header */
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.7) 0%, rgba(26, 26, 46, 0.9) 100%); /* Subtle gradient background */
+    min-height: calc(100vh - 100px); /* Ensures it takes at least viewport height */
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+/* FAQ Container - Main content box */
+.faq-container {
+    background-color: rgba(25, 25, 45, 0.9); /* Slightly lighter and transparent background for content */
+    border-radius: 15px;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5); /* Pronounced shadow */
+    padding: 40px;
+    max-width: 900px; /* Max width for readability */
+    width: 100%;
+    margin: 20px auto; /* Center the container and add margin */
+    border: 1px solid rgba(255, 215, 0, 0.2); /* Subtle golden border */
+    text-align: center; /* Center align title and intro text */
+}
+
+/* FAQ Main Title */
+.faq-title {
+    font-family: 'Montserrat', sans-serif; /* Montserrat for titles */
+    color: #FFD700; /* Gold/Yellow for main title */
+    font-size: 3em;
+    margin-bottom: 20px;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.3); /* Subtle text shadow */
+}
+
+/* FAQ Introduction Text */
+.faq-intro-text {
+    font-size: 1.1em;
+    color: #B0B0B0; /* Lighter grey */
+    margin-bottom: 40px;
+    max-width: 700px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* FAQ List Container */
+.faq-list {
+    text-align: left; /* Align text left within the list */
+    margin-top: 30px;
+}
+
+/* Individual FAQ Item */
+.faq-item {
+    background-color: rgba(30, 30, 50, 0.7); /* Background for each FAQ item */
+    border-radius: 10px;
+    margin-bottom: 20px;
+    overflow: hidden; /* Hides overflow when answer is collapsed */
+    border: 1px solid rgba(138, 43, 226, 0.1); /* Subtle purple border */
+    transition: box-shadow 0.3s ease;
+}
+
+.faq-item:hover {
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* FAQ Question Button */
+.faq-question {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    padding: 20px 30px;
+    background-color: transparent; /* No background for the button itself */
+    color: #FFD700; /* Gold/Yellow for question text */
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.3em;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.faq-question:hover {
+    background-color: rgba(138, 43, 226, 0.1); /* Light purple hover effect */
+    color: #FFFFFF;
+}
+
+/* FAQ Icon (Plus/Minus) */
+.faq-icon {
+    font-size: 1.5em;
+    color: #8A2BE2; /* Purple for the icon */
+    transition: transform 0.3s ease;
+}
+
+/* Rotate icon when active (add this class with JavaScript) */
+.faq-question.active .faq-icon {
+    transform: rotate(45deg); /* Rotates to an 'X' or diamond shape */
+}
+
+/* FAQ Answer Content */
+.faq-answer {
+    padding: 0 30px;
+    max-height: 0; /* Initially hidden */
+    overflow: hidden;
+    transition: max-height 0.5s ease-out, padding 0.5s ease-out; /* Smooth transition for expansion */
+    background-color: rgba(40, 40, 60, 0.5); /* Slightly darker background for answer */
+    border-top: 1px solid rgba(255, 215, 0, 0.05); /* Subtle border at the top of the answer */
+}
+
+.faq-answer p {
+    padding-top: 15px; /* Add padding after transition starts */
+    padding-bottom: 15px;
+    margin: 0;
+    color: #E0E0E0;
+    font-size: 1em;
+}
+
+/* Class to apply when answer is active/open (add this with JavaScript) */
+.faq-answer.active {
+    max-height: 500px; /* Adjust as needed based on content length */
+    padding-top: 15px;
+    padding-bottom: 15px;
+}
+
+/* Contact Prompt at the bottom */
+.faq-contact-prompt {
+    font-size: 1.1em;
+    color: #B0B0B0;
+    margin-top: 40px;
+    text-align: center;
+}
+
+.faq-contact-link {
+    color: #FFD700; /* Gold/Yellow for the contact link */
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.3s ease, text-decoration 0.3s ease;
+}
+
+.faq-contact-link:hover {
+    color: #9932CC; /* Darker purple on hover */
+    text-decoration: underline;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .faq-section {
+        padding: 60px 15px 30px;
+    }
+
+    .faq-container {
+        padding: 25px;
+        margin: 15px auto;
+    }
+
+    .faq-title {
+        font-size: 2.2em;
+    }
+
+    .faq-intro-text {
+        font-size: 1em;
+        margin-bottom: 30px;
+    }
+
+    .faq-question {
+        font-size: 1.1em;
+        padding: 15px 20px;
+    }
+
+    .faq-icon {
+        font-size: 1.2em;
+    }
+
+    .faq-answer {
+        padding: 0 20px;
+    }
+
+    .faq-answer p {
+        padding-top: 10px;
+        padding-bottom: 10px;
+        font-size: 0.95em;
+    }
+
+    .faq-contact-prompt {
+        font-size: 1em;
+        margin-top: 30px;
+    }
+}
+
+@media (max-width: 480px) {
+    .faq-title {
+        font-size: 1.8em;
+    }
+
+    .faq-question {
+        font-size: 1em;
+        padding: 12px 15px;
+    }
+
+    .faq-icon {
+        font-size: 1em;
+    }
+
+    .faq-answer {
+        padding: 0 15px;
+    }
+
+    .faq-answer p {
+        font-size: 0.9em;
+    }
+}

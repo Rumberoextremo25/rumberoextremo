@@ -1,4 +1,4 @@
-@extends('layouts.app') {{-- Asegúrate de que esto apunta a tu layout principal --}}
+@extends('layouts.guest') {{-- Asegúrate de que esto apunta a tu layout principal --}}
 
 @section('title', 'Recuperar Contraseña - Rumbero Extremo') {{-- Título específico para esta página --}}
 
@@ -35,7 +35,7 @@
             {{-- Botón de Enviar Enlace --}}
             <div class="form-actions" style="justify-content: center;"> {{-- Alineamos el botón al centro --}}
                 <button type="submit" class="btn btn-primary btn-block">
-                    Enviar Enlace de Restablecimiento
+                    Enviar Link de Restablecimiento
                 </button>
             </div>
         </form>

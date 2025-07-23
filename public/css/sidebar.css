@@ -1,0 +1,266 @@
+/* Importa fuentes: Poppins para texto general, Montserrat para títulos */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800;900&display=swap');
+
+/* --- Reseteo Básico (Asegúrate de que no haya conflictos con el reset global) --- */
+.sidebar, .sidebar * {
+    box-sizing: border-box;
+}
+
+/* --- Sidebar Contenedor Principal --- */
+.sidebar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 180px; /* REDUCIDO: Ancho fijo para el sidebar */
+    background: linear-gradient(180deg, #1A0D2F 0%, #0D051A 100%);
+    color: #E0E0E0;
+    padding: 10px 0; /* REDUCIDO: Padding vertical */
+    box-shadow: 3px 0 15px rgba(0, 0, 0, 0.6);
+    font-family: 'Poppins', sans-serif;
+    display: flex;
+    flex-direction: column;
+    z-index: 1000;
+}
+
+/* --- Contenedor del Logo --- */
+.sidebar .logo-container {
+    text-align: center;
+    margin-bottom: 20px; /* REDUCIDO: Espacio debajo del logo */
+    padding-bottom: 10px; /* REDUCIDO: Padding interior para el separador */
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.sidebar .logo-container img {
+    max-width: 100px; /* REDUCIDO: Tamaño del logo */
+    height: auto;
+    filter: drop-shadow(0 0 8px rgba(0, 255, 255, 0.6));
+    transition: transform 0.3s ease;
+}
+
+.sidebar .logo-container img:hover {
+    transform: scale(1.05);
+}
+
+/* --- Lista de Enlaces --- */
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex-grow: 1;
+}
+
+.sidebar ul li {
+    margin-bottom: 6px; /* REDUCIDO: Espacio entre cada elemento del menú */
+}
+
+.sidebar ul li:last-child {
+    margin-bottom: 0;
+}
+
+.sidebar ul li a {
+    display: flex;
+    align-items: center;
+    padding: 8px 12px; /* REDUCIDO: Padding interno de cada enlace */
+    margin: 0 8px; /* REDUCIDO: Margen horizontal */
+    border-radius: 6px; /* REDUCIDO: Bordes redondeados */
+    color: #CCCCCC;
+    text-decoration: none;
+    font-size: 0.85rem; /* REDUCIDO: Tamaño de fuente para los enlaces */
+    font-weight: 500;
+    transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.sidebar ul li a i {
+    margin-right: 10px; /* REDUCIDO: Espacio entre el ícono y el texto */
+    font-size: 1rem; /* REDUCIDO: Tamaño del ícono */
+    width: 18px; /* REDUCIDO: Ancho fijo para alinear iconos */
+    text-align: center;
+    color: #00FFFF;
+    transition: color 0.3s ease;
+}
+
+/* --- Efectos Hover y Active --- */
+.sidebar ul li a:hover {
+    background-color: rgba(255, 0, 255, 0.15);
+    color: #FFFFFF;
+    box-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
+    transform: translateX(5px);
+}
+
+.sidebar ul li a:hover i {
+    color: #FF00FF;
+}
+
+.sidebar ul li a.active {
+    background-color: rgba(0, 255, 255, 0.2);
+    color: #FFFFFF;
+    font-weight: 600;
+    box-shadow: 0 0 12px rgba(0, 255, 255, 0.5);
+    border-left: 3px solid #00FFFF;
+    transform: translateX(0);
+}
+
+.sidebar ul li a.active i {
+    color: #00FFFF;
+}
+
+/* --- Encabezados de Sección --- */
+.sidebar-heading {
+    color: #888888;
+    font-size: 0.7rem; /* REDUCIDO: Tamaño de fuente más pequeño */
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em; /* REDUCIDO: Más espaciado entre letras */
+    margin-top: 20px; /* REDUCIDO: Espacio significativo arriba del encabezado */
+    margin-bottom: 8px; /* REDUCIDO: Espacio abajo del encabezado */
+    padding: 0 12px; /* REDUCIDO: Padding para alinear con los enlaces */
+    text-shadow: 0 0 5px rgba(255, 255, 255, 0.05);
+}
+
+/* --- Divisores de Línea --- */
+.sidebar-divider {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    margin: 15px 8px; /* REDUCIDO: Margen para centrarla y dar espacio */
+}
+
+/* --- Estilos para el botón de Cerrar Sesión (dentro de un formulario) --- */
+.sidebar ul li form a {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    color: #FF6666;
+}
+
+.sidebar ul li form a i {
+    color: #FF6666;
+}
+
+.sidebar ul li form a:hover {
+    background-color: rgba(255, 0, 0, 0.1);
+    box-shadow: 0 0 8px rgba(255, 0, 0, 0.3);
+    color: #FF0000;
+}
+
+.sidebar ul li form a:hover i {
+    color: #FF0000;
+}
+
+
+/* --- Media Queries para Responsividad --- */
+
+/* Ajustes para pantallas medianas (tablets) */
+@media (max-width: 992px) {
+    .sidebar {
+        width: 160px; /* MÁS REDUCIDO: Ancho del sidebar en tablets */
+        padding: 8px 0;
+    }
+
+    .sidebar .logo-container {
+        margin-bottom: 15px;
+        padding-bottom: 8px;
+    }
+
+    .sidebar .logo-container img {
+        max-width: 90px; /* Logo más pequeño en tablets */
+    }
+
+    .sidebar ul li a {
+        padding: 7px 10px; /* Más compacto */
+        margin: 0 6px; /* Más compacto */
+        font-size: 0.8rem; /* Fuente un poco más pequeña */
+    }
+
+    .sidebar ul li a i {
+        margin-right: 8px; /* Menos espacio para el ícono */
+        font-size: 0.95rem;
+        width: 16px;
+    }
+
+    .sidebar-heading {
+        font-size: 0.65rem; /* Más pequeño */
+        margin-top: 18px;
+        margin-bottom: 6px;
+        padding: 0 10px;
+    }
+
+    .sidebar-divider {
+        margin: 12px 6px;
+    }
+}
+
+/* Ajustes para pantallas pequeñas (móviles) */
+@media (max-width: 768px) {
+    .sidebar {
+        width: 55px; /* Ligeramente más compacto el ancho del sidebar colapsado */
+        padding: 8px 0; /* Menos padding */
+        overflow-x: hidden;
+    }
+
+    .sidebar .logo-container img {
+        max-width: 35px; /* Logo aún más pequeño */
+        margin-bottom: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+    .sidebar .logo-container {
+        margin-bottom: 10px;
+        padding-bottom: 8px;
+    }
+
+    .sidebar ul li a {
+        padding: 8px 0; /* Centra el ícono */
+        margin: 0;
+        justify-content: center;
+    }
+
+    .sidebar ul li a i {
+        margin-right: 0;
+        font-size: 1.2rem; /* Iconos un poco más grandes para mejor visibilidad táctil */
+        width: auto;
+    }
+
+    .sidebar ul li a span {
+        display: none; /* Oculta el texto */
+    }
+    
+    /* --- SOLUCIÓN PARA EL BOTÓN DE CERRAR SESIÓN EN MÓVIL (Ajustada) --- */
+    .sidebar ul li form a {
+        justify-content: center;
+        padding: 8px 0; /* Ajustado */
+    }
+
+    .sidebar ul li form a i {
+        display: block;
+        margin: 0;
+    }
+
+    .sidebar ul li form a span {
+        display: none;
+    }
+    /* --- FIN SOLUCIÓN --- */
+
+    .sidebar-heading, .sidebar-divider {
+        display: none; /* Oculta encabezados y divisores */
+    }
+
+    /* Opcional: Expandir al pasar el mouse (para dispositivos con mouse) */
+    /* .sidebar:hover {
+        width: 180px;
+    }
+    .sidebar:hover ul li a {
+        justify-content: flex-start;
+        padding: 8px 12px;
+        margin: 0 8px;
+    }
+    .sidebar:hover ul li a span {
+        display: inline-block;
+    }
+    .sidebar:hover ul li a i {
+        margin-right: 10px;
+    }
+    .sidebar:hover .sidebar-heading, .sidebar:hover .sidebar-divider {
+        display: block;
+    } */
+}
