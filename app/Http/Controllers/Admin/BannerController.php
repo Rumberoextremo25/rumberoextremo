@@ -15,7 +15,7 @@ class BannerController extends Controller
     public function index()
     {
         $banners = Banner::orderBy('order')->get();
-        return view('admin.banners.index', compact('banners'));
+        return view('Admin.banners.index', compact('banners'));
     }
 
     /**
@@ -23,7 +23,7 @@ class BannerController extends Controller
      */
     public function create()
     {
-        return view('admin.banners.create');
+        return view('Admin.banners.create');
     }
 
     /**
@@ -58,19 +58,11 @@ class BannerController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     */
-    public function show(Banner $banner)
-    {
-        return view('admin.banners.show', compact('banner'));
-    }
-
-    /**
      * Show the form for editing the specified resource.
      */
     public function edit(Banner $banner)
     {
-        return view('admin.banners.edit', compact('banner'));
+        return view('Admin.banners.edit', compact('banner'));
     }
 
     /**

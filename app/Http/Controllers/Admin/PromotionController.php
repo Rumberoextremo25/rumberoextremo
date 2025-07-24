@@ -15,7 +15,7 @@ class PromotionController extends Controller
     public function index()
     {
         $promotions = Promotion::all();
-        return view('admin.promotions.index', compact('promotions'));
+        return view('Admin.promotions.index', compact('promotions'));
     }
 
     /**
@@ -23,7 +23,7 @@ class PromotionController extends Controller
      */
     public function create()
     {
-        return view('admin.promotions.create');
+        return view('Admin.promotions.create');
     }
 
     /**
@@ -58,19 +58,11 @@ class PromotionController extends Controller
     }
 
     /**
-     * Display the specified resource.
-     */
-    public function show(Promotion $promotion)
-    {
-        return view('admin.promotions.show', compact('promotion'));
-    }
-
-    /**
      * Show the form for editing the specified resource.
      */
     public function edit(Promotion $promotion)
     {
-        return view('admin.promotions.edit', compact('promotion'));
+        return view('Admin.promotions.edit', compact('promotion'));
     }
 
     /**

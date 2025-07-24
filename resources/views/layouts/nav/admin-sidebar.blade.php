@@ -52,17 +52,17 @@
                     <li class="sidebar-heading">Gestión de Contenido</li>
                     <li>
                         {{-- Usando data-route-pattern para la lógica JS, o puedes usar request()->routeIs('admin.banners.*') directamente aquí --}}
-                        <a href="{{ route('Admin.banners.index') }}" class="{{ request()->routeIs('admin.banners.*') ? 'active' : '' }}">
+                        <a href="{{ route('admin.banners.index') }}" class="{{ request()->routeIs('admin.banners.*') ? 'active' : '' }}">
                             <i class="fas fa-images"></i> <span>Banners</span>
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('Admin.commercial-allies.index') }}" class="{{ request()->routeIs('admin.commercial-allies.*') ? 'active' : '' }}">
+                        <a href="{{ route('admin.commercial-allies.index') }}" class="{{ request()->routeIs('admin.commercial-allies.*') ? 'active' : '' }}">
                             <i class="fas fa-store"></i> <span>Aliados Comerciales</span>
                         </a>
                     </li>
                     <li>
-                        <a href="{{ route('Admin.promotions.index') }}" class="{{ request()->routeIs('admin.promotions.*') ? 'active' : '' }}">
+                        <a href="{{ route('admin.promotions.index') }}" class="{{ request()->routeIs('admin.promotions.*') ? 'active' : '' }}">
                             <i class="fas fa-tags"></i> <span>Promociones</span>
                         </a>
                     </li>

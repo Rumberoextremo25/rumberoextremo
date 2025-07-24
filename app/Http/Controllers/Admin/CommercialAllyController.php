@@ -15,7 +15,7 @@ class CommercialAllyController extends Controller
     public function index()
     {
         $allies = CommercialAlly::all();
-        return view('admin.commercial_allies.index', compact('allies'));
+        return view('Admin.commercial_allies.index', compact('allies'));
     }
 
     /**
@@ -23,7 +23,7 @@ class CommercialAllyController extends Controller
      */
     public function create()
     {
-        return view('admin.commercial_allies.create');
+        return view('Admin.commercial_allies.create');
     }
 
     /**
@@ -60,7 +60,7 @@ class CommercialAllyController extends Controller
      */
     public function show(CommercialAlly $commercialAlly)
     {
-        return view('admin.commercial_allies.show', compact('commercialAlly'));
+        return view('Admin.commercial_allies.show', compact('commercialAlly'));
     }
 
     /**
@@ -68,7 +68,7 @@ class CommercialAllyController extends Controller
      */
     public function edit(CommercialAlly $commercialAlly)
     {
-        return view('admin.commercial_allies.edit', compact('commercialAlly'));
+        return view('Admin.commercial_allies.edit', compact('commercialAlly'));
     }
 
     /**
