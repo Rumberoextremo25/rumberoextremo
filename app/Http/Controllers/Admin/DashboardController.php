@@ -14,6 +14,6 @@ class DashboardController extends Controller
         // $totalAllies = \App\Models\CommercialAlly::count();
         // $totalPromotions = \App\Models\Promotion::count();
 
-        return view('admin.dashboard'); // Carga la vista 'resources/views/admin/dashboard.blade.php'
+        return view('dashboard'); // Carga la vista 'resources/views/admin/dashboard.blade.php'
     }
 }
