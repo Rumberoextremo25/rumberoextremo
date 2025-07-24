@@ -79,8 +79,3 @@
         </div>
     </div>
 @endsection
-
-@push('scripts')
-    {{-- Si tienes JS específico para el detalle del usuario, iría aquí. --}}
-    {{-- Por ahora, no se requiere ningún script específico para esta vista según tu ejemplo. --}}
-@endpush

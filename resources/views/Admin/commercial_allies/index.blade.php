@@ -118,12 +118,3 @@
         </div>
     </div>
 @endsection
-
-@push('scripts')
-    {{-- Pasa la URL base para la gestión de aliados al JS (si fuera necesario para futuras funcionalidades) --}}
-    <script>
-        window.alliesBaseUrl = "{{ route('admin.commercial-allies.index') }}";
-    </script>
-    {{-- Carga tu script externo aquí --}}
-    <script src="{{ asset('js/admin/commercial.js') }}"></script>
-@endpush

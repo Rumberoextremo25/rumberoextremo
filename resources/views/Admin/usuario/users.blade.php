@@ -99,9 +99,3 @@
         </div>
     </div>
 @endsection
-
-@push('scripts')
-    {{-- Enlaza tu archivo de scripts específico para esta vista.
-         Asegúrate de que Laravel Mix esté configurado para compilarlo. --}}
-    <script src="{{ mix('js/admin/users-list.js') }}"></script>
-@endpush

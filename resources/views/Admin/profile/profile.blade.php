@@ -143,8 +143,3 @@
         </div>
     </div>
 @endsection
-
-@push('scripts')
-    {{-- Enlaza al archivo JavaScript específico para la vista de perfil --}}
-    <script src="{{ asset('js/admin/profile/profile.js') }}"></script>
-@endpush

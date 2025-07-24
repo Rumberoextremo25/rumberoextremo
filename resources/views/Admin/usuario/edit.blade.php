@@ -91,8 +91,3 @@
         </form>
     </div>
 @endsection
-
-@push('scripts')
-    {{-- Carga tu script externo aquí --}}
-    <script src="{{ asset('js/admin/users/edit.js') }}"></script>
-@endpush

@@ -92,12 +92,3 @@
         </form>
     </div>
 @endsection
-
-@push('scripts')
-    {{-- Para pasar la URL de redirección a JavaScript de forma segura --}}
-    <script>
-        window.usersListUrl = "{{ route('users') }}";
-    </script>
-    {{-- Carga tu script externo aquí --}}
-    <script src="{{ asset('js/admin/users/create.js') }}"></script>
-@endpush

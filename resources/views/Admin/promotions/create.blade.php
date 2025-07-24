@@ -76,7 +76,3 @@
         </form>
     </div>
 @endsection
-
-@push('scripts')
-    {{-- No se requieren scripts adicionales específicos para este formulario en este momento. --}}
-@endpush
