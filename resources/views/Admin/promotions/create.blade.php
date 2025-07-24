@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     {{-- Enlaza al archivo CSS compartido para el formulario de promoción --}}
-    <link rel="stylesheet" href="{{ asset('css/admin/promotions/create.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/promotion.css') }}">
 @endpush
 
 @section('content')

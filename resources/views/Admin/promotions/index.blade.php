@@ -77,7 +77,7 @@
                                     @endif
                                 </td>
                                 <td data-label="Descuento">{{ $promotion->discount }}</td>
-                                <td data-label="Precio">${{ number_format($promotion->price, 2) }}</td>
+                                <td data-label="Precio">${{ number_format((float)($promotion->price ?? 0), 2) }}</td>
                                 <td data-label="Expira">{{ $promotion->expires_at ? $promotion->expires_at->format('Y-m-d') : 'N/A' }}</td>
                                 <td class="actions">
                                     <a href="{{ route('admin.promotions.edit', $promotion->id) }}" class="btn-icon edit-btn" title="Editar">
