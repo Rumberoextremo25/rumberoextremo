@@ -18,7 +18,7 @@
 
     {{-- Styles --}}
     {{-- La directiva @vite se encarga de incluir resources/css/app.css --}}
-    @vite(['public/css/app.css', 'public/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
     @stack('styles')
 </head>
