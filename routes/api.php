@@ -26,13 +26,6 @@ Route::middleware('auth:sanctum')->group(function () {
     // ... otras rutas de gestión
 });
 
-// Rutas públicas (ej. para la app Android que solo lee)
-Route::prefix('categories')->group(function () {
-    Route::get('/', [CategoryController::class, 'index']);
-    Route::get('/{category}', [CategoryController::class, 'show']);
-});
-Route::get('subcategories/{subcategory}/products', [ProductController::class, 'getProductsBySubcategory']);
-
 // Puedes mantener esta ruta si la usas para desarrollo, pero considera los seeders
 Route::post('populate-db', function () {
     \Illuminate\Support\Facades\Artisan::call('migrate:fresh --seed');
@@ -40,10 +33,7 @@ Route::post('populate-db', function () {
 });
 
 // Ruta para obtener todos los aliados (GET /api/aliados)
-Route::get('/aliados', [AliadoController::class, 'index']);
-
-// Opcional: Ruta para obtener un solo aliado por ID (GET /api/aliados/{id})
-Route::get('/aliados/{id}', [AliadoController::class, 'show']);
+Route::get('store_data', [AliadoController::class, 'index']);
 
 //Rutas para el HomeFragment de la Aplicación
 Route::get('home-data', [HomeController::class, 'index']);

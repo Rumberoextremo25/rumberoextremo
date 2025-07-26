@@ -37,15 +37,4 @@ class HomeController extends Controller
             'promotions' => $promotions,
         ]);
     }
-
-    // --- Métodos de creación/actualización/eliminación (Opcional) ---
-    // Si necesitas que este mismo controlador maneje CUD, puedes añadir métodos como:
-    /*
-    public function storeBanner(Request $request) { /* ... lógica para guardar un banner ... */ /* }
-    public function updateBanner(Request $request, Banner $banner) { /* ... lógica para actualizar un banner ... */ /* }
-    // ... y así para CommercialAlly y Promotion.
-    // Sin embargo, para CUD, a menudo es más RESTful y claro tener controladores separados
-    // o un controlador para cada recurso específico (como BannerController, etc.)
-    // Este HomeController está optimizado para la lectura combinada.
-    */
 }

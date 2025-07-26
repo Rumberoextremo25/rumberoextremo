@@ -20,22 +20,4 @@ class AliadoController extends Controller
             'data' => $aliados
         ]);
     }
-
-    public function show($id)
-    {
-        // Carga un aliado específico con sus relaciones.
-        $aliado = Ally::with(['category', 'subCategory', 'businessType'])->find($id);
-
-        if (!$aliado) {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Aliado no encontrado'
-            ], 404);
-        }
-
-        return response()->json([
-            'status' => 'success',
-            'data' => $aliado
-        ]);
-    }
 }
