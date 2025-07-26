@@ -1,5 +1,5 @@
 /* General Body Styling for Welcome Page */
-body {
+html, body { /* MODIFICACIÓN: Aplicamos estilos y reseteos también al elemento html */
     font-family: 'Montserrat', sans-serif; /* Using Montserrat as a primary font */
     color: #FFFFFF; /* White text for most elements */
     background: linear-gradient(to bottom, #4B0082, #8A2BE2); /* Deep purple to lighter purple gradient */
@@ -8,6 +8,7 @@ body {
     padding: 0;
     line-height: 1.6;
     overflow-x: hidden; /* Prevent horizontal scroll */
+    height: 100%; /* Asegura que html y body ocupen el 100% de la altura del viewport */
 }
 
 /* Container for Centering Content */
@@ -37,8 +38,9 @@ body {
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%;
-    background: url('https://source.unsplash.com/random/1600x900/?party,crowd,lights,music') no-repeat center center / cover; /* Dynamic party image */
+    /* MODIFICACIÓN: Usamos 100vh para que la imagen ocupe el 100% de la altura del viewport */
+    height: 100vh; 
+    background: url('../assets/img/home/fiestas_rumbero.jpg') no-repeat center center / cover; /* Dynamic party image */
     background-blend-mode: multiply; /* Blend with background color */
     background-color: rgba(75, 0, 130, 0.7); /* Dark purple overlay */
     z-index: -1;

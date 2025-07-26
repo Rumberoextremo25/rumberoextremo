@@ -48,6 +48,6 @@ Route::get('/aliados/{id}', [AliadoController::class, 'show']);
 //Rutas para el HomeFragment de la Aplicación
 Route::get('home-data', [HomeController::class, 'index']);
 
-Route::get('test-route', function () {
+Route::get('/test-route', function () {
     return 'Test successful!';
 });

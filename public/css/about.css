@@ -1,26 +1,43 @@
 /* Variables de colores y tipografía (consistencia con el resto de la app) */
 :root {
-    --primary-color: #FF2E63; /* Rosa vibrante */
-    --secondary-color: #08D9D6; /* Azul/verde neón */
-    --dark-bg: #1B1B2F; /* Fondo oscuro casi negro */
-    --light-bg: #222831; /* Un gris oscuro para secciones */
-    --text-color-light: #EEEEEE; /* Texto claro */
-    --text-color-dark: #333333; /* Texto oscuro para contraste */
-    --gradient-1: linear-gradient(45deg, var(--primary-color), #FF7F50); /* Rosa a Naranja Coral */
-    --gradient-2: linear-gradient(135deg, var(--secondary-color), #4CAF50); /* Azul/Verde a Verde Esmeralda */
-    --shadow-light: 0 5px 15px rgba(0, 0, 0, 0.2);
-    --shadow-dark: 0 8px 25px rgba(0, 0, 0, 0.4);
+    /* Colores vibrantes para acentos (se mantienen tus colores principales) */
+    --primary-color: #9202e0; /* Un morado vibrante */
+    --secondary-color: #b10070; /* Un fucsia vibrante */
+
+    /* Nuevos fondos grises y blanco */
+    --bg-main: #f0f2f5; /* Gris muy claro para el fondo principal */
+    --bg-section-alt: #e3e6ea; /* Gris ligeramente más oscuro para secciones alternas */
+    --bg-card: #ffffff; /* Blanco puro para tarjetas y elementos destacados */
+
+    /* Colores de texto oscuros */
+    --text-dark-main: #212529; /* Texto principal oscuro (negro carbón) */
+    --text-dark-secondary: #6c757d; /* Texto secundario o de párrafo (gris medio) */
+    --text-color-light-contrast: #ffffff; /* Texto blanco para usar sobre fondos oscuros (ej. navbar/footer) */
+
+    /* Gradiente para navbar y footer (asumiendo que se aplicará externamente a estas secciones) */
+    --gradient-navbar-footer: linear-gradient(90deg, #9202e0, #FF2E63); /* Degradado de morado a fucsia */
+
+    /* Gradientes adicionales (mantengo los que tenías por si los usas en otros lugares) */
+    --gradient-1: linear-gradient(45deg, var(--primary-color), #FF7F50);
+    --gradient-2: linear-gradient(135deg, var(--secondary-color), #4CAF50);
+
+    /* Sombras ajustadas para fondos claros (más sutiles) */
+    --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.1);
+    --shadow-dark: 0 8px 20px rgba(0, 0, 0, 0.15);
+
     --border-radius-lg: 15px;
     --border-radius-md: 10px;
     --transition-fast: 0.3s ease;
     --transition-slow: 0.5s ease;
 }
 
-/* Estilos Generales para el cuerpo y encabezados (si no están en global-styles.css) */
+/* Estilos Generales para el cuerpo y encabezados */
 body {
     font-family: 'Poppins', sans-serif;
-    color: var(--text-color-light);
-    background-color: var(--dark-bg);
+    color: var(--text-dark-main); /* Texto principal oscuro */
+    background-color: var(--bg-main); /* Fondo principal gris muy claro */
+    /* background: linear-gradient(to bottom, #4B0082, #8A2BE2); /* Este gradiente de fondo se elimina para un fondo gris */
+    background-attachment: fixed;
     margin: 0;
     padding: 0;
     line-height: 1.6;
@@ -29,29 +46,48 @@ body {
 
 h1, h2, h3 {
     font-family: 'Montserrat', sans-serif;
-    color: var(--text-color-light);
+    color: var(--text-dark-main); /* Encabezados oscuros */
     margin-bottom: 1rem;
     line-height: 1.2;
 }
 
-h1 { font-size: 3.5rem; font-weight: 800; text-align: center; }
-h2 { font-size: 2.5rem; font-weight: 700; text-align: center; margin-bottom: 2.5rem; }
-h3 { font-size: 1.8rem; font-weight: 600; }
+h1 {
+    font-size: 3.5rem;
+    font-weight: 800;
+    text-align: center;
+    color: var(--primary-color); /* Usa el color primario para los títulos principales */
+    text-shadow: var(--shadow-light); /* Sombra más sutil para fondos claros */
+}
+
+h2 {
+    font-size: 2.5rem;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 2.5rem;
+    color: var(--secondary-color); /* Usa el color secundario para subtítulos */
+    text-shadow: none; /* Elimina la sombra si no es necesaria en modo claro */
+}
+
+h3 {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--text-dark-main); /* Títulos de tercer nivel oscuros */
+}
 
 p {
     font-size: 1.05rem;
     margin-bottom: 1rem;
     line-height: 1.7;
-    color: rgba(255, 255, 255, 0.85);
+    color: var(--text-dark-secondary); /* Párrafos en gris medio */
 }
 
 a {
-    color: var(--secondary-color);
+    color: var(--secondary-color); /* Enlaces con color de acento secundario */
     text-decoration: none;
     transition: color var(--transition-fast);
 }
 a:hover {
-    color: var(--primary-color);
+    color: var(--primary-color); /* Hover con color de acento primario */
     text-decoration: underline;
 }
 
@@ -69,9 +105,11 @@ section {
 }
 
 /* --- Hero About Section --- */
+/* Esta sección mantiene el texto blanco porque tiene una imagen de fondo oscura.
+   Sus estilos no cambian para adaptarse al tema claro, ya que su fondo es una imagen. */
 .hero-about {
-    background: url('https://source.unsplash.com/random/1920x600/?nightlife,party,friends') no-repeat center center/cover;
-    color: white;
+    background: url('../assets/img/about/about_walpapper.jpg') no-repeat center center/cover;
+    color: var(--text-color-light-contrast); /* Texto blanco para contraste */
     text-align: center;
     padding: 8rem 0;
     position: relative;
@@ -102,8 +140,9 @@ section {
 .hero-about h1 {
     font-size: 4rem;
     font-weight: 900;
-    text-shadow: var(--shadow-dark);
+    text-shadow: var(--shadow-dark); /* Sombra para el texto blanco */
     margin-bottom: 1.5rem;
+    color: var(--text-color-light-contrast); /* Asegura que el título sea blanco */
 }
 
 .hero-about p {
@@ -111,43 +150,45 @@ section {
     max-width: 800px;
     margin: 0 auto;
     opacity: 0.9;
+    color: var(--text-color-light-contrast); /* Asegura que el párrafo sea blanco */
 }
 
-/* --- About Sections (Mission, Vision, Offerings) --- */
+/* --- Secciones About (Misión, Visión, Ofertas) --- */
 .about-sections {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 2.5rem;
     padding-top: 4rem;
     padding-bottom: 4rem;
+    background-color: var(--bg-main); /* Fondo gris claro para la sección */
 }
 
 .about-card {
-    background-color: var(--light-bg);
+    background-color: var(--bg-card); /* Fondo de tarjeta blanco */
     padding: 2.5rem;
     border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-light);
+    box-shadow: var(--shadow-light); /* Sombra ajustada para fondo claro */
     text-align: center;
-    border: 1px solid rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.08); /* Borde sutil oscuro */
     transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
 }
 
 .about-card:hover {
     transform: translateY(-10px) scale(1.02);
-    box-shadow: var(--shadow-dark);
-    border-color: var(--secondary-color);
+    box-shadow: var(--shadow-dark); /* Sombra más pronunciada en hover */
+    border-color: var(--secondary-color); /* Borde de acento en hover */
 }
 
 .about-card i {
     font-size: 4rem;
-    color: var(--primary-color);
+    color: var(--primary-color); /* Iconos con color primario */
     margin-bottom: 1.5rem;
-    text-shadow: 0 0 15px rgba(255, 46, 99, 0.5); /* Sombra neón */
+    text-shadow: none; /* Eliminar sombra neón si no es deseada en modo claro */
 }
 
 .about-card h2 {
     font-size: 2rem;
-    color: var(--secondary-color);
+    color: var(--text-dark-main); /* Títulos de tarjeta oscuros */
     margin-bottom: 1rem;
     position: relative;
     padding-bottom: 0.5rem;
@@ -160,13 +201,13 @@ section {
     transform: translateX(-50%);
     width: 60px;
     height: 3px;
-    background-color: var(--primary-color);
+    background-color: var(--primary-color); /* Línea de acento */
     border-radius: 2px;
 }
 
 .about-card p {
     font-size: 1rem;
-    color: rgba(255, 255, 255, 0.75);
+    color: var(--text-dark-secondary); /* Párrafos de tarjeta en gris medio */
     line-height: 1.7;
     text-align: center;
     margin-bottom: 0.8rem; /* Menos margen entre párrafos dentro de la tarjeta */
@@ -176,15 +217,15 @@ section {
 }
 
 
-/* --- Team Section --- */
+/* --- Sección de Equipo --- */
 .team-section {
-    background-color: var(--dark-bg);
+    background-color: var(--bg-section-alt); /* Fondo gris ligeramente más oscuro para la sección de equipo */
     text-align: center;
     padding-top: 4rem;
 }
 
 .team-section h2 {
-    color: var(--primary-color);
+    color: var(--text-dark-main); /* Título de sección oscuro */
     margin-bottom: 3rem;
     position: relative;
     padding-bottom: 1rem;
@@ -197,7 +238,7 @@ section {
     transform: translateX(-50%);
     width: 80px;
     height: 4px;
-    background-color: var(--secondary-color);
+    background-color: var(--secondary-color); /* Línea de acento */
     border-radius: 2px;
 }
 
@@ -209,30 +250,30 @@ section {
 }
 
 .team-member {
-    background-color: var(--light-bg);
+    background-color: var(--bg-card); /* Fondo de miembro de equipo blanco */
     padding: 2rem;
     border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-light);
+    box-shadow: var(--shadow-light); /* Sombra ajustada */
     text-align: center;
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(0, 0, 0, 0.08); /* Borde sutil oscuro */
     transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
 }
 
 .team-member:hover {
     transform: translateY(-8px);
-    box-shadow: var(--shadow-dark);
-    border-color: var(--primary-color);
+    box-shadow: var(--shadow-dark); /* Sombra más pronunciada en hover */
+    border-color: var(--primary-color); /* Borde de acento en hover */
 }
 
 .team-member h3 {
     font-size: 1.6rem;
-    color: var(--text-color-light);
+    color: var(--text-dark-main); /* Nombre del miembro oscuro */
     margin-bottom: 0.5rem;
 }
 
 .team-member p {
     font-size: 0.95rem;
-    color: rgba(255, 255, 255, 0.6);
+    color: var(--text-dark-secondary); /* Rol del miembro en gris medio */
     margin-bottom: 1.5rem;
 }
 
@@ -249,21 +290,21 @@ section {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    background-color: var(--dark-bg);
-    color: var(--secondary-color);
+    background-color: var(--bg-section-alt); /* Fondo de icono social gris claro */
+    color: var(--secondary-color); /* Color de icono social de acento */
     font-size: 1.2rem;
-    transition: background-color var(--transition-fast), transform var(--transition-fast), color var(--transition-fast);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    transition: background-color var(--transition-fast), transform var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Sombra ajustada */
 }
 
 .member-social a:hover {
     transform: translateY(-3px) scale(1.1);
-    background-color: var(--secondary-color);
-    color: var(--dark-bg);
+    background-color: var(--secondary-color); /* Fondo de icono social de acento en hover */
+    color: var(--text-color-light-contrast); /* Texto blanco en hover */
 }
 
 
-/* Media Queries para Responsividad */
+/* Media Queries para Responsividad (no necesitan cambios de color, solo mantienen la estructura) */
 @media (max-width: 992px) {
     .hero-about h1 { font-size: 3rem; }
     .hero-about p { font-size: 1.2rem; }
@@ -271,9 +312,11 @@ section {
     .about-card { padding: 2rem; }
     .about-card i { font-size: 3.5rem; }
     .about-card h2 { font-size: 1.8rem; }
+    .about-card p { font-size: 1rem; }
     .team-grid { gap: 1.5rem; }
     .team-member { padding: 1.5rem; }
     .team-member h3 { font-size: 1.4rem; }
+    .team-member p { font-size: 0.95rem; }
     .member-social a { width: 35px; height: 35px; font-size: 1.1rem; }
 }
 

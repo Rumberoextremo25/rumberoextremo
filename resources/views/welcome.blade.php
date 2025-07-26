@@ -4,9 +4,12 @@
 
 @section('title', 'Rumbero Extremo App - Tu Noche Perfecta Comienza Aquí')
 
-@push('styles') {{-- Agregamos el CSS específico de esta vista --}}
+@push('styles')
+    {{-- Agregamos el CSS específico de esta vista --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Poppins:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/welcome.css') }}">
 @endpush
 
@@ -56,41 +59,32 @@
             <h2>Momentos Inolvidables en Rumbero Extremo</h2>
             <div class="carousel-container">
                 <div class="carousel-slide" id="carouselSlide">
-                    <img src="https://source.unsplash.com/random/900x400/?nightclub,lights,dj"
-                        alt="Rumba Extrema - Luces de Discoteca">
-                    <img src="https://source.unsplash.com/random/900x400/?concert,crowd,music"
-                        alt="Concierto - Multitud Disfrutando">
-                    <img src="https://source.unsplash.com/random/900x400/?cocktails,bar,friends"
-                        alt="Amigos en el Bar - Cócteles">
-                    <img src="https://source.unsplash.com/random/900x400/?festival,stage,fireworks"
-                        alt="Festival - Escenario con Fuegos Artificiales">
+                    <img src="{{ asset('assets/img/home/restaurante_lujo.jpg') }}" alt="Rumba Extrema - Luces de Discoteca">
+                    <img src="{{ asset('assets/img/home/parque_lujo.jpg') }}" alt="Concierto - Multitud Disfrutando">
+                    <img src="{{ asset('assets/img/home/fiesta-discoteca.jpg') }}" alt="Amigos en el Bar - Cócteles">
                 </div>
                 <button class="carousel-nav-button prev-button" onclick="moveSlide(-1)">&#10094;</button>
                 <button class="carousel-nav-button next-button" onclick="moveSlide(1)">&#10095;</button>
             </div>
         </div>
     </section>
-
     <section class="testimonials-section">
         <div class="container">
             <h2>Lo Que Dicen Nuestros Rumberos</h2>
             <div class="testimonials-grid">
                 <div class="testimonial-card">
-                    <img src="https://via.placeholder.com/80x80/FF2E63/FFFFFF?text=JD" alt="Foto de Juan David">
                     <p>"¡Increíble! Desde que uso Rumbero Extremo no me pierdo ni un evento. Es la mejor forma de saber
                         dónde está la rumba."</p>
                     <span class="author">Juan David M.</span>
                     <span class="location">Caracas, Venezuela</span>
                 </div>
                 <div class="testimonial-card">
-                    <img src="https://via.placeholder.com/80x80/08D9D6/FFFFFF?text=MV" alt="Foto de María Virginia">
                     <p>"Me encanta descubrir nuevos locales y DJs. La app es súper fácil de usar y me ha conectado con
                         la movida nocturna."</p>
                     <span class="author">María Virginia L.</span>
                     <span class="location">Valencia, Venezuela</span>
                 </div>
                 <div class="testimonial-card">
-                    <img src="https://via.placeholder.com/80x80/FF2E63/FFFFFF?text=RP" alt="Foto de Ricardo Pérez">
                     <p>"Perfecta para planificar mis noches. Siempre encuentro algo emocionante que hacer. ¡Rumbero
                         Extremo es la clave!"</p>
                     <span class="author">Ricardo P.</span>
@@ -110,6 +104,7 @@
     </section>
 @endsection
 
-@push('scripts') {{-- Agregamos el JS específico de esta vista --}}
+@push('scripts')
+    {{-- Agregamos el JS específico de esta vista --}}
     <script src="{{ asset('js/welcome.js') }}"></script>
 @endpush
