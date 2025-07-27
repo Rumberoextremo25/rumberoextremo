@@ -2,10 +2,8 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Api\SubcategoryController; // Asegúrate de importarlo
-use App\Http\Controllers\Api\CategoryController;
 use App\Http\Controllers\Api\ProductController;
-use App\Http\Controllers\Api\AliadoController;
+use App\Http\Controllers\Api\AllyController;
 use App\Http\Controllers\Api\HomeController;
 
 /*
@@ -33,7 +31,7 @@ Route::post('populate-db', function () {
 });
 
 // Ruta para obtener todos los aliados (GET /api/aliados)
-Route::get('store_data', [AliadoController::class, 'index']);
+Route::get('/aliados', [AllyController::class, 'index']);
 
 //Rutas para el HomeFragment de la Aplicación
 Route::get('home-data', [HomeController::class, 'index']);
