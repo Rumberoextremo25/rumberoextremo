@@ -56,7 +56,7 @@ class Ally extends Model
      */
     public function subCategory(): BelongsTo
     {
-        return $this->belongsTo(SubCategory::class);
+        return $this->belongsTo(SubCategory::class, 'sub_category_id');
     }
 
     /**
