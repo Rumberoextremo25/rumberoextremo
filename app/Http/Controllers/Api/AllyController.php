@@ -21,7 +21,7 @@ class AllyController extends Controller
             // Es crucial usar `with()` para que Eloquent cargue los datos de las relaciones.
             // No es necesario usar `select` aquí a menos que quieras explícitamente limitar las columnas
             // de la tabla principal 'allies'. Si lo usas, asegúrate de incluir 'id' y las claves foráneas.
-            $allies = Ally::with(['category', 'subcategory'])
+            $allies = Ally::with(['category'])
                           // Si usas select, debes incluir el ID de la tabla principal y las claves foráneas
                           // para que las relaciones 'with' funcionen correctamente.
                           // Si solo quieres las columnas que estás mapeando, puedes quitar el select
@@ -38,7 +38,7 @@ class AllyController extends Controller
                     'category_name' => $ally->category?->name, // Cambiado de category_id a category_name para reflejar lo que se muestra
                     // Acceder al nombre de la subcategoría usando el operador nullsafe `?->`
                     // Esto devolverá null si no hay una subcategoría relacionada.
-                    'sub_category_name' => $ally->subcategory?->name, // Cambiado de sub_category_id a sub_category_name
+                    //'sub_category_name' => $ally->subcategory?->name, // Cambiado de sub_category_id a sub_category_name
                     'discount' => $ally->discount,
                     // Si aún quieres el ID numérico de la categoría y subcategoría:
                     // 'category_id' => $ally->category_id,
