@@ -42,7 +42,7 @@ Route::get('/test-route', function () {
 });
 
 // Rutas públicas (no requieren autenticación)
-Route::post('/login', [AuthController::class, 'login']);
+Route::post('login', [AuthController::class, 'login']);
 
 // Rutas protegidas por Sanctum (requieren un token de acceso válido)
 Route::middleware('auth:sanctum')->group(function () {

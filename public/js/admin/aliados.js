@@ -84,3 +84,36 @@ document.addEventListener('DOMContentLoaded', () => {
     // Disparar el evento keyup al cargar la página para inicializar la tabla correctamente
     searchInput.dispatchEvent(new Event('keyup'));
 });
+
+// ESCRIPT PARA LA TABLA DE ALIADOS
+// public/js/admin/add-ally.js
+
+document.addEventListener('DOMContentLoaded', () => {
+    // Script para activar el enlace "Aliados" en el sidebar
+    const sidebarLinks = document.querySelectorAll('.sidebar ul li a');
+    sidebarLinks.forEach(link => {
+        link.classList.remove('active');
+        // Ensure correct path matching for the current URL
+        if (window.location.pathname.startsWith('/admin/aliados') || window.location.pathname.startsWith('/aliados')) {
+            if (link.getAttribute('href') && (link.getAttribute('href').includes('/admin/aliados') || link.getAttribute('href').includes('/aliados'))) {
+                link.classList.add('active');
+            }
+        }
+    });
+
+    // Script para botón de cancelar
+    document.getElementById('cancelAddAlly').addEventListener('click', () => {
+        if (confirm('¿Estás seguro de que quieres cancelar? Los cambios no guardados se perderán.')) {
+            // This route needs to be available globally or passed via data attribute if not hardcoded
+            // For now, it assumes 'aliados.index' is a known route.
+            window.location.href = "/admin/aliados"; // Fallback if route() helper is not available in JS
+            // Or if you pass the route via data attribute on an element, e.g.,
+            // const indexRoute = document.getElementById('cancelAddAlly').dataset.indexRoute;
+            // window.location.href = indexRoute;
+        }
+    });
+
+    // --- REMOVED: Lógica para desplegables de Categoría y Subcategoría (ya no son desplegables) ---
+    // The previous dynamic loading script for subcategories is removed
+    // because category, subcategory, and business type are now text inputs.
+});

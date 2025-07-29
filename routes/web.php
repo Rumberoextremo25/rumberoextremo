@@ -9,6 +9,8 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\CommercialAllyController;
 use App\Http\Controllers\Admin\PromotionController;
+use App\Http\Controllers\AllyController;
+use App\Http\Controllers\UserController;
 
 //RUTAS DE LAS VISTAS DE LA LANDING UBICADAS EN EL CONTROLADOR DE PAGE
 Route::get('/', [PageController::class, 'index'])->name('welcome');
@@ -46,19 +48,22 @@ Route::get('/admin/users/create', [AdminController::class, 'create'])->name('add
 Route::post('/admin/users', [AdminController::class, 'store'])->name('users.store');
 
 // Rutas para ver, editar y eliminar un usuario específico
-Route::get('/admin/users/{user}', [AdminController::class, 'show'])->name('users.show');
-Route::get('/admin/users/{user}/edit', [AdminController::class, 'edit'])->name('users.edit');
-Route::put('/admin/users/{user}', [AdminController::class, 'update'])->name('users.update');
-Route::delete('/admin/users/{user}', [AdminController::class, 'destroy'])->name('users.destroy');
+Route::get('/admin/users', [UserController::class, 'usersIndex'])->name('users'); // Note: 'users' is not a standard resource name for index
+Route::get('/admin/users/create', [UserController::class, 'create'])->name('add-user');
+Route::post('/admin/users', [UserController::class, 'store'])->name('users.store');
+Route::get('/admin/users/{user}', [UserController::class, 'show'])->name('users.show');
+Route::get('/admin/users/{user}/edit', [UserController::class, 'edit'])->name('users.edit');
+Route::put('/admin/users/{user}', [UserController::class, 'update'])->name('users.update');
+Route::delete('/admin/users/{user}', [UserController::class, 'destroy'])->name('users.destroy');
 
 // RUTAS PARA LA VISTA DE ALIADOS
-Route::get('/aliados', [AdminController::class, 'indexAllies'])->name('aliados.index');
-Route::get('/aliados/crear', [AdminController::class, 'aliadosCreate'])->name('aliados.create');
-Route::post('/aliados', [AdminController::class, 'storeAlly'])->name('aliados.store');
-Route::get('/aliados/{ally}/editar', [AdminController::class, 'alliesEdit'])->name('aliado.edit');
-Route::put('/aliados/{ally}', [AdminController::class, 'updateAlly'])->name('aliados.update');
-Route::delete('/aliados/{ally}', [AdminController::class, 'destroyAlly'])->name('aliados.destroy');
-Route::get('/get-subcategories', [AdminController::class, 'getSubcategories'])->name('get.subcategories');
+Route::get('/admin/aliados', [AllyController::class, 'index'])->name('aliados.index');
+Route::get('/admin/aliados/create', [AllyController::class, 'aliadosCreate'])->name('aliados.create');
+Route::post('/admin/aliados', [AllyController::class, 'storeAlly'])->name('aliados.store');
+Route::get('/admin/aliados/{ally}/edit', [AllyController::class, 'alliesEdit'])->name('aliado.edit');
+Route::put('/admin/aliados/{ally}', [AllyController::class, 'updateAlly'])->name('aliados.update');
+Route::delete('/admin/aliados/{ally}', [AllyController::class, 'destroyAlly'])->name('aliados.destroy');
+Route::get('/get-subcategories', [AllyController::class, 'getSubcategories'])->name('get.subcategories');
 
 
 // Rutas para reportes de ventas
