@@ -20,7 +20,7 @@ class AllyController extends Controller
             // Cargar los aliados con sus relaciones de categoría y subcategoría.
             // Usamos 'load' para cargar las relaciones después de obtener los aliados,
             // o 'with' para cargarlas directamente en la consulta principal (más eficiente).
-            $allies = Ally::with(['category', 'subcategory'])
+            $allies = Ally::with(['category_id', 'sub_category_id'])
                           ->select('company_name','company_rif', 'discount', 'category_id', 'sub_category_id')
                           ->get();
 
