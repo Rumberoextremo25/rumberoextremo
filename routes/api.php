@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\AllyController;
 use App\Http\Controllers\Api\HomeController;
+use App\Http\Controllers\Api\AuthController;
 
 /*
 |--------------------------------------------------------------------------
@@ -38,4 +39,13 @@ Route::get('home-data', [HomeController::class, 'index']);
 
 Route::get('/test-route', function () {
     return 'Test successful!';
+});
+
+// Rutas públicas (no requieren autenticación)
+Route::post('/login', [AuthController::class, 'login']);
+
+// Rutas protegidas por Sanctum (requieren un token de acceso válido)
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/logout', [AuthController::class, 'logout']);
+    Route::get('/user', [AuthController::class, 'user']);
 });
