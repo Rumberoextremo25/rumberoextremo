@@ -32,7 +32,7 @@ class AllyController extends Controller
             });
 
             return response()->json([
-                'message' => 'Aliados obtenidos correctamente',
+                'message' => 'Aliados obtenidos correctamente :D',
                 'data' => $formattedAllies
             ], 200);
 
