@@ -33,7 +33,7 @@ Route::post('populate-db', function () {
 
 // Ruta para obtener todos los aliados (GET /api/aliados)
 Route::get('/aliados', [AllyController::class, 'index']);
-Route::get('/aliados/{user_id}', [App\Http\Controllers\AllyController::class, 'show']);
+Route::get('/aliados/{user_id}', [AllyController::class, 'show']);
 
 //Rutas para el HomeFragment de la Aplicación
 Route::get('home-data', [HomeController::class, 'index']);
