@@ -1,354 +1,266 @@
-/* Variables de colores y tipografía (consistencia con el resto de la app) */
+/* Importa las fuentes de Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Poppins:wght@300;400;500;600&display=swap');
+
+/* Variables CSS para colores */
 :root {
-    /* Colores vibrantes para acentos (se mantienen tus colores principales) */
-    --primary-color: #9202e0; /* Un morado vibrante */
-    --secondary-color: #b10070; /* Un fucsia vibrante */
-
-    /* Nuevos fondos grises y blanco */
-    --bg-main: #f0f2f5; /* Gris muy claro para el fondo principal */
-    --bg-section-alt: #e3e6ea; /* Gris ligeramente más oscuro para secciones alternas */
-    --bg-card: #ffffff; /* Blanco puro para tarjetas y elementos destacados */
-
-    /* Colores de texto oscuros */
-    --text-dark-main: #212529; /* Texto principal oscuro (negro carbón) */
-    --text-dark-secondary: #6c757d; /* Texto secundario o de párrafo (gris medio) */
-    --text-color-light-contrast: #ffffff; /* Texto blanco para usar sobre fondos oscuros (ej. navbar/footer) */
-
-    /* Gradiente para navbar y footer (asumiendo que se aplicará externamente a estas secciones) */
-    --gradient-navbar-footer: linear-gradient(90deg, #9202e0, #FF2E63); /* Degradado de morado a fucsia */
-
-    /* Gradientes adicionales (mantengo los que tenías por si los usas en otros lugares) */
-    --gradient-1: linear-gradient(45deg, var(--primary-color), #FF7F50);
-    --gradient-2: linear-gradient(135deg, var(--secondary-color), #4CAF50);
-
-    /* Sombras ajustadas para fondos claros (más sutiles) */
-    --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.1);
-    --shadow-dark: 0 8px 20px rgba(0, 0, 0, 0.15);
-
-    --border-radius-lg: 15px;
-    --border-radius-md: 10px;
-    --transition-fast: 0.3s ease;
-    --transition-slow: 0.5s ease;
+    --primary-purple: #8A2BE2; /* Azul violeta */
+    --secondary-fuchsia: #FF00FF; /* Fucsia puro */
+    --light-purple: #B19CD9; /* Morado claro */
+    --dark-purple: #4B0082; /* Índigo oscuro, para texto oscuro en fondos claros */
+    --text-light: #f0f0f0; /* Color de texto para fondos oscuros */
+    --text-dark: #333;    /* Color de texto para fondos claros */
 }
 
-/* Estilos Generales para el cuerpo y encabezados */
-body {
-    font-family: 'Poppins', sans-serif;
-    color: var(--text-dark-main); /* Texto principal oscuro */
-    background-color: var(--bg-main); /* Fondo principal gris muy claro */
-    /* background: linear-gradient(to bottom, #4B0082, #8A2BE2); /* Este gradiente de fondo se elimina para un fondo gris */
-    background-attachment: fixed;
+/* Estilos generales del cuerpo y HTML */
+html, body {
     margin: 0;
     padding: 0;
-    line-height: 1.6;
-    overflow-x: hidden;
+    font-family: 'Poppins', sans-serif;
+    color: var(--text-dark); /* Texto oscuro para el fondo blanco */
+    background: #FFFFFF; /* Fondo blanco general */
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    box-sizing: border-box;
 }
 
-h1, h2, h3 {
-    font-family: 'Montserrat', sans-serif;
-    color: var(--text-dark-main); /* Encabezados oscuros */
-    margin-bottom: 1rem;
-    line-height: 1.2;
-}
-
-h1 {
-    font-size: 3.5rem;
-    font-weight: 800;
-    text-align: center;
-    color: var(--primary-color); /* Usa el color primario para los títulos principales */
-    text-shadow: var(--shadow-light); /* Sombra más sutil para fondos claros */
-}
-
-h2 {
-    font-size: 2.5rem;
-    font-weight: 700;
-    text-align: center;
-    margin-bottom: 2.5rem;
-    color: var(--secondary-color); /* Usa el color secundario para subtítulos */
-    text-shadow: none; /* Elimina la sombra si no es necesaria en modo claro */
-}
-
-h3 {
-    font-size: 1.8rem;
-    font-weight: 600;
-    color: var(--text-dark-main); /* Títulos de tercer nivel oscuros */
-}
-
-p {
-    font-size: 1.05rem;
-    margin-bottom: 1rem;
-    line-height: 1.7;
-    color: var(--text-dark-secondary); /* Párrafos en gris medio */
-}
-
-a {
-    color: var(--secondary-color); /* Enlaces con color de acento secundario */
-    text-decoration: none;
-    transition: color var(--transition-fast);
-}
-a:hover {
-    color: var(--primary-color); /* Hover con color de acento primario */
-    text-decoration: underline;
-}
-
+/* Contenedor principal para centrar el contenido */
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 2rem;
+    padding: 0 20px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-section {
-    padding: 6rem 0;
-    position: relative;
-    z-index: 1;
-    overflow: hidden;
-}
-
-/* --- Hero About Section --- */
-/* Esta sección mantiene el texto blanco porque tiene una imagen de fondo oscura.
-   Sus estilos no cambian para adaptarse al tema claro, ya que su fondo es una imagen. */
+/* Sección Hero (Conoce la Esencia) */
 .hero-about {
-    background: url('../assets/img/about/about_walpapper.jpg') no-repeat center center/cover;
-    color: var(--text-color-light-contrast); /* Texto blanco para contraste */
     text-align: center;
-    padding: 8rem 0;
-    position: relative;
-    overflow: hidden;
-}
-
-.hero-about::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.65); /* Superposición oscura más fuerte */
-    z-index: 0;
-}
-
-.hero-about .container {
-    position: relative;
-    z-index: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 350px; /* Altura mínima para el banner */
+    padding: 80px 20px;
+    /* Degradado morado y fucsia para el hero, similar al de la imagen */
+    background: linear-gradient(135deg, var(--primary-purple) 0%, var(--secondary-fuchsia) 100%);
+    margin-bottom: 40px;
+    border-bottom-left-radius: 50px;
+    border-bottom-right-radius: 50px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    color: #fff; /* Texto blanco para el fondo oscuro del hero */
 }
 
 .hero-about h1 {
-    font-size: 4rem;
-    font-weight: 900;
-    text-shadow: var(--shadow-dark); /* Sombra para el texto blanco */
-    margin-bottom: 1.5rem;
-    color: var(--text-color-light-contrast); /* Asegura que el título sea blanco */
+    font-family: 'Montserrat', sans-serif;
+    font-size: 3.5em;
+    margin-bottom: 15px;
+    color: #fff;
+    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+    line-height: 1.2;
 }
 
 .hero-about p {
-    font-size: 1.4rem;
+    font-size: 1.3em;
     max-width: 800px;
     margin: 0 auto;
-    opacity: 0.9;
-    color: var(--text-color-light-contrast); /* Asegura que el párrafo sea blanco */
+    color: #eee;
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
 }
 
-/* --- Secciones About (Misión, Visión, Ofertas) --- */
+/* Secciones de "Sobre Nosotros" (Misión, Visión, Ofrecemos) */
 .about-sections {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 2.5rem;
-    padding-top: 4rem;
-    padding-bottom: 4rem;
-    background-color: var(--bg-main); /* Fondo gris claro para la sección */
+    gap: 30px;
+    padding-bottom: 60px;
+    background: transparent; /* Fondo transparente para que se vea el blanco del body */
+    box-shadow: none; /* Quitamos la sombra del contenedor, las tarjetas tendrán la suya */
 }
 
 .about-card {
-    background-color: var(--bg-card); /* Fondo de tarjeta blanco */
-    padding: 2.5rem;
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-light); /* Sombra ajustada para fondo claro */
+    /* Degradado para las tarjetas de misión, visión, etc., haciéndolas coloridas */
+    background: linear-gradient(45deg, var(--light-purple) 0%, var(--secondary-fuchsia) 100%);
+    border: none; /* Quitamos el borde ya que el fondo es de color */
+    border-radius: 20px;
+    padding: 30px;
     text-align: center;
-    border: 1px solid rgba(0, 0, 0, 0.08); /* Borde sutil oscuro */
-    transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    color: #fff; /* Texto blanco para las tarjetas de color */
 }
 
 .about-card:hover {
     transform: translateY(-10px) scale(1.02);
-    box-shadow: var(--shadow-dark); /* Sombra más pronunciada en hover */
-    border-color: var(--secondary-color); /* Borde de acento en hover */
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
 }
 
 .about-card i {
-    font-size: 4rem;
-    color: var(--primary-color); /* Iconos con color primario */
-    margin-bottom: 1.5rem;
-    text-shadow: none; /* Eliminar sombra neón si no es deseada en modo claro */
+    font-size: 3.5em;
+    color: #fff; /* Iconos blancos para contraste */
+    margin-bottom: 20px;
+    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }
 
 .about-card h2 {
-    font-size: 2rem;
-    color: var(--text-dark-main); /* Títulos de tarjeta oscuros */
-    margin-bottom: 1rem;
-    position: relative;
-    padding-bottom: 0.5rem;
-}
-.about-card h2::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 60px;
-    height: 3px;
-    background-color: var(--primary-color); /* Línea de acento */
-    border-radius: 2px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 2em;
+    margin-bottom: 15px;
+    color: #fff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .about-card p {
-    font-size: 1rem;
-    color: var(--text-dark-secondary); /* Párrafos de tarjeta en gris medio */
-    line-height: 1.7;
-    text-align: center;
-    margin-bottom: 0.8rem; /* Menos margen entre párrafos dentro de la tarjeta */
-}
-.about-card p:last-of-type {
-    margin-bottom: 0; /* Elimina el margen del último párrafo */
+    font-size: 1.1em;
+    line-height: 1.6;
+    color: #eee; /* Texto un poco más claro para las tarjetas */
+    margin-bottom: 10px;
 }
 
-
-/* --- Sección de Equipo --- */
+/* Sección del Equipo */
 .team-section {
-    background-color: var(--bg-section-alt); /* Fondo gris ligeramente más oscuro para la sección de equipo */
     text-align: center;
-    padding-top: 4rem;
+    padding: 60px 20px;
+    /* Fondo blanco para la sección del equipo, similar al footer de la imagen */
+    background: #FFFFFF;
+    border-top-left-radius: 50px;
+    border-top-right-radius: 50px;
+    box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.08); /* Sombra sutil para el fondo blanco */
+    color: var(--text-dark); /* Texto oscuro para el fondo blanco */
 }
 
 .team-section h2 {
-    color: var(--text-dark-main); /* Título de sección oscuro */
-    margin-bottom: 3rem;
-    position: relative;
-    padding-bottom: 1rem;
-}
-.team-section h2::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 80px;
-    height: 4px;
-    background-color: var(--secondary-color); /* Línea de acento */
-    border-radius: 2px;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 3em;
+    margin-bottom: 40px;
+    color: var(--dark-purple); /* Título oscuro para el fondo blanco */
+    text-shadow: none; /* Quitamos sombra para mejor legibilidad */
 }
 
 .team-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 2rem;
-    margin-top: 3rem;
+    gap: 30px;
 }
 
 .team-member {
-    background-color: var(--bg-card); /* Fondo de miembro de equipo blanco */
-    padding: 2rem;
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-light); /* Sombra ajustada */
+    /* Degradado morado y fucsia para las tarjetas de los miembros del equipo */
+    background: linear-gradient(45deg, var(--primary-purple) 0%, var(--secondary-fuchsia) 100%);
+    border: none; /* Quitamos el borde */
+    border-radius: 20px;
+    padding: 25px;
     text-align: center;
-    border: 1px solid rgba(0, 0, 0, 0.08); /* Borde sutil oscuro */
-    transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    color: #fff; /* Texto blanco para las tarjetas de color */
 }
 
 .team-member:hover {
-    transform: translateY(-8px);
-    box-shadow: var(--shadow-dark); /* Sombra más pronunciada en hover */
-    border-color: var(--primary-color); /* Borde de acento en hover */
+    transform: translateY(-10px) scale(1.02);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
 }
 
 .team-member h3 {
-    font-size: 1.6rem;
-    color: var(--text-dark-main); /* Nombre del miembro oscuro */
-    margin-bottom: 0.5rem;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.8em;
+    margin-bottom: 5px;
+    color: #fff; /* Nombre blanco */
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .team-member p {
-    font-size: 0.95rem;
-    color: var(--text-dark-secondary); /* Rol del miembro en gris medio */
-    margin-bottom: 1.5rem;
+    font-size: 1.1em;
+    color: #eee; /* Rol un poco más claro */
+    margin-bottom: 20px;
 }
 
 .member-social {
+    margin-top: 15px;
     display: flex;
     justify-content: center;
-    gap: 1rem;
+    gap: 15px;
 }
 
 .member-social a {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    background-color: var(--bg-section-alt); /* Fondo de icono social gris claro */
-    color: var(--secondary-color); /* Color de icono social de acento */
-    font-size: 1.2rem;
-    transition: background-color var(--transition-fast), transform var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1); /* Sombra ajustada */
+    color: #fff; /* Iconos sociales blancos */
+    font-size: 1.8em;
+    transition: color 0.3s ease, transform 0.3s ease;
+    text-decoration: none;
 }
 
 .member-social a:hover {
-    transform: translateY(-3px) scale(1.1);
-    background-color: var(--secondary-color); /* Fondo de icono social de acento en hover */
-    color: var(--text-color-light-contrast); /* Texto blanco en hover */
+    color: var(--light-purple); /* Cambia a morado claro al pasar el ratón */
+    transform: scale(1.2);
 }
 
-
-/* Media Queries para Responsividad (no necesitan cambios de color, solo mantienen la estructura) */
-@media (max-width: 992px) {
-    .hero-about h1 { font-size: 3rem; }
-    .hero-about p { font-size: 1.2rem; }
-    .about-sections { gap: 2rem; }
-    .about-card { padding: 2rem; }
-    .about-card i { font-size: 3.5rem; }
-    .about-card h2 { font-size: 1.8rem; }
-    .about-card p { font-size: 1rem; }
-    .team-grid { gap: 1.5rem; }
-    .team-member { padding: 1.5rem; }
-    .team-member h3 { font-size: 1.4rem; }
-    .team-member p { font-size: 0.95rem; }
-    .member-social a { width: 35px; height: 35px; font-size: 1.1rem; }
-}
-
+/* Media Queries para Responsividad */
 @media (max-width: 768px) {
-    .container { padding: 0 1.5rem; }
-    section { padding: 4rem 0; }
-    .hero-about { padding: 6rem 0; min-height: 250px; }
-    .hero-about h1 { font-size: 2.5rem; }
-    .hero-about p { font-size: 1rem; }
-    .about-sections { grid-template-columns: 1fr; padding-top: 3rem; padding-bottom: 3rem; }
-    .about-card { padding: 1.8rem; }
-    .about-card i { font-size: 3rem; }
-    .about-card h2 { font-size: 1.6rem; }
-    .about-card p { font-size: 0.95rem; }
-    .team-section h2 { font-size: 2rem; margin-bottom: 2rem; }
-    .team-grid { grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
-    .team-member { padding: 1.2rem; }
-    .team-member h3 { font-size: 1.3rem; }
-    .team-member p { font-size: 0.9rem; }
-    .member-social a { width: 30px; height: 30px; font-size: 1rem; }
+    .hero-about h1 {
+        font-size: 2.5em;
+    }
+
+    .hero-about p {
+        font-size: 1.1em;
+    }
+
+    .about-sections {
+        grid-template-columns: 1fr; /* Una columna en pantallas pequeñas */
+    }
+
+    .about-card {
+        padding: 25px;
+    }
+
+    .about-card i {
+        font-size: 3em;
+    }
+
+    .about-card h2 {
+        font-size: 1.8em;
+    }
+
+    .team-section h2 {
+        font-size: 2.5em;
+    }
+
+    .team-grid {
+        grid-template-columns: 1fr; /* Una columna en pantallas pequeñas */
+    }
+
+    .team-member {
+        padding: 20px;
+    }
+
+    .team-member h3 {
+        font-size: 1.6em;
+    }
 }
 
 @media (max-width: 480px) {
-    .hero-about h1 { font-size: 2rem; margin-bottom: 1rem; }
-    .hero-about p { font-size: 0.9rem; }
-    .about-card i { font-size: 2.5rem; margin-bottom: 1rem; }
-    .about-card h2 { font-size: 1.4rem; }
-    .about-card p { font-size: 0.9rem; }
-    .team-section h2 { font-size: 1.8rem; }
-    .team-grid { grid-template-columns: 1fr; }
-    .team-member { padding: 1rem; }
-    .team-member h3 { font-size: 1.2rem; }
-    .team-member p { font-size: 0.85rem; }
-    .member-social a { width: 28px; height: 28px; font-size: 0.9rem; }
+    .hero-about h1 {
+        font-size: 2em;
+    }
+
+    .hero-about p {
+        font-size: 1em;
+    }
+
+    .about-card h2 {
+        font-size: 1.5em;
+    }
+
+    .about-card p {
+        font-size: 0.95em;
+    }
+
+    .team-section h2 {
+        font-size: 2em;
+    }
+
+    .team-member h3 {
+        font-size: 1.4em;
+    }
+
+    .member-social a {
+        font-size: 1.5em;
+    }
 }
