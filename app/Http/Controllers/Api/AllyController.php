@@ -52,4 +52,25 @@ class AllyController extends Controller
             ], 500);
         }
     }
+
+    public function show(int $user_id) // <-- ¡El parámetro ahora es $user_id!
+    {
+        // Busca el aliado por su clave primaria, que es user_id
+        $ally = Ally::with(['category', 'subcategory'])->find($user_id); // <-- find() usa la clave primaria definida
+
+        if (!$ally) {
+            return response()->json(['message' => 'Aliado no encontrado.'], 404);
+        }
+
+        $formattedAlly = [
+            'user_id' => $ally->user_id, // <-- ¡Aquí es user_id!
+            'company_name' => $ally->company_name,
+            'company_rif' => $ally->company_rif,
+            'discount' => $ally->discount,
+            'category_name' => $ally->category?->name,
+            'sub_category_name' => $ally->subcategory?->name,
+        ];
+
+        return response()->json(['data' => [$formattedAlly]], 200);
+    }
 }
