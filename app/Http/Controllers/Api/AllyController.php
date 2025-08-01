@@ -1,46 +1,35 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
+use App\Models\Ally;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB; // ¡Importa el Facade DB!
-use Illuminate\Support\Facades\Log; // Para el manejo de errores, si lo deseas
 
 class AllyController extends Controller
 {
+    /**
+     * Muestra una lista de todos los aliados registrados,
+     * incluyendo su categoría, subcategoría, nombre y descuento.
+     *
+     * @return \Illuminate\Http\JsonResponse
+     */
     public function index()
     {
         try {
-            // Consulta SQL directamente
-            $allies = DB::select("
-                SELECT
-                    a.company_name,
-                    a.company_rif,
-                    c.name AS category_name,
-                    sc.name AS sub_category_name,
-                    a.discount
-                FROM
-                    allies AS a
-                LEFT JOIN
-                    categories AS c ON a.category_id = c.id
-                LEFT JOIN
-                    subcategories AS sc ON a.sub_category_id = sc.id;
-            ");
+            $allies = Ally::with(['category', 'subcategory'])
+                          ->get();
 
-            // Los resultados de DB::select ya vienen como un array de objetos StdClass,
-            // que es similar a lo que obtenías con la colección de Eloquent mapeada.
-            // No necesitas el paso extra de ->map() a menos que quieras transformar algo más.
-            // Si quieres que los resultados sean exactamente como los objetos de Eloquent
-            // y luego mapearlos, tendrías que castearlos. Pero para este caso,
-            // el resultado de DB::select es muy cercano al formato deseado.
-
-            // Convertimos los objetos StdClass a arrays asociativos si lo prefieres,
-            // o simplemente los devolvemos tal cual. Si tu frontend espera arrays asociativos,
-            // esta parte es útil. Si solo necesita objetos, $allies ya es suficiente.
-            $formattedAllies = array_map(function ($ally) {
-                return (array) $ally;
-            }, $allies);
-
+            // Formatear la respuesta para incluir solo los campos deseados
+            $formattedAllies = $allies->map(function ($ally) {
+                return [
+                    'company_name' => $ally->company_name,
+                    'company_rif' => $ally->company_rif,
+                    'category_name' => $ally->category?->name, // Cambiado de category_id a category_name para reflejar lo que se muestra
+                    'sub_category_name' => $ally->subcategory?->name, // Cambiado de sub_category_id a sub_category_name
+                    'discount' => $ally->discount,
+                ];
+            });
 
             return response()->json([
                 'message' => 'Aliados obtenidos correctamente',
@@ -49,13 +38,16 @@ class AllyController extends Controller
 
         } catch (\Exception $e) {
             // Manejo de errores
-            Log::error("Error al obtener aliados: " . $e->getMessage()); // Requiere use Illuminate\Support\Facades\Log;
+            // Es útil registrar el error completo para depuración en un entorno de desarrollo
+            // Log::error("Error al obtener aliados: " . $e->getMessage()); // Requiere use Illuminate\Support\Facades\Log;
+
+            
 
             return response()->json([
                 'message' => 'Error al obtener los aliados',
                 'error' => $e->getMessage(),
-                'file' => $e->getFile(),
-                'line' => $e->getLine()
+                'file' => $e->getFile(), // Para depuración
+                'line' => $e->getLine() // Para depuración
             ], 500);
         }
     }
