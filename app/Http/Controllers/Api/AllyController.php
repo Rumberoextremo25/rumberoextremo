@@ -23,6 +23,7 @@ class AllyController extends Controller
             // Formatear la respuesta para incluir solo los campos deseados
             $formattedAllies = $allies->map(function ($ally) {
                 return [
+                    'user_id' => $ally->user_id,
                     'company_name' => $ally->company_name,
                     'company_rif' => $ally->company_rif,
                     'category_name' => $ally->category?->name, // Cambiado de category_id a category_name para reflejar lo que se muestra
