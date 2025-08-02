@@ -16,6 +16,7 @@ class Ally extends Model
     // Atributos que se pueden asignar masivamente (mass assignable).
     // Estos campos corresponden a las columnas de tu tabla 'allies'.
     protected $fillable = [
+        'id',
         'user_id',
         'company_name',
         'company_rif',

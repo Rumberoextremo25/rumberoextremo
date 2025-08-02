@@ -23,7 +23,7 @@ class AllyController extends Controller
             // Formatear la respuesta para incluir solo los campos deseados
             $formattedAllies = $allies->map(function ($ally) {
                 return [
-                    'user_id' => $ally->user_id,
+                    'id' => $ally->id,
                     'company_name' => $ally->company_name,
                     'company_rif' => $ally->company_rif,
                     'category_name' => $ally->category?->name, // Cambiado de category_id a category_name para reflejar lo que se muestra
@@ -53,22 +53,30 @@ class AllyController extends Controller
         }
     }
 
-    public function show(int $user_id) // <-- ¡El parámetro ahora es $user_id!
+    public function show(int $id) // <-- ¡El parámetro ahora es $user_id!
     {
         // Busca el aliado por su clave primaria, que es user_id
-        $ally = Ally::with(['category', 'subcategory'])->find($user_id); // <-- find() usa la clave primaria definida
+        $ally = Ally::with(['category', 'subcategory'])->find($id); // <-- find() usa la clave primaria definida
 
         if (!$ally) {
             return response()->json(['message' => 'Aliado no encontrado.'], 404);
         }
 
         $formattedAlly = [
-            'user_id' => $ally->user_id, // <-- ¡Aquí es user_id!
+            'id' => $ally->user_id, // <-- ¡Aquí es user_id!
             'company_name' => $ally->company_name,
             'company_rif' => $ally->company_rif,
             'discount' => $ally->discount,
             'category_name' => $ally->category?->name,
             'sub_category_name' => $ally->subcategory?->name,
+            'image_url' => $ally->image_url,
+            'rating' => $ally->rating,
+            'address' => $ally->address,
+            'phone' => $ally->phone,
+            'website' => $ally->website,
+            'hours_of_operation' => $ally->hours_of_operation,
+            'description' => $ally->description,
+            'qr_code_data' => $ally->qr_code_data,
         ];
 
         return response()->json(['data' => [$formattedAlly]], 200);
