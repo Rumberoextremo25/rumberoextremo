@@ -22,35 +22,27 @@ class AdminController extends Controller
 
     public function index()
     {
-        $user = Auth::user(); // Obtiene el usuario autenticado
-        $role = $user->user_type; // Obtiene el rol del usuario
+        $user = Auth::user();
+        $role = $user->user_type;
 
-        // --- 1. Conteo de Visitas (PageViews) ---
-        // Incrementa la vista para la página del dashboard.
-        // firstOrCreate encontrará el registro por 'path' o lo creará si no existe.
-        PageView::firstOrCreate(['path' => '/dashboard'])
-                ->increment('views');
-
-        // Obtiene el total de visitas de la página del dashboard.
-        // Si quisieras el total de *todas* las vistas en el sistema, usarías PageView::sum('views') ?? 0;
-        $pageViews = PageView::where('path', '/dashboard')->value('views') ?? 0;
-
-        // --- Métricas Globales (visibles para todos los roles, si tu vista lo permite) ---
         $totalUsers = User::count();
-        $totalSales = Sale::sum('total'); // Suma total de todas las ventas en el sistema
 
-        // --- Inicialización de variables específicas de rol ---
-        $latestActivities = [];          // Para actividades generales del sistema o del aliado
-        $latestProfileActivities = [];   // Para actividades específicas del usuario común
-        $todaySalesSpecific = 0.00;      // Ventas de hoy (filtradas por rol)
-        $customerSatisfaction = 0;       // Satisfacción del cliente (dummy o calculada por rol)
+        PageView::firstOrCreate(['path' => '/dashboard'])
+        ->increment('views');
+ 
+        $totalSales = Sale::sum('total');
 
+        $latestActivities = [];
+        $latestProfileActivities = [];
 
-        // --- Lógica basada en el Rol del Usuario ---
+        $todaySalesSpecific = 0.00;
+        $customerSatisfaction = 0;
+
         if ($role === 'admin') {
-            // Métricas específicas para el Administrador
+
+            // Puedes mantener todaySales si quieres mostrar un "Ventas de Hoy" adicional
             $todaySalesSpecific = Sale::whereDate('sale_date', Carbon::today())->sum('total');
-            $customerSatisfaction = 92; // Valor de ejemplo o calculado para el admin
+            $customerSatisfaction = 92; // Valor dummy o calculado
 
             // Obtén las últimas 10 actividades para el Admin (todas las actividades del sistema)
             $latestActivities = ActivityLog::latest()
@@ -58,42 +50,45 @@ class AdminController extends Controller
                 ->get()
                 ->map(fn($activity) => [
                     'activity' => $activity->description,
-                    // Intenta obtener el nombre del usuario relacionado, o usa 'performed_by' como fallback
-                    'user' => $activity->user->name ?? $activity->performed_by ?? 'N/A',
+                    'user' => $activity->performed_by ?? 'N/A', // Asegúrate de que 'performed_by' exista o usa un fallback
                     'date' => Carbon::parse($activity->created_at)->format('d/m/Y H:i'),
                     'status' => ucfirst($activity->status),
                     'status_class' => $this->getStatusClass($activity->status)
                 ]);
 
         } elseif ($role === 'aliado') {
-            // Métricas específicas para el Aliado
+
+
+            // Ventas de hoy solo para este aliado
             $todaySalesSpecific = Sale::whereDate('sale_date', Carbon::today())
                 ->whereHas('product', function ($query) use ($user) {
-                    // Filtra por productos que pertenecen a este aliado
-                    // Asume que tu modelo Product tiene un 'user_id' que es el ID del aliado
-                    $query->where('user_id', $user->id);
+                    // Asegúrate de que tu modelo 'Sale' tenga una relación con 'Product'
+                    // Y que 'Product' tenga una 'aliado_id' o 'user_id' para filtrar por el aliado
+                    $query->where('user_id', $user->id); // Asumiendo que el campo 'aliado_id' en la tabla productos es 'user_id'
                 })
                 ->sum('total');
-            $customerSatisfaction = 88; // Valor de ejemplo o calculado para el aliado
 
-            // Últimas 10 actividades relevantes SOLO para este Aliado (filtrando por su user_id)
-            $latestActivities = ActivityLog::where('user_id', $user->id)
+            $customerSatisfaction = 88; // Dummy o calculado para el aliado
+
+            // Actividades relevantes para el Aliado (ej. sus propios productos, sus ventas)
+            // Esto requiere que tu ActivityLog tenga una manera de vincular actividades a un 'aliado_id'
+            $latestActivities = ActivityLog::where('user_id', $user->id) // Asume que ActivityLog tiene un campo 'user_id' que es el aliado_id
                 ->latest()
                 ->limit(10)
                 ->get()
                 ->map(fn($activity) => [
                     'activity' => $activity->description,
-                    'user' => $user->firstname ?? $user->name, // El usuario es el propio aliado
+                    'user' => $user->firstname ?? $user->name, // Muestra el nombre del aliado
                     'date' => Carbon::parse($activity->created_at)->format('d/m/Y H:i'),
                     'status' => ucfirst($activity->status),
                     'status_class' => $this->getStatusClass($activity->status)
                 ]);
 
         } elseif ($role === 'comun') {
-            // USUARIO COMÚN: Generalmente, no tiene cards de "Ventas de Hoy" o "Satisfacción del Cliente".
-            // Las métricas globales ($totalUsers, $pageViews, $totalSales) se pueden mostrar si aplica.
+            // USUARIO COMÚN: No tiene cards adicionales, solo actividades relacionadas a su perfil.
+            // Las 3 cards principales ($totalUsers, $pageViews, $totalSales) se muestran igual.
 
-            // Obtén las últimas 10 actividades relacionadas directamente con este Usuario Común (su propio perfil)
+            // Obtén las últimas 10 actividades relacionadas directamente con este usuario
             $latestProfileActivities = ActivityLog::where('user_id', $user->id)
                 ->latest()
                 ->limit(10)
@@ -107,16 +102,16 @@ class AdminController extends Controller
                 ]);
         }
 
-        // --- Retorna la vista con todas las variables necesarias ---
-        // Blade se encargará de mostrar solo las variables que existan y estén diseñadas para cada rol.
+        // Retorna la vista con todas las variables necesarias.
+        // Las variables no usadas por un rol específico simplemente no serán renderizadas por Blade si no hay @if para ellas.
         return view('dashboard', compact(
             'totalUsers',
-            'pageViews',
-            'totalSales',
+            'pageViews', // Nueva variable
+            'totalSales', // Nueva variable
             'latestActivities',
             'latestProfileActivities',
-            'todaySalesSpecific',
-            'customerSatisfaction'
+            'todaySalesSpecific', // Puedes usarla si decides añadir una card de ventas del día específica para admin/aliado
+            'customerSatisfaction' // Puedes usarla si decides añadir una card de satisfacción específica para admin/aliado
         ));
     }
 
