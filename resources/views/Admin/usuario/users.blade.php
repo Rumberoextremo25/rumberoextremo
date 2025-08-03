@@ -44,7 +44,7 @@
                         @foreach ($users as $user)
                             <tr>
                                 <td data-label="ID" class="user-id">{{ $user->id }}</td>
-                                <td data-label="Nombre">{{ $user->firstname }} {{ $user->lastname }}</td>
+                                <td data-label="Nombre">{{ $user->name }}</td>
                                 <td data-label="Email">{{ $user->email }}</td>
                                 <td data-label="Tipo">
                                     <span class="badge badge-type-{{ strtolower($user->user_type) }}">
