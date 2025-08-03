@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Promotion;
+use App\Models\Promotion; // Asegúrate de que este namespace es correcto para tu modelo Promotion
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Storage; // Importa la fachada Storage
 
 class PromotionController extends Controller
 {
@@ -42,12 +42,14 @@ class PromotionController extends Controller
 
         $imagePath = null;
         if ($request->hasFile('image')) {
-            $imagePath = Storage::disk('public')->put('promotions', $request->file('image'));
+            $storagePath = Storage::disk('public')->put('promotions', $request->file('image'));
+            // MODIFICACIÓN CLAVE AQUÍ: Generar la URL absoluta usando asset()
+            $imagePath = asset('storage/' . $storagePath);
         }
 
         Promotion::create([
             'title' => $request->title,
-            'image_url' => $imagePath ? Storage::url($imagePath) : null,
+            'image_url' => $imagePath, // Ahora $imagePath ya es la URL absoluta o null
             'discount' => $request->discount,
             'price' => $request->price,
             'expires_at' => $request->expires_at,
@@ -79,17 +81,30 @@ class PromotionController extends Controller
             'description' => 'nullable|string',
         ]);
 
-        $imagePath = $promotion->image_url;
+        $imagePathToSave = $promotion->image_url; // Mantener la URL existente por defecto
+
         if ($request->hasFile('image')) {
-            if ($promotion->image_url && Storage::disk('public')->exists(str_replace('/storage/', '', $promotion->image_url))) {
-                Storage::disk('public')->delete(str_replace('/storage/', '', $promotion->image_url));
+            // Eliminar la imagen anterior si existe
+            if ($promotion->image_url) {
+                // Hay que convertir la URL absoluta a una ruta relativa para Storage::disk('public')->delete
+                // Si la URL es: http://tu_dominio.com/storage/promotions/imagen.jpg
+                // Necesitamos extraer: promotions/imagen.jpg
+                $relativePathToDelete = str_replace(Storage::url(''), '', $promotion->image_url);
+                if (Storage::disk('public')->exists($relativePathToDelete)) {
+                    Storage::disk('public')->delete($relativePathToDelete);
+                }
             }
-            $imagePath = Storage::disk('public')->put('promotions', $request->file('image'));
+
+            // Guardar la nueva imagen
+            $newStoragePath = Storage::disk('public')->put('promotions', $request->file('image'));
+            
+            // MODIFICACIÓN CLAVE AQUÍ: Generar la URL absoluta para guardar en la base de datos
+            $imagePathToSave = asset('storage/' . $newStoragePath);
         }
 
         $promotion->update([
             'title' => $request->title,
-            'image_url' => $imagePath ? Storage::url($imagePath) : $promotion->image_url,
+            'image_url' => $imagePathToSave, // Ahora $imagePathToSave ya es la URL absoluta
             'discount' => $request->discount,
             'price' => $request->price,
             'expires_at' => $request->expires_at,
@@ -104,8 +119,12 @@ class PromotionController extends Controller
      */
     public function destroy(Promotion $promotion)
     {
-        if ($promotion->image_url && Storage::disk('public')->exists(str_replace('/storage/', '', $promotion->image_url))) {
-            Storage::disk('public')->delete(str_replace('/storage/', '', $promotion->image_url));
+        // Para eliminar, también necesitamos convertir la URL absoluta a una ruta relativa
+        if ($promotion->image_url) {
+            $relativePathToDelete = str_replace(Storage::url(''), '', $promotion->image_url);
+            if (Storage::disk('public')->exists($relativePathToDelete)) {
+                Storage::disk('public')->delete($relativePathToDelete);
+            }
         }
         $promotion->delete();
         return redirect()->route('admin.promotions.index')->with('success', 'Promoción eliminada exitosamente.');
