@@ -11,7 +11,6 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\Request;
-use App\Models\PageView; // Import the PageView model
 
 class AdminController extends Controller
 {
@@ -27,8 +26,7 @@ class AdminController extends Controller
 
         $totalUsers = User::count();
 
-        PageView::firstOrCreate(['path' => '/dashboard'])
-        ->increment('views');
+        $pageViews = 12345;
  
         $totalSales = Sale::sum('total');
 
