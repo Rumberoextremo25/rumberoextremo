@@ -30,6 +30,7 @@ class AllyController extends Controller
                     'sub_category_name' => $ally->subcategory?->name, // Cambiado de sub_category_id a sub_category_name
                     'discount' => $ally->discount,
                     'contact_phone' => $ally->contact_phone,
+                    'website_url' => $ally->website_url,
                 ];
             });
 
@@ -74,7 +75,7 @@ class AllyController extends Controller
             'rating' => $ally->rating,
             'address' => $ally->address,
             'contact_phone' => $ally->contact_phone,
-            'website' => $ally->website,
+            'website_url' => $ally->website_url,
             'hours_of_operation' => $ally->hours_of_operation,
             'description' => $ally->description,
             'qr_code_data' => $ally->qr_code_data,
