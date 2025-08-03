@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\CommercialAlly;
+use App\Models\CommercialAlly; // Asegúrate de que este namespace es correcto
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Storage; // Importa la fachada Storage
 
 class CommercialAllyController extends Controller
 {
@@ -41,12 +41,14 @@ class CommercialAllyController extends Controller
 
         $logoPath = null;
         if ($request->hasFile('logo')) {
-            $logoPath = Storage::disk('public')->put('logos', $request->file('logo'));
+            $storagePath = Storage::disk('public')->put('logos', $request->file('logo'));
+            // MODIFICACIÓN CLAVE AQUÍ: Generar la URL absoluta usando asset()
+            $logoPath = asset('storage/' . $storagePath);
         }
 
         CommercialAlly::create([
             'name' => $request->name,
-            'logo_url' => $logoPath ? Storage::url($logoPath) : null,
+            'logo_url' => $logoPath, // Ahora $logoPath ya es la URL absoluta o null
             'rating' => $request->rating ?? 0.0,
             'description' => $request->description,
             'website_url' => $request->website_url,
@@ -84,17 +86,28 @@ class CommercialAllyController extends Controller
             'website_url' => 'nullable|url',
         ]);
 
-        $logoPath = $commercialAlly->logo_url;
+        $logoPathToSave = $commercialAlly->logo_url; // Mantener la URL existente por defecto
+
         if ($request->hasFile('logo')) {
-            if ($commercialAlly->logo_url && Storage::disk('public')->exists(str_replace('/storage/', '', $commercialAlly->logo_url))) {
-                Storage::disk('public')->delete(str_replace('/storage/', '', $commercialAlly->logo_url));
+            // Eliminar el logo anterior si existe
+            if ($commercialAlly->logo_url) {
+                // Hay que convertir la URL absoluta a una ruta relativa para Storage::disk('public')->delete
+                $relativePathToDelete = str_replace(asset('storage/'), '', $commercialAlly->logo_url);
+                if (Storage::disk('public')->exists($relativePathToDelete)) {
+                    Storage::disk('public')->delete($relativePathToDelete);
+                }
             }
-            $logoPath = Storage::disk('public')->put('logos', $request->file('logo'));
+
+            // Guardar el nuevo logo
+            $newStoragePath = Storage::disk('public')->put('logos', $request->file('logo'));
+            
+            // MODIFICACIÓN CLAVE AQUÍ: Generar la URL absoluta para guardar en la base de datos
+            $logoPathToSave = asset('storage/' . $newStoragePath);
         }
 
         $commercialAlly->update([
             'name' => $request->name,
-            'logo_url' => $logoPath ? Storage::url($logoPath) : $commercialAlly->logo_url,
+            'logo_url' => $logoPathToSave, // Ahora $logoPathToSave ya es la URL absoluta
             'rating' => $request->rating,
             'description' => $request->description,
             'website_url' => $request->website_url,
@@ -108,8 +121,12 @@ class CommercialAllyController extends Controller
      */
     public function destroy(CommercialAlly $commercialAlly)
     {
-        if ($commercialAlly->logo_url && Storage::disk('public')->exists(str_replace('/storage/', '', $commercialAlly->logo_url))) {
-            Storage::disk('public')->delete(str_replace('/storage/', '', $commercialAlly->logo_url));
+        // Para eliminar, también necesitamos convertir la URL absoluta a una ruta relativa
+        if ($commercialAlly->logo_url) {
+            $relativePathToDelete = str_replace(asset('storage/'), '', $commercialAlly->logo_url);
+            if (Storage::disk('public')->exists($relativePathToDelete)) {
+                Storage::disk('public')->delete($relativePathToDelete);
+            }
         }
         $commercialAlly->delete();
         return redirect()->route('admin.commercial-allies.index')->with('success', 'Aliado comercial eliminado exitosamente.');

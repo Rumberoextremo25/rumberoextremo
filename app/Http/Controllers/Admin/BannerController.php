@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Banner;
+use App\Models\Banner; // Asegúrate de que este namespace es correcto
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage; // Para manejar la subida de archivos
+use Illuminate\Support\Facades\Storage; // Importa la fachada Storage
 
 class BannerController extends Controller
 {
@@ -42,12 +42,14 @@ class BannerController extends Controller
 
         $imagePath = null;
         if ($request->hasFile('image')) {
-            $imagePath = Storage::disk('public')->put('banners', $request->file('image'));
+            $storagePath = Storage::disk('public')->put('banners', $request->file('image'));
+            // MODIFICACIÓN CLAVE AQUÍ: Generar la URL absoluta usando asset()
+            $imagePath = asset('storage/' . $storagePath);
         }
 
         Banner::create([
             'title' => $request->title,
-            'image_url' => $imagePath ? Storage::url($imagePath) : null,
+            'image_url' => $imagePath, // Ahora $imagePath ya es la URL absoluta o null
             'description' => $request->description,
             'target_url' => $request->target_url,
             'order' => $request->order ?? 0,
@@ -79,18 +81,28 @@ class BannerController extends Controller
             'is_active' => 'boolean',
         ]);
 
-        $imagePath = $banner->image_url;
+        $imagePathToSave = $banner->image_url; // Mantener la URL existente por defecto
+
         if ($request->hasFile('image')) {
             // Elimina la imagen antigua si existe
-            if ($banner->image_url && Storage::disk('public')->exists(str_replace('/storage/', '', $banner->image_url))) {
-                Storage::disk('public')->delete(str_replace('/storage/', '', $banner->image_url));
+            if ($banner->image_url) {
+                // Hay que convertir la URL absoluta a una ruta relativa para Storage::disk('public')->delete
+                $relativePathToDelete = str_replace(url('storage') . '/', '', $banner->image_url);
+                if (Storage::disk('public')->exists($relativePathToDelete)) {
+                    Storage::disk('public')->delete($relativePathToDelete);
+                }
             }
-            $imagePath = Storage::disk('public')->put('banners', $request->file('image'));
+
+            // Guarda la nueva imagen
+            $newStoragePath = Storage::disk('public')->put('banners', $request->file('image'));
+            
+            // MODIFICACIÓN CLAVE AQUÍ: Generar la URL absoluta para guardar en la base de datos
+            $imagePathToSave = asset('storage/' . $newStoragePath);
         }
 
         $banner->update([
             'title' => $request->title,
-            'image_url' => $imagePath ? Storage::url($imagePath) : $banner->image_url,
+            'image_url' => $imagePathToSave, // Ahora $imagePathToSave ya es la URL absoluta
             'description' => $request->description,
             'target_url' => $request->target_url,
             'order' => $request->order,
@@ -105,8 +117,12 @@ class BannerController extends Controller
      */
     public function destroy(Banner $banner)
     {
-        if ($banner->image_url && Storage::disk('public')->exists(str_replace('/storage/', '', $banner->image_url))) {
-            Storage::disk('public')->delete(str_replace('/storage/', '', $banner->image_url));
+        // Para eliminar, también necesitamos convertir la URL absoluta a una ruta relativa
+        if ($banner->image_url) {
+            $relativePathToDelete = str_replace(Storage::url(''), '', $banner->image_url);
+            if (Storage::disk('public')->exists($relativePathToDelete)) {
+                Storage::disk('public')->delete($relativePathToDelete);
+            }
         }
         $banner->delete();
         return redirect()->route('admin.banners.index')->with('success', 'Banner eliminado exitosamente.');
