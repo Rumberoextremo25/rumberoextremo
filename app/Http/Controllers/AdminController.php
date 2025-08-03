@@ -127,12 +127,10 @@ class AdminController extends Controller
     private function getStatusClass(string $status): string
     {
         return match ($status) {
-            'success' => 'badge-success', // Verde
-            'completed' => 'badge-success', // También verde, si 'completed' es un estado
-            'pending' => 'badge-warning', // Amarillo
-            'failed' => 'badge-danger',   // Rojo
-            'info' => 'badge-info',       // Azul claro
-            default => 'badge-secondary', // Gris por defecto para estados no definidos
+            'success' => 'bg-green-100 text-green-800',
+            'pending' => 'bg-yellow-100 text-yellow-800',
+            'failed' => 'bg-red-100 text-red-800',
+            default => 'bg-gray-100 text-gray-800',
         };
     }
     public function reports(Request $request)
