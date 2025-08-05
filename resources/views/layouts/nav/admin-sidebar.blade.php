@@ -79,6 +79,16 @@
                     </li>
                 @endif
 
+                {{-- Reportes (para Admin y Aliado) --}}
+                @if(Auth::user()->role === 'admin' || Auth::user()->role === 'aliado')
+                    <li>
+                        {{-- Ajusta la ruta si es diferente --}}
+                        <a href="{{ route('Admin.payouts.pending') }}" class="{{ request()->routeIs('reports.*') ? 'active' : '' }}">
+                            <i class="fas fa-file-invoice-dollar"></i> <span>Pago A Aliados</span>
+                        </a>
+                    </li>
+                @endif
+
                 {{-- Configuración (solo para Admin) --}}
                 @if(Auth::user()->role === 'admin')
                     <li>

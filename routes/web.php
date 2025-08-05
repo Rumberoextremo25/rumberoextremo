@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\CommercialAllyController;
 use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\AllyController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\Admin\PayoutController;
 
 //RUTAS DE LAS VISTAS DE LA LANDING UBICADAS EN EL CONTROLADOR DE PAGE
 Route::get('/', [PageController::class, 'index'])->name('welcome');
@@ -98,6 +99,13 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 
     // Rutas para Promociones
     Route::resource('promotions', PromotionController::class);
+});
+
+//Rutas para transferencias bancarias
+Route::middleware(['auth'])->group(function () { // Asegura que solo administradores puedan acceder
+    Route::get('/admin/payouts/pending', [PayoutController::class, 'index'])->name('Admin.payouts.pending');
+    Route::get('/admin/payouts/generate-csv', [PayoutController::class, 'generateCsv'])->name('admin.payouts.generate_csv');
+    Route::post('/admin/payouts/mark-processed', [PayoutController::class, 'markProcessed'])->name('admin.payouts.mark_processed');
 });
 
 require __DIR__ . '/auth.php';
