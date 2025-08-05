@@ -6,6 +6,10 @@ use App\Http\Controllers\Api\ProductController;
 use App\Http\Controllers\Api\AllyController;
 use App\Http\Controllers\Api\HomeController;
 use App\Http\Controllers\Api\AuthController;
+use App\Http\Controllers\Api\PaymentController;
+use App\Http\Controllers\Api\WebhookController;
+use App\Http\Controllers\Api\BankController;
+use App\Http\Controllers\Api\BcvRatesController;
 
 /*
 |--------------------------------------------------------------------------
@@ -50,3 +54,23 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     Route::get('/user', [AuthController::class, 'user']);
 });
+
+// Rutas para el controlador de Payment
+Route::prefix('payments')->group(function () {
+    // Ruta para iniciar un pago C2P (Pago Móvil)
+    Route::post('/c2p', [PaymentController::class, 'initiateC2PPayment']);
+    // Ruta para procesar un pago con tarjeta (VPOS)
+    Route::post('/card', [PaymentController::class, 'processCardPayment']);
+});
+
+// --- Rutas para los Webhooks (WebhookController) ---
+Route::prefix('webhooks')->group(function () {
+    // Webhook para notificaciones de pagos C2P
+    Route::post('/bnc/c2p', [WebhookController::class, 'handleC2PWebhook']);
+    // Webhook para notificaciones de pagos con tarjeta (VPOS)
+    Route::post('/bnc/card', [WebhookController::class, 'handleCardWebhook']);
+});
+
+// --- Ruta para obtener la lista de Bancos (BankController) ---
+Route::get('/banks', [BankController::class, 'index']);
+Route::get('/Services/BCVRates', [BankController::class, 'getBcvRates']);
