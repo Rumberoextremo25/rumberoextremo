@@ -24,23 +24,25 @@ return new class extends Migration
             // --- Campos de Información Específica del Aliado ---
             $table->string('company_name')->nullable(); // Nombre oficial de la empresa del aliado
             $table->string('company_rif', 50)->nullable(); // RIF de la empresa
+            $table->text('description')->nullable(); // Nuevo campo para la descripción del aliado
+            $table->string('image_url')->nullable(); // Nuevo campo para la URL de la imagen del aliado
 
             // --- Nuevas Claves Foráneas para Categorización ---
             // Estas reemplazan el campo 'service_category' para una categorización más granular.
             $table->foreignId('category_id')
-                  ->nullable()
-                  ->constrained('categories')
-                  ->onDelete('set null'); // Si la categoría se elimina, el aliado pierde su categoría asignada
+                ->nullable()
+                ->constrained('categories')
+                ->onDelete('set null'); // Si la categoría se elimina, el aliado pierde su categoría asignada
 
             $table->foreignId('sub_category_id')
-                  ->nullable()
-                  ->constrained('sub_categories')
-                  ->onDelete('set null'); // Si la subcategoría se elimina, el aliado pierde su subcategoría asignada
+                ->nullable()
+                ->constrained('sub_categories')
+                ->onDelete('set null'); // Si la subcategoría se elimina, el aliado pierde su subcategoría asignada
 
             $table->foreignId('business_type_id')
-                  ->nullable()
-                  ->constrained('business_types')
-                  ->onDelete('set null'); // Si el tipo de negocio se elimina, el aliado pierde su tipo asignado
+                ->nullable()
+                ->constrained('business_types')
+                ->onDelete('set null'); // Si el tipo de negocio se elimina, el aliado pierde su tipo asignado
 
             $table->string('website_url')->nullable(); // URL del sitio web
 
@@ -51,7 +53,7 @@ return new class extends Migration
             // Estos campos son útiles si el contacto de la empresa es diferente al contacto del usuario vinculado
             $table->string('contact_person_name')->nullable(); // Nombre de la persona de contacto principal en la empresa
             $table->string('contact_email')->nullable();       // Email de contacto de la empresa
-            $table->string('contact_phone', 20)->nullable();    // Teléfono de contacto principal de la empresa
+            $table->string('contact_phone', 20)->nullable();   // Teléfono de contacto principal de la empresa
             $table->string('contact_phone_alt', 20)->nullable(); // Teléfono de contacto adicional
             $table->text('company_address')->nullable();       // Dirección fiscal o de oficina de la empresa
 

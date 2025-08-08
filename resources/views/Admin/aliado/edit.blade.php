@@ -24,7 +24,7 @@
             </div>
         @endif
 
-        <form id="editAllyForm" action="{{ route('aliados.update', $ally->id) }}" method="POST">
+        <form id="editAllyForm" action="{{ route('aliados.update', $ally->id) }}" method="POST" enctype="multipart/form-data">
             @csrf {{-- Laravel CSRF token for security --}}
             @method('PUT') {{-- Method spoofing for PUT request --}}
 
@@ -45,6 +45,32 @@
                     <input type="text" id="company_rif" name="company_rif" placeholder="Ej: J-12345678-9"
                         value="{{ old('company_rif', $ally->company_rif) }}">
                     @error('company_rif')
+                        <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                {{-- Nuevo campo de descripción --}}
+                <div class="form-group full-width">
+                    <label for="description">Descripción del Aliado:</label>
+                    <textarea id="description" name="description"
+                        placeholder="Breve descripción del aliado y los servicios que ofrece." rows="3">{{ old('description', $ally->description) }}</textarea>
+                    @error('description')
+                        <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
+
+                {{-- Campo de imagen con vista previa --}}
+                <div class="form-group">
+                    <label for="image_url">Imagen del Aliado (Logo):</label>
+                    @if ($ally->image_url)
+                        <div class="current-image">
+                            <p>Imagen actual:</p>
+                            <img src="{{ asset('storage/' . $ally->image_url) }}" alt="Imagen de {{ $ally->company_name }}" class="ally-image-preview">
+                        </div>
+                    @endif
+                    <input type="file" id="image_url" name="image_url">
+                    <p class="form-text">Deje este campo vacío si no desea cambiar la imagen actual.</p>
+                    @error('image_url')
                         <span class="text-danger">{{ $message }}</span>
                     @enderror
                 </div>

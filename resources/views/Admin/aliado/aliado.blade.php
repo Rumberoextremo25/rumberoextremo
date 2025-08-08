@@ -47,11 +47,13 @@
                 <thead>
                     <tr>
                         <th>ID</th>
+                        <th>Imagen</th>
                         <th>Nombre</th>
                         <th>RIF</th>
-                        <th>Categoría</th> {{-- Nueva columna --}}
-                        <th>Subcategoría</th> {{-- Nueva columna --}}
-                        <th>Descuento</th> {{-- Nueva columna --}}
+                        <th>Categoría</th>
+                        <th>Subcategoría</th>
+                        <th>Descuento</th>
+                        <th>Descripción</th> {{-- Nueva columna para la descripción --}}
                         <th>Contacto</th>
                         <th>Email</th>
                         <th>Estado</th>
@@ -62,14 +64,19 @@
                     @forelse ($allies as $ally)
                         <tr>
                             <td data-label="ID">{{ $ally->id }}</td>
+                            <td data-label="Imagen">
+                                @if ($ally->image_url)
+                                    <img src="{{ asset('storage/' . $ally->image_url) }}" alt="Imagen de {{ $ally->company_name }}" class="ally-image">
+                                @else
+                                    <span class="no-image">No disponible</span>
+                                @endif
+                            </td>
                             <td data-label="Nombre">{{ $ally->company_name }}</td>
                             <td data-label="RIF">{{ $ally->company_rif }}</td>
-                            {{-- Muestra el nombre de la categoría, usando 'N/A' si no existe la relación --}}
                             <td data-label="Categoría">{{ $ally->category->name ?? 'N/A' }}</td>
-                            {{-- Muestra el nombre de la subcategoría, usando 'N/A' si no existe la relación --}}
                             <td data-label="Subcategoría">{{ $ally->subCategory->name ?? 'N/A' }}</td>
-                            {{-- Muestra el descuento, o 'N/A' si es nulo --}}
                             <td data-label="Descuento">{{ $ally->discount ?? 'N/A' }}</td>
+                            <td data-label="Descripción">{{ $ally->description ?? 'N/A' }}</td> {{-- Muestra la descripción --}}
                             <td data-label="Contacto">{{ $ally->contact_person_name }}</td>
                             <td data-label="Email">{{ $ally->contact_email }}</td>
                             <td data-label="Estado">
@@ -95,8 +102,8 @@
                         </tr>
                     @empty
                         <tr>
-                            {{-- COLSPAN AJUSTADO A 10 para las nuevas columnas --}}
-                            <td colspan="10" class="no-records-message">No hay aliados registrados en este momento.</td>
+                            {{-- COLSPAN AJUSTADO A 12 para la nueva columna 'Descripción' --}}
+                            <td colspan="12" class="no-records-message">No hay aliados registrados en este momento.</td>
                         </tr>
                     @endforelse
                 </tbody>

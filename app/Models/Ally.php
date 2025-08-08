@@ -38,6 +38,8 @@ class Ally extends Model
         'account_type',
         'id_number',
         'account_holder_name',
+        'description', // Nuevo campo
+        'image_url',   // Nuevo campo
     ];
 
     // --- Definición de las Relaciones del Modelo ---

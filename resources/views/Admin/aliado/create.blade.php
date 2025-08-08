@@ -23,49 +23,8 @@
             </div>
         @endif
 
-        <form id="addAllyForm" action="{{ route('aliados.store') }}" method="POST">
+        <form id="addAllyForm" action="{{ route('aliados.store') }}" method="POST" enctype="multipart/form-data">
             @csrf
-
-            ---
-
-            {{-- Sección de Datos de la Cuenta de Usuario --}}
-            <h3 class="section-title"><i class="fas fa-user-circle"></i> Datos de la Cuenta de Acceso</h3>
-            <div class="form-grid">
-                <div class="form-group">
-                    <label for="user_name">Nombre de Usuario:</label>
-                    <input type="text" id="user_name" name="user_name" placeholder="Ej: Juan Pérez"
-                        value="{{ old('user_name') }}" required>
-                    @error('user_name')
-                        <span class="text-danger">{{ $message }}</span>
-                    @enderror
-                </div>
-                <div class="form-group">
-                    <label for="user_email">Correo Electrónico de Acceso (Único):</label>
-                    <input type="email" id="user_email" name="user_email" placeholder="Ej: usuario@rumbero.app"
-                        value="{{ old('user_email') }}" required>
-                    @error('user_email')
-                        <span class="text-danger">{{ $message }}</span>
-                    @enderror
-                </div>
-                <div class="form-group">
-                    <label for="user_password">Contraseña:</label>
-                    <input type="password" id="user_password" name="user_password" placeholder="Mínimo 8 caracteres"
-                        required>
-                    @error('user_password')
-                        <span class="text-danger">{{ $message }}</span>
-                    @enderror
-                </div>
-                <div class="form-group">
-                    <label for="user_password_confirmation">Confirmar Contraseña:</label>
-                    <input type="password" id="user_password_confirmation" name="user_password_confirmation"
-                        placeholder="Repita la contraseña" required>
-                    @error('user_password_confirmation')
-                        <span class="text-danger">{{ $message }}</span>
-                    @enderror
-                </div>
-            </div>
-
-            ---
 
             {{-- Sección de Información del Aliado --}}
             <h3 class="section-title"><i class="fas fa-building"></i> Información del Aliado</h3>
@@ -83,6 +42,21 @@
                     <input type="text" id="company_rif" name="company_rif" placeholder="Ej: J-12345678-9"
                         value="{{ old('company_rif') }}">
                     @error('company_rif')
+                        <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
+                <div class="form-group full-width">
+                    <label for="description">Descripción del Aliado:</label>
+                    <textarea id="description" name="description"
+                        placeholder="Breve descripción del aliado y los servicios que ofrece." rows="3">{{ old('description') }}</textarea>
+                    @error('description')
+                        <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
+                <div class="form-group">
+                    <label for="image_url">Imagen del Aliado (Logo):</label>
+                    <input type="file" id="image_url" name="image_url">
+                    @error('image_url')
                         <span class="text-danger">{{ $message }}</span>
                     @enderror
                 </div>
@@ -185,8 +159,43 @@
                     @enderror
                 </div>
             </div>
-
-            ---
+            
+            {{-- Sección de Datos de la Cuenta de Usuario --}}
+            <h3 class="section-title"><i class="fas fa-user-circle"></i> Datos de la Cuenta de Acceso</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="user_name">Nombre de Usuario:</label>
+                    <input type="text" id="user_name" name="user_name" placeholder="Ej: Juan Pérez"
+                        value="{{ old('user_name') }}" required>
+                    @error('user_name')
+                        <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
+                <div class="form-group">
+                    <label for="user_email">Correo Electrónico de Acceso (Único):</label>
+                    <input type="email" id="user_email" name="user_email" placeholder="Ej: usuario@rumbero.app"
+                        value="{{ old('user_email') }}" required>
+                    @error('user_email')
+                        <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
+                <div class="form-group">
+                    <label for="user_password">Contraseña:</label>
+                    <input type="password" id="user_password" name="user_password" placeholder="Mínimo 8 caracteres"
+                        required>
+                    @error('user_password')
+                        <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
+                <div class="form-group">
+                    <label for="user_password_confirmation">Confirmar Contraseña:</label>
+                    <input type="password" id="user_password_confirmation" name="user_password_confirmation"
+                        placeholder="Repita la contraseña" required>
+                    @error('user_password_confirmation')
+                        <span class="text-danger">{{ $message }}</span>
+                    @enderror
+                </div>
+            </div>
 
             <div class="button-group">
                 <button type="button" class="cancel-btn" id="cancelAddAlly" data-index-route="{{ route('aliados.index') }}">

@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Storage;
 
 class AllyController extends Controller
 {
@@ -55,6 +56,8 @@ class AllyController extends Controller
             // --- Datos del Aliado ---
             'company_name'      => 'required|string|max:255|unique:allies,company_name',
             'company_rif'       => 'nullable|string|max:255|unique:allies,company_rif',
+            'description'       => 'nullable|string|max:1000', // Nuevo campo de descripción
+            'image_url'         => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Nuevo campo de imagen
             'category_name'     => 'required|string|max:255',
             'sub_category_name' => 'nullable|string|max:255',
             'business_type_name' => 'required|string|max:255',
@@ -63,8 +66,11 @@ class AllyController extends Controller
             'contact_person_name' => 'required|string|max:255',
             'contact_email'     => 'required|email|max:255|unique:allies,contact_email',
             'contact_phone'     => 'required|string|max:20',
+            'contact_phone_alt' => 'nullable|string|max:20',
             'company_address'   => 'nullable|string|max:500',
+            'website_url'       => 'nullable|url|max:255',
             'discount'          => 'nullable|string|max:500',
+            'notes'             => 'nullable|string|max:500',
             'registered_at'     => 'required|date',
         ], [
             // --- Mensajes de Validación Personalizados ---
@@ -79,6 +85,10 @@ class AllyController extends Controller
             'company_name.required'     => 'El nombre de la empresa es obligatorio.',
             'company_name.unique'       => 'Ya existe un aliado con este nombre.',
             'company_rif.unique'        => 'Ya existe un aliado con este RIF.',
+            'description.max'           => 'La descripción no puede exceder los :max caracteres.',
+            'image_url.image'           => 'El archivo debe ser una imagen.',
+            'image_url.mimes'           => 'La imagen debe ser de tipo: jpeg, png, jpg, gif, svg.',
+            'image_url.max'             => 'La imagen no puede pesar más de 2MB.',
             'category_name.required'    => 'La categoría de negocio es obligatoria.',
             'business_type_name.required' => 'El tipo de negocio es obligatorio.',
 
@@ -97,10 +107,8 @@ class AllyController extends Controller
 
         try {
             // 2. Crear o encontrar la Categoría
-            // Usa firstOrCreate para encontrar por nombre o crear si no existe
             $category = Category::firstOrCreate(
                 ['name' => $validatedData['category_name']],
-                // Atributos para crear si no existe (incluye el slug)
                 ['slug' => Str::slug($validatedData['category_name'])]
             );
 
@@ -108,10 +116,10 @@ class AllyController extends Controller
             $subCategory = null;
             if (!empty($validatedData['sub_category_name'])) {
                 $subCategory = SubCategory::firstOrCreate(
-                    ['name' => $validatedData['sub_category_name']], // Atributos para buscar
+                    ['name' => $validatedData['sub_category_name']],
                     [
-                        'category_id' => $category->id, // ¡FUNDAMENTAL! Asigna la categoría padre
-                        'slug'        => Str::slug($validatedData['sub_category_name']) // Genera el slug
+                        'category_id' => $category->id,
+                        'slug'        => Str::slug($validatedData['sub_category_name'])
                     ]
                 );
             }
@@ -119,7 +127,6 @@ class AllyController extends Controller
             // 4. Crear o encontrar el Tipo de Negocio
             $businessType = BusinessType::firstOrCreate(
                 ['name' => $validatedData['business_type_name']],
-                // Atributos para crear si no existe (incluye el slug)
                 ['slug' => Str::slug($validatedData['business_type_name'])]
             );
 
@@ -127,8 +134,7 @@ class AllyController extends Controller
             $user = User::create([
                 'name'      => $validatedData['user_name'],
                 'email'     => $validatedData['user_email'],
-                'password'  => Hash::make($validatedData['user_password']), // Siempre encripta las contraseñas
-                // 'email_verified_at' => now(), // Descomenta si quieres verificar el correo al crear
+                'password'  => Hash::make($validatedData['user_password']),
             ]);
 
             // 6. Asignar el rol 'ally' al usuario
@@ -136,23 +142,35 @@ class AllyController extends Controller
             if ($role) {
                 $user->assignRole($role);
             } else {
-                // Si el rol 'ally' no existe, puedes lanzarlo como excepción o crearlo
-                throw new \Exception('El rol "ally" no está configurado en el sistema. Asegúrese de que existe.');
+                throw new \Exception('El rol "ally" no está configurado en el sistema.');
             }
 
-            // 7. Crear el registro del aliado y asociarlo al usuario y a las categorías/tipos
+            // 7. Manejar la subida de la imagen
+            $imagePath = null;
+            if ($request->hasFile('image_url')) {
+                // Guarda la imagen en el directorio 'public/allies' y obtiene la ruta.
+                // Es importante configurar el filesystem de Laravel correctamente para esto.
+                $imagePath = $request->file('image_url')->store('allies', 'public');
+            }
+
+            // 8. Crear el registro del aliado y asociarlo al usuario y a las categorías/tipos
             $ally = Ally::create([
                 'user_id'           => $user->id,
                 'company_name'      => $validatedData['company_name'],
                 'company_rif'       => $validatedData['company_rif'],
+                'description'       => $validatedData['description'] ?? null, // Asigna el valor o null
+                'image_url'         => $imagePath, // Asigna la ruta de la imagen o null
                 'category_id'       => $category->id,
-                'sub_category_id'   => $subCategory ? $subCategory->id : null, // Asigna el ID o null
+                'sub_category_id'   => $subCategory ? $subCategory->id : null,
                 'business_type_id'  => $businessType->id,
                 'contact_person_name' => $validatedData['contact_person_name'],
                 'contact_email'     => $validatedData['contact_email'],
                 'contact_phone'     => $validatedData['contact_phone'],
-                'company_address'   => $validatedData['company_address'],
-                'discount'          => $validatedData['discount'],
+                'contact_phone_alt' => $validatedData['contact_phone_alt'] ?? null,
+                'company_address'   => $validatedData['company_address'] ?? null,
+                'website_url'       => $validatedData['website_url'] ?? null,
+                'discount'          => $validatedData['discount'] ?? null,
+                'notes'             => $validatedData['notes'] ?? null,
                 'registered_at'     => $validatedData['registered_at'],
                 'status'            => $validatedData['status'],
             ]);
@@ -192,6 +210,8 @@ class AllyController extends Controller
         $validatedData = $request->validate([
             'company_name'      => 'required|string|max:255|unique:allies,company_name,' . $ally->id, // Excluir ID actual
             'company_rif'       => 'nullable|string|max:255|unique:allies,company_rif,' . $ally->id,
+            'description'       => 'nullable|string|max:1000',
+            'image_url'         => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'category_name'     => 'required|string|max:255', // Ahora es un nombre, no un ID
             'sub_category_name' => 'nullable|string|max:255', // Ahora es un nombre, no un ID
             'business_type_name' => 'required|string|max:255', // Ahora es un nombre, no un ID
@@ -202,13 +222,19 @@ class AllyController extends Controller
             'contact_phone'     => 'required|string|max:20',
             'contact_phone_alt' => 'nullable|string|max:20',
             'company_address'   => 'nullable|string|max:500',
+            'website_url'       => 'nullable|url|max:255',
             'discount'          => 'nullable|string|max:500',
+            'notes'             => 'nullable|string|max:500',
             'registered_at'     => 'required|date',
         ], [
             // Mensajes de validación personalizados
             'company_name.unique'       => 'Ya existe un aliado con este nombre.',
             'company_rif.unique'        => 'Ya existe un aliado con este RIF.',
             'contact_email.unique'      => 'Ya existe un aliado con este correo electrónico de contacto.',
+            'description.max'           => 'La descripción no puede exceder los :max caracteres.',
+            'image_url.image'           => 'El archivo debe ser una imagen.',
+            'image_url.mimes'           => 'La imagen debe ser de tipo: jpeg, png, jpg, gif, svg.',
+            'image_url.max'             => 'La imagen no puede pesar más de 2MB.',
             'category_name.required'    => 'La categoría de negocio es obligatoria.',
             'business_type_name.required' => 'El tipo de negocio es obligatorio.',
             'registered_at.required'    => 'La fecha de registro es obligatoria.',
@@ -222,7 +248,6 @@ class AllyController extends Controller
             // 2. Crear o encontrar la Categoría
             $category = Category::firstOrCreate(
                 ['name' => $validatedData['category_name']],
-                // Atributos para crear si no existe (incluye el slug)
                 ['slug' => Str::slug($validatedData['category_name'])]
             );
 
@@ -230,10 +255,10 @@ class AllyController extends Controller
             $subCategory = null;
             if (!empty($validatedData['sub_category_name'])) {
                 $subCategory = SubCategory::firstOrCreate(
-                    ['name' => $validatedData['sub_category_name']], // Atributos para buscar
+                    ['name' => $validatedData['sub_category_name']],
                     [
-                        'category_id' => $category->id, // ¡FUNDAMENTAL! Asigna la categoría padre
-                        'slug'        => Str::slug($validatedData['sub_category_name']) // Genera el slug
+                        'category_id' => $category->id,
+                        'slug'        => Str::slug($validatedData['sub_category_name'])
                     ]
                 );
             }
@@ -241,23 +266,37 @@ class AllyController extends Controller
             // 4. Crear o encontrar el Tipo de Negocio
             $businessType = BusinessType::firstOrCreate(
                 ['name' => $validatedData['business_type_name']],
-                // Atributos para crear si no existe (incluye el slug)
                 ['slug' => Str::slug($validatedData['business_type_name'])]
             );
 
-            // 5. Preparar los datos para la actualización del aliado
-            // Usamos $ally->update() en lugar de Ally::create()
+            // 5. Manejar la subida de la nueva imagen
+            $imagePath = $ally->image_url; // Mantener la imagen existente por defecto
+            if ($request->hasFile('image_url')) {
+                // Eliminar la imagen anterior si existe
+                if ($ally->image_url) {
+                    Storage::disk('public')->delete($ally->image_url);
+                }
+                // Guardar la nueva imagen
+                $imagePath = $request->file('image_url')->store('allies', 'public');
+            }
+
+            // 6. Preparar los datos para la actualización del aliado
             $ally->update([
                 'company_name'      => $validatedData['company_name'],
                 'company_rif'       => $validatedData['company_rif'],
-                'category_id'       => $category->id, // Asigna el ID de la categoría
-                'sub_category_id'   => $subCategory ? $subCategory->id : null, // Asigna el ID de la subcategoría o null
-                'business_type_id'  => $businessType->id, // Asigna el ID del tipo de negocio
+                'description'       => $validatedData['description'] ?? null,
+                'image_url'         => $imagePath,
+                'category_id'       => $category->id,
+                'sub_category_id'   => $subCategory ? $subCategory->id : null,
+                'business_type_id'  => $businessType->id,
                 'contact_person_name' => $validatedData['contact_person_name'],
                 'contact_email'     => $validatedData['contact_email'],
                 'contact_phone'     => $validatedData['contact_phone'],
-                'company_address'   => $validatedData['company_address'],
-                'discount'          => $validatedData['discount'],
+                'contact_phone_alt' => $validatedData['contact_phone_alt'] ?? null,
+                'company_address'   => $validatedData['company_address'] ?? null,
+                'website_url'       => $validatedData['website_url'] ?? null,
+                'discount'          => $validatedData['discount'] ?? null,
+                'notes'             => $validatedData['notes'] ?? null,
                 'registered_at'     => $validatedData['registered_at'],
                 'status'            => $validatedData['status'],
             ]);
