@@ -18,7 +18,7 @@ class AllyController extends Controller
     {
         try {
             $allies = Ally::with(['category', 'subcategory'])
-                          ->get();
+                ->get();
 
             // Formatear la respuesta para incluir solo los campos deseados
             $formattedAllies = $allies->map(function ($ally) {
@@ -28,6 +28,7 @@ class AllyController extends Controller
                     'company_rif' => $ally->company_rif,
                     'category_name' => $ally->category?->name,
                     'sub_category_name' => $ally->subcategory?->name,
+                    'description' => $ally->description, // Campo de descripción agregado
                     'discount' => $ally->discount,
                     'contact_phone' => $ally->contact_phone,
                     'website_url' => $ally->website_url,
@@ -40,7 +41,6 @@ class AllyController extends Controller
                 'message' => 'Aliados obtenidos correctamente :D',
                 'data' => $formattedAllies
             ], 200);
-
         } catch (\Exception $e) {
             // Manejo de errores
             // Es útil registrar el error completo para depuración en un entorno de desarrollo
