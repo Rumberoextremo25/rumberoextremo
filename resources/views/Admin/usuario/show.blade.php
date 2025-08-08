@@ -8,7 +8,7 @@
     {{-- Asegúrate de que Font Awesome esté en tu layout admin global para evitar duplicados --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     {{-- Enlazamos al nuevo archivo CSS para los detalles del usuario --}}
-    <link rel="stylesheet" href="{{ asset('css/admin/users/details.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/users.css') }}">
 @endpush
 
 @section('content')

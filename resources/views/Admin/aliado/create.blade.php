@@ -47,8 +47,8 @@
                 </div>
                 <div class="form-group full-width">
                     <label for="description">Descripción del Aliado:</label>
-                    <textarea id="description" name="description"
-                        placeholder="Breve descripción del aliado y los servicios que ofrece." rows="3">{{ old('description') }}</textarea>
+                    <textarea id="description" name="description" placeholder="Breve descripción del aliado y los servicios que ofrece."
+                        rows="3">{{ old('description') }}</textarea>
                     @error('description')
                         <span class="text-danger">{{ $message }}</span>
                     @enderror
@@ -62,8 +62,8 @@
                 </div>
                 <div class="form-group">
                     <label for="contact_email">Correo Electrónico de Contacto:</label>
-                    <input type="email" id="contact_email" name="contact_email"
-                        placeholder="Ej: contacto@empresa.com" value="{{ old('contact_email') }}" required>
+                    <input type="email" id="contact_email" name="contact_email" placeholder="Ej: contacto@empresa.com"
+                        value="{{ old('contact_email') }}" required>
                     @error('contact_email')
                         <span class="text-danger">{{ $message }}</span>
                     @enderror
@@ -88,17 +88,68 @@
                 {{-- Campos convertidos a INPUT TYPE="TEXT" --}}
                 <div class="form-group">
                     <label for="category_name">Categoría de Negocio:</label>
-                    <input type="text" id="category_name" name="category_name" placeholder="Ej: Restaurante, Bar, Tienda"
-                        value="{{ old('category_name') }}" required>
+                    <select id="category_name" name="category_name"
+                        class="form-control @error('category_name') is-invalid @enderror" required>
+                        <option value="">Selecciona una categoría</option> {{-- Opción por defecto --}}
+                        <option value="Restaurante" {{ old('category_name') == 'Restaurante' ? 'selected' : '' }}>
+                            Restaurante</option>
+                        <option value="Bar" {{ old('category_name') == 'Bar' ? 'selected' : '' }}>Bar</option>
+                        <option value="Tienda" {{ old('category_name') == 'Tienda' ? 'selected' : '' }}>Tienda</option>
+                        <option value="Discoteca" {{ old('category_name') == 'Discoteca' ? 'selected' : '' }}>Discoteca
+                        </option>
+                        <option value="Hotel" {{ old('category_name') == 'Hotel' ? 'selected' : '' }}>Hotel</option>
+                        <option value="Agencia de Festejos"
+                            {{ old('category_name') == 'Agencia de Festejos' ? 'selected' : '' }}>Agencia de Festejos
+                        </option>
+                        <option value="Organizador de Eventos"
+                            {{ old('category_name') == 'Organizador de Eventos' ? 'selected' : '' }}>Organizador de Eventos
+                        </option>
+                        <option value="Catering" {{ old('category_name') == 'Catering' ? 'selected' : '' }}>Catering
+                        </option>
+                        <option value="Salon de Fiestas"
+                            {{ old('category_name') == 'Salon de Fiestas' ? 'selected' : '' }}>Salón de Fiestas</option>
+                        <option value="Transporte" {{ old('category_name') == 'Transporte' ? 'selected' : '' }}>Transporte
+                        </option>
+                        <option value="Seguridad" {{ old('category_name') == 'Seguridad' ? 'selected' : '' }}>Seguridad
+                        </option>
+                        <option value="Floristeria" {{ old('category_name') == 'Floristeria' ? 'selected' : '' }}>
+                            Floristería</option>
+                        <option value="Banda Musical" {{ old('category_name') == 'Banda Musical' ? 'selected' : '' }}>Banda
+                            Musical</option>
+                        <option value="DJ" {{ old('category_name') == 'DJ' ? 'selected' : '' }}>DJ</option>
+                        <option value="Fotografia y Video"
+                            {{ old('category_name') == 'Fotografia y Video' ? 'selected' : '' }}>Fotografía y Video
+                        </option>
+                        <option value="Alquiler de Equipos"
+                            {{ old('category_name') == 'Alquiler de Equipos' ? 'selected' : '' }}>Alquiler de Equipos
+                        </option>
+                        <option value="Maquillaje y Estilismo"
+                            {{ old('category_name') == 'Maquillaje y Estilismo' ? 'selected' : '' }}>Maquillaje y Estilismo
+                        </option>
+                        <option value="Decoracion" {{ old('category_name') == 'Decoracion' ? 'selected' : '' }}>Decoración
+                        </option>
+                        <option value="Imprenta" {{ old('category_name') == 'Imprenta' ? 'selected' : '' }}>Imprenta
+                        </option>
+                        <option value="Publicidad" {{ old('category_name') == 'Publicidad' ? 'selected' : '' }}>Publicidad
+                        </option>
+                        <option value="Otros" {{ old('category_name') == 'Otros' ? 'selected' : '' }}>Otros</option>
+
+                        {{-- Puedes generar estas opciones dinámicamente si las tienes en una base de datos o constante --}}
+                        {{-- @foreach ($categories as $category)
+            <option value="{{ $category }}" {{ old('category_name') == $category ? 'selected' : '' }}>{{ $category }}</option>
+        @endforeach --}}
+                    </select>
                     @error('category_name')
-                        <span class="text-danger">{{ $message }}</span>
+                        <span class="invalid-feedback" role="alert">
+                            <strong>{{ $message }}</strong>
+                        </span>
                     @enderror
                 </div>
 
                 <div class="form-group">
-                    <label for="sub_category_name">Subcategoría de Negocio (Opcional):</label>
-                    <input type="text" id="sub_category_name" name="sub_category_name" placeholder="Ej: Comida Rápida, Rock, Ropa Casual"
-                        value="{{ old('sub_category_name') }}">
+                    <label for="sub_category_name">Subcategoría de Negocio:</label>
+                    <input type="text" id="sub_category_name" name="sub_category_name"
+                        placeholder="Ej: Comida Rápida, Rock, Ropa Casual" value="{{ old('sub_category_name') }}">
                     @error('sub_category_name')
                         <span class="text-danger">{{ $message }}</span>
                     @enderror
@@ -106,10 +157,21 @@
 
                 <div class="form-group">
                     <label for="business_type_name">Tipo de Negocio:</label>
-                    <input type="text" id="business_type_name" name="business_type_name" placeholder="Ej: Físico, Online, Híbrido"
-                        value="{{ old('business_type_name') }}" required>
+                    <select id="business_type_name" name="business_type_name"
+                        class="form-control @error('business_type_name') is-invalid @enderror" required>
+                        <option value="">Selecciona un tipo de negocio</option> {{-- Opción por defecto --}}
+                        <option value="Fisico" {{ old('business_type_name') == 'Fisico' ? 'selected' : '' }}>Físico
+                        </option>
+                        <option value="Online" {{ old('business_type_name') == 'Online' ? 'selected' : '' }}>Online
+                        </option>
+                        <option value="Servicio a domicilio"
+                            {{ old('business_type_name') == 'Servicio a domicilio' ? 'selected' : '' }}>Servicio a
+                            domicilio</option>
+                    </select>
                     @error('business_type_name')
-                        <span class="text-danger">{{ $message }}</span>
+                        <span class="invalid-feedback" role="alert">
+                            <strong>{{ $message }}</strong>
+                        </span>
                     @enderror
                 </div>
                 {{-- Fin de campos convertidos --}}
@@ -159,7 +221,7 @@
                     @enderror
                 </div>
             </div>
-            
+
             {{-- Sección de Datos de la Cuenta de Usuario --}}
             <h3 class="section-title"><i class="fas fa-user-circle"></i> Datos de la Cuenta de Acceso</h3>
             <div class="form-grid">
@@ -198,7 +260,8 @@
             </div>
 
             <div class="button-group">
-                <button type="button" class="cancel-btn" id="cancelAddAlly" data-index-route="{{ route('aliados.index') }}">
+                <button type="button" class="cancel-btn" id="cancelAddAlly"
+                    data-index-route="{{ route('aliados.index') }}">
                     <i class="fas fa-times-circle"></i> Cancelar
                 </button>
                 <button type="submit" class="submit-btn"><i class="fas fa-plus-circle"></i> Añadir Aliado</button>

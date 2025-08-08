@@ -8,7 +8,7 @@
     {{-- Considera si Font Awesome ya está en layouts.admin para evitar duplicados --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     {{-- Enlazamos al nuevo archivo CSS para la edición de usuarios --}}
-    <link rel="stylesheet" href="{{ asset('css/admin/users/edit.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/users.css') }}">
 @endpush
 
 @section('content')
@@ -49,10 +49,8 @@
                     <label for="userType">Tipo de Usuario:</label>
                     <select id="userType" name="userType" required>
                         <option value="">Seleccione un tipo</option>
-                        <option value="comun" {{ old('userType', $user->user_type) == 'comun' ? 'selected' : '' }}>Común</option>
-                        <option value="aliado" {{ old('userType', $user->user_type) == 'aliado' ? 'selected' : '' }}>Aliado</option>
-                        <option value="afiliado" {{ old('userType', $user->user_type) == 'afiliado' ? 'selected' : '' }}>Afiliado</option>
-                        <option value="admin" {{ old('userType', $user->user_type) == 'admin' ? 'selected' : '' }}>Administrador</option>
+                        <option value="aliado" {{ old('user_type', $user->user_type) == 'aliado' ? 'selected' : '' }}>Aliado</option>
+                        <option value="usuario rumbero" {{ old('user_type', $user->user_type) == 'usuario rumbero' ? 'selected' : '' }}>Usuario Rumbero</option>
                     </select>
                     @error('userType') <div class="text-danger">{{ $message }}</div> @enderror
                 </div>

@@ -49,10 +49,10 @@
                         <strong>Cédula/RIF:</strong>
                         <span>{{ Auth::user()->identification ?? 'N/A' }}</span> {{-- Asume 'identification' --}}
                     </div>
-                    {{-- Sección para mostrar la edad --}}
                     <div class="detail-item">
-                        <strong>Edad:</strong>
-                        <span>{{ Auth::user()->age ?? 'N/A' }}</span>
+                        <strong>Fecha de Nacimiento:</strong>
+                        {{-- Asegúrate de que 'dob' sea una fecha en tu BD para usar Carbon --}}
+                        <span>{{ Auth::user()->dob ? \Carbon\Carbon::parse(Auth::user()->dob)->format('d/m/Y') : 'N/A' }}</span>
                     </div>
                 </div>
             </div>
