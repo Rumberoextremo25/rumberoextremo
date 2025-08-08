@@ -39,15 +39,17 @@ class UserController extends Controller
             'lastname' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            // 'user_type' en el formulario se mapeará a la columna 'role' en la DB
             'user_type' => ['required', 'string', Rule::in(['comun', 'aliado', 'afiliado', 'admin'])],
-            // 'phone1' en el formulario se mapeará a la columna 'phone1' en la DB
             'phone1' => ['nullable', 'string', 'max:20'],
+            'phone2' => ['nullable', 'string', 'max:20'],
+            'address' => ['nullable', 'string', 'max:500'],
             'status' => ['required', 'string', Rule::in(['activo', 'inactivo', 'pendiente'])],
             'registrationDate' => ['required', 'date'],
             'notes' => ['nullable', 'string', 'max:1000'],
+            // AGREGANDO VALIDACIÓN PARA EL CAMPO EDAD
+            'age' => ['nullable', 'integer', 'min:1', 'max:150'], // Edad como un entero entre 1 y 150
         ], [
-            // Mensajes de error personalizados (¡están perfectos!)
+            // Mensajes de error personalizados
             'firstname.required' => 'El campo Nombre es obligatorio.',
             'lastname.required' => 'El campo Apellido es obligatorio.',
             'email.required' => 'El campo Correo Electrónico es obligatorio.',
@@ -58,55 +60,42 @@ class UserController extends Controller
             'password.confirmed' => 'Las contraseñas no coinciden.',
             'user_type.required' => 'El campo Tipo de Usuario es obligatorio.',
             'user_type.in' => 'El Tipo de Usuario seleccionado no es válido.',
-            'phone1.max' => 'El teléfono no puede exceder los :max caracteres.',
+            'phone1.max' => 'El teléfono principal no puede exceder los :max caracteres.',
+            'phone2.max' => 'El teléfono adicional no puede exceder los :max caracteres.',
+            'address.max' => 'La dirección no puede exceder los :max caracteres.',
             'status.required' => 'El campo Estado es obligatorio.',
             'status.in' => 'El Estado seleccionado no es válido.',
             'registrationDate.required' => 'La Fecha de Registro es obligatoria.',
             'registrationDate.date' => 'La Fecha de Registro no tiene un formato válido.',
             'notes.max' => 'Las notas no pueden exceder los :max caracteres.',
+            // Mensajes para EDAD
+            'age.integer' => 'La edad debe ser un número entero.',
+            'age.min' => 'La edad mínima permitida es :min.',
+            'age.max' => 'La edad máxima permitida es :max.',
         ]);
 
         $user = new User();
-        $user->firstname = $request->firstname; // Corrected to use $request->firstname (lowercase) to match validation and common naming
-        $user->lastname = $request->lastname;   // Corrected to use $request->lastname (lowercase)
+        $user->firstname = $request->firstname;
+        $user->lastname = $request->lastname;
         $user->email = $request->email;
         $user->password = Hash::make($request->password);
-
-        $user->role = $request->user_type; // Corrected to use $request->user_type (lowercase) to match validation
-
+        $user->role = $request->user_type;
         $user->phone1 = $request->phone1;
-
+        $user->phone2 = $request->phone2;
+        $user->address = $request->address;
         $user->status = $request->status;
         $user->registration_date = $request->registrationDate;
         $user->notes = $request->notes;
+        // ASIGNAR EL CAMPO EDAD DIRECTAMENTE
+        $user->age = $request->age; // Esto asume que tienes una columna 'age' en tu tabla 'users'
 
         $user->save();
 
-        // Redirect to the users index page, using a named route
         return redirect()->route('users')->with('success', 'Usuario creado exitosamente.');
     }
 
-    /**
-     * Muestra los detalles de un usuario específico.
-     */
-    public function show(User $user)
-    {
-        // Asegúrate de que la vista exista en resources/views/Admin/usuario/show.blade.php
-        return view('Admin.usuario.show', compact('user'));
-    }
+    // ... (Métodos show y edit)
 
-    /**
-     * Muestra el formulario para editar un usuario existente.
-     */
-    public function edit(User $user)
-    {
-        // Asegúrate de que la vista exista en resources/views/Admin/usuario/edit.blade.php
-        return view('Admin.usuario.edit', compact('user'));
-    }
-
-    /**
-     * Actualiza el usuario especificado en la base de datos.
-     */
     public function update(Request $request, User $user)
     {
         // 1. Validación de los datos del formulario
@@ -121,15 +110,17 @@ class UserController extends Controller
                 Rule::unique('users')->ignore($user->id),
             ],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
-            // 'user_type' en el formulario se mapeará a la columna 'role' en la DB
             'user_type' => ['required', 'string', Rule::in(['comun', 'aliado', 'afiliado', 'admin'])],
-            // 'phone1' en el formulario se mapeará a la columna 'phone1' en la DB
             'phone1' => ['nullable', 'string', 'max:20'],
+            'phone2' => ['nullable', 'string', 'max:20'],
+            'address' => ['nullable', 'string', 'max:500'],
             'status' => ['required', 'string', Rule::in(['activo', 'inactivo', 'pendiente'])],
             'registrationDate' => ['required', 'date'],
             'notes' => ['nullable', 'string', 'max:1000'],
+            // AGREGANDO VALIDACIÓN PARA EL CAMPO EDAD
+            'age' => ['nullable', 'integer', 'min:1', 'max:150'], // Edad como un entero entre 1 y 150
         ], [
-            // Mensajes de error personalizados (están correctos)
+            // Mensajes de error personalizados
             'firstname.required' => 'El campo Nombre es obligatorio.',
             'lastname.required' => 'El campo Apellido es obligatorio.',
             'email.required' => 'El campo Correo Electrónico es obligatorio.',
@@ -139,33 +130,40 @@ class UserController extends Controller
             'password.confirmed' => 'La confirmación de la nueva contraseña no coincide.',
             'user_type.required' => 'El campo Tipo de Usuario es obligatorio.',
             'user_type.in' => 'El Tipo de Usuario seleccionado no es válido.',
-            'phone1.max' => 'El teléfono no puede exceder los :max caracteres.',
+            'phone1.max' => 'El teléfono principal no puede exceder los :max caracteres.',
+            'phone2.max' => 'El teléfono adicional no puede exceder los :max caracteres.',
+            'address.max' => 'La dirección no puede exceder los :max caracteres.',
             'status.required' => 'El campo Estado es obligatorio.',
             'status.in' => 'El Estado seleccionado no es válido.',
             'registrationDate.required' => 'La Fecha de Registro es obligatoria.',
             'registrationDate.date' => 'La Fecha de Registro no tiene un formato válido.',
             'notes.max' => 'Las notas no pueden exceder los :max caracteres.',
+            // Mensajes para EDAD
+            'age.integer' => 'La edad debe ser un número entero.',
+            'age.min' => 'La edad mínima permitida es :min.',
+            'age.max' => 'La edad máxima permitida es :max.',
         ]);
 
-        $user->firstname = $request->firstname; // Corrected to use $request->firstname
-        $user->lastname = $request->lastname;   // Corrected to use $request->lastname
+        $user->firstname = $request->firstname;
+        $user->lastname = $request->lastname;
         $user->email = $request->email;
 
         if ($request->filled('password')) {
             $user->password = Hash::make($request->password);
         }
 
-        $user->role = $request->user_type; // Corrected to use $request->user_type
-
+        $user->role = $request->user_type;
         $user->phone1 = $request->phone1;
-
+        $user->phone2 = $request->phone2;
+        $user->address = $request->address;
         $user->status = $request->status;
         $user->registration_date = $request->registrationDate;
         $user->notes = $request->notes;
+        // ASIGNAR EL CAMPO EDAD DIRECTAMENTE
+        $user->age = $request->age; // Esto asume que tienes una columna 'age' en tu tabla 'users'
 
         $user->save();
 
-        // Redirect to the users index page, using a named route
         return redirect()->route('users')->with('success', 'Usuario actualizado exitosamente.');
     }
 

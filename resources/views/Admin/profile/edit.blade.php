@@ -95,15 +95,15 @@
                             @enderror
                         </div>
 
+                        {{-- Nuevo campo para la Edad (solo lectura) --}}
                         <div class="form-group">
-                            <label for="dob" class="form-label">Fecha de Nacimiento</label>
-                            <input type="date" id="dob" name="dob"
-                                   value="{{ old('dob', Auth::user()->dob ? \Carbon\Carbon::parse(Auth::user()->dob)->format('Y-m-d') : '') }}"
-                                   class="form-control @error('dob') is-invalid @enderror">
-                            @error('dob')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <label for="age" class="form-label">Edad</label>
+                            <input type="text" id="age" name="age"
+                                   value="{{ Auth::user()->dob ? \Carbon\Carbon::parse(Auth::user()->dob)->age : 'N/A' }}"
+                                   class="form-control" readonly>
+                            <small class="form-text-hint">La edad se calcula automáticamente a partir de tu fecha de nacimiento.</small>
                         </div>
+                        {{-- Fin del nuevo campo para la Edad --}}
 
                         <div class="form-group">
                             <label for="phone1" class="form-label">Teléfono Principal</label>
@@ -180,58 +180,3 @@
         </div>
     </div>
 @endsection
-
-@push('scripts')
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // Mostrar/ocultar sección de aliado
-            // Nota: La variable 'is_ally' debe ser pasada desde el controlador a la vista.
-            // Ejemplo: return view('admin.profile.edit', ['is_ally' => Auth::user()->is_ally]);
-            const isAlly = @json(Auth::user()->is_ally ?? false);
-            const allyFieldsSection = document.getElementById('ally_fields_section');
-            if (allyFieldsSection) { // Verifica si el elemento existe antes de manipularlo
-                if (isAlly) {
-                    allyFieldsSection.style.display = 'block';
-                } else {
-                    allyFieldsSection.style.display = 'none';
-                }
-            }
-
-            // Preview de la imagen de perfil
-            const profilePhotoUpload = document.getElementById('profile_photo_upload');
-            const avatarPreview = document.getElementById('avatar_preview');
-
-            if (profilePhotoUpload && avatarPreview) {
-                profilePhotoUpload.addEventListener('change', function(event) {
-                    const file = event.target.files[0];
-                    if (file) {
-                        const reader = new FileReader();
-                        reader.onload = function(e) {
-                            avatarPreview.src = e.target.result;
-                        };
-                        reader.readAsDataURL(file);
-                    }
-                });
-            }
-
-            // Validación en tiempo real para la confirmación de contraseña
-            const newPasswordInput = document.getElementById('new_password');
-            const confirmPasswordInput = document.getElementById('new_password_confirmation');
-
-            function validateNewPasswords() {
-                if (newPasswordInput.value !== confirmPasswordInput.value && confirmPasswordInput.value !== '') {
-                    confirmPasswordInput.setCustomValidity('Las contraseñas no coinciden.');
-                } else {
-                    confirmPasswordInput.setCustomValidity('');
-                }
-                // Dispara la validación del navegador
-                confirmPasswordInput.reportValidity();
-            }
-
-            if (newPasswordInput && confirmPasswordInput) {
-                newPasswordInput.addEventListener('input', validateNewPasswords);
-                confirmPasswordInput.addEventListener('input', validateNewPasswords);
-            }
-        });
-    </script>
-@endpush

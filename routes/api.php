@@ -73,4 +73,13 @@ Route::prefix('webhooks')->group(function () {
 
 // --- Ruta para obtener la lista de Bancos (BankController) ---
 Route::get('/banks', [BankController::class, 'index']);
+// --- Ruta para obtener las tasas del BCV (BankController) ---
 Route::get('/Services/BCVRates', [BankController::class, 'getBcvRates']);
+
+// Rutas protegidas que requieren autenticación con token
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user', [AuthController::class, 'user']);
+    Route::post('/logout', [AuthController::class, 'logout']);
+    // Otros endpoints de usuario, ej:
+    Route::put('/user/profile', [AuthController::class, 'updateProfile']);
+});

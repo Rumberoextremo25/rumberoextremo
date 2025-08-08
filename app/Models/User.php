@@ -26,6 +26,7 @@ class User extends Authenticatable // Quita `implements MustVerifyEmail` si no l
         'lastname',
         'email',
         'password',
+        'age',
         'identification',
         'full_name', // Nombre completo del usuario
         'dob', // Fecha de nacimiento
@@ -44,6 +45,7 @@ class User extends Authenticatable // Quita `implements MustVerifyEmail` si no l
         'notifications_enabled',
         'two_factor_secret',
         'two_factor_enabled',
+        'user_type',
     ];
 
     /**

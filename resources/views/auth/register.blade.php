@@ -21,7 +21,7 @@
             <div class="form-group">
                 <label for="name">Nombre Completo</label>
                 <input id="name" type="text" name="name" value="{{ old('name') }}" required autofocus autocomplete="name"
-                       class="form-control @error('name') is-invalid @enderror" placeholder="Tu nombre y apellido">
+                        class="form-control @error('name') is-invalid @enderror" placeholder="Tu nombre y apellido">
                 @error('name')
                     <span class="invalid-feedback" role="alert">
                         <strong>{{ $message }}</strong>
@@ -33,8 +33,23 @@
             <div class="form-group">
                 <label for="email">Correo Electrónico</label>
                 <input id="email" type="email" name="email" value="{{ old('email') }}" required autocomplete="username"
-                       class="form-control @error('email') is-invalid @enderror" placeholder="tu.correo@rumbero.com">
+                        class="form-control @error('email') is-invalid @enderror" placeholder="tu.correo@rumbero.com">
                 @error('email')
+                    <span class="invalid-feedback" role="alert">
+                        <strong>{{ $message }}</strong>
+                    </span>
+                @enderror
+            </div>
+
+            {{-- Nuevo campo desplegable para tipo de usuario --}}
+            <div class="form-group">
+                <label for="user_type">¿Eres un Rumbero o un Aliado?</label>
+                <select id="user_type" name="user_type" class="form-control @error('user_type') is-invalid @enderror" required>
+                    <option value="">Selecciona una opción</option>
+                    <option value="user" {{ old('user_type') == 'user' ? 'selected' : '' }}>Usuario Rumbero</option>
+                    <option value="partner" {{ old('user_type') == 'partner' ? 'selected' : '' }}>Aliado (Empresa/Local)</option>
+                </select>
+                @error('user_type')
                     <span class="invalid-feedback" role="alert">
                         <strong>{{ $message }}</strong>
                     </span>
@@ -45,7 +60,7 @@
             <div class="form-group">
                 <label for="password">Contraseña</label>
                 <input id="password" type="password" name="password" required autocomplete="new-password"
-                       class="form-control @error('password') is-invalid @enderror" placeholder="••••••••">
+                        class="form-control @error('password') is-invalid @enderror" placeholder="••••••••">
                 @error('password')
                     <span class="invalid-feedback" role="alert">
                         <strong>{{ $message }}</strong>
@@ -57,7 +72,7 @@
             <div class="form-group">
                 <label for="password_confirmation">Confirmar Contraseña</label>
                 <input id="password_confirmation" type="password" name="password_confirmation" required autocomplete="new-password"
-                       class="form-control" placeholder="Repite tu contraseña">
+                        class="form-control" placeholder="Repite tu contraseña">
                 @error('password_confirmation')
                     <span class="invalid-feedback" role="alert">
                         <strong>{{ $message }}</strong>
