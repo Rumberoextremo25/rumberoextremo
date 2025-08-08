@@ -91,53 +91,20 @@
                     <select id="category_name" name="category_name"
                         class="form-control @error('category_name') is-invalid @enderror" required>
                         <option value="">Selecciona una categoría</option> {{-- Opción por defecto --}}
-                        <option value="Restaurante" {{ old('category_name') == 'Restaurante' ? 'selected' : '' }}>
-                            Restaurante</option>
-                        <option value="Bar" {{ old('category_name') == 'Bar' ? 'selected' : '' }}>Bar</option>
-                        <option value="Tienda" {{ old('category_name') == 'Tienda' ? 'selected' : '' }}>Tienda</option>
-                        <option value="Discoteca" {{ old('category_name') == 'Discoteca' ? 'selected' : '' }}>Discoteca
+                        <option value="Restaurantes, Bares, Discotecas, Night Club, Juegos"
+                            {{ old('category_name') == 'Restaurantes, Bares, Discotecas, Night Club, Juegos' ? 'selected' : '' }}>
+                            Restaurantes, Bares, Discotecas, Night Club, Juegos</option>
+                        <option value="Comidas, Bebidas, Cafes, Heladerias, Panaderias, Pastelerias"
+                            {{ old('category_name') == 'Comidas, Bebidas, Cafes, Heladerias, Panaderias, Pastelerias' ? 'selected' : '' }}>
+                            Comidas, Bebidas, Cafés, Heladerías, Panaderías, Pastelerías</option>
+                        <option value="Deportes y Hobbies"
+                            {{ old('category_name') == 'Deportes y Hobbies' ? 'selected' : '' }}>Deportes y Hobbies
                         </option>
-                        <option value="Hotel" {{ old('category_name') == 'Hotel' ? 'selected' : '' }}>Hotel</option>
-                        <option value="Agencia de Festejos"
-                            {{ old('category_name') == 'Agencia de Festejos' ? 'selected' : '' }}>Agencia de Festejos
+                        <option value="Viajes y Turismo"
+                            {{ old('category_name') == 'Viajes y Turismo' ? 'selected' : '' }}>Viajes y Turismo</option>
+                        <option value="Eventos y Festejos"
+                            {{ old('category_name') == 'Eventos y Festejos' ? 'selected' : '' }}>Eventos y Festejos
                         </option>
-                        <option value="Organizador de Eventos"
-                            {{ old('category_name') == 'Organizador de Eventos' ? 'selected' : '' }}>Organizador de Eventos
-                        </option>
-                        <option value="Catering" {{ old('category_name') == 'Catering' ? 'selected' : '' }}>Catering
-                        </option>
-                        <option value="Salon de Fiestas"
-                            {{ old('category_name') == 'Salon de Fiestas' ? 'selected' : '' }}>Salón de Fiestas</option>
-                        <option value="Transporte" {{ old('category_name') == 'Transporte' ? 'selected' : '' }}>Transporte
-                        </option>
-                        <option value="Seguridad" {{ old('category_name') == 'Seguridad' ? 'selected' : '' }}>Seguridad
-                        </option>
-                        <option value="Floristeria" {{ old('category_name') == 'Floristeria' ? 'selected' : '' }}>
-                            Floristería</option>
-                        <option value="Banda Musical" {{ old('category_name') == 'Banda Musical' ? 'selected' : '' }}>Banda
-                            Musical</option>
-                        <option value="DJ" {{ old('category_name') == 'DJ' ? 'selected' : '' }}>DJ</option>
-                        <option value="Fotografia y Video"
-                            {{ old('category_name') == 'Fotografia y Video' ? 'selected' : '' }}>Fotografía y Video
-                        </option>
-                        <option value="Alquiler de Equipos"
-                            {{ old('category_name') == 'Alquiler de Equipos' ? 'selected' : '' }}>Alquiler de Equipos
-                        </option>
-                        <option value="Maquillaje y Estilismo"
-                            {{ old('category_name') == 'Maquillaje y Estilismo' ? 'selected' : '' }}>Maquillaje y Estilismo
-                        </option>
-                        <option value="Decoracion" {{ old('category_name') == 'Decoracion' ? 'selected' : '' }}>Decoración
-                        </option>
-                        <option value="Imprenta" {{ old('category_name') == 'Imprenta' ? 'selected' : '' }}>Imprenta
-                        </option>
-                        <option value="Publicidad" {{ old('category_name') == 'Publicidad' ? 'selected' : '' }}>Publicidad
-                        </option>
-                        <option value="Otros" {{ old('category_name') == 'Otros' ? 'selected' : '' }}>Otros</option>
-
-                        {{-- Puedes generar estas opciones dinámicamente si las tienes en una base de datos o constante --}}
-                        {{-- @foreach ($categories as $category)
-            <option value="{{ $category }}" {{ old('category_name') == $category ? 'selected' : '' }}>{{ $category }}</option>
-        @endforeach --}}
                     </select>
                     @error('category_name')
                         <span class="invalid-feedback" role="alert">
