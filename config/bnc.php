@@ -28,4 +28,8 @@ return [
      */
     'rates_api_url' => env('BCV_RATES_API_URL'),
     'cache_duration_minutes' => env('BCV_RATES_CACHE_MINUTES', 60), // Duración de la caché para las tasas del BCV en minutos (por defecto 60)
+
+    // ... otras configuraciones
+    'webhook_secret_key' => env('BNC_WEBHOOK_SECRET_KEY'),
+    'webhook_allowed_ips' => explode(',', env('BNC_WEBHOOK_ALLOWED_IPS', '')),
 ];

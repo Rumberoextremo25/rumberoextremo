@@ -53,15 +53,31 @@ class BncApiService
                 ]);
 
                 if ($response->successful()) {
-                    $token = $response->json('data.token');
-                    Log::info('BNC Session Token obtenido exitosamente.', ['token' => substr($token, 0, 10) . '...']);
-                    return $token;
+                    // *** IMPORTANTE: Cambia 'data.token' a 'value' ***
+                    $token = $response->json('value');
+
+                    if ($token) {
+                        Log::info('BNC Session Token obtenido exitosamente.', ['token' => substr($token, 0, 10) . '...']);
+                        return $token;
+                    } else {
+                        Log::error('Fallo al extraer el token de la respuesta de la API BNC. El campo "value" no se encontró o estaba vacío.', ['response' => $response->json()]);
+                        return null;
+                    }
                 } else {
-                    Log::error('Fallo al obtener el token de sesión del BNC.', ['response' => $response->json()]);
+                    // Aquí ya estás validando la conexión/respuesta
+                    Log::error('Fallo en la conexión o la API de autenticación BNC devolvió un error.', [
+                        'status' => $response->status(),
+                        'response' => $response->json(),
+                    ]);
                     return null;
                 }
+            } catch (\Illuminate\Http\Client\ConnectionException $e) {
+                // Error específico de conexión (ej. host no encontrado, timeout)
+                Log::error('Error de conexión a la API de autenticación BNC: ' . $e->getMessage());
+                return null;
             } catch (\Exception $e) {
-                Log::error('Excepción al obtener el token de sesión del BNC: ' . $e->getMessage());
+                // Otros errores inesperados
+                Log::error('Excepción inesperada al obtener el token de sesión del BNC: ' . $e->getMessage());
                 return null;
             }
         });

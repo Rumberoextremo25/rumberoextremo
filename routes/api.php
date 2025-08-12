@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\WebhookController;
 use App\Http\Controllers\Api\BankController;
 use App\Http\Controllers\Api\BcvRatesController;
+use App\Http\Controllers\PaymentSettingsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -82,4 +83,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/logout', [AuthController::class, 'logout']);
     // Otros endpoints de usuario, ej:
     Route::put('/user/profile', [AuthController::class, 'updateProfile']);
+});
+
+//Ruta para guardar los detalles de Pago Móvil (C2P)
+Route::middleware('auth:sanctum')->group(function () {
+    // Rutas para la configuración de Pago Móvil
+    Route::post('/user/c2p-settings', [PaymentSettingsController::class, 'saveC2PDetails']);
+    Route::get('/user/c2p-settings', [PaymentSettingsController::class, 'getC2PDetails']);
+
+    // Puedes tener aquí otras rutas autenticadas, como el perfil de usuario
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    });
 });
