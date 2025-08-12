@@ -86,13 +86,12 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 //Ruta para guardar los detalles de Pago Móvil (C2P)
-Route::middleware('auth:sanctum')->group(function () {
-    // Rutas para la configuración de Pago Móvil
-    Route::post('/user/c2p-settings', [PaymentSettingsController::class, 'saveC2PDetails']);
-    Route::get('/user/c2p-settings', [PaymentSettingsController::class, 'getC2PDetails']);
 
-    // Puedes tener aquí otras rutas autenticadas, como el perfil de usuario
-    Route::get('/user', function (Request $request) {
-        return $request->user();
-    });
+// Rutas para la configuración de Pago Móvil
+Route::post('/user/c2p-settings', [PaymentSettingsController::class, 'saveC2PDetails']);
+Route::get('/user/c2p-settings', [PaymentSettingsController::class, 'getC2PDetails']);
+
+// Puedes tener aquí otras rutas autenticadas, como el perfil de usuario
+Route::get('/user', function (Request $request) {
+    return $request->user();
 });
