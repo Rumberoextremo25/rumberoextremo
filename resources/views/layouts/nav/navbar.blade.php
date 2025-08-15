@@ -1,4 +1,5 @@
 <header class="main-header">
+    <link rel="stylesheet" href="{{ asset('css/navbar.css') }}">
     <div class="header-container">
         <a href="{{ url('/') }}" class="header-logo">
             <img src="{{ asset('assets/img/IMG_4254.png') }}" alt="Logo Rumbero Extremo">

@@ -1,98 +1,132 @@
-/* Import app.css for consistency with navbar and footer */
-@import 'app.css';
+/* Variables CSS - Se mantienen para consistencia si existen en otros archivos */
+:root {
+    --primary-purple: #8A2BE2; /* Un morado vibrante */
+    --secondary-purple: #6A0DAD; /* Un morado más oscuro para detalles */
+    --light-bg: #f0f0f5; /* Fondo claro para secciones */
+    --dark-text: #333;
+    --light-text: #666;
+    --white: #fff;
+    --gradient-start: #9C27B0; /* Morado de inicio del gradiente */
+    --gradient-end: #E91E63; /* Rosa de fin del gradiente */
+    --shadow-light: 0 5px 20px rgba(0, 0, 0, 0.1);
+    --shadow-dark: 0 10px 30px rgba(0, 0, 0, 0.2);
+    --border-radius-lg: 30px;
+    --border-radius-md: 20px;
+}
 
-/* General Body and Container Styles */
 body {
-    background-color: #1a1a2e; /* Dark background for a modern feel */
-    color: #e0e0e0; /* Light text color for contrast */
-    font-family: 'Poppins', sans-serif; /* Modern, readable font */
+    font-family: 'Poppins', sans-serif;
     line-height: 1.6;
+    color: var(--dark-text);
+    background-color: var(--light-bg); /* Fondo general de la página */
     margin: 0;
-    padding: 0;
+    padding: 0px;
 }
 
 .container {
-    max-width: 1200px;
+    max-width: 1100px;
     margin: 0 auto;
-    padding: 2rem;
-    box-sizing: border-box; /* Include padding in element's total width and height */
+    padding: 0 20px;
 }
 
-/* Section Styling */
+/* Sección principal de contenido */
 .content-section {
-    padding: 4rem 0;
+    padding: 80px 0; /* Más padding vertical para centrar el contenido */
     text-align: center;
-    background-color: #16213e; /* Slightly lighter dark background for the section */
-    margin-bottom: 2rem;
-    border-radius: 8px;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    background-color: var(--white); /* Fondo blanco para la tarjeta principal */
+    margin: 40px auto; /* Centrar la tarjeta y dar espacio */
+    border-radius: var(--border-radius-lg); /* Bordes redondeados grandes */
+    box-shadow: var(--shadow-dark); /* Sombra más pronunciada */
+    max-width: 900px; /* Ancho máximo para la tarjeta de contenido */
+    position: relative; /* Para el fondo de "splash" */
+    overflow: hidden; /* Ocultar desbordamientos del fondo */
 }
 
-/* Headings */
-h1 {
-    font-family: 'Montserrat', sans-serif; /* Stronger font for headings */
-    color: #e94560; /* Accent color for headings */
-    margin-bottom: 1rem;
-    font-weight: 700;
-    font-size: 3em;
-    animation: fadeInDown 1s ease-out;
+/* Fondo de "splash" morado en la parte superior de la tarjeta */
+.content-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 180px; /* Altura del área morada */
+    background: linear-gradient(to right, var(--gradient-start), var(--gradient-end));
+    border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0; /* Bordes redondeados solo arriba */
+    z-index: 0;
 }
 
-p {
+.content-section > .container {
+    position: relative; /* Asegura que el contenido esté sobre el fondo */
+    z-index: 1;
+}
+
+.content-section h1 {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 2.8em; /* Título más grande */
+    color: var(--white); /* Texto blanco para el título */
+    margin-bottom: 15px;
+    position: relative;
+    top: -60px; /* Elevar el título para que esté sobre el gradiente */
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Sombra de texto para legibilidad */
+}
+
+.content-section p {
     font-size: 1.1em;
-    margin-bottom: 1.5rem;
-    color: rgba(255, 255, 255, 0.8);
+    color: var(--dark-text); /* Texto oscuro para el párrafo debajo del título */
+    margin-bottom: 30px;
+    padding: 0 20px; /* Padding para el párrafo */
 }
 
-/* Call to Action Buttons */
+/* Contenedor de botones (mantener flex para centrar) */
 .form-buttons {
     display: flex;
     justify-content: center;
-    gap: 2rem; /* Space between buttons */
-    margin-top: 3rem;
-    margin-bottom: 3rem;
-    flex-wrap: wrap; /* Allow buttons to wrap on smaller screens */
+    gap: 25px; /* Espacio entre los botones */
+    margin-bottom: 40px;
+    flex-wrap: wrap; /* Permitir que los botones se envuelvan en pantallas pequeñas */
 }
 
+/* Estilo de los botones */
 .form-button {
-    background-color: #e94560; /* Accent color for buttons */
-    color: #ffffff;
-    padding: 1rem 2.5rem;
-    border: none;
-    border-radius: 50px; /* Pill-shaped buttons */
-    cursor: pointer;
-    font-size: 1.1em;
+    background: var(--primary-purple); /* Fondo morado para los botones */
+    color: var(--white);
+    padding: 15px 30px;
+    border-radius: var(--border-radius-md); /* Bordes redondeados para los botones */
+    text-decoration: none;
     font-weight: 600;
-    text-decoration: none; /* Remove underline from links */
-    display: inline-flex;
+    font-size: 1.1em;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-light); /* Sombra sutil para los botones */
+    display: flex; /* Para alinear el ícono y el texto */
     align-items: center;
     justify-content: center;
-    transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    min-width: 260px; /* Ancho mínimo para que se vean bien */
+    text-align: center;
 }
 
 .form-button i {
-    margin-right: 0.8rem;
+    margin-right: 10px; /* Espacio entre el ícono y el texto */
     font-size: 1.2em;
 }
 
 .form-button:hover {
-    background-color: #ff6b8e;
-    transform: translateY(-3px);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.3);
+    background: var(--secondary-purple); /* Cambio de color al pasar el ratón */
+    transform: translateY(-3px); /* Efecto de elevación */
+    box-shadow: var(--shadow-dark); /* Sombra más pronunciada al pasar el ratón */
 }
 
-/* Video Container */
+/* Contenedor del video */
 .video-container {
     position: relative;
-    padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+    width: 90%; /* Ancho del video relativo al contenedor padre */
+    max-width: 800px; /* Ancho máximo del video */
+    margin: 0 auto 30px; /* Centrar el video y añadir margen inferior */
+    padding-bottom: 56.25%; /* Relación de aspecto 16:9 (altura / ancho = 9 / 16 = 0.5625) */
     height: 0;
     overflow: hidden;
-    border-radius: 12px;
-    margin-top: 3rem;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.5);
-    background-color: #0f3460; /* Background color for the video player area */
-    animation: fadeIn 1.5s ease-out;
+    border-radius: var(--border-radius-lg); /* Bordes redondeados grandes para el video */
+    box-shadow: var(--shadow-dark); /* Sombra pronunciada para el video */
+    background-color: #000; /* Fondo negro para el reproductor */
 }
 
 .video-container iframe {
@@ -104,65 +138,80 @@ p {
     border: 0;
 }
 
-/* Animations */
-@keyframes fadeInDown {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+/* Párrafo final */
+.content-section p:last-of-type {
+    font-size: 1em;
+    color: var(--light-text);
+    margin-top: 30px; /* Margen superior para separarlo del video */
+    font-style: italic;
 }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
-
-/* Responsive Design */
+/* Media Queries para Responsividad */
 @media (max-width: 768px) {
-    h1 {
-        font-size: 2.5em;
+    .content-section {
+        padding: 60px 0;
+        margin: 20px auto;
+        border-radius: var(--border-radius-md);
     }
 
-    .content-section {
-        padding: 2.5rem 0;
+    .content-section::before {
+        height: 150px;
+        border-radius: var(--border-radius-md) var(--border-radius-md) 0 0;
+    }
+
+    .content-section h1 {
+        font-size: 2em;
+        top: -40px;
+    }
+
+    .content-section p {
+        font-size: 1em;
+        padding: 0 15px;
     }
 
     .form-buttons {
-        flex-direction: column; /* Stack buttons vertically on smaller screens */
-        gap: 1.5rem;
+        flex-direction: column; /* Apilar botones en pantallas más pequeñas */
+        gap: 15px;
     }
 
     .form-button {
-        width: 80%; /* Make buttons take more width */
-        margin: 0 auto; /* Center buttons */
-        padding: 0.8rem 2rem;
+        width: 80%; /* Hacer los botones un poco más anchos en móvil */
+        min-width: unset; /* Remover el min-width */
+        padding: 12px 20px;
         font-size: 1em;
+    }
+
+    .video-container {
+        width: 95%; /* Video un poco más ancho en móvil */
+        border-radius: var(--border-radius-md);
     }
 }
 
 @media (max-width: 480px) {
-    .container {
-        padding: 1rem;
+    .content-section {
+        padding: 40px 0;
     }
 
-    h1 {
-        font-size: 2em;
+    .content-section::before {
+        height: 120px;
     }
 
-    p {
-        font-size: 1em;
+    .content-section h1 {
+        font-size: 1.6em;
+        top: -30px;
+    }
+
+    .content-section p {
+        font-size: 0.9em;
     }
 
     .form-button {
-        width: 90%;
         font-size: 0.9em;
+        padding: 10px 15px;
+    }
+
+    .form-button i {
+        font-size: 1em;
+        margin-right: 8px;
     }
 }

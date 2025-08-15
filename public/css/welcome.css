@@ -1,226 +1,226 @@
-/* General Body Styling for Welcome Page */
-html, body { /* MODIFICACIÓN: Aplicamos estilos y reseteos también al elemento html */
-    font-family: 'Montserrat', sans-serif; /* Using Montserrat as a primary font */
-    color: #FFFFFF; /* White text for most elements */
-    background: linear-gradient(to bottom, #4B0082, #8A2BE2); /* Deep purple to lighter purple gradient */
-    background-attachment: fixed; /* Ensures the gradient covers the entire viewport even on scroll */
+:root {
+    --primary-purple: #5D12D2;
+    --secondary-purple: #9258E2;
+    --hero-gradient-start: #4A129E;
+    --hero-gradient-end: #6C1FD7;
+    --button-pink: #6c05cd;
+    --button-hover-pink: #6c05cd;
+    --text-color-light: #f4f4f4;
+    --text-color-dark: #333333;
+    --text-color-secondary: #666666;
+    --background-light: #ffffff;
+    --background-card: #f9f9f9;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
     margin: 0;
     padding: 0;
     line-height: 1.6;
-    overflow-x: hidden; /* Prevent horizontal scroll */
-    height: 100%; /* Asegura que html y body ocupen el 100% de la altura del viewport */
+    color: var(--text-color-dark);
+    background-color: var(--background-light);
 }
 
-/* Container for Centering Content */
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 20px; /* Add some horizontal padding */
+    padding: 0 20px;
 }
 
-/* Hero Section */
-.hero {
-    position: relative;
+h1,
+h2,
+h3 {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+}
+
+/* ---------------------------------- */
+/* 2. Barra de Navegación             */
+/* ---------------------------------- */
+.header {
+    background-color: var(--background-light);
+    padding: 15px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.header .logo {
     display: flex;
     align-items: center;
-    justify-content: flex-start; /* Align content to the left */
-    min-height: 80vh; /* Make it take most of the viewport height */
-    padding-top: 100px; /* Space for fixed header */
-    padding-bottom: 50px;
-    text-align: left; /* Align text to the left */
-    overflow: hidden; /* Hide overflowing parts of the background image */
 }
 
-/* Background Image for Hero Section */
+.header .logo img {
+    height: 40px;
+    margin-right: 10px;
+}
+
+.header .logo span {
+    font-family: 'Montserrat', sans-serif;
+    font-weight: 800;
+    font-size: 1.5em;
+    color: var(--primary-purple);
+}
+
+.header .nav-links {
+    display: flex;
+    gap: 25px;
+    align-items: center;
+}
+
+.header .nav-links a {
+    text-decoration: none;
+    color: var(--text-color-dark);
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+.header .nav-links a:hover {
+    color: var(--primary-purple);
+}
+
+.nav-button {
+    background: linear-gradient(90deg, #6C1FD7, #4A129E);
+    color: white;
+    padding: 10px 25px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 5px 15px rgba(108, 31, 215, 0.4);
+}
+
+.nav-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(108, 31, 215, 0.5);
+}
+
+/* ---------------------------------- */
+/* 3. Sección Hero                    */
+/* ---------------------------------- */
+.hero {
+    background: linear-gradient(135deg, #4A129E, #6C1FD7);
+    color: white;
+    padding: 120px 0;
+    text-align: left;
+    position: relative;
+    overflow: hidden;
+    border-bottom-left-radius: 50px;
+    border-bottom-right-radius: 50px;
+    background-image: url('https://i.pinimg.com/originals/02/ba/86/02ba867e545f953631148c89629412b1.jpg');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+}
+
 .hero::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
-    /* MODIFICACIÓN: Usamos 100vh para que la imagen ocupe el 100% de la altura del viewport */
-    height: 100vh; 
-    background: url('../assets/img/home/fiestas_rumbero.jpg') no-repeat center center / cover; /* Dynamic party image */
-    background-blend-mode: multiply; /* Blend with background color */
-    background-color: rgba(75, 0, 130, 0.7); /* Dark purple overlay */
-    z-index: -1;
+    height: 100%;
+    background: rgba(74, 18, 158, 0.7);
+    z-index: 1;
 }
 
 .hero h1 {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 4.5em; /* Large headline */
-    font-weight: 800; /* Extra bold */
-    margin-bottom: 20px;
+    font-size: 3.5em;
     line-height: 1.1;
-    max-width: 700px; /* Limit width of headline */
-    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5); /* Subtle text shadow */
+    margin: 0 0 15px 0;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+    position: relative;
+    z-index: 2;
 }
 
 .hero p {
-    font-family: 'Poppins', sans-serif;
-    font-size: 1.2em;
-    color: #E0E0E0; /* Slightly off-white for body text */
-    line-height: 1.6;
-    margin-bottom: 40px;
-    max-width: 600px; /* Limit width of paragraph */
-}
-
-/* Call-to-Action Button (Hero Section) */
-.hero .cta-button {
-    display: inline-block;
-    background-color: #FFD700; /* Gold/Yellow, matching the image */
-    color: #4B0082; /* Darker purple text on button */
-    padding: 15px 35px;
-    border-radius: 30px; /* More rounded corners */
-    text-decoration: none;
-    font-weight: 700; /* Bold */
     font-size: 1.1em;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3); /* Button shadow */
+    margin-bottom: 30px;
+    max-width: 600px;
+    position: relative;
+    z-index: 2;
 }
 
-.hero .cta-button:hover {
-    background-color: #FFC700; /* Slightly darker yellow on hover */
-    transform: translateY(-3px); /* Slight lift effect */
+.hero .container {
+    position: relative;
+    z-index: 3;
 }
 
-/* Features Section */
-.features {
-    background-color: rgba(0, 0, 0, 0.4); /* Slightly transparent dark background */
-    padding: 80px 0;
+.cta-button {
+    display: inline-block;
+    background-color: var(--button-pink);
+    color: white;
+    padding: 15px 30px;
+    border-radius: 50px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 20px rgba(232, 63, 111, 0.4);
+    position: relative;
+    z-index: 2;
+}
+
+.cta-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 25px rgba(232, 63, 111, 0.5);
+}
+
+/* ---------------------------------- */
+/* 4. Secciones de Contenido          */
+/* ---------------------------------- */
+section {
+    padding: 60px 0;
+}
+
+h2 {
+    font-size: 2.5em;
     text-align: center;
+    margin-bottom: 40px;
+    color: var(--primary-purple);
 }
 
-.features h2 {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 2.8em;
-    font-weight: 700;
-    color: #FFD700; /* Yellow heading */
-    margin-bottom: 50px;
-    text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
+.features {
+    background-color: var(--background-light);
 }
 
 .feature-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Responsive grid */
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 30px;
 }
 
 .feature-item {
-    background-color: rgba(255, 255, 255, 0.1); /* Light transparent background for cards */
-    padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-    transition: transform 0.3s ease, background-color 0.3s ease;
     text-align: center;
+    padding: 30px;
+    background-color: var(--background-card);
+    border-radius: 20px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .feature-item:hover {
-    transform: translateY(-10px); /* Lift effect on hover */
-    background-color: rgba(255, 255, 255, 0.15); /* Slightly less transparent on hover */
+    transform: translateY(-10px);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.1);
 }
 
 .feature-item i {
-    font-size: 3.5em;
-    color: #08D9D6; /* Teal color for icons */
-    margin-bottom: 20px;
-    text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
-}
-
-.feature-item h3 {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 1.8em;
-    font-weight: 600;
-    color: #FFFFFF;
+    font-size: 3em;
+    color: var(--primary-purple);
     margin-bottom: 15px;
 }
 
-.feature-item p {
-    font-family: 'Poppins', sans-serif;
-    font-size: 0.95em;
-    color: #E0E0E0;
+.feature-item h3 {
+    font-size: 1.2em;
+    margin-top: 0;
+    color: var(--primary-purple);
 }
 
-/* Image Carousel Section */
-.image-carousel-section {
-    padding: 80px 0;
-    text-align: center;
-    background-color: rgba(0, 0, 0, 0.5); /* Darker transparent background */
-}
-
-.image-carousel-section h2 {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 2.8em;
-    font-weight: 700;
-    color: #FFD700;
-    margin-bottom: 50px;
-    text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
-}
-
-.carousel-container {
-    position: relative;
-    width: 100%;
-    max-width: 900px; /* Max width for the carousel */
-    margin: 0 auto;
-    overflow: hidden;
-    border-radius: 20px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-}
-
-.carousel-slide {
-    display: flex;
-    transition: transform 0.5s ease-in-out;
-}
-
-.carousel-slide img {
-    width: 100%;
-    height: 400px; /* Fixed height for carousel images */
-    object-fit: cover; /* Ensure images cover the area */
-    border-radius: 20px; /* Match container border-radius */
-    flex-shrink: 0; /* Prevent images from shrinking */
-}
-
-.carousel-nav-button {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background-color: rgba(0, 0, 0, 0.5);
-    color: white;
-    border: none;
-    padding: 15px;
-    cursor: pointer;
-    font-size: 2em;
-    border-radius: 50%;
-    transition: background-color 0.3s ease;
-    z-index: 10;
-}
-
-.carousel-nav-button:hover {
-    background-color: rgba(0, 0, 0, 0.7);
-}
-
-.prev-button {
-    left: 10px;
-}
-
-.next-button {
-    right: 10px;
-}
-
-/* Testimonials Section */
 .testimonials-section {
-    padding: 80px 0;
-    text-align: center;
-    background-color: rgba(0, 0, 0, 0.4); /* Consistent transparent background */
-}
-
-.testimonials-section h2 {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 2.8em;
-    font-weight: 700;
-    color: #FFD700;
-    margin-bottom: 50px;
-    text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
+    background-color: var(--background-card);
 }
 
 .testimonials-grid {
@@ -230,188 +230,113 @@ html, body { /* MODIFICACIÓN: Aplicamos estilos y reseteos también al elemento
 }
 
 .testimonial-card {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: white;
     padding: 30px;
-    border-radius: 15px;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    border-radius: 20px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+    font-style: italic;
+    position: relative;
     text-align: center;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    transition: transform 0.3s ease;
-}
-
-.testimonial-card:hover {
-    transform: translateY(-10px);
-}
-
-.testimonial-card img {
-    width: 80px;
-    height: 80px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-bottom: 20px;
-    border: 3px solid #08D9D6; /* Teal border for profile images */
 }
 
 .testimonial-card p {
-    font-family: 'Poppins', sans-serif;
-    font-size: 1em;
-    color: #E0E0E0;
-    font-style: italic;
-    margin-bottom: 15px;
+    margin: 0 0 15px 0;
+    font-style: normal;
 }
 
 .testimonial-card .author {
     font-weight: 600;
-    color: #FFFFFF;
-    margin-top: 10px;
-    font-size: 1.1em;
+    font-style: normal;
+    color: var(--primary-purple);
+    display: block;
+    margin-bottom: 5px;
 }
 
 .testimonial-card .location {
-    font-size: 0.85em;
-    color: #B0B0B0;
+    font-size: 0.9em;
+    color: var(--text-color-secondary);
+    font-style: normal;
 }
 
-/* Call to Action Alt Section */
 .cta-alt {
-    padding: 80px 0;
+    background: linear-gradient(to right, var(--button-pink), #FF6B8B);
+    color: white;
     text-align: center;
-    background-color: rgba(0, 0, 0, 0.6); /* Even darker transparent background */
+    border-radius: 20px;
+    padding: 50px 20px;
+    margin-top: 40px;
+    box-shadow: 0 10px 30px rgba(232, 63, 111, 0.3);
 }
 
 .cta-alt h2 {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 3em;
-    font-weight: 700;
-    color: #FFD700;
-    margin-bottom: 20px;
-    text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.3);
+    color: white;
+    font-size: 2em;
+    margin-bottom: 10px;
 }
 
-.cta-alt p {
-    font-family: 'Poppins', sans-serif;
-    font-size: 1.2em;
-    color: #E0E0E0;
-    margin-bottom: 40px;
-    max-width: 700px;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-/* Reusing cta-button from hero section for consistency */
 .cta-alt .cta-button {
-    display: inline-block;
-    background-color: #FFD700;
-    color: #4B0082;
-    padding: 15px 35px;
+    background-color: white;
+    color: var(--button-pink);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* ---------------------------------- */
+/* 5. Carrusel de Imágenes            */
+/* ---------------------------------- */
+.image-carousel-section {
+    background-color: var(--background-card);
+}
+
+.carousel-container {
+    position: relative;
+    overflow: hidden;
+    width: 70%;
     border-radius: 30px;
-    text-decoration: none;
-    font-weight: 700;
-    font-size: 1.1em;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
 
-.cta-alt .cta-button:hover {
-    background-color: #FFC700;
-    transform: translateY(-3px);
+.carousel-slide {
+    display: flex;
+    transition: transform 0.5s ease-in-out;
 }
 
-/* Responsive Adjustments */
-@media (max-width: 1024px) {
-    .hero h1 {
-        font-size: 3.5em;
-    }
-    .hero p {
-        font-size: 1.1em;
-    }
-    .features h2, .image-carousel-section h2, .testimonials-section h2, .cta-alt h2 {
-        font-size: 2.2em;
-    }
-    .carousel-slide img {
-        height: 350px;
-    }
+.carousel-slide img {
+    width: 100%;
+    height: auto;
+    object-fit: cover;
 }
 
+.carousel-nav-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0, 0, 0, 0.5);
+    color: white;
+    border: none;
+    font-size: 1.5em;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 50%;
+    z-index: 2;
+}
+
+.prev-button {
+    left: 15px;
+}
+
+.next-button {
+    right: 15px;
+}
+
+/* ---------------------------------- */
+/* 7. Responsividad                   */
+/* ---------------------------------- */
 @media (max-width: 768px) {
-    .main-header {
-        padding: 15px 20px; /* Adjust header padding for smaller screens */
-    }
-    .header-container {
-        flex-direction: column; /* Stack logo and nav on small screens */
-        align-items: center;
-    }
-    .main-nav .nav-links {
-        flex-wrap: wrap; /* Allow nav links to wrap */
-        justify-content: center;
-        margin-top: 10px;
-        gap: 15px; /* Reduce gap */
-    }
-    .hero {
-        text-align: center; /* Center text on small screens */
-        justify-content: center;
-        padding-top: 150px; /* More space for stacked header */
-    }
     .hero h1 {
-        font-size: 2.8em;
-        max-width: 90%; /* Adjust max-width */
-        margin-left: auto;
-        margin-right: auto;
+        font-size: 2.5em;
     }
-    .hero p {
-        font-size: 1em;
-        max-width: 90%;
-        margin-left: auto;
-        margin-right: auto;
-    }
-    .feature-grid, .testimonials-grid {
-        grid-template-columns: 1fr; /* Stack columns */
-    }
-    .carousel-slide img {
-        height: 300px;
-    }
-    .carousel-nav-button {
-        padding: 10px;
-        font-size: 1.5em;
-    }
-    .cta-alt h2 {
-        font-size: 2em;
-    }
-    .cta-alt p {
-        font-size: 1em;
-    }
-}
 
-@media (max-width: 480px) {
-    .hero h1 {
-        font-size: 2em;
-    }
     .hero p {
-        font-size: 0.9em;
-    }
-    .hero .cta-button, .cta-alt .cta-button {
-        padding: 12px 25px;
         font-size: 1em;
-    }
-    .features h2, .image-carousel-section h2, .testimonials-section h2, .cta-alt h2 {
-        font-size: 1.8em;
-    }
-    .feature-item i {
-        font-size: 2.8em;
-    }
-    .feature-item h3 {
-        font-size: 1.5em;
-    }
-    .carousel-slide img {
-        height: 250px;
-    }
-    .testimonial-card img {
-        width: 60px;
-        height: 60px;
-    }
-    .testimonial-card p {
-        font-size: 0.9em;
     }
 }

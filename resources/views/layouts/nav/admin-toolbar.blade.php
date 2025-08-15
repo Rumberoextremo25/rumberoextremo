@@ -1,17 +1,22 @@
 {{-- resources/views/layouts/partials/admin-toolbar.blade.php --}}
 
-<header class="topbar">
-    <h1>@yield('page_title_toolbar', 'Panel Administrativo')</h1>
-    <div class="right-section"> {{-- Nuevo contenedor para flexibilidad --}}
-        <div class="search-box">
-            <i class="fas fa-search"></i>
-            <input type="text" placeholder="Buscar..." id="globalSearchInput">
+<!-- El `header` principal con el nuevo diseño -->
+<header class="admin-toolbar">
+    <link rel="stylesheet" href="{{ asset('css/toolbar.css') }}">
+    <div class="left-section">
+        <h1 class="page-title-toolbar">@yield('page_title', 'Panel Administrativo')</h1>
+    </div>
+    <div class="right-section">
+        <!-- El cuadro de búsqueda con un diseño moderno -->
+        <div class="search-box-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" placeholder="Buscar..." id="globalSearchInput" class="search-input">
         </div>
-        {{-- Enlace clickeable para el perfil --}}
+        
+        <!-- Enlace de perfil con la imagen y el nombre del usuario -->
         <a href="{{ route('profile') }}" class="profile-link">
             <span class="user-name">Hola, {{ Auth::user()->name ?? 'Administrador' }}</span>
-            {{-- Asegúrate de que Auth::user()->profile_photo_path exista y sea una URL válida --}}
-            {{-- Si no tienes una foto de perfil, puedes usar un avatar predeterminado o las iniciales --}}
+            <!-- Usa la ruta de la foto de perfil o un avatar predeterminado -->
             <img src="{{ Auth::user()->profile_photo_path ?? asset('assets/img/default-avatar.png') }}" alt="Avatar de Usuario" class="avatar">
         </a>
     </div>

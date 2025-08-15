@@ -4,6 +4,7 @@
 
 @section('content')
 <div class="login-container">
+    <link rel="stylesheet" href="{{ asset('css/login.css') }}">
     <div class="login-card">
         <div class="login-header">
             {{-- Logo de Rumbero Extremo (opcional) --}}

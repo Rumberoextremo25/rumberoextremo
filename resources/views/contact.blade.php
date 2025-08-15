@@ -17,8 +17,9 @@
     <section class="content-section">
         <div class="container">
             <h1>Contáctanos</h1>
-            <p>¿Tienes preguntas, sugerencias o simplemente quieres saludar? ¡Estamos aquí para escucharte!</p>
 
+            <br></br>
+            <br></br>
             <div class="contact-form">
                 <form action="{{ route('contact.store') }}" method="POST">
                     @csrf

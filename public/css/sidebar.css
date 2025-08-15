@@ -1,266 +1,198 @@
-/* Importa fuentes: Poppins para texto general, Montserrat para títulos */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800;900&display=swap');
+/* * ESTILOS CSS PARA EL SIDEBAR MODERNO Y ADAPTABLE
+ * Este código hace que el sidebar se oculte en móviles y se deslice
+ * con un botón de menú, manteniendo todas las opciones visibles.
+ */
 
-/* --- Reseteo Básico (Asegúrate de que no haya conflictos con el reset global) --- */
-.sidebar, .sidebar * {
-    box-sizing: border-box;
+/* =========================================================================
+   Variables y configuración global
+   ========================================================================= */
+
+:root {
+    --sidebar-width: 220px; /* Ancho ajustado a 220px */
+    --sidebar-bg-color: #382463; /* Un morado oscuro similar al de la imagen */
+    --sidebar-text-color: #e0e0e0;
+    --sidebar-active-bg: #8c52ff; /* El color de la "píldora" activa */
+    --sidebar-active-text: #ffffff;
+    --sidebar-hover-bg: rgba(255, 255, 255, 0.08); /* Un gris translúcido para el hover */
+    --sidebar-border-radius: 1.5rem; /* Bordes redondeados para el sidebar */
+    --sidebar-link-radius: 0.75rem; /* Bordes redondeados para los enlaces activos */
+    --sidebar-heading-color: #a9a2b5; /* Gris suave para los títulos de sección */
+    --sidebar-link-padding: 1.25rem 1.5rem; /* Padding ajustado para el nuevo ancho */
 }
 
-/* --- Sidebar Contenedor Principal --- */
-.sidebar {
+/* =========================================================================
+   Contenedor principal del sidebar
+   ========================================================================= */
+
+.admin-sidebar {
+    width: var(--sidebar-width);
+    height: 100vh; /* Ocupa toda la altura de la ventana */
+    background-color: var(--sidebar-bg-color);
+    color: var(--sidebar-text-color);
     position: fixed;
     top: 0;
     left: 0;
-    height: 100vh;
-    width: 180px; /* REDUCIDO: Ancho fijo para el sidebar */
-    background: linear-gradient(180deg, #1A0D2F 0%, #0D051A 100%);
-    color: #E0E0E0;
-    padding: 10px 0; /* REDUCIDO: Padding vertical */
-    box-shadow: 3px 0 15px rgba(0, 0, 0, 0.6);
-    font-family: 'Poppins', sans-serif;
+    padding: 2rem 0; /* Padding vertical para el contenido */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
     display: flex;
-    flex-direction: column;
+    flex-direction: column; /* Organiza los elementos en columna */
+    justify-content: flex-start; /* Se alinea desde la parte superior */
+    border-radius: 0 var(--sidebar-border-radius) var(--sidebar-border-radius) 0; /* Bordes redondeados a la derecha */
+    transition: transform 0.3s ease-in-out;
     z-index: 1000;
 }
 
-/* --- Contenedor del Logo --- */
-.sidebar .logo-container {
-    text-align: center;
-    margin-bottom: 20px; /* REDUCIDO: Espacio debajo del logo */
-    padding-bottom: 10px; /* REDUCIDO: Padding interior para el separador */
+/* =========================================================================
+   Sección del encabezado y logo
+   ========================================================================= */
+
+.sidebar-header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 1.5rem 2rem; /* padding-bottom ajustado */
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 2rem;
 }
 
-.sidebar .logo-container img {
-    max-width: 100px; /* REDUCIDO: Tamaño del logo */
+.sidebar-header .logo-img {
+    max-width: 150px; /* Tamaño del logo */
     height: auto;
-    filter: drop-shadow(0 0 8px rgba(0, 255, 255, 0.6));
-    transition: transform 0.3s ease;
 }
 
-.sidebar .logo-container img:hover {
-    transform: scale(1.05);
-}
+/* =========================================================================
+   Sección del perfil de usuario
+   ========================================================================= */
 
-/* --- Lista de Enlaces --- */
-.sidebar ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    flex-grow: 1;
-}
-
-.sidebar ul li {
-    margin-bottom: 6px; /* REDUCIDO: Espacio entre cada elemento del menú */
-}
-
-.sidebar ul li:last-child {
-    margin-bottom: 0;
-}
-
-.sidebar ul li a {
+.sidebar-profile {
     display: flex;
     align-items: center;
-    padding: 8px 12px; /* REDUCIDO: Padding interno de cada enlace */
-    margin: 0 8px; /* REDUCIDO: Margen horizontal */
-    border-radius: 6px; /* REDUCIDO: Bordes redondeados */
-    color: #CCCCCC;
-    text-decoration: none;
-    font-size: 0.85rem; /* REDUCIDO: Tamaño de fuente para los enlaces */
-    font-weight: 500;
-    transition: background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease, transform 0.2s ease;
+    gap: 1rem;
+    padding: 0 1.5rem 2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 2rem;
 }
 
-.sidebar ul li a i {
-    margin-right: 10px; /* REDUCIDO: Espacio entre el ícono y el texto */
-    font-size: 1rem; /* REDUCIDO: Tamaño del ícono */
-    width: 18px; /* REDUCIDO: Ancho fijo para alinear iconos */
-    text-align: center;
-    color: #00FFFF;
-    transition: color 0.3s ease;
+.profile-avatar i {
+    font-size: 2.5rem;
+    color: #fff;
 }
 
-/* --- Efectos Hover y Active --- */
-.sidebar ul li a:hover {
-    background-color: rgba(255, 0, 255, 0.15);
-    color: #FFFFFF;
-    box-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
-    transform: translateX(5px);
+.profile-info {
+    display: flex;
+    flex-direction: column;
 }
 
-.sidebar ul li a:hover i {
-    color: #FF00FF;
-}
-
-.sidebar ul li a.active {
-    background-color: rgba(0, 255, 255, 0.2);
-    color: #FFFFFF;
+.profile-name {
     font-weight: 600;
-    box-shadow: 0 0 12px rgba(0, 255, 255, 0.5);
-    border-left: 3px solid #00FFFF;
-    transform: translateX(0);
+    font-size: 1.1rem;
+    color: #fff;
 }
 
-.sidebar ul li a.active i {
-    color: #00FFFF;
+.profile-role {
+    font-size: 0.9rem;
+    color: var(--sidebar-heading-color);
 }
 
-/* --- Encabezados de Sección --- */
-.sidebar-heading {
-    color: #888888;
-    font-size: 0.7rem; /* REDUCIDO: Tamaño de fuente más pequeño */
-    font-family: 'Montserrat', sans-serif;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.07em; /* REDUCIDO: Más espaciado entre letras */
-    margin-top: 20px; /* REDUCIDO: Espacio significativo arriba del encabezado */
-    margin-bottom: 8px; /* REDUCIDO: Espacio abajo del encabezado */
-    padding: 0 12px; /* REDUCIDO: Padding para alinear con los enlaces */
-    text-shadow: 0 0 5px rgba(255, 255, 255, 0.05);
+
+/* =========================================================================
+   Navegación y enlaces
+   ========================================================================= */
+
+.sidebar-nav {
+    flex-grow: 1; /* Permite que la navegación ocupe el espacio restante */
+    overflow-y: auto; /* Permite desplazamiento si hay muchos enlaces */
+    padding: 0 0.5rem; /* Padding horizontal ajustado */
 }
 
-/* --- Divisores de Línea --- */
-.sidebar-divider {
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    margin: 15px 8px; /* REDUCIDO: Margen para centrarla y dar espacio */
+.sidebar-nav ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
 }
 
-/* --- Estilos para el botón de Cerrar Sesión (dentro de un formulario) --- */
-.sidebar ul li form a {
+.sidebar-nav-item {
+    margin-bottom: 0.5rem;
+}
+
+.sidebar-nav-link {
     display: flex;
     align-items: center;
-    justify-content: flex-start;
-    color: #FF6666;
+    padding: var(--sidebar-link-padding);
+    color: var(--sidebar-text-color);
+    text-decoration: none;
+    font-weight: 500;
+    border-radius: var(--sidebar-link-radius);
+    transition: all 0.3s ease;
+    gap: 1rem;
 }
 
-.sidebar ul li form a i {
-    color: #FF6666;
+.sidebar-nav-link:hover {
+    background-color: var(--sidebar-hover-bg);
+    color: #fff;
 }
 
-.sidebar ul li form a:hover {
-    background-color: rgba(255, 0, 0, 0.1);
-    box-shadow: 0 0 8px rgba(255, 0, 0, 0.3);
-    color: #FF0000;
+/* Estilo para el enlace activo (la "píldora") */
+.sidebar-nav-link.active-link {
+    background-color: var(--sidebar-active-bg);
+    color: var(--sidebar-active-text);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
-.sidebar ul li form a:hover i {
-    color: #FF0000;
+.sidebar-nav-link i {
+    min-width: 20px; /* Ancho fijo para los iconos para una mejor alineación */
+    font-size: 1.2rem;
 }
 
+.sidebar-heading {
+    color: var(--sidebar-heading-color);
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    padding: 1rem 1.5rem;
+    margin-top: 1rem;
+}
 
-/* --- Media Queries para Responsividad --- */
+/* =========================================================================
+   Sección inferior del sidebar (Cerrar Sesión)
+   ========================================================================= */
+.sidebar-footer {
+    /* El contenedor principal se encarga de posicionarlo en la parte inferior */
+    padding: 1rem 1rem 0;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    margin-top: 1rem;
+}
 
-/* Ajustes para pantallas medianas (tablets) */
+.sidebar-logout-link {
+    display: flex;
+    align-items: center;
+    padding: var(--sidebar-link-padding);
+    color: #ff6b6b; /* Un color de acento para el logout */
+    text-decoration: none;
+    font-weight: 500;
+    border-radius: var(--sidebar-link-radius);
+    transition: all 0.3s ease;
+    gap: 1rem;
+}
+
+.sidebar-logout-link:hover {
+    background-color: rgba(255, 107, 107, 0.1); /* Fondo sutil para el hover */
+    color: #fff;
+}
+
+/* =========================================================================
+   Adaptación para pantallas más pequeñas
+   ========================================================================= */
+
 @media (max-width: 992px) {
-    .sidebar {
-        width: 160px; /* MÁS REDUCIDO: Ancho del sidebar en tablets */
-        padding: 8px 0;
+    /* Ocultar el sidebar por defecto en tablets y móviles */
+    .admin-sidebar {
+        transform: translateX(-100%);
     }
 
-    .sidebar .logo-container {
-        margin-bottom: 15px;
-        padding-bottom: 8px;
+    /* Mostrar el sidebar cuando se active (se necesitaría un botón de toggle en el header) */
+    .admin-sidebar.open {
+        transform: translateX(0);
     }
-
-    .sidebar .logo-container img {
-        max-width: 90px; /* Logo más pequeño en tablets */
-    }
-
-    .sidebar ul li a {
-        padding: 7px 10px; /* Más compacto */
-        margin: 0 6px; /* Más compacto */
-        font-size: 0.8rem; /* Fuente un poco más pequeña */
-    }
-
-    .sidebar ul li a i {
-        margin-right: 8px; /* Menos espacio para el ícono */
-        font-size: 0.95rem;
-        width: 16px;
-    }
-
-    .sidebar-heading {
-        font-size: 0.65rem; /* Más pequeño */
-        margin-top: 18px;
-        margin-bottom: 6px;
-        padding: 0 10px;
-    }
-
-    .sidebar-divider {
-        margin: 12px 6px;
-    }
-}
-
-/* Ajustes para pantallas pequeñas (móviles) */
-@media (max-width: 768px) {
-    .sidebar {
-        width: 55px; /* Ligeramente más compacto el ancho del sidebar colapsado */
-        padding: 8px 0; /* Menos padding */
-        overflow-x: hidden;
-    }
-
-    .sidebar .logo-container img {
-        max-width: 35px; /* Logo aún más pequeño */
-        margin-bottom: 0;
-        padding-bottom: 0;
-        border-bottom: none;
-    }
-    .sidebar .logo-container {
-        margin-bottom: 10px;
-        padding-bottom: 8px;
-    }
-
-    .sidebar ul li a {
-        padding: 8px 0; /* Centra el ícono */
-        margin: 0;
-        justify-content: center;
-    }
-
-    .sidebar ul li a i {
-        margin-right: 0;
-        font-size: 1.2rem; /* Iconos un poco más grandes para mejor visibilidad táctil */
-        width: auto;
-    }
-
-    .sidebar ul li a span {
-        display: none; /* Oculta el texto */
-    }
-    
-    /* --- SOLUCIÓN PARA EL BOTÓN DE CERRAR SESIÓN EN MÓVIL (Ajustada) --- */
-    .sidebar ul li form a {
-        justify-content: center;
-        padding: 8px 0; /* Ajustado */
-    }
-
-    .sidebar ul li form a i {
-        display: block;
-        margin: 0;
-    }
-
-    .sidebar ul li form a span {
-        display: none;
-    }
-    /* --- FIN SOLUCIÓN --- */
-
-    .sidebar-heading, .sidebar-divider {
-        display: none; /* Oculta encabezados y divisores */
-    }
-
-    /* Opcional: Expandir al pasar el mouse (para dispositivos con mouse) */
-    /* .sidebar:hover {
-        width: 180px;
-    }
-    .sidebar:hover ul li a {
-        justify-content: flex-start;
-        padding: 8px 12px;
-        margin: 0 8px;
-    }
-    .sidebar:hover ul li a span {
-        display: inline-block;
-    }
-    .sidebar:hover ul li a i {
-        margin-right: 10px;
-    }
-    .sidebar:hover .sidebar-heading, .sidebar:hover .sidebar-divider {
-        display: block;
-    } */
 }

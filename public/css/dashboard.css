@@ -1,0 +1,392 @@
+/*
+ * ESTILOS CSS PARA EL CONTENIDO DEL DASHBOARD - VERSIÓN MODERNA Y ELEGANTE
+ * Este archivo complementa el estilo del sidebar.
+ * Se recomienda crear un un archivo 'dashboard.css' para estos estilos.
+ */
+
+/* =========================================================================
+    Variables y configuración global
+    ========================================================================= */
+
+:root {
+    --sidebar-width: 250px; /* Un poco más ancho para un toque moderno */
+    --dashboard-bg-color: #f8faff; /* Fondo muy claro, casi blanco */
+    --card-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); /* Sombra más pronunciada y suave */
+    --card-hover-shadow: 0 15px 45px rgba(0, 0, 0, 0.15); /* Sombra al pasar el ratón */
+    --card-border-radius: 1.25rem; /* Bordes más redondeados */
+    --primary-gradient: linear-gradient(135deg, #6b40e3, #a06dfb); /* Púrpura más vibrante */
+    --info-gradient: linear-gradient(135deg, #20b2aa, #4ee3c2); /* Verde azulado suave */
+    --success-gradient: linear-gradient(135deg, #007bff, #50a4ff); /* Azul clásico */
+    --danger-gradient: linear-gradient(135deg, #e3342f, #ff6b6b); /* Rojo vibrante */
+    --warning-gradient: linear-gradient(135deg, #f6993f, #ffbf7f); /* Naranja cálido */
+
+    --text-color-dark: #2c3e50; /* Texto principal oscuro */
+    --text-color-medium: #7f8c8d; /* Texto secundario */
+    --text-color-light: #ecf0f1; /* Texto para fondos oscuros */
+
+    --border-light: #e6e9ed; /* Borde ligero */
+}
+
+/* =========================================================================
+    Configuración de fuentes (Opcional, si no ya en global)
+    ========================================================================= */
+body {
+    font-family: 'Inter', sans-serif; /* Google Font: Inter es moderna y legible */
+    background-color: var(--dashboard-bg-color);
+    color: var(--text-color-dark);
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    -webkit-font-smoothing: antialiased; /* Suavizado de fuente */
+    -moz-osx-font-smoothing: grayscale; /* Suavizado de fuente */
+}
+
+/* =========================================================================
+    Contenedor principal del dashboard
+    ========================================================================= */
+
+.main-content {
+    margin-left: var(--sidebar-width); /* Mueve el contenido para dejar espacio al sidebar */
+    padding: 2.5rem 2rem; /* Más padding para aire */
+    transition: margin-left 0.3s ease-in-out, padding 0.3s ease-in-out;
+}
+
+/* =========================================================================
+    Sección de Bienvenida
+    ========================================================================= */
+
+.welcome-section {
+    margin-bottom: 3rem; /* Más espacio */
+}
+
+.welcome-title {
+    font-size: 2.8rem; /* Tamaño más grande */
+    font-weight: 800; /* Más audaz */
+    color: var(--text-color-dark);
+    margin: 0 0 0.75rem;
+    position: relative;
+    display: inline-block; /* Para que el pseudo-elemento no ocupe todo el ancho */
+}
+
+.welcome-title::after { /* Pequeña línea decorativa debajo del título */
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -10px;
+    width: 60px;
+    height: 4px;
+    background: var(--primary-gradient);
+    border-radius: 2px;
+}
+
+.welcome-message {
+    font-size: 1.1rem;
+    color: var(--text-color-medium);
+    max-width: 700px; /* Limitar ancho para legibilidad */
+}
+
+.page-title {
+    font-size: 2rem; /* Más prominente */
+    font-weight: 700;
+    color: var(--text-color-dark);
+    margin-bottom: 2.5rem; /* Más espacio */
+    border-bottom: none; /* Eliminar borde inferior */
+    padding-bottom: 0;
+    position: relative;
+}
+
+.page-title::before { /* Nuevo decorador para page-title */
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -10px;
+    width: 40px;
+    height: 3px;
+    background-color: #a06dfb; /* Un tono del púrpura principal */
+    border-radius: 1.5px;
+}
+
+/* =========================================================================
+    Sección de Tarjetas de Resumen
+    ========================================================================= */
+
+.dashboard-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Tarjetas un poco más grandes */
+    gap: 2.5rem; /* Más espacio entre tarjetas */
+    margin-bottom: 3rem;
+}
+
+.dashboard-card {
+    display: flex;
+    flex-direction: column; /* Icono arriba, texto abajo */
+    align-items: flex-start; /* Alinear contenido a la izquierda */
+    padding: 2rem; /* Más padding interno */
+    border-radius: var(--card-border-radius);
+    color: var(--text-color-light); /* Texto claro para fondos degradados */
+    box-shadow: var(--card-shadow);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden; /* Para el pseudo-elemento de fondo */
+    position: relative;
+    z-index: 1; /* Asegurar que el contenido esté sobre el fondo */
+}
+
+.dashboard-card::before { /* Capa de superposición semitransparente para mejor contraste de texto */
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.15); /* Una capa oscura sutil */
+    z-index: -1;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-8px); /* Elevación más pronunciada */
+    box-shadow: var(--card-hover-shadow);
+}
+
+.dashboard-card .icon-wrapper {
+    font-size: 3rem; /* Icono más grande */
+    padding: 1rem;
+    border-radius: 1rem; /* Bordes redondeados del icono */
+    background: rgba(255, 255, 255, 0.25); /* Fondo más transparente para el icono */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 1.5rem; /* Espacio debajo del icono */
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Sombra sutil en el icono */
+}
+
+.dashboard-card .details {
+    text-align: left; /* Alinear texto a la izquierda */
+    width: 100%; /* Asegurar que ocupe el ancho completo */
+}
+
+.dashboard-card .value {
+    font-size: 3.2rem; /* Valor más grande y audaz */
+    font-weight: 900; /* Extra bold */
+    line-height: 1;
+    margin-bottom: 0.5rem;
+}
+
+.dashboard-card .label {
+    font-size: 1rem; /* Texto más legible */
+    font-weight: 600; /* Más audaz */
+    opacity: 0.9;
+}
+
+/* Colores de las tarjetas */
+.primary-card { background: var(--primary-gradient); }
+.info-card { background: var(--info-gradient); }
+.success-card { background: var(--success-gradient); }
+/* Añadir otros colores si son necesarios */
+.danger-card { background: var(--danger-gradient); }
+.warning-card { background: var(--warning-gradient); }
+
+
+/* =========================================================================
+    Sección de Actividades Recientes (Tabla Mejorada)
+    ========================================================================= */
+
+.latest-activity-section {
+    background-color: #fff;
+    padding: 2.5rem; /* Más padding */
+    border-radius: var(--card-border-radius);
+    box-shadow: var(--card-shadow);
+    overflow: hidden; /* Para contener la tabla */
+}
+
+.latest-activity-section .section-title {
+    font-size: 1.8rem; /* Título de sección más grande */
+    font-weight: 700;
+    color: var(--text-color-dark);
+    margin-bottom: 2rem; /* Más espacio */
+    position: relative;
+    padding-bottom: 0.75rem;
+}
+
+.latest-activity-section .section-title::after { /* Línea decorativa */
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 50px;
+    height: 3px;
+    background-color: var(--primary-color); /* Usar el color principal */
+    border-radius: 1.5px;
+}
+
+.activity-table-container {
+    overflow-x: auto; /* Permite desplazamiento horizontal en móviles */
+    -webkit-overflow-scrolling: touch; /* Desplazamiento suave en iOS */
+}
+
+.latest-activity-section table {
+    width: 100%;
+    border-collapse: separate; /* Para border-radius en celdas */
+    border-spacing: 0; /* Eliminar espacio entre celdas */
+    min-width: 700px; /* Asegura un ancho mínimo para tablas grandes */
+}
+
+.latest-activity-section th,
+.latest-activity-section td {
+    padding: 1.25rem 1.5rem; /* Más padding en celdas */
+    text-align: left;
+    white-space: nowrap; /* Previene el salto de línea en celdas */
+}
+
+.latest-activity-section thead {
+    background-color: #eef2f7; /* Fondo más suave para el encabezado */
+    color: var(--text-color-medium);
+    text-transform: uppercase;
+    font-size: 0.9rem; /* Un poco más grande */
+    font-weight: 700; /* Más audaz */
+    letter-spacing: 0.05em; /* Espaciado de letras */
+}
+
+.latest-activity-section th:first-child { border-top-left-radius: 0.75rem; } /* Bordes redondeados */
+.latest-activity-section th:last-child { border-top-right-radius: 0.75rem; }
+
+.latest-activity-section tbody tr {
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.latest-activity-section tbody tr:nth-child(even) {
+    background-color: #fcfdfe; /* Alternar color de fila más sutil */
+}
+
+.latest-activity-section tbody tr:hover {
+    background-color: #eef2f7; /* Fondo al pasar el ratón más destacado */
+    transform: translateY(-2px); /* Pequeña elevación */
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05); /* Sombra al pasar el ratón */
+    position: relative; /* Para la sombra */
+    z-index: 1; /* Para que la sombra se vea sobre otras filas */
+}
+
+
+.latest-activity-section tbody tr td {
+    border-bottom: 1px solid var(--border-light); /* Borde más fino y claro */
+    color: var(--text-color-dark);
+    font-size: 0.95rem;
+}
+
+.latest-activity-section tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.status-badge {
+    padding: 0.4rem 1rem; /* Más padding */
+    border-radius: 1.5rem; /* Más redondeado */
+    font-size: 0.8rem; /* Un poco más grande */
+    font-weight: 700; /* Más audaz */
+    color: #fff;
+    display: inline-block;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1); /* Sombra sutil en el badge */
+}
+
+.status-badge.pending {
+    background: var(--warning-gradient);
+}
+.status-badge.success {
+    background: var(--info-gradient); /* Usar info-gradient para éxito para un look más moderno */
+}
+.status-badge.failed {
+    background: var(--danger-gradient);
+}
+
+/* =========================================================================
+    Adaptación para pantallas más pequeñas (Mantener y mejorar)
+    ========================================================================= */
+
+@media (max-width: 992px) {
+    .main-content {
+        margin-left: 0;
+        padding: 1.5rem; /* Reducir padding en móvil */
+    }
+}
+
+@media (max-width: 768px) {
+    .dashboard-cards {
+        grid-template-columns: 1fr;
+        gap: 1.5rem; /* Reducir espacio en móvil */
+    }
+
+    .welcome-title {
+        font-size: 2.2rem;
+    }
+
+    .welcome-message {
+        font-size: 1rem;
+    }
+
+    .page-title {
+        font-size: 1.7rem;
+    }
+
+    .dashboard-card {
+        padding: 1.5rem;
+    }
+
+    .dashboard-card .value {
+        font-size: 2.8rem;
+    }
+
+    .dashboard-card .icon-wrapper {
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+
+    /* Tabla responsiva para móviles */
+    .latest-activity-section table,
+    .latest-activity-section thead,
+    .latest-activity-section tbody,
+    .latest-activity-section th,
+    .latest-activity-section td,
+    .latest-activity-section tr {
+        display: block;
+    }
+
+    .latest-activity-section thead tr {
+        position: absolute;
+        top: -9999px;
+        left: -9999px;
+    }
+
+    .latest-activity-section tr {
+        margin-bottom: 1rem;
+        border: 1px solid var(--border-light);
+        border-radius: var(--card-border-radius);
+        box-shadow: var(--card-shadow); /* Añadir sombra a las filas en móvil */
+        overflow: hidden; /* Para el border radius */
+    }
+
+    .latest-activity-section td {
+        border: none;
+        position: relative;
+        padding-left: 55%; /* Más espacio para la etiqueta */
+        text-align: right;
+        padding-top: 0.75rem; /* Reducir padding vertical */
+        padding-bottom: 0.75rem;
+    }
+
+    .latest-activity-section td::before {
+        content: attr(data-label);
+        position: absolute;
+        left: 1rem;
+        width: 45%;
+        padding-right: 10px;
+        white-space: normal; /* Permitir que la etiqueta se envuelva */
+        text-align: left;
+        font-weight: 700; /* Más audaz */
+        color: var(--text-color-medium);
+        top: 0.75rem; /* Alinear con el contenido de la celda */
+    }
+
+    .latest-activity-section td:last-child {
+        border-bottom: none;
+    }
+}

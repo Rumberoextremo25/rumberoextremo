@@ -1,37 +1,53 @@
 {{-- resources/views/layouts/partials/admin-sidebar.blade.php --}}
 
-<aside class="sidebar">
-    <div class="sidebar-header"> {{-- Cambiado de 'logo-container' a 'sidebar-header' --}}
-        {{-- Asegúrate de que esta ruta a la imagen sea correcta --}}
-        <a href="{{ url('/') }}">
-            <img src="{{ asset('assets/img/IMG_4254.png') }}" alt="Logo Rumbero Extremo">
+<!-- El `aside` principal con el nuevo diseño -->
+<aside class="admin-sidebar">
+    <link rel="stylesheet" href="{{ asset('css/sidebar.css') }}">
+    <div class="sidebar-header">
+        <a href="{{ url('/') }}" class="logo-link">
+            <!-- Asegúrate de que esta ruta a la imagen sea correcta -->
+            <img src="{{ asset('assets/img/IMG_4253.png') }}" alt="Logo Rumbero Extremo" class="logo-img">
         </a>
     </div>
-    <nav class="sidebar-nav"> {{-- Envuelto en <nav> con clase 'sidebar-nav' --}}
+
+    <!-- Contenedor del perfil del usuario, para un diseño más completo -->
+    @if(Auth::check())
+    <div class="sidebar-profile">
+        <div class="profile-avatar">
+            <!-- Usa una imagen de perfil o un icono de usuario -->
+            <i class="fas fa-user-circle"></i>
+        </div>
+        <div class="profile-info">
+            <span class="profile-name">{{ Auth::user()->name }}</span>
+            <span class="profile-role">{{ Str::ucfirst(Auth::user()->role) }}</span>
+        </div>
+    </div>
+    @endif
+
+    <!-- Navegación principal -->
+    <nav class="sidebar-nav">
         <ul>
-            @if(Auth::check()) {{-- Asegúrate de que haya un usuario logueado --}}
-                {{-- Dashboard (visible para admin y aliado, o para todos si es un dashboard general) --}}
+            @if(Auth::check())
+                {{-- Dashboard (visible para admin y aliado) --}}
                 @if(Auth::user()->role === 'admin' || Auth::user()->role === 'aliado')
-                    <li>
-                        {{-- Usa request()->routeIs() para una activación precisa de la ruta --}}
-                        <a href="{{ route('dashboard') }}" class="{{ request()->routeIs('dashboard') ? 'active' : '' }}">
+                    <li class="sidebar-nav-item">
+                        <a href="{{ route('dashboard') }}" class="sidebar-nav-link {{ request()->routeIs('dashboard') ? 'active-link' : '' }}">
                             <i class="fas fa-tachometer-alt"></i> <span>Dashboard</span>
                         </a>
                     </li>
                 @endif
 
                 {{-- Perfil (visible para todos los roles) --}}
-                <li>
-                    <a href="{{ route('profile') }}" class="{{ request()->routeIs('profile') ? 'active' : '' }}">
+                <li class="sidebar-nav-item">
+                    <a href="{{ route('profile') }}" class="sidebar-nav-link {{ request()->routeIs('profile') ? 'active-link' : '' }}">
                         <i class="fas fa-user-circle"></i> <span>Perfil</span>
                     </a>
                 </li>
 
                 {{-- Usuarios (solo para Admin) --}}
                 @if(Auth::user()->role === 'admin')
-                    <li>
-                        {{-- Ajusta la ruta si es diferente, e.g., 'users' si no es un recurso --}}
-                        <a href="{{ route('users') }}" class="{{ request()->routeIs('users.index') || request()->routeIs('users.create') || request()->routeIs('users.edit') || request()->routeIs('users.show') ? 'active' : '' }}">
+                    <li class="sidebar-nav-item">
+                        <a href="{{ route('users') }}" class="sidebar-nav-link {{ request()->routeIs('users.*') ? 'active-link' : '' }}">
                             <i class="fas fa-users"></i> <span>Usuarios</span>
                         </a>
                     </li>
@@ -39,77 +55,71 @@
 
                 {{-- Aliados (solo para Admin) --}}
                 @if(Auth::user()->role === 'admin')
-                    <li>
-                        <a href="{{ route('aliados.index') }}" class="{{ request()->routeIs('allies.*') ? 'active' : '' }}">
+                    <li class="sidebar-nav-item">
+                        <a href="{{ route('aliados.index') }}" class="sidebar-nav-link {{ request()->routeIs('allies.*') ? 'active-link' : '' }}">
                             <i class="fas fa-handshake"></i> <span>Aliados</span>
                         </a>
                     </li>
                 @endif
-
+                
                 {{-- Vistas de Gestión (solo para Admin) --}}
                 @if(Auth::user()->role === 'admin')
-                    <div class="sidebar-divider"></div> {{-- Divisor para secciones --}}
+                    <li class="sidebar-nav-item">
+                        <a href="#" class="sidebar-nav-link {{ request()->routeIs('products.*') ? 'active-link' : '' }}">
+                            <i class="fas fa-box-open"></i> <span>Productos</span>
+                        </a>
+                    </li>
                     <li class="sidebar-heading">Gestión de Contenido</li>
-                    <li>
-                        {{-- Usando data-route-pattern para la lógica JS, o puedes usar request()->routeIs('admin.banners.*') directamente aquí --}}
-                        <a href="{{ route('admin.banners.index') }}" class="{{ request()->routeIs('admin.banners.*') ? 'active' : '' }}">
+                    <li class="sidebar-nav-item">
+                        <a href="{{ route('admin.banners.index') }}" class="sidebar-nav-link {{ request()->routeIs('admin.banners.*') ? 'active-link' : '' }}">
                             <i class="fas fa-images"></i> <span>Banners</span>
                         </a>
                     </li>
-                    <li>
-                        <a href="{{ route('admin.commercial-allies.index') }}" class="{{ request()->routeIs('admin.commercial-allies.*') ? 'active' : '' }}">
+                    <li class="sidebar-nav-item">
+                        <a href="{{ route('admin.commercial-allies.index') }}" class="sidebar-nav-link {{ request()->routeIs('admin.commercial-allies.*') ? 'active-link' : '' }}">
                             <i class="fas fa-store"></i> <span>Aliados Comerciales</span>
                         </a>
                     </li>
-                    <li>
-                        <a href="{{ route('admin.promotions.index') }}" class="{{ request()->routeIs('admin.promotions.*') ? 'active' : '' }}">
+                    <li class="sidebar-nav-item">
+                        <a href="{{ route('admin.promotions.index') }}" class="sidebar-nav-link {{ request()->routeIs('admin.promotions.*') ? 'active-link' : '' }}">
                             <i class="fas fa-tags"></i> <span>Promociones</span>
                         </a>
                     </li>
-                    <div class="sidebar-divider"></div> {{-- Otro divisor --}}
                 @endif
 
                 {{-- Reportes (para Admin y Aliado) --}}
                 @if(Auth::user()->role === 'admin' || Auth::user()->role === 'aliado')
-                    <li>
-                        {{-- Ajusta la ruta si es diferente --}}
-                        <a href="{{ route('reports.sales') }}" class="{{ request()->routeIs('reports.*') ? 'active' : '' }}">
+                    <li class="sidebar-nav-item">
+                        <a href="{{ route('reports.sales') }}" class="sidebar-nav-link {{ request()->routeIs('reports.*') ? 'active-link' : '' }}">
                             <i class="fas fa-file-invoice-dollar"></i> <span>Reportes</span>
                         </a>
                     </li>
-                @endif
-
-                {{-- Reportes (para Admin y Aliado) --}}
-                @if(Auth::user()->role === 'admin' || Auth::user()->role === 'aliado')
-                    <li>
-                        {{-- Ajusta la ruta si es diferente --}}
-                        <a href="{{ route('Admin.payouts.pending') }}" class="{{ request()->routeIs('reports.*') ? 'active' : '' }}">
-                            <i class="fas fa-file-invoice-dollar"></i> <span>Pago A Aliados</span>
+                    <li class="sidebar-nav-item">
+                        <a href="{{ route('Admin.payouts.pending') }}" class="sidebar-nav-link {{ request()->routeIs('Admin.payouts.*') ? 'active-link' : '' }}">
+                            <i class="fas fa-money-bill-wave"></i> <span>Pago a Aliados</span>
                         </a>
                     </li>
                 @endif
 
                 {{-- Configuración (solo para Admin) --}}
                 @if(Auth::user()->role === 'admin')
-                    <li>
-                        {{-- Ajusta la ruta si es diferente --}}
-                        <a href="{{ route('admin.settings') }}" class="{{ request()->routeIs('settings.*') ? 'active' : '' }}">
+                    <li class="sidebar-nav-item">
+                        <a href="{{ route('admin.settings') }}" class="sidebar-nav-link {{ request()->routeIs('settings.*') ? 'active-link' : '' }}">
                             <i class="fas fa-cog"></i> <span>Configuración</span>
                         </a>
                     </li>
                 @endif
-
-                {{-- Cerrar Sesión (visible para todos los roles logueados) --}}
-                <li>
-                    <form method="POST" action="{{ route('logout') }}" style="margin: 0; padding: 0;">
-                        @csrf
-                        {{-- Usa preventDefault para evitar la navegación directa y permitir el envío del formulario --}}
-                        <a href="{{ route('logout') }}" onclick="event.preventDefault(); this.closest('form').submit();">
-                            <i class="fas fa-sign-out-alt"></i> <span>Cerrar Sesión</span>
-                        </a>
-                    </form>
-                </li>
-            @endif {{-- Fin de Auth::check() --}}
+            @endif
         </ul>
     </nav>
+
+    <!-- Enlace de cerrar sesión separado en la parte inferior -->
+    <div class="sidebar-footer">
+        <form method="POST" action="{{ route('logout') }}">
+            @csrf
+            <a href="{{ route('logout') }}" onclick="event.preventDefault(); this.closest('form').submit();" class="sidebar-logout-link">
+                <i class="fas fa-sign-out-alt"></i> <span>Cerrar Sesión</span>
+            </a>
+        </form>
+    </div>
 </aside>

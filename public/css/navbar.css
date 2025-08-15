@@ -1,249 +1,148 @@
-/* Importa fuentes: Poppins para texto general, Montserrat para títulos/logo */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&family=Montserrat:wght@700;800;900&display=swap');
-
-/* --- Variables de Color (Reutilizadas del footer, si las tienes en un archivo global, mejor) --- */
-:root {
-    --dark-bg: #1A0D2F; /* Fondo oscuro principal */
-    --darker-bg: #0D051A; /* Fondo aún más oscuro */
-    --text-light: #E0E0E0; /* Texto claro */
-    --text-muted: #AAAAAA; /* Texto gris suave */
-    --neon-magenta: #FF00FF; /* Color neón vibrante 1 */
-    --neon-cyan: #00FFFF; /* Color neón vibrante 2 */
-    --primary-color: var(--neon-magenta); /* Color primario para botones/acentos */
+body {
+    margin-top: -20px; /* ✅ CORRECTO: Ajusta este valor según la altura de tu navbar (en este caso, 80px) */
+    font-family: Arial, sans-serif;
+    background-color: #f0f2f5;
+    min-height: 120vh; /* ⬅️ Añade esta línea para hacer el body más largo hacia abajo */
 }
 
-/* --- Reseteo Básico (Asegúrate de que no haya conflictos con resets globales) --- */
-.main-header, .main-header *, .main-header *::before, .main-header *::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-/* --- Estilos del Header Principal --- */
 .main-header {
-    background: linear-gradient(90deg, var(--dark-bg) 0%, var(--darker-bg) 100%); /* Degradado oscuro */
-    color: var(--text-light);
-    padding: 15px 0; /* Padding superior e inferior */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); /* Sombra sutil para profundidad */
-    position: sticky; /* Se mantiene en la parte superior al hacer scroll */
-    top: 0;
-    left: 0;
-    width: 100%;
-    z-index: 1000; /* Asegura que esté por encima de otros elementos */
-    font-family: 'Poppins', sans-serif;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05); /* Línea sutil en la parte inferior */
+    position: fixed; /* ✅ CORRECTO: Fija la barra de navegación */
+    top: 0;           /* ✅ CORRECTO: La coloca en la parte superior */
+    left: 0;          /* ✅ CORRECTO: La alinea a la izquierda */
+    width: 100%;      /* ✅ CORRECTO: Ocupa todo el ancho */
+    background: linear-gradient(to right, rgba(192, 96, 240, 0.3), rgba(128, 0, 128, 0.3)); /* Fuchsia-purple gradient with 30% transparency */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;    /* ✅ CORRECTO: La coloca por encima de otros elementos */
+    height: 80px; /* Fixed height for the navbar */
+    overflow: hidden; /* Important for content not to spill out */
+    border-bottom-right-radius: 40px; /* Increased rounding for bottom-right corner */
+    border-bottom-left-radius: 40px; /* Added/Increased rounding for bottom-left corner */
 }
 
 .header-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 20px; /* Padding lateral */
     display: flex;
-    justify-content: space-between; /* Espacio entre logo y navegación */
-    align-items: center; /* Centrado vertical */
+    justify-content: space-between;
+    align-items: center;
+    width: 90%;
+    max-width: 1200px;
+    height: 100%;
+    position: relative;
+    z-index: 2; /* Ensures content is above color layers */
 }
 
-/* --- Logo --- */
+/* White layer with the diagonal shape on the left side */
+.main-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 25%; /* Further reduced for an even smaller white area */
+    background-color: #ffffff; /* White color for this section */
+    /* Clip-path to create the diagonal division */
+    /* Points define the shape: top-left, top-right, bottom-right (on the diagonal), bottom-left */
+    clip-path: polygon(0 0, 85% 0, 100% 100%, 0 100%); /* Adjust 85% for the angle */
+    z-index: 1; /* Will be behind the content but above the main header's background */
+}
+
+/* We don't need ::after anymore since the main-header itself handles the right side's gradient and rounded corner */
+.main-header::after {
+    content: none; /* Remove the ::after pseudo-element */
+}
+
 .header-logo {
-    display: flex; /* Para alinear verticalmente la imagen si el logo es un icono + texto */
-    align-items: center;
-    text-decoration: none; /* Quitar subrayado del enlace */
+    display: flex;
+    justify-content: flex-start; /* Aligns content to the start (left) of the container */
+    align-items: center; /* Centers vertically (already there) */
+    height: 100%;
+    position: absolute; /* Changed to absolute to position it relative to main-header */
+    left: 10px; /* Moved further left from 20px to 10px */
+    width: 25%; /* This should match the width of ::before for proper positioning */
+    z-index: 3; /* Ensures the logo is above both color layers */
+    padding-left: 0; /* Removed internal padding as 'left' now controls overall positioning */
 }
 
 .header-logo img {
-    max-height: 55px; /* Altura máxima del logo */
-    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.15)); /* Sombra para resaltar el logo */
-    transition: transform 0.3s ease;
+    height: 60px;
+    width: auto;
+    object-fit: contain;
 }
 
-.header-logo img:hover {
-    transform: scale(1.05); /* Pequeño zoom al pasar el mouse */
+.main-nav {
+    flex-grow: 1;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    height: 100%;
+    position: relative;
+    z-index: 3; /* Ensures links are above color layers */
+    padding-right: 30px; /* Space for the right edge */
 }
 
-/* --- Navegación Principal --- */
 .main-nav .nav-links {
     list-style: none;
+    margin: 0;
+    padding: 0;
     display: flex;
     align-items: center;
-    gap: 30px; /* Espacio entre los elementos de navegación */
+    height: 100%;
 }
 
 .main-nav .nav-links li {
-    position: relative;
+    margin-left: 25px;
+    height: 100%;
+    display: flex;
+    align-items: center;
 }
 
 .main-nav .nav-links .nav-item {
-    color: var(--text-light);
     text-decoration: none;
-    font-weight: 500;
-    font-size: 1rem;
-    padding: 8px 0; /* Padding vertical para el efecto de subrayado */
-    transition: color 0.3s ease, text-shadow 0.3s ease;
-    position: relative;
-    display: block; /* Asegura que el padding se aplique correctamente */
-}
-
-/* Efecto de subrayado neón al pasar el mouse */
-.main-nav .nav-links .nav-item::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    bottom: 0; /* Ajusta esto si hay padding o margin extra */
-    width: 0;
-    height: 3px; /* Grosor del subrayado */
-    background: linear-gradient(90deg, var(--neon-magenta), var(--neon-cyan)); /* Degradado neón */
-    border-radius: 2px;
-    transition: width 0.3s ease;
+    color: #ffffff; /* Changed to white for visibility on purple background */
+    font-weight: bold;
+    padding: 8px 12px;
+    transition: color 0.3s ease;
+    white-space: nowrap;
 }
 
 .main-nav .nav-links .nav-item:hover {
-    color: var(--neon-cyan); /* Color de texto neón al pasar el mouse */
-    text-shadow: 0 0 8px rgba(0, 255, 255, 0.6); /* Resplandor neón */
+    color: #ff00ff; /* Changed to fuchsia on hover */
 }
 
-.main-nav .nav-links .nav-item:hover::after {
-    width: 100%; /* El subrayado se extiende al 100% */
-}
-
-/* --- Botón CTA (Acceder/Logout) --- */
 .cta-button {
-    background: linear-gradient(45deg, var(--neon-magenta), var(--neon-cyan)); /* Degradado neón */
-    color: #FFFFFF;
-    padding: 10px 22px;
-    border-radius: 25px; /* Bordes redondeados */
+    background-color: #8a2be2;
+    color: white;
+    padding: 10px 25px;
+    border-radius: 25px;
     text-decoration: none;
-    font-weight: 600;
-    font-size: 0.95rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    transition: transform 0.3s ease, box-shadow 0.3s ease, background-position 0.3s ease;
-    background-size: 200% auto; /* Para el efecto de hover */
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-    border: none; /* Para el botón de submit */
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    border: none;
     cursor: pointer;
-    display: inline-block; /* Para que padding y transform funcionen bien */
+    white-space: nowrap;
 }
 
 .cta-button:hover {
-    transform: translateY(-3px); /* Pequeña elevación */
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5), 0 0 20px rgba(255, 0, 255, 0.7); /* Sombra y resplandor */
-    background-position: right center; /* Mueve el degradado al pasar el mouse */
+    background-color: #6a0dad;
+    transform: translateY(-2px);
 }
 
-.logout-form button.cta-button {
-    /* Asegura que el botón de logout tenga el mismo estilo que el de acceder */
-    width: auto;
+.logout-form {
+    margin: 0;
+    display: inline-block;
 }
 
-
-/* --- Menú Hamburguesa para Móviles (Oculto por defecto) --- */
-.menu-toggle {
-    display: none; /* Oculto en desktop */
-    flex-direction: column;
-    justify-content: space-between;
+/* Style for the small icon/circle in the top-left corner of the logo */
+.header-logo::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: -10px; /* Adjust position to be to the left of the logo */
+    transform: translateY(-50%);
     width: 30px;
-    height: 22px;
-    cursor: pointer;
-    z-index: 1100; /* Asegura que esté por encima del menú cuando se abre */
-}
-
-.menu-toggle span {
-    display: block;
-    width: 100%;
-    height: 3px;
-    background-color: var(--neon-cyan); /* Color neón para las barras */
-    border-radius: 2px;
-    transition: all 0.3s ease-in-out;
-}
-
-/* Animación de la hamburguesa a la 'X' */
-.menu-toggle.open span:nth-child(1) {
-    transform: translateY(9px) rotate(45deg);
-}
-
-.menu-toggle.open span:nth-child(2) {
-    opacity: 0;
-}
-
-.menu-toggle.open span:nth-child(3) {
-    transform: translateY(-10px) rotate(-45deg);
-}
-
-
-/* --- Media Queries para Responsividad --- */
-
-@media (max-width: 768px) {
-    .header-container {
-        padding: 0 15px;
-    }
-
-    .main-nav {
-        position: fixed; /* Menú de navegación fijo en móvil */
-        top: 0;
-        right: -100%; /* Oculto a la derecha */
-        width: 70%; /* Ancho del menú desplegable */
-        height: 100%;
-        background: var(--darker-bg); /* Fondo oscuro para el menú */
-        box-shadow: -5px 0 15px rgba(0, 0, 0, 0.5);
-        transition: right 0.4s ease-in-out;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        flex-direction: column;
-        z-index: 999; /* Por debajo del toggle pero encima de otros elementos */
-    }
-
-    .main-nav.open {
-        right: 0; /* Muestra el menú al abrir */
-    }
-
-    .main-nav .nav-links {
-        flex-direction: column; /* Elementos de lista apilados verticalmente */
-        gap: 25px; /* Más espacio entre elementos */
-        text-align: center;
-        width: 100%;
-    }
-
-    .main-nav .nav-links li {
-        width: 100%;
-    }
-
-    .main-nav .nav-links .nav-item,
-    .cta-button {
-        font-size: 1.1rem; /* Textos más grandes para la legibilidad en móvil */
-        padding: 15px 0;
-        display: block; /* Asegura que ocupen el ancho completo */
-    }
-
-    .cta-button {
-        margin-top: 20px;
-        padding: 12px 25px;
-    }
-
-    /* Oculta el subrayado neón de los nav-item en mobile para un diseño más limpio */
-    .main-nav .nav-links .nav-item::after {
-        content: none;
-    }
-
-    .menu-toggle {
-        display: flex; /* Muestra el icono de hamburguesa en móvil */
-    }
-
-    /* Para ocultar el scroll del body cuando el menú está abierto */
-    body.no-scroll {
-        overflow: hidden;
-    }
-}
-
-@media (max-width: 480px) {
-    .header-logo img {
-        max-height: 45px; /* Logo más pequeño en pantallas muy pequeñas */
-    }
-    .main-nav {
-        width: 80%; /* Menú un poco más ancho en teléfonos pequeños */
-    }
-    .main-nav .nav-links .nav-item,
-    .cta-button {
-        font-size: 1rem;
-    }
+    height: 30px;
+    background-color: rgba(255, 255, 255, 0.3); /* Semi-transparent white */
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }

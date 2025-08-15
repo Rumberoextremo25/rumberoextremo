@@ -8,7 +8,7 @@
     --light-purple: #B19CD9; /* Morado claro */
     --dark-purple: #4B0082; /* Índigo oscuro, para texto oscuro en fondos claros */
     --text-light: #f0f0f0; /* Color de texto para fondos oscuros */
-    --text-dark: #333;    /* Color de texto para fondos claros */
+    --text-dark: #333;      /* Color de texto para fondos claros */
 }
 
 /* Estilos generales del cuerpo y HTML */
@@ -18,8 +18,9 @@ html, body {
     font-family: 'Poppins', sans-serif;
     color: var(--text-dark); /* Texto oscuro para el fondo blanco */
     background: #FFFFFF; /* Fondo blanco general */
-    min-height: 100vh;
-    display: flex;
+    height: 100vh; /* <-- CLAVE: Asegura que el HTML y BODY ocupen el 100% del alto de la ventana */
+    overflow: hidden; /* <-- CLAVE: Esto QUITA el scroll vertical. CUIDADO: El contenido que desborde se CORTARÁ. */
+    display: flex; /* Mantén flex para la estructura, pero el contenido interno debe manejar su propio desbordamiento */
     flex-direction: column;
     box-sizing: border-box;
 }
@@ -36,27 +37,32 @@ html, body {
 /* Sección Hero (Conoce la Esencia) */
 .hero-about {
     text-align: center;
-    padding: 80px 20px;
-    /* Degradado morado y fucsia para el hero, similar al de la imagen */
+    padding: 40px 20px; /* Reducido drásticamente */
     background: linear-gradient(135deg, var(--primary-purple) 0%, var(--secondary-fuchsia) 100%);
-    margin-bottom: 40px;
+    margin-bottom: 20px; /* Reducido */
     border-bottom-left-radius: 50px;
     border-bottom-right-radius: 50px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    color: #fff; /* Texto blanco para el fondo oscuro del hero */
+    color: #fff;
+    /* Flexbox para centrar contenido verticalmente si es necesario */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0; /* No se encogerá */
 }
 
 .hero-about h1 {
     font-family: 'Montserrat', sans-serif;
-    font-size: 3.5em;
-    margin-bottom: 15px;
+    font-size: 2.5em; /* Reducido para caber */
+    margin-bottom: 10px; /* Reducido */
     color: #fff;
     text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
     line-height: 1.2;
 }
 
 .hero-about p {
-    font-size: 1.3em;
+    font-size: 1em; /* Reducido para caber */
     max-width: 800px;
     margin: 0 auto;
     color: #eee;
@@ -66,19 +72,18 @@ html, body {
 /* Secciones de "Sobre Nosotros" (Misión, Visión, Ofrecemos) */
 .about-sections {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 30px;
-    padding-bottom: 60px;
-    background: transparent; /* Fondo transparente para que se vea el blanco del body */
-    box-shadow: none; /* Quitamos la sombra del contenedor, las tarjetas tendrán la suya */
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Min-width ligeramente reducido */
+    gap: 20px; /* Reducido */
+    padding-bottom: 30px; /* Reducido */
+    flex-grow: 1; /* Permite que esta sección se expanda */
+    overflow: hidden; /* IMPORTANTE: Asegura que si el contenido de las tarjetas es largo, el scroll es INTERNO. */
+    /* Para manejar el desbordamiento interno de las tarjetas, si el texto es muy largo */
 }
 
 .about-card {
-    /* Degradado para las tarjetas de misión, visión, etc., haciéndolas coloridas */
     background: linear-gradient(45deg, var(--light-purple) 0%, var(--secondary-fuchsia) 100%);
-    border: none; /* Quitamos el borde ya que el fondo es de color */
     border-radius: 20px;
-    padding: 30px;
+    padding: 20px; /* Reducido */
     text-align: center;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -86,181 +91,209 @@ html, body {
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
-    color: #fff; /* Texto blanco para las tarjetas de color */
+    color: #fff;
+    /* Añadir un max-height y overflow si el contenido de P fuera a desbordar la tarjeta */
+    max-height: 250px; /* Ejemplo: Limitar altura de la tarjeta */
+    overflow: auto; /* Permite scroll solo dentro de la tarjeta si el contenido es largo */
 }
 
 .about-card:hover {
-    transform: translateY(-10px) scale(1.02);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+    transform: translateY(-5px) scale(1.01); /* Efecto más sutil */
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
 }
 
 .about-card i {
-    font-size: 3.5em;
-    color: #fff; /* Iconos blancos para contraste */
-    margin-bottom: 20px;
+    font-size: 3em; /* Ligeramente reducido */
+    color: #fff;
+    margin-bottom: 15px; /* Reducido */
     text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
 }
 
 .about-card h2 {
     font-family: 'Montserrat', sans-serif;
-    font-size: 2em;
-    margin-bottom: 15px;
+    font-size: 1.8em; /* Reducido */
+    margin-bottom: 10px; /* Reducido */
     color: #fff;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .about-card p {
-    font-size: 1.1em;
-    line-height: 1.6;
-    color: #eee; /* Texto un poco más claro para las tarjetas */
-    margin-bottom: 10px;
+    font-size: 0.9em; /* Reducido para caber */
+    line-height: 1.5;
+    color: #eee;
+    margin-bottom: 5px; /* Reducido */
 }
 
 /* Sección del Equipo */
 .team-section {
     text-align: center;
-    padding: 60px 20px;
-    /* Fondo blanco para la sección del equipo, similar al footer de la imagen */
+    padding: 30px 20px; /* Reducido drásticamente */
     background: #FFFFFF;
     border-top-left-radius: 50px;
     border-top-right-radius: 50px;
-    box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.08); /* Sombra sutil para el fondo blanco */
-    color: var(--text-dark); /* Texto oscuro para el fondo blanco */
+    box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.08);
+    color: var(--text-dark);
+    flex-shrink: 0; /* No se encogerá */
+    /* Si tienes miembros de equipo con imágenes, estas y sus textos deben ser compactos */
 }
 
 .team-section h2 {
     font-family: 'Montserrat', sans-serif;
-    font-size: 3em;
-    margin-bottom: 40px;
-    color: var(--dark-purple); /* Título oscuro para el fondo blanco */
-    text-shadow: none; /* Quitamos sombra para mejor legibilidad */
+    font-size: 2.5em; /* Reducido */
+    margin-bottom: 20px; /* Reducido */
+    color: var(--dark-purple);
+    text-shadow: none;
 }
 
 .team-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 30px;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Min-width más pequeño */
+    gap: 20px; /* Reducido */
 }
 
 .team-member {
-    /* Degradado morado y fucsia para las tarjetas de los miembros del equipo */
     background: linear-gradient(45deg, var(--primary-purple) 0%, var(--secondary-fuchsia) 100%);
-    border: none; /* Quitamos el borde */
     border-radius: 20px;
-    padding: 25px;
+    padding: 15px; /* Reducido */
     text-align: center;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    color: #fff; /* Texto blanco para las tarjetas de color */
+    color: #fff;
+    max-height: 220px; /* Limitar la altura de la tarjeta de miembro */
+    overflow: hidden; /* Corta si desborda */
 }
 
 .team-member:hover {
-    transform: translateY(-10px) scale(1.02);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.3);
+    transform: translateY(-5px) scale(1.01);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
 }
 
 .team-member h3 {
     font-family: 'Montserrat', sans-serif;
-    font-size: 1.8em;
+    font-size: 1.5em; /* Reducido */
     margin-bottom: 5px;
-    color: #fff; /* Nombre blanco */
+    color: #fff;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
 .team-member p {
-    font-size: 1.1em;
-    color: #eee; /* Rol un poco más claro */
-    margin-bottom: 20px;
+    font-size: 0.9em; /* Reducido */
+    color: #eee;
+    margin-bottom: 10px; /* Reducido */
 }
 
 .member-social {
-    margin-top: 15px;
+    margin-top: 10px; /* Reducido */
     display: flex;
     justify-content: center;
-    gap: 15px;
+    gap: 10px; /* Reducido */
 }
 
 .member-social a {
-    color: #fff; /* Iconos sociales blancos */
-    font-size: 1.8em;
+    color: #fff;
+    font-size: 1.5em; /* Reducido */
     transition: color 0.3s ease, transform 0.3s ease;
     text-decoration: none;
 }
 
 .member-social a:hover {
-    color: var(--light-purple); /* Cambia a morado claro al pasar el ratón */
-    transform: scale(1.2);
+    color: var(--light-purple);
+    transform: scale(1.1); /* Efecto más sutil */
 }
 
-/* Media Queries para Responsividad */
-@media (max-width: 768px) {
+/* Media Queries para Responsividad - ¡CRUCIALES aquí! */
+/* Ajusta estos valores y los paddings/font-sizes para que el contenido quepa */
+@media (max-width: 992px) { /* Añadido un breakpoint intermedio */
     .hero-about h1 {
-        font-size: 2.5em;
+        font-size: 2.2em;
     }
-
     .hero-about p {
-        font-size: 1.1em;
+        font-size: 0.95em;
+    }
+    .about-card {
+        max-height: 220px; /* Ajustar altura máxima para pantallas medianas */
+    }
+    .team-member {
+        max-height: 180px; /* Ajustar altura máxima */
+    }
+}
+
+
+@media (max-width: 768px) {
+    .hero-about {
+        padding: 30px 15px; /* Más reducción */
+        margin-bottom: 15px;
+    }
+    .hero-about h1 {
+        font-size: 1.8em; /* Más reducción */
+    }
+    .hero-about p {
+        font-size: 0.85em; /* Más reducción */
     }
 
     .about-sections {
         grid-template-columns: 1fr; /* Una columna en pantallas pequeñas */
+        gap: 15px; /* Más reducción */
+        padding-bottom: 20px;
     }
-
     .about-card {
-        padding: 25px;
+        padding: 15px; /* Más reducción */
+        max-height: 180px; /* Altura muy limitada, puede cortar */
+        overflow: auto; /* Permitir scroll interno si corta mucho */
     }
-
     .about-card i {
-        font-size: 3em;
-    }
-
-    .about-card h2 {
-        font-size: 1.8em;
-    }
-
-    .team-section h2 {
         font-size: 2.5em;
+        margin-bottom: 10px;
+    }
+    .about-card h2 {
+        font-size: 1.5em;
+        margin-bottom: 8px;
+    }
+    .about-card p {
+        font-size: 0.8em; /* ¡Cuidado con la legibilidad! */
     }
 
+    .team-section {
+        padding: 20px 15px; /* Más reducción */
+    }
+    .team-section h2 {
+        font-size: 2em;
+        margin-bottom: 15px;
+    }
     .team-grid {
-        grid-template-columns: 1fr; /* Una columna en pantallas pequeñas */
+        grid-template-columns: 1fr; /* Una columna */
+        gap: 15px;
     }
-
     .team-member {
-        padding: 20px;
+        padding: 15px;
+        max-height: 160px; /* Altura muy limitada, puede cortar */
+        overflow: hidden; /* Corta si desborda */
     }
-
     .team-member h3 {
-        font-size: 1.6em;
+        font-size: 1.3em;
+    }
+    .team-member p {
+        font-size: 0.8em;
+    }
+    .member-social a {
+        font-size: 1.3em;
     }
 }
 
 @media (max-width: 480px) {
     .hero-about h1 {
-        font-size: 2em;
+        font-size: 1.5em; /* Aún más pequeño */
     }
-
     .hero-about p {
-        font-size: 1em;
+        font-size: 0.75em; /* Aún más pequeño */
     }
-
-    .about-card h2 {
-        font-size: 1.5em;
+    .about-card {
+        max-height: 150px; /* Muy limitado */
     }
-
-    .about-card p {
-        font-size: 0.95em;
+    .team-member {
+        max-height: 140px; /* Muy limitado */
     }
-
     .team-section h2 {
-        font-size: 2em;
-    }
-
-    .team-member h3 {
-        font-size: 1.4em;
-    }
-
-    .member-social a {
-        font-size: 1.5em;
+        font-size: 1.8em;
     }
 }
