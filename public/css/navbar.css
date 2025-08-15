@@ -1,22 +1,23 @@
+/* Base styles - these apply to all screen sizes, then overridden by media queries */
 body {
-    margin-top: -20px; /* ✅ CORRECTO: Ajusta este valor según la altura de tu navbar (en este caso, 80px) */
+    margin-top: -20px; /* Adjust this value based on your navbar height */
     font-family: Arial, sans-serif;
     background-color: #f0f2f5;
-    min-height: 120vh; /* ⬅️ Añade esta línea para hacer el body más largo hacia abajo */
+    min-height: 120vh;
 }
 
 .main-header {
-    position: fixed; /* ✅ CORRECTO: Fija la barra de navegación */
-    top: 0;           /* ✅ CORRECTO: La coloca en la parte superior */
-    left: 0;          /* ✅ CORRECTO: La alinea a la izquierda */
-    width: 100%;      /* ✅ CORRECTO: Ocupa todo el ancho */
-    background: linear-gradient(to right, rgba(192, 96, 240, 0.3), rgba(128, 0, 128, 0.3)); /* Fuchsia-purple gradient with 30% transparency */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    background: linear-gradient(to right, rgba(192, 96, 240, 0.3), rgba(128, 0, 128, 0.3));
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-    z-index: 1000;    /* ✅ CORRECTO: La coloca por encima de otros elementos */
-    height: 80px; /* Fixed height for the navbar */
-    overflow: hidden; /* Important for content not to spill out */
-    border-bottom-right-radius: 40px; /* Increased rounding for bottom-right corner */
-    border-bottom-left-radius: 40px; /* Added/Increased rounding for bottom-left corner */
+    z-index: 1000;
+    height: 80px; /* Fixed height for the navbar on larger screens */
+    overflow: hidden;
+    border-bottom-right-radius: 40px;
+    border-bottom-left-radius: 40px;
 }
 
 .header-container {
@@ -27,7 +28,8 @@ body {
     max-width: 1200px;
     height: 100%;
     position: relative;
-    z-index: 2; /* Ensures content is above color layers */
+    z-index: 2;
+    margin: 0 auto; /* Center the container */
 }
 
 /* White layer with the diagonal shape on the left side */
@@ -37,29 +39,26 @@ body {
     top: 0;
     left: 0;
     height: 100%;
-    width: 25%; /* Further reduced for an even smaller white area */
-    background-color: #ffffff; /* White color for this section */
-    /* Clip-path to create the diagonal division */
-    /* Points define the shape: top-left, top-right, bottom-right (on the diagonal), bottom-left */
-    clip-path: polygon(0 0, 85% 0, 100% 100%, 0 100%); /* Adjust 85% for the angle */
-    z-index: 1; /* Will be behind the content but above the main header's background */
+    width: 25%;
+    background-color: #ffffff;
+    clip-path: polygon(0 0, 85% 0, 100% 100%, 0 100%);
+    z-index: 1;
 }
 
-/* We don't need ::after anymore since the main-header itself handles the right side's gradient and rounded corner */
 .main-header::after {
     content: none; /* Remove the ::after pseudo-element */
 }
 
 .header-logo {
     display: flex;
-    justify-content: flex-start; /* Aligns content to the start (left) of the container */
-    align-items: center; /* Centers vertically (already there) */
+    justify-content: flex-start;
+    align-items: center;
     height: 100%;
-    position: absolute; /* Changed to absolute to position it relative to main-header */
-    left: 10px; /* Moved further left from 20px to 10px */
-    width: 25%; /* This should match the width of ::before for proper positioning */
-    z-index: 3; /* Ensures the logo is above both color layers */
-    padding-left: 0; /* Removed internal padding as 'left' now controls overall positioning */
+    position: absolute;
+    left: 10px;
+    width: 25%;
+    z-index: 3;
+    padding-left: 0;
 }
 
 .header-logo img {
@@ -75,8 +74,8 @@ body {
     align-items: center;
     height: 100%;
     position: relative;
-    z-index: 3; /* Ensures links are above color layers */
-    padding-right: 30px; /* Space for the right edge */
+    z-index: 3;
+    padding-right: 30px;
 }
 
 .main-nav .nav-links {
@@ -97,7 +96,7 @@ body {
 
 .main-nav .nav-links .nav-item {
     text-decoration: none;
-    color: #ffffff; /* Changed to white for visibility on purple background */
+    color: #ffffff;
     font-weight: bold;
     padding: 8px 12px;
     transition: color 0.3s ease;
@@ -105,7 +104,7 @@ body {
 }
 
 .main-nav .nav-links .nav-item:hover {
-    color: #ff00ff; /* Changed to fuchsia on hover */
+    color: #ff00ff;
 }
 
 .cta-button {
@@ -131,18 +130,127 @@ body {
     display: inline-block;
 }
 
-/* Style for the small icon/circle in the top-left corner of the logo */
 .header-logo::before {
     content: '';
     position: absolute;
     top: 50%;
-    left: -10px; /* Adjust position to be to the left of the logo */
+    left: -10px;
     transform: translateY(-50%);
     width: 30px;
     height: 30px;
-    background-color: rgba(255, 255, 255, 0.3); /* Semi-transparent white */
+    background-color: rgba(255, 255, 255, 0.3);
     border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
+}
+
+/* --- Media Queries --- */
+
+/* For screens smaller than 992px (typical for tablets and smaller desktops) */
+@media (max-width: 991px) {
+    .main-nav .nav-links li {
+        margin-left: 15px; /* Reduce spacing between navigation items */
+    }
+
+    .main-nav .nav-links .nav-item {
+        padding: 6px 10px; /* Adjust padding for smaller screens */
+        font-size: 0.9em; /* Slightly reduce font size */
+    }
+
+    .cta-button {
+        padding: 8px 20px; /* Smaller padding for the CTA button */
+        font-size: 0.9em;
+    }
+}
+
+/* For screens smaller than 768px (typical for tablets in portrait mode and larger phones) */
+@media (max-width: 767px) {
+    .main-header {
+        height: 60px; /* Reduce navbar height for smaller screens */
+        border-bottom-right-radius: 20px; /* Adjust border radius */
+        border-bottom-left-radius: 20px;
+    }
+
+    body {
+        margin-top: -40px; /* Adjust body margin for smaller navbar height */
+    }
+
+    .header-logo img {
+        height: 45px; /* Reduce logo size */
+    }
+
+    .main-header::before {
+        width: 35%; /* Adjust the width of the white diagonal area */
+        clip-path: polygon(0 0, 75% 0, 100% 100%, 0 100%); /* Adjust angle */
+    }
+
+    .header-logo {
+        left: 5px; /* Adjust logo position */
+        width: 35%; /* Match the width of ::before */
+    }
+
+    .main-nav .nav-links {
+        display: none; /* Hide the regular navigation links by default */
+        /* You would typically implement a "hamburger" menu for mobile here */
+    }
+
+    .cta-button {
+        padding: 7px 15px; /* Further reduce CTA button size */
+        font-size: 0.8em;
+    }
+
+    /* Example of a basic hamburger menu icon (you'd need to add this to your HTML) */
+    .menu-toggle {
+        display: block; /* Show the menu toggle button */
+        position: absolute;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: white;
+        font-size: 24px;
+        cursor: pointer;
+        z-index: 4;
+    }
+
+    /* You would then use JavaScript to toggle a class on .nav-links to display it */
+}
+
+/* For screens smaller than 480px (typical for mobile phones) */
+@media (max-width: 479px) {
+    .main-header {
+        height: 50px; /* Even smaller navbar height */
+        border-bottom-right-radius: 15px;
+        border-bottom-left-radius: 15px;
+    }
+
+    body {
+        margin-top: -50px; /* Adjust body margin */
+    }
+
+    .header-logo img {
+        height: 35px; /* Further reduce logo size */
+    }
+
+    .main-header::before {
+        width: 45%; /* Make the white area wider */
+        clip-path: polygon(0 0, 65% 0, 100% 100%, 0 100%); /* Adjust angle */
+    }
+
+    .header-logo {
+        left: 5px;
+        width: 45%; /* Match the width of ::before */
+    }
+
+    .cta-button {
+        padding: 5px 10px; /* Smallest CTA button size */
+        font-size: 0.7em;
+    }
+
+    .menu-toggle {
+        right: 15px; /* Adjust menu toggle position */
+        font-size: 20px;
+    }
 }

@@ -34,7 +34,8 @@ footer {
     max-width: 1200px;
     margin: 0 auto;
     display: grid;
-    grid-template-columns: repeat(4, 280px); /* 4 columnas de 280px cada una */
+    /* Default: 4 columns for larger screens */
+    grid-template-columns: repeat(4, 1fr); /* Use 1fr for flexible columns */
     justify-content: center;
     gap: 20px;
     padding: 20px;
@@ -52,7 +53,7 @@ footer {
     flex-direction: column;
     justify-content: flex-start;
     align-items: center;
-    height: 320px; /* Mantener la altura fija */
+    height: 320px; /* Mantener la altura fija para desktop */
 }
 
 .footer-section h3 {
@@ -87,27 +88,27 @@ footer {
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 10px; /* Reducido el espacio entre los botones */
+    gap: 10px;
     width: 100%;
     align-items: center;
 }
 
 .footer-links li {
-    width: 80%; /* Hacer los botones un poco más pequeños */
-    max-width: 180px; /* Añadir un ancho máximo para controlar el tamaño */
+    width: 80%;
+    max-width: 180px;
 }
 
 .footer-links a {
     background-color: var(--primary-purple);
     color: #fff;
-    padding: 8px 15px; /* Reducir el padding para hacer el botón más pequeño */
-    border-radius: 20px; /* Ajustar el radio si es necesario */
+    padding: 8px 15px;
+    border-radius: 20px;
     text-decoration: none;
     font-weight: bold;
     transition: background-color 0.3s ease;
     display: block;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    font-size: 0.85em; /* Reducir el tamaño de fuente del botón */
+    font-size: 0.85em;
 }
 
 .footer-links a:hover {
@@ -134,61 +135,60 @@ footer {
 
 .footer-connect .social-icons-connect {
     display: flex;
-    gap: 15px; /* Espacio entre los íconos de redes sociales */
-    margin-top: 20px; /* Espacio superior para separar del texto */
+    gap: 15px;
+    margin-top: 20px;
 }
 
 .footer-connect .social-icons-connect a {
-    color: var(--primary-purple); /* Color de los íconos */
-    font-size: 1.8em; /* Tamaño de los íconos */
+    color: var(--primary-purple);
+    font-size: 1.8em;
     transition: color 0.3s ease;
 }
 
 .footer-connect .social-icons-connect a:hover {
-    color: #6a0dad; /* Color al pasar el ratón */
+    color: #6a0dad;
 }
-
 
 /* Newsletter Section Specific Adjustments */
 .footer-section.footer-newsletter {
-    padding: 15px; /* Reduced padding for a smaller card */
-    justify-content: center; /* Vertically center content within the card */
+    padding: 15px;
+    justify-content: center;
 }
 
 .footer-newsletter h3 {
-    font-size: 1.2em; /* Smaller heading */
+    font-size: 1.2em;
     margin-bottom: 10px;
 }
 
 .footer-newsletter p {
-    font-size: 0.85em; /* Smaller paragraph text */
+    font-size: 0.85em;
     margin-bottom: 10px;
 }
 
 .newsletter-input-group {
     display: flex;
-    align-items: center; /* Vertically align items in the middle */
+    align-items: center;
     width: 100%;
-    max-width: 320px; /* **CAMBIO:** ¡Aún más ancho para el grupo completo! */
-    border-radius: 25px; /* More rounded corners */
-    background: linear-gradient(to right, #141443, #A601B3); /* Purple to Pink Gradient */
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); /* Stronger shadow */
+    max-width: 320px;
+    border-radius: 25px;
+    background: linear-gradient(to right, #141443, #A601B3);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
     margin-bottom: 8px;
-    padding: 3px; /* Small padding to create the border effect */
-    box-sizing: border-box; /* Include padding in the element's total width and height */
+    padding: 3px;
+    box-sizing: border-box;
 }
 
 .newsletter-input-group input[type="email"] {
-    flex-grow: 5; /* **CAMBIO CLAVE:** ¡Le damos muchísimo más espacio para crecer! */
+    flex-grow: 5;
     min-width: 0;
-    padding: 8px 12px; /* Mantener padding consistente */
+    padding: 8px 12px;
     border: none;
     outline: none;
     font-size: 0.8em;
-    background-color: #fff; /* Solid white background */
-    border-radius: 20px 0 0 20px; /* Rounded only on the left side */
+    background-color: #fff;
+    border-radius: 20px 0 0 20px;
     color: var(--text-color-dark);
-    height: 38px; /* Fixed height for alignment */
+    height: 38px;
     box-sizing: border-box;
 }
 
@@ -197,28 +197,28 @@ footer {
 }
 
 .newsletter-input-group .subscribe-button {
-    flex-shrink: 1; /* Permite que el botón se encoja si es necesario */
-    flex-basis: auto; /* Permite que el botón determine su tamaño inicial por el contenido */
-    width: 45px; /* **CAMBIO CLAVE:** ¡Ancho fijo aún más angosto para el botón! */
-    background-color: transparent; /* Transparent to show gradient */
-    color: #fff; /* White text */
+    flex-shrink: 1;
+    flex-basis: auto;
+    width: 45px; /* Fixed width for button on larger screens */
+    background-color: transparent;
+    color: #fff;
     border: none;
-    padding: 8px 0px; /* Mantener padding horizontal a 0 */
-    font-size: 0.75em; /* **CAMBIO:** Un poco más pequeño para asegurar que quepa el texto */
+    padding: 8px 0px;
+    font-size: 0.75em;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.2s ease;
     font-weight: bold;
-    height: 38px; /* Fixed height for alignment */
-    border-radius: 0 20px 20px 0; /* Rounded only on the right side */
-    white-space: nowrap; /* **CRUCIAL:** Mantiene el texto "Suscribir" en una sola línea */
-    display: flex; /* Usar flex para centrar texto */
+    height: 38px;
+    border-radius: 0 20px 20px 0;
+    white-space: nowrap;
+    display: flex;
     align-items: center;
-    justify-content: center; /* Centrar el texto horizontalmente */
+    justify-content: center;
 }
 
 .newsletter-input-group .subscribe-button:hover {
-    transform: translateY(-1px); /* Slight lift effect */
-    box-shadow: 0 2px 5px rgba(0,0,0,0.2); /* Slight shadow on hover */
+    transform: translateY(-1px);
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
 }
 
 .error-message, .success-message {
@@ -236,15 +236,146 @@ footer {
     color: #2ecc71;
 }
 
-/* Media Queries para responsividad (mantener los ajustes anteriores) */
-@media (max-width: 600px) {
+/* Tablet and smaller desktop screens (e.g., max-width 1024px) */
+@media (max-width: 1024px) {
+    .container.footer-grid-container {
+        grid-template-columns: repeat(2, 1fr); /* 2 columns */
+        gap: 25px; /* Increase gap slightly */
+    }
+
+    .footer-section {
+        height: auto; /* Allow height to adjust based on content */
+        padding: 20px; /* Reduce padding slightly */
+    }
+
+    .footer-section h3 {
+        font-size: 1.4em;
+    }
+
+    .footer-section p {
+        font-size: 0.9em;
+    }
+
+    .footer-links li {
+        width: 90%; /* Allow buttons to be a bit wider */
+        max-width: 200px; /* Adjust max-width */
+    }
+
     .newsletter-input-group {
-        max-width: unset; /* Eliminar ancho máximo para móviles */
+        max-width: 100%; /* Allow input group to take full width */
+    }
+}
+
+/* Mobile devices (e.g., max-width 768px) */
+@media (max-width: 768px) {
+    footer {
+        padding: 30px 0 15px; /* Reduce overall footer padding */
+    }
+
+    .footer-wave {
+        height: 60px; /* Adjust wave height */
+        opacity: 0.2; /* Make wave a bit more subtle */
+    }
+
+    .container.footer-grid-container {
+        grid-template-columns: 1fr; /* 1 column (stack vertically) */
+        gap: 30px; /* Increase gap between stacked sections */
+        padding: 15px; /* Reduce container padding */
+    }
+
+    .footer-section {
+        padding: 20px; /* Consistent padding */
+    }
+
+    .footer-section h3 {
+        font-size: 1.3em;
+        margin-bottom: 15px;
+    }
+
+    .footer-section p {
+        font-size: 0.85em;
+        margin-bottom: 10px;
+    }
+
+    .footer-about .footer-logo {
+        max-width: 100px; /* Smaller logo */
+    }
+
+    .footer-links li {
+        width: 70%; /* Adjust button width for single column */
+        max-width: 250px; /* Max width for consistency */
+    }
+
+    .footer-links a {
+        padding: 10px 18px; /* Slightly larger buttons for touch */
+        font-size: 0.9em;
+    }
+
+    .footer-connect .connect-icon-container {
+        padding: 15px; /* Smaller icon container */
+        margin-bottom: 15px;
+    }
+
+    .footer-connect svg {
+        width: 50px; /* Smaller icon */
+        height: 50px;
+    }
+
+    .footer-connect .social-icons-connect {
+        gap: 10px; /* Smaller gap between social icons */
+    }
+
+    .footer-connect .social-icons-connect a {
+        font-size: 1.5em; /* Smaller social icons */
+    }
+
+    .newsletter-input-group {
+        flex-direction: column; /* Stack input and button */
+        border-radius: var(--border-radius); /* Full rounded for the whole group */
+        max-width: 280px; /* Limit width for aesthetics */
+    }
+
+    .newsletter-input-group input[type="email"] {
+        border-radius: var(--border-radius); /* Fully rounded input */
+        margin-bottom: 8px; /* Space between input and button */
+        width: 100%; /* Full width for input */
+        height: 45px; /* Slightly taller for touch */
+        text-align: center; /* Center placeholder text */
     }
 
     .newsletter-input-group .subscribe-button {
-        width: auto; /* Eliminar ancho fijo en móviles */
-        padding: 10px 15px; /* Restaurar padding en móviles */
-        font-size: 0.9em; /* Restaurar tamaño de fuente en móviles */
+        width: 100%; /* Full width button */
+        border-radius: var(--border-radius); /* Fully rounded button */
+        height: 45px; /* Slightly taller for touch */
+        font-size: 0.9em; /* Larger font for button */
+        padding: 10px 0; /* Adjust padding */
+    }
+}
+
+/* Smallest mobile devices (e.g., max-width 480px) */
+@media (max-width: 480px) {
+    .footer-section {
+        padding: 15px; /* Even less padding */
+    }
+
+    .footer-section h3 {
+        font-size: 1.2em;
+        margin-bottom: 10px;
+    }
+
+    .footer-section p {
+        font-size: 0.8em;
+    }
+
+    .footer-links li {
+        width: 90%; /* Make buttons wider on very small screens */
+    }
+
+    .newsletter-input-group input[type="email"] {
+        font-size: 0.75em; /* Smaller font for input */
+    }
+
+    .newsletter-input-group .subscribe-button {
+        font-size: 0.8em; /* Smaller font for button */
     }
 }
