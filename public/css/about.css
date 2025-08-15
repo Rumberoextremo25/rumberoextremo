@@ -1,299 +1,279 @@
-/* Importa las fuentes de Google Fonts */
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Poppins:wght@300;400;500;600&display=swap');
-
-/* Variables CSS para colores */
 :root {
-    --primary-purple: #8A2BE2; /* Azul violeta */
-    --secondary-fuchsia: #FF00FF; /* Fucsia puro */
-    --light-purple: #B19CD9; /* Morado claro */
-    --dark-purple: #4B0082; /* Índigo oscuro, para texto oscuro en fondos claros */
-    --text-light: #f0f0f0; /* Color de texto para fondos oscuros */
-    --text-dark: #333;      /* Color de texto para fondos claros */
+    /* Color Palette V2 */
+    --primary-blue: #A60AB3;
+    /* Azul verdoso suave y moderno */
+    --secondary-orange: #141443;
+    /* Naranja vibrante para acentos */
+    --light-bg: #ecf0f1;
+    /* Fondo gris muy claro */
+    --dark-bg: #34495e;
+    /* Gris azulado oscuro para contraste */
+    --text-dark: #2c3e50;
+    /* Gris carbón para texto principal */
+    --text-light: #ecf0f1;
+    /* Gris claro para el texto en fondos oscuros */
+    --card-bg: #fff;
+    /* Fondo blanco para las tarjetas */
+
+    /* Shadows V2 */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.12);
+    --shadow-lg: 0 10px 24px rgba(0, 0, 0, 0.2);
+
+    /* Borders V2 */
+    --border-radius-lg: 18px;
+    --border-radius-md: 10px;
+    --border-radius-sm: 5px;
 }
 
-/* Estilos generales del cuerpo y HTML */
-html, body {
+/*
+         * Base Styles and Typography V2
+         */
+body {
+    font-family: 'Roboto', sans-serif;
     margin: 0;
     padding: 0;
-    font-family: 'Poppins', sans-serif;
-    color: var(--text-dark); /* Texto oscuro para el fondo blanco */
-    background: #FFFFFF; /* Fondo blanco general */
-    height: 100vh; /* <-- CLAVE: Asegura que el HTML y BODY ocupen el 100% del alto de la ventana */
-    overflow: hidden; /* <-- CLAVE: Esto QUITA el scroll vertical. CUIDADO: El contenido que desborde se CORTARÁ. */
-    display: flex; /* Mantén flex para la estructura, pero el contenido interno debe manejar su propio desbordamiento */
-    flex-direction: column;
+    background-color: var(--light-bg);
+    color: var(--text-dark);
+    line-height: 1.6;
     box-sizing: border-box;
+    overflow-y: auto;
 }
 
-/* Contenedor principal para centrar el contenido */
 .container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: 0 20px;
-    width: 100%;
-    box-sizing: border-box;
+    padding: 20px;
 }
 
-/* Sección Hero (Conoce la Esencia) */
+/*
+         * Hero Section V2
+         */
 .hero-about {
+    position: relative;
+    background: linear-gradient(135deg, var(--primary-blue), var(--secondary-orange));
+    color: var(--text-light);
+    padding: 80px 20px;
+    border-bottom-left-radius: var(--border-radius-lg);
+    border-bottom-right-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-lg);
     text-align: center;
-    padding: 40px 20px; /* Reducido drásticamente */
-    background: linear-gradient(135deg, var(--primary-purple) 0%, var(--secondary-fuchsia) 100%);
-    margin-bottom: 20px; /* Reducido */
-    border-bottom-left-radius: 50px;
-    border-bottom-right-radius: 50px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
-    color: #fff;
-    /* Flexbox para centrar contenido verticalmente si es necesario */
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    flex-shrink: 0; /* No se encogerá */
+    z-index: 1;
 }
 
 .hero-about h1 {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 2.5em; /* Reducido para caber */
-    margin-bottom: 10px; /* Reducido */
-    color: #fff;
-    text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
-    line-height: 1.2;
+    font-family: 'Play', sans-serif;
+    font-size: 3.5em;
+    font-weight: 700;
+    margin: 0 0 15px;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
 }
 
 .hero-about p {
-    font-size: 1em; /* Reducido para caber */
-    max-width: 800px;
+    font-size: 1.2em;
+    max-width: 700px;
     margin: 0 auto;
-    color: #eee;
-    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.4);
+    opacity: 0.95;
 }
 
-/* Secciones de "Sobre Nosotros" (Misión, Visión, Ofrecemos) */
-.about-sections {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Min-width ligeramente reducido */
-    gap: 20px; /* Reducido */
-    padding-bottom: 30px; /* Reducido */
-    flex-grow: 1; /* Permite que esta sección se expanda */
-    overflow: hidden; /* IMPORTANTE: Asegura que si el contenido de las tarjetas es largo, el scroll es INTERNO. */
-    /* Para manejar el desbordamiento interno de las tarjetas, si el texto es muy largo */
+/*
+         * Purpose Section V2
+         */
+.purpose-section {
+    padding: 50px 0;
+    position: relative;
+    z-index: 2;
 }
 
-.about-card {
-    background: linear-gradient(45deg, var(--light-purple) 0%, var(--secondary-fuchsia) 100%);
-    border-radius: 20px;
-    padding: 20px; /* Reducido */
-    text-align: center;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
-    align-items: center;
-    color: #fff;
-    /* Añadir un max-height y overflow si el contenido de P fuera a desbordar la tarjeta */
-    max-height: 250px; /* Ejemplo: Limitar altura de la tarjeta */
-    overflow: auto; /* Permite scroll solo dentro de la tarjeta si el contenido es largo */
-}
-
-.about-card:hover {
-    transform: translateY(-5px) scale(1.01); /* Efecto más sutil */
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
-}
-
-.about-card i {
-    font-size: 3em; /* Ligeramente reducido */
-    color: #fff;
-    margin-bottom: 15px; /* Reducido */
-    text-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-}
-
-.about-card h2 {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 1.8em; /* Reducido */
-    margin-bottom: 10px; /* Reducido */
-    color: #fff;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
-}
-
-.about-card p {
-    font-size: 0.9em; /* Reducido para caber */
-    line-height: 1.5;
-    color: #eee;
-    margin-bottom: 5px; /* Reducido */
-}
-
-/* Sección del Equipo */
-.team-section {
-    text-align: center;
-    padding: 30px 20px; /* Reducido drásticamente */
-    background: #FFFFFF;
-    border-top-left-radius: 50px;
-    border-top-right-radius: 50px;
-    box-shadow: 0 -5px 20px rgba(0, 0, 0, 0.08);
+.purpose-section h2 {
+    font-family: 'Play', sans-serif;
+    font-size: 2.8em;
+    font-weight: 700;
     color: var(--text-dark);
-    flex-shrink: 0; /* No se encogerá */
-    /* Si tienes miembros de equipo con imágenes, estas y sus textos deben ser compactos */
+    text-align: center;
+    margin: 0 0 15px;
+}
+
+.purpose-section .purpose-description {
+    font-size: 1.1em;
+    text-align: center;
+    margin-bottom: 40px;
+    color: #666;
+}
+
+.purpose-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 30px;
+}
+
+.purpose-card {
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius-md);
+    padding: 35px;
+    box-shadow: var(--shadow-sm);
+    text-align: center;
+    border-bottom: 5px solid transparent;
+    transition: transform 0.3s ease, box-shadow 0.3s ease, border-bottom-color 0.3s ease;
+}
+
+.purpose-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-md);
+    border-bottom-color: var(--primary-blue);
+}
+
+.purpose-card i {
+    font-size: 3.2em;
+    color: var(--secondary-orange);
+    margin-bottom: 20px;
+    transition: color 0.3s ease;
+}
+
+.purpose-card:hover i {
+    color: var(--primary-blue);
+}
+
+.purpose-card h3 {
+    font-family: 'Roboto', sans-serif;
+    font-size: 1.6em;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin: 0 0 10px;
+}
+
+.purpose-card p {
+    font-size: 1em;
+    line-height: 1.5;
+    color: #555;
+    margin: 0;
+}
+
+/*
+         * Team Section V2
+         */
+.team-section {
+    padding: 50px 0;
+    text-align: center;
 }
 
 .team-section h2 {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 2.5em; /* Reducido */
-    margin-bottom: 20px; /* Reducido */
-    color: var(--dark-purple);
-    text-shadow: none;
+    font-family: 'Play', sans-serif;
+    font-size: 2.8em;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin: 0 0 40px;
+}
+
+.team-section .team-description {
+    font-size: 1.1em;
+    max-width: 800px;
+    margin: 0 auto 40px;
+    color: #666;
 }
 
 .team-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); /* Min-width más pequeño */
-    gap: 20px; /* Reducido */
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 30px;
 }
 
-.team-member {
-    background: linear-gradient(45deg, var(--primary-purple) 0%, var(--secondary-fuchsia) 100%);
-    border-radius: 20px;
-    padding: 15px; /* Reducido */
+.team-member-card {
+    background-color: var(--card-bg);
+    border-radius: var(--border-radius-lg);
+    padding: 25px;
+    box-shadow: var(--shadow-sm);
     text-align: center;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    color: #fff;
-    max-height: 220px; /* Limitar la altura de la tarjeta de miembro */
-    overflow: hidden; /* Corta si desborda */
 }
 
-.team-member:hover {
-    transform: translateY(-5px) scale(1.01);
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.25);
+.team-member-card:hover {
+    transform: translateY(-8px);
+    box-shadow: var(--shadow-md);
 }
 
-.team-member h3 {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 1.5em; /* Reducido */
-    margin-bottom: 5px;
-    color: #fff;
-    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+.team-member-card img {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 20px;
+    border: 4px solid var(--primary-blue);
+    box-shadow: var(--shadow-sm);
 }
 
-.team-member p {
-    font-size: 0.9em; /* Reducido */
-    color: #eee;
-    margin-bottom: 10px; /* Reducido */
+.team-member-card h4 {
+    font-family: 'Roboto', sans-serif;
+    font-size: 1.4em;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin: 0 0 8px;
+}
+
+.team-member-card p {
+    font-size: 1em;
+    color: #777;
+    margin: 0 0 20px;
 }
 
 .member-social {
-    margin-top: 10px; /* Reducido */
     display: flex;
     justify-content: center;
-    gap: 10px; /* Reducido */
+    gap: 20px;
 }
 
 .member-social a {
-    color: #fff;
-    font-size: 1.5em; /* Reducido */
-    transition: color 0.3s ease, transform 0.3s ease;
-    text-decoration: none;
+    color: var(--primary-blue);
+    font-size: 1.3em;
+    transition: transform 0.3s ease, color 0.3s ease;
 }
 
 .member-social a:hover {
-    color: var(--light-purple);
-    transform: scale(1.1); /* Efecto más sutil */
+    transform: scale(1.1);
+    color: var(--secondary-orange);
 }
 
-/* Media Queries para Responsividad - ¡CRUCIALES aquí! */
-/* Ajusta estos valores y los paddings/font-sizes para que el contenido quepa */
-@media (max-width: 992px) { /* Añadido un breakpoint intermedio */
-    .hero-about h1 {
-        font-size: 2.2em;
-    }
-    .hero-about p {
-        font-size: 0.95em;
-    }
-    .about-card {
-        max-height: 220px; /* Ajustar altura máxima para pantallas medianas */
-    }
-    .team-member {
-        max-height: 180px; /* Ajustar altura máxima */
-    }
-}
-
-
+/*
+         * Responsive Adjustments V2
+         */
 @media (max-width: 768px) {
     .hero-about {
-        padding: 30px 15px; /* Más reducción */
-        margin-bottom: 15px;
+        padding: 60px 15px;
     }
+
     .hero-about h1 {
-        font-size: 1.8em; /* Más reducción */
-    }
-    .hero-about p {
-        font-size: 0.85em; /* Más reducción */
-    }
-
-    .about-sections {
-        grid-template-columns: 1fr; /* Una columna en pantallas pequeñas */
-        gap: 15px; /* Más reducción */
-        padding-bottom: 20px;
-    }
-    .about-card {
-        padding: 15px; /* Más reducción */
-        max-height: 180px; /* Altura muy limitada, puede cortar */
-        overflow: auto; /* Permitir scroll interno si corta mucho */
-    }
-    .about-card i {
         font-size: 2.5em;
-        margin-bottom: 10px;
-    }
-    .about-card h2 {
-        font-size: 1.5em;
-        margin-bottom: 8px;
-    }
-    .about-card p {
-        font-size: 0.8em; /* ¡Cuidado con la legibilidad! */
     }
 
-    .team-section {
-        padding: 20px 15px; /* Más reducción */
+    .hero-about p {
+        font-size: 1.1em;
     }
-    .team-section h2 {
-        font-size: 2em;
-        margin-bottom: 15px;
+
+    .purpose-cards-grid {
+        grid-template-columns: 1fr;
     }
+
     .team-grid {
-        grid-template-columns: 1fr; /* Una columna */
-        gap: 15px;
+        grid-template-columns: 1fr;
     }
-    .team-member {
-        padding: 15px;
-        max-height: 160px; /* Altura muy limitada, puede cortar */
-        overflow: hidden; /* Corta si desborda */
-    }
-    .team-member h3 {
-        font-size: 1.3em;
-    }
-    .team-member p {
-        font-size: 0.8em;
-    }
-    .member-social a {
-        font-size: 1.3em;
+
+    .purpose-card,
+    .team-member-card {
+        padding: 25px;
     }
 }
 
 @media (max-width: 480px) {
     .hero-about h1 {
-        font-size: 1.5em; /* Aún más pequeño */
+        font-size: 2em;
     }
+
     .hero-about p {
-        font-size: 0.75em; /* Aún más pequeño */
+        font-size: 1em;
     }
-    .about-card {
-        max-height: 150px; /* Muy limitado */
-    }
-    .team-member {
-        max-height: 140px; /* Muy limitado */
-    }
-    .team-section h2 {
-        font-size: 1.8em;
+
+    .purpose-card,
+    .team-member-card {
+        padding: 20px;
     }
 }

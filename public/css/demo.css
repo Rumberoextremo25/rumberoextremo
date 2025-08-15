@@ -1,132 +1,137 @@
-/* Variables CSS - Se mantienen para consistencia si existen en otros archivos */
 :root {
-    --primary-purple: #8A2BE2; /* Un morado vibrante */
-    --secondary-purple: #6A0DAD; /* Un morado más oscuro para detalles */
-    --light-bg: #f0f0f5; /* Fondo claro para secciones */
-    --dark-text: #333;
-    --light-text: #666;
-    --white: #fff;
-    --gradient-start: #9C27B0; /* Morado de inicio del gradiente */
-    --gradient-end: #E91E63; /* Rosa de fin del gradiente */
-    --shadow-light: 0 5px 20px rgba(0, 0, 0, 0.1);
-    --shadow-dark: 0 10px 30px rgba(0, 0, 0, 0.2);
-    --border-radius-lg: 30px;
-    --border-radius-md: 20px;
+    /* Color Palette V2 */
+    --primary-blue: #A60AB3;
+    /* Azul verdoso suave y moderno */
+    --secondary-orange: #141443;
+    /* Naranja vibrante para acentos */
+    --light-bg: #ecf0f1;
+    /* Fondo gris muy claro */
+    --dark-bg: #34495e;
+    /* Gris azulado oscuro para contraste */
+    --text-dark: #2c3e50;
+    /* Gris carbón para texto principal */
+    --text-light: #ecf0f1;
+    /* Gris claro para el texto en fondos oscuros */
+    --card-bg: #fff;
+    /* Fondo blanco para las tarjetas */
+
+    /* Shadows V2 */
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.12);
+    --shadow-lg: 0 10px 24px rgba(0, 0, 0, 0.2);
+
+    /* Borders V2 */
+    --border-radius-lg: 18px;
+    --border-radius-md: 10px;
+    --border-radius-sm: 5px;
 }
 
+/*
+         * Base Styles and Typography V2
+         */
 body {
-    font-family: 'Poppins', sans-serif;
-    line-height: 1.6;
-    color: var(--dark-text);
-    background-color: var(--light-bg); /* Fondo general de la página */
+    font-family: 'Roboto', sans-serif;
     margin: 0;
-    padding: 0px;
+    padding: 0;
+    background-color: var(--light-bg);
+    color: var(--text-dark);
+    line-height: 1.6;
+    box-sizing: border-box;
+    overflow-y: auto;
 }
 
 .container {
-    max-width: 1100px;
+    max-width: 1200px;
     margin: 0 auto;
-    padding: 0 20px;
+    padding: 20px;
 }
 
-/* Sección principal de contenido */
-.content-section {
-    padding: 80px 0; /* Más padding vertical para centrar el contenido */
+/*
+         * Hero Section for Demo Page
+         */
+.hero-demo {
+    position: relative;
+    background: linear-gradient(135deg, var(--primary-blue), var(--secondary-orange));
+    color: var(--text-light);
+    padding: 80px 20px;
+    border-bottom-left-radius: var(--border-radius-lg);
+    border-bottom-right-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-lg);
     text-align: center;
-    background-color: var(--white); /* Fondo blanco para la tarjeta principal */
-    margin: 40px auto; /* Centrar la tarjeta y dar espacio */
-    border-radius: var(--border-radius-lg); /* Bordes redondeados grandes */
-    box-shadow: var(--shadow-dark); /* Sombra más pronunciada */
-    max-width: 900px; /* Ancho máximo para la tarjeta de contenido */
-    position: relative; /* Para el fondo de "splash" */
-    overflow: hidden; /* Ocultar desbordamientos del fondo */
-}
-
-/* Fondo de "splash" morado en la parte superior de la tarjeta */
-.content-section::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 180px; /* Altura del área morada */
-    background: linear-gradient(to right, var(--gradient-start), var(--gradient-end));
-    border-radius: var(--border-radius-lg) var(--border-radius-lg) 0 0; /* Bordes redondeados solo arriba */
-    z-index: 0;
-}
-
-.content-section > .container {
-    position: relative; /* Asegura que el contenido esté sobre el fondo */
     z-index: 1;
 }
 
-.content-section h1 {
-    font-family: 'Montserrat', sans-serif;
-    font-size: 2.8em; /* Título más grande */
-    color: var(--white); /* Texto blanco para el título */
-    margin-bottom: 15px;
-    position: relative;
-    top: -60px; /* Elevar el título para que esté sobre el gradiente */
-    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2); /* Sombra de texto para legibilidad */
+.hero-demo h1 {
+    font-family: 'Play', sans-serif;
+    font-size: 3.5em;
+    font-weight: 700;
+    margin: 0 0 15px;
+    text-shadow: 2px 2px 5px rgba(0, 0, 0, 0.2);
 }
 
-.content-section p {
-    font-size: 1.1em;
-    color: var(--dark-text); /* Texto oscuro para el párrafo debajo del título */
-    margin-bottom: 30px;
-    padding: 0 20px; /* Padding para el párrafo */
+.hero-demo p {
+    font-size: 1.2em;
+    max-width: 700px;
+    margin: 0 auto;
+    opacity: 0.95;
 }
 
-/* Contenedor de botones (mantener flex para centrar) */
-.form-buttons {
-    display: flex;
-    justify-content: center;
-    gap: 25px; /* Espacio entre los botones */
-    margin-bottom: 40px;
-    flex-wrap: wrap; /* Permitir que los botones se envuelvan en pantallas pequeñas */
-}
-
-/* Estilo de los botones */
-.form-button {
-    background: var(--primary-purple); /* Fondo morado para los botones */
-    color: var(--white);
-    padding: 15px 30px;
-    border-radius: var(--border-radius-md); /* Bordes redondeados para los botones */
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 1.1em;
-    transition: all 0.3s ease;
-    box-shadow: var(--shadow-light); /* Sombra sutil para los botones */
-    display: flex; /* Para alinear el ícono y el texto */
-    align-items: center;
-    justify-content: center;
-    min-width: 260px; /* Ancho mínimo para que se vean bien */
+/*
+         * Content Section
+         */
+.content-section {
+    padding: 50px 0;
     text-align: center;
 }
 
+.content-section h1,
+.content-section p {
+    font-family: 'Play', sans-serif;
+    color: var(--text-dark);
+}
+
+.form-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    margin-bottom: 40px;
+}
+
+.form-button {
+    display: inline-flex;
+    align-items: center;
+    padding: 12px 25px;
+    background-color: var(--primary-blue);
+    color: var(--text-light);
+    text-decoration: none;
+    border-radius: var(--border-radius-md);
+    font-weight: 700;
+    transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: var(--shadow-sm);
+}
+
 .form-button i {
-    margin-right: 10px; /* Espacio entre el ícono y el texto */
-    font-size: 1.2em;
+    margin-right: 10px;
+    font-size: 1.1em;
 }
 
 .form-button:hover {
-    background: var(--secondary-purple); /* Cambio de color al pasar el ratón */
-    transform: translateY(-3px); /* Efecto de elevación */
-    box-shadow: var(--shadow-dark); /* Sombra más pronunciada al pasar el ratón */
+    background-color: var(--secondary-orange);
+    transform: translateY(-3px);
+    box-shadow: var(--shadow-md);
 }
 
-/* Contenedor del video */
 .video-container {
     position: relative;
-    width: 90%; /* Ancho del video relativo al contenedor padre */
-    max-width: 800px; /* Ancho máximo del video */
-    margin: 0 auto 30px; /* Centrar el video y añadir margen inferior */
-    padding-bottom: 56.25%; /* Relación de aspecto 16:9 (altura / ancho = 9 / 16 = 0.5625) */
+    width: 100%;
+    padding-bottom: 56.25%;
+    /* 16:9 aspect ratio */
     height: 0;
+    margin: 0 auto;
+    max-width: 800px;
+    border-radius: var(--border-radius-lg);
     overflow: hidden;
-    border-radius: var(--border-radius-lg); /* Bordes redondeados grandes para el video */
-    box-shadow: var(--shadow-dark); /* Sombra pronunciada para el video */
-    background-color: #000; /* Fondo negro para el reproductor */
+    box-shadow: var(--shadow-md);
 }
 
 .video-container iframe {
@@ -138,80 +143,21 @@ body {
     border: 0;
 }
 
-/* Párrafo final */
-.content-section p:last-of-type {
-    font-size: 1em;
-    color: var(--light-text);
-    margin-top: 30px; /* Margen superior para separarlo del video */
-    font-style: italic;
-}
-
-/* Media Queries para Responsividad */
+/* Responsive Adjustments */
 @media (max-width: 768px) {
-    .content-section {
-        padding: 60px 0;
-        margin: 20px auto;
-        border-radius: var(--border-radius-md);
+    .hero-demo {
+        padding: 60px 15px;
     }
 
-    .content-section::before {
-        height: 150px;
-        border-radius: var(--border-radius-md) var(--border-radius-md) 0 0;
+    .hero-demo h1 {
+        font-size: 2.5em;
     }
 
-    .content-section h1 {
-        font-size: 2em;
-        top: -40px;
-    }
-
-    .content-section p {
-        font-size: 1em;
-        padding: 0 15px;
+    .hero-demo p {
+        font-size: 1.1em;
     }
 
     .form-buttons {
-        flex-direction: column; /* Apilar botones en pantallas más pequeñas */
-        gap: 15px;
-    }
-
-    .form-button {
-        width: 80%; /* Hacer los botones un poco más anchos en móvil */
-        min-width: unset; /* Remover el min-width */
-        padding: 12px 20px;
-        font-size: 1em;
-    }
-
-    .video-container {
-        width: 95%; /* Video un poco más ancho en móvil */
-        border-radius: var(--border-radius-md);
-    }
-}
-
-@media (max-width: 480px) {
-    .content-section {
-        padding: 40px 0;
-    }
-
-    .content-section::before {
-        height: 120px;
-    }
-
-    .content-section h1 {
-        font-size: 1.6em;
-        top: -30px;
-    }
-
-    .content-section p {
-        font-size: 0.9em;
-    }
-
-    .form-button {
-        font-size: 0.9em;
-        padding: 10px 15px;
-    }
-
-    .form-button i {
-        font-size: 1em;
-        margin-right: 8px;
+        flex-direction: column;
     }
 }
