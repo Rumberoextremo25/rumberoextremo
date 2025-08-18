@@ -1,7 +1,6 @@
 /* General Body Styling */
 body {
     font-family: 'Poppins', sans-serif; /* Using Poppins for body text */
-    background-color: #000000; /* Deep dark background */
     color: #E0E0E0; /* Light text for contrast */
     line-height: 1.6;
     margin: 0;
@@ -13,7 +12,6 @@ body {
 /* FAQ Section */
 .faq-section {
     padding: 80px 20px 40px; /* Top padding to clear fixed header */
-    background: linear-gradient(180deg, rgba(0, 0, 0, 0.7) 0%, rgba(26, 26, 46, 0.9) 100%); /* Subtle gradient background */
     min-height: calc(100vh - 100px); /* Ensures it takes at least viewport height */
     display: flex;
     justify-content: center;
@@ -22,7 +20,7 @@ body {
 
 /* FAQ Container - Main content box */
 .faq-container {
-    background-color: rgba(25, 25, 45, 0.9); /* Slightly lighter and transparent background for content */
+    background-color: #141443; /* Slightly lighter and transparent background for content */
     border-radius: 15px;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5); /* Pronounced shadow */
     padding: 40px;
@@ -36,10 +34,10 @@ body {
 /* FAQ Main Title */
 .faq-title {
     font-family: 'Montserrat', sans-serif; /* Montserrat for titles */
-    color: #FFD700; /* Gold/Yellow for main title */
+    color: #FFFFFF; /* Gold/Yellow for main title */
     font-size: 3em;
     margin-bottom: 20px;
-    text-shadow: 0 0 10px rgba(255, 215, 0, 0.3); /* Subtle text shadow */
+    text-shadow: 0 0 10px rgba(106, 0, 255, 0.3); /* Subtle text shadow */
 }
 
 /* FAQ Introduction Text */
@@ -80,7 +78,7 @@ body {
     width: 100%;
     padding: 20px 30px;
     background-color: transparent; /* No background for the button itself */
-    color: #FFD700; /* Gold/Yellow for question text */
+    color: #FFFFFF; /* Gold/Yellow for question text */
     font-family: 'Montserrat', sans-serif;
     font-size: 1.3em;
     font-weight: 600;
@@ -141,7 +139,7 @@ body {
 }
 
 .faq-contact-link {
-    color: #FFD700; /* Gold/Yellow for the contact link */
+    color: #FFFFFF; /* Gold/Yellow for the contact link */
     text-decoration: none;
     font-weight: bold;
     transition: color 0.3s ease, text-decoration 0.3s ease;

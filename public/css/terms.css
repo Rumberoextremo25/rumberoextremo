@@ -1,7 +1,7 @@
 /* General Body Styling */
 body {
     font-family: 'Poppins', sans-serif; /* Usamos Poppins para el cuerpo */
-    background-color: #1a1a2e; /* Un fondo oscuro profundo */
+    background-color: #ffffff; /* Un fondo oscuro profundo */
     color: #E0E0E0; /* Texto claro para contraste */
     line-height: 1.6;
     margin: 0;
@@ -13,7 +13,6 @@ body {
 /* Main Content Section */
 .content-section {
     padding: 80px 20px 40px; /* Padding superior para evitar que el header fijo lo cubra */
-    background: linear-gradient(180deg, rgba(0, 0, 0, 0.7) 0%, rgba(26, 26, 46, 0.9) 100%); /* Degradado sutil */
     min-height: calc(100vh - 100px); /* Asegura que ocupe al menos la altura de la ventana */
     display: flex;
     justify-content: center;
@@ -22,24 +21,24 @@ body {
 
 /* Policy Container - The main content box */
 .policy-container {
-    background-color: rgba(25, 25, 45, 0.9); /* Fondo ligeramente más claro y transparente para el contenido */
+    background-color: #141443; /* Fondo ligeramente más claro y transparente para el contenido */
     border-radius: 15px;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5); /* Sombra más pronunciada */
     padding: 40px;
     max-width: 900px; /* Ancho máximo para legibilidad */
     width: 100%;
     margin: 20px auto; /* Centra el contenedor y añade margen */
-    border: 1px solid rgba(255, 215, 0, 0.2); /* Borde sutil dorado */
+    border: 1px solid rgba(183, 0, 255, 0.3); /* Borde sutil dorado */
 }
 
 /* Main Title */
 .policy-container h1 {
     font-family: 'Montserrat', sans-serif; /* Montserrat para títulos */
-    color: #FFD700; /* Dorado/Amarillo para el título principal */
+    color: #ffffff; /* Dorado/Amarillo para el título principal */
     font-size: 3em;
     text-align: center;
     margin-bottom: 20px;
-    text-shadow: 0 0 10px rgba(255, 215, 0, 0.3); /* Sombra de texto sutil */
+    text-shadow: 0 0 10px rgba(183, 0, 255, 0.3); /* Sombra de texto sutil */
 }
 
 /* Last Updated Text */
@@ -69,7 +68,7 @@ body {
 /* Section Headings */
 .policy-section h2 {
     font-family: 'Montserrat', sans-serif;
-    color: #FFD700; /* Dorado/Amarillo para subtítulos */
+    color: #ffffff; /* Dorado/Amarillo para subtítulos */
     font-size: 1.8em;
     margin-top: 0;
     margin-bottom: 15px;
@@ -135,7 +134,7 @@ body {
 }
 
 .policy-contact ul li a {
-    color: #FFD700; /* Enlaces dorados */
+    color: #ffffff; /* Enlaces dorados */
     text-decoration: none;
     font-weight: bold;
     transition: color 0.3s ease, text-decoration 0.3s ease;

@@ -6,7 +6,7 @@
         {{-- Sección 1: Rumbero Extremo (Acerca de) --}}
         <div class="footer-section footer-about">
             <a href="{{ url('/') }}" class="footer-logo-link">
-                <img src="{{ asset('assets/img/IMG_4253.png') }}" alt="Logo Rumbero Extremo" class="footer-logo">
+                <img src="{{ asset('assets/img/IMG_4254.png') }}" alt="Logo Rumbero Extremo" class="footer-logo">
             </a>
             <h3>Rumbero Extremo</h3>
             <p>Tu guía definitiva para la vida nocturna en Venezuela. Descubre eventos, conecta con amigos y vive experiencias inolvidables en los mejores lugares de rumba.</p>
@@ -24,7 +24,7 @@
         <div class="footer-section footer-links">
             <h3>Enlaces Rápidos</h3>
             <ul>
-                <li><a href="{{ url('/') }}">Inicio</a></li>
+                <li><a href="{{ url('/faq') }}">Preguntas Frecuentes</a></li>
                 <li><a href="{{ url('/about') }}">¿Quiénes somos?</a></li>
                 <li><a href="{{ url('/terms') }}">Términos & Condiciones</a></li>
                 <li><a href="{{ url('/privacy') }}">Políticas de Privacidad</a></li>

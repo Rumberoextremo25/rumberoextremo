@@ -72,12 +72,12 @@ footer {
 
 /* Sección Rumbero Extremo (Logo) */
 .footer-about .footer-logo-link {
-    margin-bottom: 20px;
+    margin-bottom: 10px;
     display: inline-block;
 }
 
 .footer-about .footer-logo {
-    max-width: 120px;
+    max-width: 70px;
     height: auto;
 }
 
