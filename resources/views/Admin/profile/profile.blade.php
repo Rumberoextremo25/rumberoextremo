@@ -23,7 +23,7 @@
         <div class="profile-hero-section">
             <div class="profile-avatar-wrapper">
                 {{-- Usa la URL de la foto de perfil si existe en profile_photo_path, de lo contrario, un avatar generado --}}
-                <img src="{{ Auth::user()->profile_photo_path ? Storage::url(Auth::user()->profile_photo_path) : asset('assets/img/avatars/default-avatar.png') }}"
+                <img src="{{ Auth::user()->profile_photo_path ? Storage::url(Auth::user()->profile_photo_path) : asset('assets/img/dashboard/logo_perfil_sidebar.png') }}"
                     alt="Foto de Perfil" class="profile-avatar-lg">
             </div>
             <div class="profile-header-info">

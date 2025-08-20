@@ -1,19 +1,12 @@
 :root {
     /* Color Palette V2 */
-    --primary-blue: #A601B3;
-    /* Azul verdoso suave y moderno */
-    --secondary-orange: #141443;
-    /* Naranja vibrante para acentos */
-    --light-bg: #ecf0f1;
-    /* Fondo gris muy claro */
-    --dark-bg: #34495e;
-    /* Gris azulado oscuro para contraste */
-    --text-dark: #2c3e50;
-    /* Gris carbón para texto principal */
-    --text-light: #ecf0f1;
-    /* Gris claro para el texto en fondos oscuros */
-    --card-bg: #fff;
-    /* Fondo blanco para las tarjetas */
+    --primary-blue: #A601B3; /* Azul verdoso suave y moderno */
+    --secondary-orange: #141443; /* Naranja vibrante para acentos */
+    --light-bg: #ecf0f1; /* Fondo gris muy claro */
+    --dark-bg: #34495e; /* Gris azulado oscuro para contraste */
+    --text-dark: #2c3e50; /* Gris carbón para texto principal */
+    --text-light: #ecf0f1; /* Gris claro para el texto en fondos oscuros */
+    --card-bg: #fff; /* Fondo blanco para las tarjetas */
 
     /* Shadows V2 */
     --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
@@ -27,8 +20,8 @@
 }
 
 /*
-         * Base Styles and Typography V2
-         */
+ * Base Styles and Typography V2
+ */
 body {
     font-family: 'Roboto', sans-serif;
     margin: 0;
@@ -47,10 +40,11 @@ body {
 }
 
 /*
-         * Hero Section for Contact Page
-         */
+ * Hero Section for Contact Page
+ */
 .hero-contact {
     position: relative;
+    /* Use the new color variables for a gradient */
     background: linear-gradient(135deg, var(--primary-blue), var(--secondary-orange));
     color: var(--text-light);
     padding: 80px 20px;
@@ -77,8 +71,8 @@ body {
 }
 
 /*
-         * Main Content Section
-         */
+ * Main Content Section
+ */
 .content-section {
     padding: 50px 0;
     text-align: center;
@@ -92,9 +86,21 @@ body {
     margin-bottom: 20px;
 }
 
+.content-section h1::after {
+    content: '';
+    width: 80px;
+    height: 4px;
+    background-color: var(--primary-blue);
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 2px;
+}
+
 /*
-         * Contact Form Styles
-         */
+ * Contact Form Styles
+ */
 .contact-form-container {
     background-color: var(--card-bg);
     border-radius: var(--border-radius-lg);
@@ -117,6 +123,17 @@ body {
     margin-top: 5px;
 }
 
+/* New CSS to handle the name and email fields side-by-side */
+.form-row {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.form-row .form-group {
+    flex: 1 1 45%; /* Allows items to grow and shrink, minimum 45% width */
+}
+
 .contact-form input[type="text"],
 .contact-form input[type="email"],
 .contact-form textarea {
@@ -135,7 +152,7 @@ body {
 .contact-form textarea:focus {
     outline: none;
     border-color: var(--primary-blue);
-    box-shadow: 0 0 0 4px rgba(26, 188, 156, 0.25);
+    box-shadow: 0 0 0 4px rgba(166, 1, 179, 0.25); /* Using rgba from --primary-blue */
 }
 
 .contact-form textarea {

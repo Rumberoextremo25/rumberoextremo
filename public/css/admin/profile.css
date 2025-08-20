@@ -10,34 +10,38 @@
     --shadow-light: rgba(0, 0, 0, 0.05);
     --border-radius: 8px;
     --button-hover-color: #5a0bac;
+    --gap-spacing: 20px; /* Nueva variable para espaciado consistente */
 }
 
 body {
     font-family: 'Inter', sans-serif; /* Or your preferred font */
     background-color: #f4f7f6; /* Light background to match the image */
     color: var(--text-color);
+    margin: 0; /* Asegura que no haya margen por defecto en el body */
+    padding: 0; /* Asegura que no haya padding por defecto en el body */
 }
 
 .dashboard-container {
     max-width: 900px; /* Adjust as needed to match the width in the image */
     margin: 20px auto;
-    padding: 20px;
+    padding: var(--gap-spacing);
     background-color: var(--card-bg-color); /* Matches background color in the image */
     border-radius: var(--border-radius);
     box-shadow: 0 4px 12px var(--shadow-light);
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: var(--gap-spacing);
 }
 
 /* Profile Hero Section */
 .profile-hero-section {
     display: flex;
     align-items: center;
-    gap: 20px;
-    padding-bottom: 20px;
+    gap: var(--gap-spacing);
+    padding-bottom: var(--gap-spacing);
     border-bottom: 1px solid var(--border-color);
-    margin-bottom: 20px;
+    margin-bottom: var(--gap-spacing);
+    flex-wrap: wrap; /* Permite que los elementos se envuelvan en pantallas pequeñas */
 }
 
 .profile-avatar-wrapper {
@@ -55,8 +59,6 @@ body {
 .profile-avatar-lg {
     width: 60px; /* Adjust size of the icon inside the circle */
     height: 60px;
-    /* For an actual image, you'd use object-fit: cover; */
-    /* If it's an SVG icon, ensure its color is white or light to contrast with purple */
     filter: invert(100%) sepia(0%) saturate(7486%) hue-rotate(180deg) brightness(117%) contrast(100%); /* Makes a black icon white */
 }
 
@@ -72,17 +74,17 @@ body {
     font-weight: 600;
     margin-bottom: 5px;
     color: var(--text-color);
+    word-break: break-word; /* Permite que el nombre se rompa si es muy largo */
 }
 
-.profile-role-tag {
-    font-size: 1rem;
-    color: var(--light-text-color);
-    margin-bottom: 2px; /* Closer to the company name */
-}
-
+.profile-role-tag,
 .profile-company {
     font-size: 1rem;
     color: var(--light-text-color);
+    margin-bottom: 2px; /* Closer to the company name / text above it */
+}
+
+.profile-company {
     margin-bottom: 15px; /* Space before the button */
 }
 
@@ -100,6 +102,7 @@ body {
     text-decoration: none; /* Remove underline for links */
     align-self: flex-end; /* Align to the right within its flex container */
     margin-left: auto; /* Push button to the far right */
+    white-space: nowrap; /* Evita que el texto del botón se rompa */
 }
 
 .edit-profile-btn:hover {
@@ -109,21 +112,15 @@ body {
 /* Profile Grid for Cards */
 .profile-grid {
     display: grid;
-    grid-template-columns: 1fr; /* Stack on smaller screens */
-    gap: 20px;
-}
-
-@media (min-width: 768px) {
-    .profile-grid {
-        grid-template-columns: 1fr 1fr; /* Two columns on larger screens */
-    }
+    grid-template-columns: 1fr; /* Stack on smaller screens (default) */
+    gap: var(--gap-spacing);
 }
 
 /* Profile Card Styling */
 .profile-card {
     background-color: var(--card-bg-color);
     border-radius: var(--border-radius);
-    padding: 20px;
+    padding: var(--gap-spacing);
     box-shadow: 0 2px 8px var(--shadow-light);
     border: 1px solid var(--border-color); /* Light border */
 }
@@ -156,6 +153,7 @@ body {
     align-items: center;
     padding: 5px 0;
     border-bottom: 1px dashed #f0f0f0; /* Subtle separator */
+    flex-wrap: wrap; /* Permite que los elementos se envuelvan */
 }
 
 .detail-item:last-child {
@@ -167,12 +165,14 @@ body {
     font-weight: 500;
     flex-shrink: 0; /* Prevent strong tag from shrinking */
     margin-right: 15px; /* Space between bold text and value */
+    word-break: break-word; /* Permite que el texto fuerte se rompa si es largo */
 }
 
 .detail-item span {
     color: var(--light-text-color);
     text-align: right;
     flex-grow: 1; /* Allow span to take remaining space */
+    word-break: break-all; /* Permite que el valor se rompa */
 }
 
 /* Specific adjustments for the contact info card to match alignment */
@@ -188,6 +188,7 @@ body {
     font-weight: 500;
     color: #fff;
     text-transform: uppercase;
+    white-space: nowrap; /* Evita que el texto de la insignia se rompa */
 }
 
 .status-success {
@@ -205,6 +206,7 @@ body {
     text-decoration: none;
     font-weight: 500;
     transition: background-color 0.3s ease;
+    white-space: nowrap; /* Evita que el texto del botón se rompa */
 }
 
 .btn-primary {
@@ -228,6 +230,162 @@ body {
 }
 
 /* Ensure Font Awesome icons are styled correctly */
-.fas {
+.fas, .far, .fab, .fal, .fad { /* Incluye todos los prefijos comunes de Font Awesome */
     margin-right: 5px; /* Small space after icons */
+}
+
+/* =========================================================================
+   Media Queries para Responsividad
+   ========================================================================= */
+
+/* Para pantallas grandes (desktops y laptops > 992px) */
+@media (min-width: 993px) {
+    .dashboard-container {
+        margin: 40px auto; /* Más espacio en los lados para pantallas grandes */
+        padding: 30px; /* Más padding interno */
+    }
+}
+
+/* Para tabletas y pantallas medianas (de 768px a 992px) */
+@media (min-width: 768px) and (max-width: 992px) {
+    .dashboard-container {
+        margin: 20px; /* Márgenes laterales para evitar que se pegue a los bordes */
+        max-width: none; /* Permite que ocupe todo el ancho disponible */
+    }
+
+    .profile-hero-section {
+        flex-direction: row; /* Asegura la disposición en fila si se había cambiado */
+        align-items: center;
+        text-align: left; /* Alinea el texto a la izquierda */
+    }
+
+    .profile-display-name {
+        font-size: 1.6rem;
+    }
+
+    .profile-role-tag,
+    .profile-company {
+        font-size: 0.95rem;
+    }
+
+    .edit-profile-btn {
+        padding: 7px 18px;
+        font-size: 0.85rem;
+    }
+
+    .profile-grid {
+        grid-template-columns: 1fr 1fr; /* Dos columnas */
+        gap: 15px; /* Espacio ligeramente reducido */
+    }
+
+    .profile-card {
+        padding: 18px; /* Padding de tarjeta ligeramente reducido */
+    }
+
+    .card-title {
+        font-size: 1.2rem;
+    }
+
+    .detail-item strong {
+        font-size: 0.95rem;
+    }
+
+    .detail-item span {
+        font-size: 0.9rem;
+    }
+}
+
+/* Para teléfonos móviles y pantallas pequeñas (hasta 767px) */
+@media (max-width: 767px) {
+    body {
+        padding: 0; /* Asegura que no haya padding en el body */
+    }
+
+    .dashboard-container {
+        margin: 10px; /* Reduce los márgenes generales */
+        padding: 15px; /* Reduce el padding interno */
+        border-radius: 0; /* Bordes rectos para ocupar todo el ancho */
+        box-shadow: none; /* Elimina la sombra para un aspecto más limpio en móvil */
+        max-width: none; /* Permite que ocupe todo el ancho disponible */
+    }
+
+    .profile-hero-section {
+        flex-direction: column; /* Apila el avatar y la información */
+        align-items: center; /* Centra los elementos */
+        text-align: center; /* Centra el texto */
+        gap: 15px; /* Reduce el espacio */
+        padding-bottom: 15px; /* Reduce el padding inferior */
+        margin-bottom: 15px; /* Reduce el margen inferior */
+    }
+
+    .profile-avatar-wrapper {
+        width: 80px; /* Avatar más pequeño */
+        height: 80px;
+    }
+
+    .profile-avatar-lg {
+        width: 50px; /* Icono del avatar más pequeño */
+        height: 50px;
+    }
+
+    .profile-display-name {
+        font-size: 1.5rem; /* Tamaño de fuente más pequeño */
+        margin-bottom: 3px;
+    }
+
+    .profile-role-tag,
+    .profile-company {
+        font-size: 0.9rem; /* Fuentes más pequeñas */
+        margin-bottom: 1px;
+    }
+    .profile-company {
+        margin-bottom: 10px; /* Ajuste el margen inferior del nombre de la empresa */
+    }
+
+    .edit-profile-btn {
+        width: 100%; /* El botón ocupa todo el ancho */
+        justify-content: center; /* Centra el contenido del botón */
+        padding: 10px 15px; /* Padding ajustado */
+        font-size: 0.9rem;
+        margin-left: 0; /* Elimina el margin-left: auto */
+        align-self: center; /* Centra el botón */
+    }
+
+    .profile-grid {
+        grid-template-columns: 1fr; /* Una sola columna para todos los cards */
+        gap: 15px; /* Espaciado reducido */
+    }
+
+    .profile-card {
+        padding: 15px; /* Padding de tarjeta reducido */
+    }
+
+    .card-title {
+        font-size: 1.1rem; /* Título de tarjeta más pequeño */
+        margin-bottom: 10px;
+        padding-bottom: 8px;
+    }
+
+    .detail-item {
+        flex-direction: column; /* Apila la etiqueta y el valor */
+        align-items: flex-start; /* Alinea a la izquierda */
+        gap: 3px; /* Espacio reducido entre label y value */
+        padding: 8px 0; /* Padding ajustado */
+    }
+
+    .detail-item strong {
+        font-size: 0.9rem; /* Texto fuerte más pequeño */
+        margin-right: 0; /* Elimina el margen derecho */
+    }
+
+    .detail-item span {
+        font-size: 0.85rem; /* Valor más pequeño */
+        text-align: left; /* Alinea a la izquierda */
+        width: 100%; /* Ocupa todo el ancho */
+    }
+
+    .status-badge {
+        font-size: 0.75rem; /* Insignia de estado más pequeña */
+        padding: 3px 6px;
+    }
 }

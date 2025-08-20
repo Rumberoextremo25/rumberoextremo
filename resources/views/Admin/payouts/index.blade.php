@@ -1,8 +1,9 @@
 @extends('layouts.admin')
 
 @section('content')
-<div class="container">
-    <h2>Pagos Pendientes a Aliados</h2>
+<div class="main-content">
+    <link rel="stylesheet" href="{{ asset('css/Admin/payout.css') }}">
+    <h2 class="page-title">Pagos Pendientes a Aliados</h2>
 
     @if (session('success'))
         <div class="alert alert-success">{{ session('success') }}</div>
@@ -12,10 +13,23 @@
     @endif
 
     @if($pendingPayouts->isEmpty())
-        <p>No hay pagos pendientes en este momento.</p>
+        <p class="no-payouts">No hay pagos pendientes en este momento.</p>
     @else
-        <form action="{{ route('admin.payouts.generate_csv') }}" method="GET" style="display:inline;">
-            <table class="table table-bordered">
+        <div class="table-actions">
+            <form action="{{ route('admin.payouts.generate_csv') }}" method="GET" class="form-csv">
+                <button type="submit" class="btn btn-primary">Generar CSV Seleccionados</button>
+            </form>
+            
+            <form action="{{ route('admin.payouts.mark_processed') }}" method="POST" class="form-process">
+                @csrf
+                <input type="hidden" name="payout_ids[]" id="selected-payout-ids">
+                <input type="text" name="transaction_reference" placeholder="Referencia bancaria (opcional)" class="form-control">
+                <button type="submit" class="btn btn-success" id="mark-processed-btn">Marcar Seleccionados como Procesados</button>
+            </form>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="payouts-table">
                 <thead>
                     <tr>
                         <th><input type="checkbox" id="select-all"></th>
@@ -38,49 +52,39 @@
                             <td>{{ number_format($payout->amount, 2, ',', '.') }}</td>
                             <td>{{ $payout->partner->account_number }} ({{ $payout->partner->bank_name }})</td>
                             <td>{{ $payout->created_at->format('d/m/Y H:i') }}</td>
-                            <td><span class="badge bg-warning">{{ $payout->status }}</span></td>
+                            <td><span class="badge badge-warning">{{ $payout->status }}</span></td>
                         </tr>
                     @endforeach
                 </tbody>
             </table>
-            <button type="submit" class="btn btn-primary">Generar CSV Seleccionados</button>
-        </form>
-
-        <form action="{{ route('admin.payouts.mark_processed') }}" method="POST" style="display:inline; margin-left: 10px;">
-            @csrf
-            <input type="hidden" name="payout_ids[]" id="selected-payout-ids">
-            <input type="text" name="transaction_reference" placeholder="Referencia bancaria (opcional)" class="form-control" style="width: 250px; display: inline;">
-            <button type="submit" class="btn btn-success" id="mark-processed-btn">Marcar Seleccionados como Procesados</button>
-        </form>
-
-        <script>
-            // JavaScript para manejar la selección de checkboxes y el formulario
-            document.getElementById('select-all').addEventListener('change', function() {
-                document.querySelectorAll('input[name="payout_ids[]"]').forEach(checkbox => {
-                    checkbox.checked = this.checked;
-                });
-            });
-
-            document.getElementById('mark-processed-btn').addEventListener('click', function(event) {
-                const selectedIds = Array.from(document.querySelectorAll('input[name="payout_ids[]"]:checked'))
-                                       .map(checkbox => checkbox.value);
-                if (selectedIds.length === 0) {
-                    alert('Por favor, selecciona al menos un pago para marcar como procesado.');
-                    event.preventDefault();
-                    return;
-                }
-                document.getElementById('selected-payout-ids').value = JSON.stringify(selectedIds);
-                // Si tienes un solo input oculto con [] te pasará un array PHP,
-                // si no, podrías usar un loop para crear múltiples inputs:
-                // selectedIds.forEach(id => {
-                //     const input = document.createElement('input');
-                //     input.type = 'hidden';
-                //     input.name = 'payout_ids[]';
-                //     input.value = id;
-                //     this.closest('form').appendChild(input);
-                // });
-            });
-        </script>
+        </div>
     @endif
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // JavaScript para manejar la selección de checkboxes y el formulario
+        document.getElementById('select-all').addEventListener('change', function() {
+            document.querySelectorAll('input[name="payout_ids[]"]').forEach(checkbox => {
+                checkbox.checked = this.checked;
+            });
+        });
+
+        document.getElementById('mark-processed-btn').addEventListener('click', function(event) {
+            const selectedIds = Array.from(document.querySelectorAll('input[name="payout_ids[]"]:checked'))
+                .map(checkbox => checkbox.value);
+            
+            if (selectedIds.length === 0) {
+                // Aquí puedes usar un modal o una notificación en lugar de alert
+                console.error('Por favor, selecciona al menos un pago para marcar como procesado.');
+                event.preventDefault();
+                return;
+            }
+            
+            const form = this.closest('form');
+            const hiddenInput = form.querySelector('#selected-payout-ids');
+            hiddenInput.value = JSON.stringify(selectedIds);
+        });
+    });
+</script>
 @endsection

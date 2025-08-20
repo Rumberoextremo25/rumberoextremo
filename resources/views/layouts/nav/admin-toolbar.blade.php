@@ -17,7 +17,7 @@
         <a href="{{ route('profile') }}" class="profile-link">
             <span class="user-name">Hola, {{ Auth::user()->name ?? 'Administrador' }}</span>
             <!-- Usa la ruta de la foto de perfil o un avatar predeterminado -->
-            <img src="{{ Auth::user()->profile_photo_path ?? asset('assets/img/default-avatar.png') }}" alt="Avatar de Usuario" class="avatar">
+            <img src="{{ Auth::user()->profile_photo_path ?? asset('assets/img/dashboard/logo_perfil.png') }}" alt="Avatar de Usuario" class="avatar">
         </a>
     </div>
 </header>

@@ -2,12 +2,8 @@
 
 @section('title', 'Gestión de Promociones')
 
-@push('styles') {{-- Agregamos el CSS específico de esta vista --}}
-    {{-- Asegúrate de que Font Awesome y Google Fonts estén en tu layout admin global para evitar duplicados --}}
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-    {{-- Enlazamos al nuevo archivo CSS para la gestión de promociones --}}
-    <link rel="stylesheet" href="{{ asset('css/admin/promotion.css') }}">
+@push('styles')
+    <link rel="stylesheet" href="{{ asset('css/admin/promotion.css') }}"> {{-- Tus estilos específicos de promociones --}}
 @endpush
 
 @section('content')
@@ -19,7 +15,6 @@
             </a>
         </div>
 
-        {{-- Mensaje de éxito o error --}}
         @if (session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 <i class="fas fa-check-circle"></i> {{ session('success') }}
@@ -33,12 +28,6 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         @endif
-
-        {{-- Barra de búsqueda (si la implementas en el futuro) --}}
-        {{-- <div class="search-bar">
-            <i class="fas fa-search"></i>
-            <input type="text" id="promotionSearch" placeholder="Buscar promociones...">
-        </div> --}}
 
         <div class="table-responsive">
             @if ($promotions->isEmpty())
@@ -118,10 +107,8 @@
 @endsection
 
 @push('scripts')
-    {{-- Pasa la URL base para la gestión de promociones al JS --}}
     <script>
         window.promotionsBaseUrl = "{{ route('admin.promotions.index') }}";
     </script>
-    {{-- Carga tu script externo aquí --}}
     <script src="{{ asset('js/admin/promotion.js') }}"></script>
 @endpush

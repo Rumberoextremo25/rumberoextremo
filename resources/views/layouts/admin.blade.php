@@ -14,6 +14,8 @@
     <link rel="stylesheet" href="{{ asset('css/admin/admin.css') }}">
     <link rel="stylesheet" href="{{ asset('css/admin/users.css') }}">
     <link rel="stylesheet" href="{{ asset('css/admin/banner.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/sidebar.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/toolbar.css') }}">
 
     {{-- Aquí se inyectarán los estilos específicos de cada página --}}
     @stack('styles')

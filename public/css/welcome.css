@@ -111,7 +111,7 @@ h3 {
     overflow: hidden;
     border-bottom-left-radius: 50px;
     border-bottom-right-radius: 50px;
-    background-image: url('https://i.pinimg.com/originals/02/ba/86/02ba867e545f953631148c89629412b1.jpg');
+    background-image: url('../../assets/img/home/fondo_banner.PNG'); /* Ejemplo */
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
