@@ -7,10 +7,8 @@ use App\Http\Controllers\Api\AllyController;
 use App\Http\Controllers\Api\HomeController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PaymentController;
-use App\Http\Controllers\Api\WebhookController;
+use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\Api\BankController;
-use App\Http\Controllers\Api\BcvRatesController;
-use App\Http\Controllers\PaymentSettingsController;
 
 /*
 |--------------------------------------------------------------------------
@@ -60,16 +58,24 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::prefix('payments')->group(function () {
     // Ruta para iniciar un pago C2P (Pago Móvil)
     Route::post('/c2p', [PaymentController::class, 'initiateC2PPayment']);
+
     // Ruta para procesar un pago con tarjeta (VPOS)
     Route::post('/card', [PaymentController::class, 'processCardPayment']);
+
+    // Nueva ruta agregada para el método processP2PPayment
+    Route::post('/p2p', [PaymentController::class, 'processP2PPayment']);
 });
 
 // --- Rutas para los Webhooks (WebhookController) ---
 Route::prefix('webhooks')->group(function () {
     // Webhook para notificaciones de pagos C2P
     Route::post('/bnc/c2p', [WebhookController::class, 'handleC2PWebhook']);
+    
     // Webhook para notificaciones de pagos con tarjeta (VPOS)
     Route::post('/bnc/card', [WebhookController::class, 'handleCardWebhook']);
+    
+    // Webhook para notificaciones de pagos P2P
+    Route::post('/bnc/p2p', [WebhookController::class, 'handleP2PWebhook']);
 });
 
 // --- Ruta para obtener la lista de Bancos (BankController) ---
@@ -84,11 +90,6 @@ Route::middleware('auth:sanctum')->group(function () {
     // Otros endpoints de usuario, ej:
     Route::put('/user/profile', [AuthController::class, 'updateProfile']);
 });
-
-//Ruta para guardar los detalles de Pago Móvil (C2P)
-
-Route::post('/user/c2p-settings', [PaymentSettingsController::class, 'saveC2PDetails']);
-Route::get('/user/c2p-settings', [PaymentSettingsController::class, 'getC2PDetails']);
 
 Route::get('/user', function (Request $request) {
     return $request->user();

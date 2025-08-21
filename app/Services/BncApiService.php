@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use Exception;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -15,6 +16,7 @@ class BncApiService
     private string $merchantId;
     private string $c2pApiUrl;
     private string $vposApiUrl;
+    private string $p2pApiUrl;
     private string $banksApiUrl;
 
     // URL y configuración para la API de tasas del BCV
@@ -23,18 +25,19 @@ class BncApiService
 
     public function __construct()
     {
-        // Carga las configuraciones desde config/bnc.php (que a su vez las toma de .env)
-        $this->authApiUrl = config('bnc.auth_api_url');
-        $this->clientGuid = config('bnc.client_guid');
-        $this->masterKey = config('bnc.master_key');
-        $this->merchantId = config('bnc.merchant_id');
-        $this->c2pApiUrl = config('bnc.c2p_api_url');
-        $this->vposApiUrl = config('bnc.vpos_api_url');
-        $this->banksApiUrl = config('bnc.banks_api_url');
+        // Carga las variables directamente del archivo .env usando env()
+        $this->authApiUrl = env('BNC_AUTH_API_URL');
+        $this->clientGuid = env('BNC_CLIENT_GUID');
+        $this->masterKey = env('BNC_MASTER_KEY');
+        $this->merchantId = env('BNC_MERCHANT_ID');
+        $this->c2pApiUrl = env('BNC_C2P_API_URL');
+        $this->vposApiUrl = env('BNC_VPOS_API_URL');
+        $this->p2pApiUrl = env('BNC_P2P_API_URL');
+        $this->banksApiUrl = env('BNC_BANKS_API_URL');
 
-        // Carga las configuraciones del BCV desde config/bnc.php también (o crea config/bcv.php si prefieres separar)
-        $this->bcvRatesApiUrl = config('bnc.rates_api_url');
-        $this->bcvCacheDuration = config('bnc.cache_duration_minutes');
+        // Y las variables del BCV de la misma manera
+        $this->bcvRatesApiUrl = env('BCV_RATES_API_URL');
+        $this->bcvCacheDuration = env('BCV_RATES_CACHE_MINUTES', 60);
     }
 
     /**
@@ -45,26 +48,33 @@ class BncApiService
      */
     public function getSessionToken(): ?string
     {
-        return Cache::remember('bnc_session_token', now()->addMinutes(59), function () { // Cache por 59 minutos
+        return Cache::remember('bnc_session_token', now()->addMinutes(59), function () {
             try {
-                $response = Http::post($this->authApiUrl, [
-                    'ClientGUID' => $this->clientGuid,
-                    'MasterKey' => $this->masterKey,
-                ]);
+                $cliente = '{"ClientGUID":"' . $this->clientGuid . '"}';
+
+                $value = $this->encrypt($cliente, $this->masterKey);
+                $validation = $this->createHash($cliente);
+
+                $solicitud = [
+                    "ClientGUID" => $this->clientGuid,
+                    "value" => $value,
+                    "Validation" => $validation,
+                    "Reference" => '',
+                    "swTestOperation" => false
+                ];
+
+                $response = Http::post($this->authApiUrl, $solicitud);
 
                 if ($response->successful()) {
-                    // *** IMPORTANTE: Cambia 'data.token' a 'value' ***
                     $token = $response->json('value');
-
                     if ($token) {
                         Log::info('BNC Session Token obtenido exitosamente.', ['token' => substr($token, 0, 10) . '...']);
                         return $token;
                     } else {
-                        Log::error('Fallo al extraer el token de la respuesta de la API BNC. El campo "value" no se encontró o estaba vacío.', ['response' => $response->json()]);
+                        Log::error('Fallo al extraer el token. El campo "value" no se encontró o estaba vacío.', ['response' => $response->json()]);
                         return null;
                     }
                 } else {
-                    // Aquí ya estás validando la conexión/respuesta
                     Log::error('Fallo en la conexión o la API de autenticación BNC devolvió un error.', [
                         'status' => $response->status(),
                         'response' => $response->json(),
@@ -72,12 +82,10 @@ class BncApiService
                     return null;
                 }
             } catch (\Illuminate\Http\Client\ConnectionException $e) {
-                // Error específico de conexión (ej. host no encontrado, timeout)
                 Log::error('Error de conexión a la API de autenticación BNC: ' . $e->getMessage());
                 return null;
-            } catch (\Exception $e) {
-                // Otros errores inesperados
-                Log::error('Excepción inesperada al obtener el token de sesión del BNC: ' . $e->getMessage());
+            } catch (Exception $e) {
+                Log::error('Excepción inesperada al obtener el token de sesión: ' . $e->getMessage());
                 return null;
             }
         });
@@ -86,40 +94,34 @@ class BncApiService
     /**
      * Inicia un pago C2P (Pago Móvil) a través de la API del BNC.
      *
-     * @param array $data Los datos necesarios para el pago C2P (DebtorBankCode, DebtorCellPhone, etc.).
+     * @param array $data Los datos necesarios para el pago C2P.
      * @return array|null La respuesta del BNC si el pago se inicia con éxito, o null en caso de error.
      */
     public function initiateC2PPayment(array $data): ?array
     {
-        $token = $this->getSessionToken();
-        if (!$token) {
-            Log::error('No se pudo obtener el token de sesión para iniciar el pago C2P.');
-            return null;
-        }
-
         try {
-            // Asegúrate de enviar el MerchantID que BNC requiere
-            $data['MerchantID'] = $this->merchantId;
+            // Estructura el array de datos con las claves que la API del BNC espera
+            $soliC2p = [
+                "DebtorBankCode" => intval($data['banco']),
+                "DebtorCellPhone" => $data['telefono'],
+                "DebtorID" => $data['cedula'],
+                "Amount" => floatval($data['monto']),
+                "Token" => $data['token'],
+                "Terminal" => $data['terminal'],
+            ];
 
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $token,
-                'Content-Type' => 'application/json',
-                'Accept' => 'application/json'
-            ])->post($this->c2pApiUrl, $data);
+            // Agrega el MerchantID al payload de la solicitud.
+            // Esto es un requisito común para las APIs de pago.
+            $soliC2p['MerchantID'] = $this->merchantId;
 
-            if ($response->successful()) {
-                Log::info('Respuesta exitosa de C2P del BNC.', ['response' => $response->json()]);
-                return $response->json();
-            } else {
-                Log::error('Fallo al iniciar el pago C2P con BNC.', [
-                    'status' => $response->status(),
-                    'response' => $response->body(),
-                    'request_data' => $data
-                ]);
-                return null;
-            }
-        } catch (\Exception $e) {
-            Log::error('Excepción al iniciar pago C2P con BNC: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            // El método sendEncryptedPostRequest se encarga de toda la lógica
+            // de encriptación, hashing y el envío de la petición HTTP.
+            return $this->sendEncryptedPostRequest($this->c2pApiUrl, $soliC2p);
+        } catch (\Throwable $e) {
+            Log::error('Excepción al procesar el pago C2P: ' . $e->getMessage(), [
+                'data' => $data,
+                'trace' => $e->getTraceAsString(),
+            ]);
             return null;
         }
     }
@@ -127,40 +129,76 @@ class BncApiService
     /**
      * Procesa un pago con tarjeta a través de la API del BNC (VPOS).
      *
-     * @param array $data Los datos necesarios para el pago con tarjeta (card_token, amount, description, etc.).
-     * @return array|null La respuesta del BNC si el pago se procesa con éxito, o null en caso de error.
+     * @param array $data Los datos para el pago con tarjeta.
+     * @return array|null La respuesta si el pago se procesa con éxito, o null en caso de error.
      */
     public function processCardPayment(array $data): ?array
     {
-        $token = $this->getSessionToken();
-        if (!$token) {
-            Log::error('No se pudo obtener el token de sesión para procesar el pago con tarjeta.');
+        try {
+            // Asegúrate de que los datos de entrada coincidan con lo que la API espera.
+            // Aquí se crea el payload con las claves que la API requiere.
+            $soliVpos = [
+                "TransactionIdentifier" => $data['identificador'],
+                "Amount" => floatval($data['monto']),
+                "idCardType" => intval($data['tipTarjeta']),
+                "CardNumber" => intval($data['tarjeta']),
+                "dtExpiration" => intval($data['fechExp']),
+                "CardHolderName" => $data['nomTarjeta'],
+                "AccountType" => intval($data['tipCuenta']),
+                "CVV" => intval($data['cvv']),
+                "CardPIN" => intval($data['pin']),
+                "CardHolderID" => intval($data['identificacion']),
+                "AffiliationNumber" => intval($data['afiliacion']),
+                // Agrega el MerchantID, que es un requisito común para VPOS.
+                "MerchantID" => $this->merchantId,
+            ];
+
+            // El método sendEncryptedPostRequest encapsula toda la lógica de encriptación,
+            // hashing y envío.
+            $response = $this->sendEncryptedPostRequest($this->vposApiUrl, $soliVpos);
+
+            // Retorna la respuesta del BNC. El controlador decidirá cómo mostrarla.
+            return $response;
+        } catch (\Throwable $e) {
+            Log::error('Excepción al procesar el pago VPOS: ' . $e->getMessage(), [
+                'data' => $data,
+                'trace' => $e->getTraceAsString(),
+            ]);
             return null;
         }
+    }
 
+    /**
+     * Procesa un pago P2P (Pago Móvil) a través de la API del BNC.
+     *
+     * @param array $data Los datos necesarios para el pago P2P.
+     * @return array|null La respuesta del BNC si el pago se procesa con éxito, o null en caso de error.
+     */
+    public function initiateP2PPayment(array $data): ?array
+    {
         try {
-            // Asegúrate de enviar el MerchantID que BNC requiere
-            $data['MerchantID'] = $this->merchantId;
+            // Estructura el array de datos con las claves que la API del BNC espera
+            $soliP2p = [
+                "BeneficiaryBankCode" => intval($data['banco']),
+                "BeneficiaryCellPhone" => $data['telefono'],
+                "BeneficiaryID" => $data['cedula'],
+                "BeneficiaryName" => $data['beneficiario'],
+                "Amount" => floatval($data['monto']),
+                "Description" => $data['descripcion'],
+                "BeneficiaryEmail" => $data['email'],
+            ];
 
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $token,
-                'Content-Type' => 'application/json',
-                'Accept' => 'application/json'
-            ])->post($this->vposApiUrl, $data);
+            // Agrega el MerchantID al payload de la solicitud
+            $soliP2p['MerchantID'] = $this->merchantId;
 
-            if ($response->successful()) {
-                Log::info('Respuesta exitosa de VPOS del BNC.', ['response' => $response->json()]);
-                return $response->json();
-            } else {
-                Log::error('Fallo al procesar el pago con tarjeta con BNC.', [
-                    'status' => $response->status(),
-                    'response' => $response->body(),
-                    'request_data' => $data
-                ]);
-                return null;
-            }
-        } catch (\Exception $e) {
-            Log::error('Excepción al procesar pago con tarjeta con BNC: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
+            // El método sendEncryptedPostRequest se encarga de toda la lógica
+            // de encriptación, hashing y el envío de la petición HTTP.
+            return $this->sendEncryptedPostRequest($this->p2pApiUrl, $soliP2p);
+        } catch (\Throwable $e) {
+            Log::error('Excepción al procesar el pago P2P: ' . $e->getMessage(), [
+                'data' => $data,
+                'trace' => $e->getTraceAsString(),
+            ]);
             return null;
         }
     }
@@ -178,9 +216,6 @@ class BncApiService
                 return null;
             }
 
-            // Asumiendo que el endpoint de bancos del BNC no necesita el token de sesión
-            // Si lo necesita, descomenta y usa: $token = $this->getSessionToken();
-            // Y luego añade el header Authorization: 'Bearer ' . $token
             $response = Http::get($this->banksApiUrl);
 
             if ($response->successful()) {
@@ -194,7 +229,7 @@ class BncApiService
                 ]);
                 return null;
             }
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('Excepción al obtener la lista de bancos del BNC: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
             return null;
         }
@@ -214,9 +249,7 @@ class BncApiService
                     Log::warning('BCV_RATES_API_URL no está configurada. Retornando tasas de BCV simuladas.');
                     return $this->simulateBcvRates();
                 }
-
                 $response = Http::timeout(10)->get($this->bcvRatesApiUrl);
-
                 if ($response->successful()) {
                     $rates = $response->json();
                     Log::info('Tasas de cambio del BCV obtenidas exitosamente.', ['rates' => $rates]);
@@ -228,7 +261,7 @@ class BncApiService
                     ]);
                     return null;
                 }
-            } catch (\Exception $e) {
+            } catch (Exception $e) {
                 Log::error('Excepción al obtener las tasas de cambio del BCV: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
                 return null;
             }
@@ -237,8 +270,6 @@ class BncApiService
 
     /**
      * Simula las tasas de cambio del BCV para desarrollo/pruebas.
-     * **¡ADVERTENCIA: REMUEVE O ADAPTA ESTA FUNCIÓN EN PRODUCCIÓN!**
-     * En producción, deberías obtener las tasas de una fuente real.
      *
      * @return array
      */
@@ -246,10 +277,112 @@ class BncApiService
     {
         $usdRate = round(36.00 + (mt_rand(-50, 50) / 100.0), 2);
         $eurRate = round(38.00 + (mt_rand(-50, 50) / 100.0), 2);
-
         return [
             ['currency' => 'USD', 'rate' => $usdRate],
             ['currency' => 'EUR', 'rate' => $eurRate],
         ];
+    }
+
+    // --- NUEVO MÉTODO PRIVADO PARA ENCAPSULAR LÓGICA REPETIDA ---
+
+    /**
+     * Método privado que gestiona la lógica de encriptación, hashing y envío de peticiones POST a la API de BNC.
+     *
+     * @param string $url El endpoint de la API.
+     * @param array $payload Los datos a encriptar y enviar.
+     * @return array|null La respuesta decodificada del BNC o null si falla.
+     */
+    private function sendEncryptedPostRequest(string $url, array $payload): ?array
+    {
+        try {
+            $jsonPayload = json_encode($payload);
+
+            $workingKey = $this->getWorkingKey();
+            $value = $this->encrypt($jsonPayload, $workingKey);
+            $validation = $this->createHash($jsonPayload);
+            $reference = $this->refere();
+
+            $requestData = [
+                "ClientGUID" => $this->clientGuid,
+                "value" => $value,
+                "Validation" => $validation,
+                "Reference" => $reference,
+                "swTestOperation" => false
+            ];
+
+            $response = Http::post($url, $requestData);
+
+            if ($response->successful()) {
+                Log::info('Petición exitosa a la API BNC.', ['url' => $url, 'response' => $response->json()]);
+                return $response->json();
+            } else {
+                Log::error('Fallo en la petición a la API BNC.', [
+                    'url' => $url,
+                    'status' => $response->status(),
+                    'response' => $response->body(),
+                    'request_data' => $payload
+                ]);
+                return null;
+            }
+        } catch (Exception $e) {
+            Log::error('Excepción al enviar petición a la API BNC: ' . $e->getMessage(), ['url' => $url, 'trace' => $e->getTraceAsString()]);
+            return null;
+        }
+    }
+
+    /**
+     * Implementa la lógica de encriptación que la API BNC requiere.
+     *
+     * @param string $data
+     * @param string $key
+     * @return string
+     */
+    private function encrypt(string $data, string $key): string
+    {
+        // Asegúrate de que tu clave sea de 32 bytes (256 bits) para AES-256.
+        $key = substr(hash('sha256', $key, true), 0, 32);
+
+        // Generar un IV aleatorio. El IV debe ser único para cada encriptación.
+        $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('aes-256-cbc'));
+
+        // Encriptar los datos
+        $encrypted = openssl_encrypt($data, 'aes-256-cbc', $key, OPENSSL_RAW_DATA, $iv);
+
+        // Concatenar el IV con los datos encriptados para poder desencriptar más tarde.
+        // Luego, codificar todo en Base64 para enviarlo de forma segura.
+        return base64_encode($iv . $encrypted);
+    }
+
+    /**
+     * Implementa la lógica de creación de hash que la API BNC requiere.
+     *
+     * @param string $data
+     * @return string
+     */
+    private function createHash(string $data): string
+    {
+        // Utiliza hash_hmac con la MasterKey
+        return hash_hmac('sha256', $data, $this->masterKey);
+    }
+
+    /**
+     * Obtiene la "Working Key" si es necesaria para la encriptación.
+     *
+     * @return string
+     */
+    private function getWorkingKey(): string
+    {
+        // En este caso, asumimos que la MasterKey es la Working Key
+        return $this->masterKey;
+    }
+
+    /**
+     * Genera un identificador de referencia único para la transacción.
+     *
+     * @return string
+     */
+    private function refere(): string
+    {
+        return uniqid('ref_', true);
     }
 }
