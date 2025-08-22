@@ -1,20 +1,23 @@
-/* General Body Styling for Guest Layout */
+/* Estilos generales para el diseño de invitado */
 body {
     font-family: 'Poppins', sans-serif;
-    background:  #ffffff; /* Degradado de oscuro a morado */
+    background: #ffffff;
+    /* Fondo blanco */
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
     margin: 0;
-    color: #E0E0E0; /* Texto claro */
+    color: #E0E0E0;
+    /* Texto claro */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    overflow: hidden; /* Evita barras de desplazamiento innecesarias */
+    overflow: hidden;
+    /* Evita barras de desplazamiento innecesarias */
     position: relative;
 }
 
-/* Background Overlay/Effect (Optional: for subtle texture or pattern) */
+/* Capa de fondo con efecto (opcional: para textura sutil o patrón) */
 body::before {
     content: '';
     position: absolute;
@@ -22,34 +25,43 @@ body::before {
     left: 0;
     width: 100%;
     height: 100%;
-    background: url('https://wallpaperbat.com/img/14239411-amazing-asiatic-landscape-art-ultra-hd.jpg') repeat; /* Placeholder pattern */
-    opacity: 0.60; /* Muy sutil */
+    background: url('https://plazacapital.co/media/k2/items/cache/4b840fef3f76a1200400aeae109a3d97_XL.jpg') repeat;
+    /* Patrón de marcador de posición */
+    opacity: 0.60;
+    /* Muy sutil */
     z-index: 0;
 }
 
-/* Login Container - Centers the card */
+/* Contenedor de inicio de sesión - Centra la tarjeta */
 .login-container {
     display: flex;
     justify-content: center;
     align-items: center;
     width: 100%;
     min-height: 100vh;
-    z-index: 1; /* Asegura que esté por encima del fondo */
-    padding: 20px; /* Padding para pantallas pequeñas */
+    z-index: 1;
+    /* Asegura que esté por encima del fondo */
+    padding: 20px;
+    /* Padding para pantallas pequeñas */
     box-sizing: border-box;
 }
 
-/* Login Card - The main form box */
+/* Tarjeta de inicio de sesión - La caja principal del formulario */
 .login-card {
-    background-color: rgba(205, 205, 215, 0.95); /* Fondo oscuro con transparencia */
+    background-color: rgba(205, 205, 215, 0.95);
+    /* Fondo oscuro con transparencia */
     border-radius: 20px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6); /* Sombra más pronunciada para efecto 3D */
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+    /* Sombra más pronunciada para efecto 3D */
     padding: 40px;
-    max-width: 450px; /* Ancho máximo para la tarjeta */
+    max-width: 450px;
+    /* Ancho máximo para la tarjeta */
     width: 100%;
     text-align: center;
-    border: 1px solid rgba(255, 215, 0, 0.3); /* Borde sutil dorado */
-    animation: fadeIn 1s ease-out; /* Animación de entrada */
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    /* Borde sutil dorado */
+    animation: fadeIn 1s ease-out;
+    /* Animación de entrada */
 }
 
 @keyframes fadeIn {
@@ -57,33 +69,38 @@ body::before {
         opacity: 0;
         transform: translateY(-20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
     }
 }
 
-/* Login Header */
+/* Encabezado de inicio de sesión */
 .login-header {
     margin-bottom: 30px;
 }
 
 .login-header h2 {
     font-family: 'Montserrat', sans-serif;
-    color: #000000; /* Dorado/Amarillo para el título */
+    color: #000000;
+    /* Negro para el título */
     font-size: 2.5em;
     margin-bottom: 10px;
-    text-shadow: 0 0 15px rgba(255, 255, 255, 0.4); /* Efecto de brillo */
+    text-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
+    /* Efecto de brillo */
 }
 
 .login-header p {
     font-size: 1.1em;
-    color: #000000; /* Gris más claro */
+    color: #000000;
+    /* Gris más claro */
 }
 
-/* Alert Messages (e.g., session status) */
+/* Mensajes de alerta (ej. estado de la sesión) */
 .alert {
-    background-color: rgba(60, 179, 113, 0.8); /* Medium Sea Green */
+    background-color: rgba(60, 179, 113, 0.8);
+    /* Medium Sea Green */
     color: #000000;
     padding: 15px;
     border-radius: 10px;
@@ -92,30 +109,35 @@ body::before {
     border: 1px solid #3CB371;
 }
 
-/* Form Group Styling */
+/* Estilo del grupo de formulario */
 .form-group {
     margin-bottom: 25px;
-    text-align: left; /* Alinea etiquetas a la izquierda */
+    text-align: left;
+    /* Alinea etiquetas a la izquierda */
 }
 
 .form-group label {
     display: block;
     margin-bottom: 8px;
     font-weight: 600;
-    color: #000000; /* Dorado para las etiquetas */
+    color: #000000;
+    /* Negro para las etiquetas */
     font-size: 1em;
 }
 
 .form-control {
     width: 100%;
     padding: 15px 20px;
-    border: 1px solid rgba(138, 43, 226, 0.5); /* Borde morado sutil */
+    border: 1px solid rgba(138, 43, 226, 0.5);
+    /* Borde morado sutil */
     border-radius: 10px;
-    background-color: rgba(40, 40, 60, 0.7); /* Fondo de input más oscuro */
+    background-color: rgba(40, 40, 60, 0.7);
+    /* Fondo de input más oscuro */
     color: #000000;
     font-size: 1em;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    box-sizing: border-box; /* Incluye padding y borde en el ancho total */
+    box-sizing: border-box;
+    /* Incluye padding y borde en el ancho total */
 }
 
 .form-control::placeholder {
@@ -124,24 +146,28 @@ body::before {
 }
 
 .form-control:focus {
-    border-color: #ffffff; /* Borde dorado al enfocar */
-    box-shadow: 0 0 15px rgba(162, 0, 255, 0.3); /* Brillo al enfocar */
+    border-color: #ffffff;
+    /* Borde blanco al enfocar */
+    box-shadow: 0 0 15px rgba(162, 0, 255, 0.3);
+    /* Brillo al enfocar */
     outline: none;
 }
 
-/* Invalid Feedback for errors */
+/* Retroalimentación para errores */
 .form-control.is-invalid {
-    border-color: #FF6347; /* Rojo para errores */
+    border-color: #FF6347;
+    /* Rojo para errores */
 }
 
 .invalid-feedback {
-    color: #FF6347; /* Rojo para mensajes de error */
+    color: #FF6347;
+    /* Rojo para mensajes de error */
     font-size: 0.85em;
     margin-top: 5px;
     display: block;
 }
 
-/* Form Options (Remember Me & Forgot Password) */
+/* Opciones del formulario (Recuérdame y Olvidé mi Contraseña) */
 .form-options {
     display: flex;
     justify-content: space-between;
@@ -159,10 +185,12 @@ body::before {
 
 .remember-me input[type="checkbox"] {
     margin-right: 8px;
-    appearance: none; /* Oculta el checkbox nativo */
+    appearance: none;
+    /* Oculta el checkbox nativo */
     width: 18px;
     height: 18px;
-    border: 2px solid #141443; /* Borde morado */
+    border: 2px solid #141443;
+    /* Borde morado */
     border-radius: 4px;
     background-color: rgba(255, 255, 255, 0.2);
     transition: background-color 0.2s ease, border-color 0.2s ease;
@@ -171,12 +199,14 @@ body::before {
 }
 
 .remember-me input[type="checkbox"]:checked {
-    background-color: #646464; /* Fondo morado cuando está marcado */
+    background-color: #646464;
+    /* Fondo morado cuando está marcado */
     border-color: #8A2BE2;
 }
 
 .remember-me input[type="checkbox"]:checked::after {
-    content: '\2713'; /* Símbolo de checkmark */
+    content: '\2713';
+    /* Símbolo de checkmark */
     color: #000000;
     font-size: 14px;
     position: absolute;
@@ -186,23 +216,27 @@ body::before {
 }
 
 .forgot-password-link {
-    color: #000000; /* Dorado para el enlace */
+    color: #000000;
+    /* Negro para el enlace */
     text-decoration: none;
     transition: color 0.3s ease, text-decoration 0.3s ease;
 }
 
 .forgot-password-link:hover {
-    color: #9932CC; /* Morado oscuro al pasar el ratón */
+    color: #9932CC;
+    /* Morado oscuro al pasar el ratón */
     text-decoration: underline;
 }
 
-/* Submit Button */
+/* Botón de enviar */
 .btn-primary {
-    background: #A601B3; /* Degradado morado */
+    background: #A601B3;
+    /* Degradado morado */
     color: #FFFFFF;
     padding: 15px 30px;
     border: none;
-    border-radius: 25px; /* Botón más redondeado */
+    border-radius: 25px;
+    /* Botón más redondeado */
     font-size: 1.2em;
     font-weight: bold;
     cursor: pointer;
@@ -210,12 +244,15 @@ body::before {
     transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
     letter-spacing: 1px;
     text-transform: uppercase;
-    box-shadow: 0 5px 15px rgba(79, 4, 184, 0.6); /* Sombra para el botón */
+    box-shadow: 0 5px 15px rgba(79, 4, 184, 0.6);
+    /* Sombra para el botón */
 }
 
 .btn-primary:hover {
-    background: linear-gradient(90deg, #141443 0%, #A601B3 100%); /* Invertir degradado al pasar el ratón */
-    transform: translateY(-3px); /* Efecto de elevación */
+    background: linear-gradient(90deg, #141443 0%, #A601B3 100%);
+    /* Invertir degradado al pasar el ratón */
+    transform: translateY(-3px);
+    /* Efecto de elevación */
     box-shadow: 0 8px 20px rgba(79, 4, 184, 0.6);
 }
 
@@ -224,7 +261,7 @@ body::before {
     box-shadow: 0 3px 10px rgba(138, 43, 226, 0.4);
 }
 
-/* Login Footer (Register Link) */
+/* Pie de página de inicio de sesión (enlace de registro) */
 .login-footer {
     margin-top: 30px;
     font-size: 1em;
@@ -232,22 +269,25 @@ body::before {
 }
 
 .login-footer a {
-    color: #000000; /* Dorado para el enlace de registro */
+    color: #000000;
+    /* Negro para el enlace de registro */
     text-decoration: none;
     font-weight: bold;
     transition: color 0.3s ease, text-decoration 0.3s ease;
 }
 
 .login-footer a:hover {
-    color: #9932CC; /* Morado oscuro al pasar el ratón */
+    color: #9932CC;
+    /* Morado oscuro al pasar el ratón */
     text-decoration: underline;
 }
 
-/* Responsive Adjustments */
+/* Ajustes responsivos */
 @media (max-width: 768px) {
     .login-card {
         padding: 30px;
-        margin: 0 15px; /* Margen en los lados para pantallas más pequeñas */
+        margin: 0 15px;
+        /* Margen en los lados para pantallas más pequeñas */
     }
 
     .login-header h2 {
@@ -266,17 +306,6 @@ body::before {
     .btn-primary {
         padding: 12px 25px;
         font-size: 1.1em;
-    }
-
-    .form-options {
-        flex-direction: column; /* Apila las opciones en pantallas pequeñas */
-        align-items: flex-start;
-        gap: 15px;
-    }
-
-    .forgot-password-link {
-        text-align: left;
-        width: 100%;
     }
 }
 
@@ -300,10 +329,6 @@ body::before {
     .form-control {
         padding: 10px 12px;
         font-size: 0.9em;
-    }
-
-    .remember-me span, .forgot-password-link {
-        font-size: 0.85em;
     }
 
     .btn-primary {

@@ -12,7 +12,7 @@
     <section class="affiliate-section">
         <div class="contact-card">
             <div class="card-header">
-                <h1>¡Únete a Nuestro Programa de Afiliados!</h1>
+                <h1>¡Únete a Nosotros como Usuario Rumbero!</h1>
                 <p class="subtitle">¿Tienes una comunidad activa y pasión por la rumba? Únete a nuestro programa de afiliados, promociona los mejores eventos y locales, ¡y gana comisiones!</p>
             </div>
 

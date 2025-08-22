@@ -69,7 +69,7 @@
 
         {{-- Opciones adicionales: Registrarse --}}
         <div class="login-footer">
-            <p>¿No tienes acceso VIP? <a href="{{ route('register') }}">Regístrate y únete</a></p>
+            <p>¿No tienes cuenta? <a href="{{ route('register') }}">Regístrate y únete</a></p>
         </div>
     </div>
 </div>

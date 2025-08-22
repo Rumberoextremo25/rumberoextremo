@@ -3,7 +3,9 @@
 @section('title', 'Preguntas Frecuentes - Rumbero Extremo')
 
 @push('styles')
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Poppins:wght@300;400;500;600&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/faq.css') }}">
 @endpush
 
@@ -64,9 +66,8 @@
                     <div class="faq-answer">
                         <p>Antes de realizar la compra/consumo certifica que el comercio es nuestro Aliado Comercial,
                             verifica el/los beneficio(s) que disfrutas como Rumbero Extremo (descuento / promociones / entre
-                            otros).
-                            Los pagos se realizan bajo la aplicación con los instrumentos financieros como Pago Móvil,
-                            Transferencias entre Cuentas y Efectivo (Bolívares / dólares).
+                            otros). Los pagos se realizan bajo la aplicación con los instrumentos financieros como Pago
+                            Móvil, Tarjeta de Crédito Nacional o Internacional y Código QR.
                         </p>
                     </div>
                 </div>
@@ -78,12 +79,11 @@
                         <span class="faq-icon">+</span>
                     </button>
                     <div class="faq-answer">
-                        <p>Es una transacción al contado, no maneja inicial ni cuotas, ni intereses.
-                            Rumbero Extremo es aplicación que afiliarte podrás recibir los beneficios a través del escaneo
-                            de un código QR pagando con instrumentos financieros como Pago Móvil, Transferencias entre
-                            Cuentas y Efectivo (Bolívares / dólares).
-                            En el caso de pago de Delivery realizaras el pago a través de Pago Móvil o Transferencia,
-                            recibirás un token o a través de la App envías el código de la operación.
+                        <p>Es una transacción al contado, no maneja inicial ni cuotas, ni intereses. Rumbero Extremo es
+                            aplicación que afiliarte podrás recibir los beneficios a través del escaneo de un código QR
+                            pagando con instrumentos financieros como Pago Móvil, Tarjeta de Crédito Nacional o
+                            Internacional. En el caso de pago de Delivery el Aliado Comercial debe incluirlo en el monto a
+                            pagar.
                         </p>
                     </div>
                 </div>
@@ -96,9 +96,8 @@
                     </button>
                     <div class="faq-answer">
                         <p>Los pagos se realizan a través del escaneo de un código QR pagando con instrumentos financieros
-                            como Pago Móvil, Transferencias entre Cuentas y Efectivo (Bolívares / dólares).
-                            En el caso de pago de Delivery realizaras el pago a través de Pago Móvil o Transferencia,
-                            recibirás un token o a través de la App envías el código de la operación.
+                            como Pago Móvil, Tarjeta de Crédito Nacional o Internacional. En el caso de pago de Delivery el
+                            Aliado Comercial debe incluirlo en el monto total del pago.
                         </p>
                     </div>
                 </div>
@@ -195,8 +194,8 @@
                     </button>
                     <div class="faq-answer">
                         <p>Puedes comunicarte a través de nuestros canales de atención:
-                            - WhatsApp 04XXXXXXX
-                            - Correo electrónico contacto@rumberoextremo.com
+                            - WhatsApp +584143806713
+                            - Correo electrónico rumberoextremo@gmail.com
                             - DM Instagram @rumberoextremo
                         </p>
                     </div>

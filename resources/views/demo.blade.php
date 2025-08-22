@@ -31,10 +31,10 @@
 
                 <div class="form-buttons">
                     <a href="{{ route('demo.aliado') }}" class="form-button">
-                        <i class="fas fa-handshake"></i> Conviértete en Aliado
+                        <i class="fas fa-handshake"></i> Regístrate como Aliado Comercial
                     </a>
                     <a href="{{ route('demo.afiliado') }}" class="form-button">
-                        <i class="fas fa-user-plus"></i> Regístrate como Afiliado
+                        <i class="fas fa-user-plus"></i> Regístrate como Rumbero
                     </a>
                 </div>
 

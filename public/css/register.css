@@ -1,17 +1,29 @@
-/* Importa la fuente Inter de Google Fonts para un estilo moderno y legible */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap');
+:root {
+    --primary-purple: #8A2BE2;
+    --secondary-blue: #1a1a2e;
+    --text-dark: #000000;
+    --text-light: #E0E0E0;
+    --input-bg: #f7f9fa;
+    --card-bg-light: #fff;
+    --card-bg-dark: rgba(255, 255, 255, 0.95);
+    --border-color: #ddd;
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
+    --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.12);
+    --shadow-lg: 0 10px 40px rgba(0, 0, 0, 0.6);
+    --border-radius-lg: 20px;
+    --border-radius-md: 8px;
+}
 
 /* Estilos para el cuerpo del documento */
 body {
     font-family: 'Inter', sans-serif;
-    /* Degradado de oscuro a morado */
-    background: linear-gradient(135deg, #1a1a2e 0%, #8A2BE2 100%); 
+    background: linear-gradient(135deg, var(--secondary-blue) 0%, var(--primary-purple) 100%);
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
     margin: 0;
-    color: #E0E0E0;
+    color: var(--text-light);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow: hidden;
@@ -23,13 +35,14 @@ body {
     from {
         text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 20px #a855f7, 0 0 30px #a855f7, 0 0 40px #a855f7, 0 0 55px #a855f7, 0 0 70px #a855f7;
     }
+
     to {
         text-shadow: 0 0 10px #fff, 0 0 20px #fff, 0 0 30px #c084fc, 0 0 40px #c084fc, 0 0 50px #c084fc, 0 0 65px #c084fc, 0 0 80px #c084fc;
     }
 }
 
 /* Fondo con efecto de degradado y transparencia */
-.login-container {
+.contact-container {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -41,15 +54,15 @@ body {
 }
 
 /* Tarjeta principal del formulario con efecto de neón */
-.login-card {
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 20px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+.contact-card {
+    background: var(--card-bg-dark);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-lg);
     padding: 25px;
-    max-width: 350px;
+    max-width: 500px;
     width: 100%;
     text-align: center;
-    border: 1px solid rgba(255, 215, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.3);
     /* Animación de entrada */
     animation: fadeIn 1s ease-out;
 }
@@ -60,6 +73,7 @@ body {
         opacity: 0;
         transform: translateY(-20px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
@@ -67,32 +81,21 @@ body {
 }
 
 /* Encabezado con efecto de neón */
-.login-header {
+.contact-header {
     margin-bottom: 20px;
 }
 
-.login-header h2 {
+.contact-header h2 {
     font-family: 'Inter', sans-serif;
-    color: #000000;
+    color: var(--text-dark);
     font-size: 2em;
     margin-bottom: 5px;
-    text-shadow: 0 0 15px rgba(132, 0, 255, 0.4);
+    text-shadow: 0 0 15px rgba(138, 43, 226, 0.4);
 }
 
-.login-header p {
+.contact-header p {
     font-size: 0.95em;
-    color: #B0B0B0;
-}
-
-/* Mensajes de alerta */
-.alert {
-    background-color: rgba(60, 179, 113, 0.8);
-    color: #ff0000dd;
-    padding: 15px;
-    border-radius: 10px;
-    margin-bottom: 20px;
-    font-weight: 500;
-    border: 1px solid #3CB371;
+    color: var(--text-dark);
 }
 
 /* Estilo del grupo de formulario */
@@ -105,18 +108,19 @@ body {
     display: block;
     margin-bottom: 5px;
     font-weight: 600;
-    color: #000000; /* Púrpura para las etiquetas */
+    color: var(--text-dark);
+    /* Púrpura para las etiquetas */
     font-size: 0.9em;
 }
 
 /* Campos de entrada con estilos modernos */
 .form-control {
     width: 100%;
-    padding: 10px 12px;
-    border: 2px solid #ffffff; /* Borde púrpura para coincidir */
-    border-radius: 8px;
-    background-color: rgba(25, 25, 45, 0.7);
-    color: #FFFFFF;
+    padding: 12px;
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    background-color: var(--input-bg);
+    color: var(--text-dark);
     font-size: 0.9em;
     transition: border-color 0.3s ease, box-shadow 0.3s ease;
     box-sizing: border-box;
@@ -128,66 +132,37 @@ body {
 }
 
 .form-control:focus {
-    border-color: #000000;
+    border-color: var(--primary-purple);
     box-shadow: 0 0 8px rgba(138, 43, 226, 0.6);
     outline: none;
 }
 
-/* Mensajes de error */
-.form-control.is-invalid {
-    border-color: #ff0000;
-}
-
-.invalid-feedback {
-    color: #ff0000;
-    font-size: 0.75em;
-    margin-top: 3px;
-    display: block;
-}
-
-/* Opciones del formulario */
-.form-options {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 20px;
-    margin-bottom: 10px;
-    flex-wrap: wrap;
-    gap: 8px;
-}
-
-.already-registered-link {
-    color: #141443;
-    text-decoration: none;
-    font-size: 0.85em;
-    transition: color 0.3s ease, text-decoration 0.3s ease;
-}
-
-.already-registered-link:hover {
-    color: #141443;
-    text-decoration: underline;
+textarea.form-control {
+    min-height: 120px;
+    resize: vertical;
 }
 
 /* Estilos del botón con degradado */
 .btn-primary {
-    background: #A601B3;
+    background: var(--primary-purple);
     color: #FFFFFF;
-    padding: 10px 20px;
+    padding: 12px 20px;
     border: none;
-    border-radius: 18px;
+    border-radius: var(--border-radius-lg);
     font-size: 1em;
     font-weight: bold;
     cursor: pointer;
-    flex-grow: 1;
-    max-width: 200px;
+    width: 100%;
+    max-width: 250px;
+    margin-top: 20px;
     transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
     letter-spacing: 0.7px;
     text-transform: uppercase;
-    box-shadow: 0 3px 10px rgba(95, 43, 226, 0.4);
+    box-shadow: 0 3px 10px rgba(138, 43, 226, 0.4);
 }
 
 .btn-primary:hover {
-    background: #141443;
+    background: var(--secondary-blue);
     transform: translateY(-2px);
     box-shadow: 0 5px 12px rgba(138, 43, 226, 0.6);
 }
@@ -197,92 +172,23 @@ body {
     box-shadow: 0 2px 6px rgba(138, 43, 226, 0.4);
 }
 
-/* Pie de página */
-.login-footer {
-    margin-top: 20px;
-    font-size: 0.8em;
-    color: #000000;
-}
-
-.login-footer a {
-    color: #141443;
-    text-decoration: none;
-    font-weight: bold;
-    transition: color 0.3s ease, text-decoration 0.3s ease;
-}
-
-.login-footer a:hover {
-    color: #141443;
-    text-decoration: underline;
-}
-
 /* Ajustes responsivos */
 @media (max-width: 768px) {
-    .login-card {
+    .contact-card {
         padding: 20px;
         margin: 0 10px;
     }
 
-    .login-header h2 {
+    .contact-header h2 {
         font-size: 1.6em;
     }
 
-    .login-header p {
+    .contact-header p {
         font-size: 0.85em;
     }
 
     .form-control {
-        padding: 8px 10px;
+        padding: 10px;
         font-size: 0.85em;
-    }
-
-    .form-actions {
-        flex-direction: column;
-        align-items: center;
-        gap: 12px;
-    }
-
-    .btn-primary {
-        padding: 8px 18px;
-        font-size: 0.95em;
-        max-width: 100%;
-    }
-
-    .already-registered-link {
-        text-align: center;
-        width: 100%;
-        font-size: 0.8em;
-    }
-
-    .login-footer {
-        font-size: 0.7em;
-    }
-}
-
-@media (max-width: 480px) {
-    .login-card {
-        padding: 15px;
-    }
-
-    .login-header h2 {
-        font-size: 1.3em;
-    }
-
-    .login-header p {
-        font-size: 0.75em;
-    }
-
-    .form-group label {
-        font-size: 0.8em;
-    }
-
-    .form-control {
-        padding: 6px 8px;
-        font-size: 0.8em;
-    }
-
-    .btn-primary {
-        font-size: 0.85em;
-        padding: 6px 12px;
     }
 }

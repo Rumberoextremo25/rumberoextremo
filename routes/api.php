@@ -58,10 +58,8 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::prefix('payments')->group(function () {
     // Ruta para iniciar un pago C2P (Pago Móvil)
     Route::post('/c2p', [PaymentController::class, 'initiateC2PPayment']);
-
     // Ruta para procesar un pago con tarjeta (VPOS)
     Route::post('/card', [PaymentController::class, 'processCardPayment']);
-
     // Nueva ruta agregada para el método processP2PPayment
     Route::post('/p2p', [PaymentController::class, 'processP2PPayment']);
 });

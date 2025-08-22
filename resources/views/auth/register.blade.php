@@ -10,7 +10,7 @@
         <div class="login-header">
             {{-- Logo de Rumbero Extremo (opcional) --}}
             {{-- <img src="{{ asset('assets/img/IMG_4254.png') }}" alt="Logo Rumbero Extremo" class="login-logo"> --}}
-            <h2>¡Crea tu Cuenta VIP!</h2>
+            <h2>¡Registrate!</h2>
             <p>Únete a la comunidad de Rumbero Extremo y vive la noche.</p>
         </div>
 

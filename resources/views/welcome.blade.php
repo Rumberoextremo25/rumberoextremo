@@ -28,44 +28,45 @@
             <h2>¿Por qué Rumbero Extremo es tu mejor aliado?</h2>
             <div class="feature-grid">
                 <div class="feature-item">
-                    <i class="fas fa-calendar-alt"></i>
-                    <h3>Eventos Actualizados</h3>
-                    <p>Mantente al día con los eventos más calientes en tu ciudad. Desde conciertos a festivales, nunca
-                        te perderás una rumba.</p>
+                    <img src="assets/img/home/eventos_1.jpg"
+                        alt="Eventos Actualizados">
+                    <h3>Eventos <br> Actualizados</h3>
+                    <p>Mantente al día con los eventos más calientes en tu ciudad. Desde conciertos a festivales, nunca te
+                        perderás una rumba.</p>
                 </div>
                 <div class="feature-item">
-                    <i class="fas fa-map-marker-alt"></i>
-                    <h3>Descubre Lugares Nuevos</h3>
+                    <img src="assets/img/home/nuevos_lugares.jpg"
+                        alt="Descubre Lugares Nuevos">
+                    <h3>Descubre lugares <br> nuevos</h3>
                     <p>Encuentra los bares, discotecas y lounges de moda, o ese rincón especial que aún no conocías.</p>
                 </div>
                 <div class="feature-item">
-                    <i class="fas fa-users"></i>
-                    <h3>Conecta con Amigos</h3>
-                    <p>Ve a dónde van tus amigos, coordina tus salidas y planea experiencias inolvidables juntos
-                        fácilmente.</p>
+                    <img src="assets/img/home/conecta_con_amigos.webp" alt="Conecta con Amigos">
+                    <h3>Conecta con <br> amigos</h3>
+                    <p>Ve a dónde van tus amigos, coordina tus salidas y planea experiencias inolvidables juntos fácilmente.
+                    </p>
                 </div>
                 <div class="feature-item">
-                    <i class="fas fa-tags"></i>
-                    <h3>Ofertas Exclusivas</h3>
-                    <p>Accede a descuentos y promociones especiales en tus lugares favoritos, solo por ser parte de
-                        Rumbero Extremo.</p>
+                    <img src="assets/img/home/ofertas_exclusivas.webp" alt="Ofertas Exclusivas">
+                    <h3>Ofertas <br> exclusivas</h3>
+                    <p>Accede a descuentos y promociones especiales en tus lugares favoritos, solo por ser parte de Rumbero
+                        Extremo.</p>
                 </div>
             </div>
         </div>
     </section>
 
     <section class="image-carousel-section">
-        <div class="container">
-            <h2>Momentos Inolvidables en Rumbero Extremo</h2>
-            <div class="carousel-container">
-                <div class="carousel-slide" id="carouselSlide">
-                    <img src="{{ asset('assets/img/home/restaurante_lujo.jpg') }}" alt="Rumba Extrema - Luces de Discoteca">
-                    <img src="{{ asset('assets/img/home/parque_lujo.jpg') }}" alt="Concierto - Multitud Disfrutando">
-                    <img src="{{ asset('assets/img/home/fiesta-discoteca.jpg') }}" alt="Amigos en el Bar - Cócteles">
-                </div>
-                <button class="carousel-nav-button prev-button" onclick="moveSlide(-1)">&#10094;</button>
-                <button class="carousel-nav-button next-button" onclick="moveSlide(1)">&#10095;</button>
+        <div class="carousel-container">
+            <div class="carousel-slide" id="carouselSlide">
+                <img src="assets/img/home/discoteca_5.jpg" alt="Rumbero Extremo - Discoteca">
+                <img src="assets/img/home/cafeteria_4.webp" alt="Rumbero Extremo - Cafeteria">
+                <img src="assets/img/home/parque_3.jpg" alt="Rumbero Extremo - Parque">
+                <img src="assets/img/home/posada_2.jpeg" alt="Rumbero Extremo - Posada">
+                <img src="assets/img/home/fiesta_1.jpg" alt="Rumbero Extremo - Fiesta">
             </div>
+            <button class="carousel-nav-button prev-button" onclick="moveSlide(-1)">&#10094;</button>
+            <button class="carousel-nav-button next-button" onclick="moveSlide(1)">&#10095;</button>
         </div>
     </section>
     <section class="testimonials-section">
@@ -91,15 +92,6 @@
                     <span class="location">Maracaibo, Venezuela</span>
                 </div>
             </div>
-        </div>
-    </section>
-
-    <section class="cta-alt">
-        <div class="container">
-            <h2>¿Listo para la Mejor Rumba de tu Vida?</h2>
-            <p>Únete a la comunidad de Rumbero Extremo hoy mismo y empieza a vivir experiencias nocturnas inolvidables.
-            </p>
-            <a href="{{ route('register') }}" class="cta-button">Regístrate Gratis Ahora</a>
         </div>
     </section>
 @endsection

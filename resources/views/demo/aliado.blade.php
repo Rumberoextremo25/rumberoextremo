@@ -12,7 +12,7 @@
     <section class="allies-contact-section">
         <div class="contact-card">
             <div class="card-header">
-                <h1>Únete a la Familia Rumbera Extrema</h1>
+                <h1>Únete a Rumbero Extremo como Aliado Comercial</h1>
                 <p class="subtitle">¿Tienes un local, un evento, una marca o un servicio que encienda la rumba en Venezuela? ¡Queremos hacer equipo contigo! Completa este formulario y forjemos alianzas épicas que hagan vibrar a todo el país.</p>
             </div>
 
