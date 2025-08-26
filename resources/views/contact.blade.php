@@ -27,9 +27,9 @@
 
         <section class="content-section">
             <div class="container">
-                <h1>Ponte en Contacto</h1>
+                <h1>¡Tu Experiencia Merece Ser Compartida!</h1>
                 <div class="container">
-            <h1>Contáctanos</h1>
+            <h1>Anímate a escribir tu comentario, sugerencia, idea. Estamos para escucharte</h1>
             <div class="contact-form-container">
                 <form class="contact-form">
                     <div class="form-row">
@@ -55,7 +55,7 @@
         </div>
                 <section class="social-media">
                     <div class="container">
-                        <h2>Encuéntranos en Redes Sociales</h2>
+                        <h2>Síguenos en Nuestras Redes Sociales</h2>
                         <div class="social-links">
                             <a href="https://facebook.com/rumberoextremo" target="_blank" aria-label="Facebook">
                                 <img src="assets/img/home/logo_facebook.png"
@@ -64,14 +64,6 @@
                             <a href="https://instagram.com/rumberoextremo" target="_blank" aria-label="Instagram">
                                 <img src="assets/img/home/logo_instagram.png"
                                     alt="Instagram">
-                            </a>
-                            <a href="https://www.tiktok.com/@rumberoextremo" target="_blank" aria-label="TikTok">
-                                <img src="assets/img/home/logo_tiktok.png"
-                                    alt="TikTok">
-                            </a>
-                            <a href="https://spotify.com/rumberoextremo" target="_blank" aria-label="Spotify">
-                                <img src="assets/img/home/logo_spotify.png"
-                                    alt="Spotify">
                             </a>
                         </div>
                     </div>
@@ -90,9 +82,6 @@
                         referrerpolicy="no-referrer-when-downgrade">
                     </iframe>
                 </div>
-                <p>
-                    Visítanos en nuestra oficina principal o encuéntranos en los eventos más exclusivos.
-                </p>
             </div>
         </section>
     </main>

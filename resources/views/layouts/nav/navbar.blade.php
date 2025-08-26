@@ -2,12 +2,12 @@
     {{-- Asegúrate de que tu CSS para el navbar esté correctamente vinculado. --}}
     {{-- El archivo 'navbar.css' debe contener todo el CSS que te he proporcionado, incluidas las media queries. --}}
     <link rel="stylesheet" href="{{ asset('css/navbar.css') }}">
-    
+
     <div class="header-container">
         <a href="{{ url('/') }}" class="header-logo">
             <img src="{{ asset('assets/img/IMG_4254.png') }}" alt="Logo Rumbero Extremo">
         </a>
-        
+
         {{-- Menú de navegación principal --}}
         <nav class="main-nav">
             <ul class="nav-links">
@@ -18,23 +18,23 @@
                 <li><a href="{{ url('/about') }}" class="nav-item">Sobre Nosotros</a></li>
                 <li><a href="{{ url('/demo') }}" class="nav-item">Demo</a></li>
                 <li><a href="{{ url('/contact') }}" class="nav-item">Contacto</a></li>
-                
+
                 {{-- Lógica para cambiar el botón de Acceder/Logout --}}
                 @auth
                     {{-- Si el usuario está autenticado, muestra el botón de Logout --}}
                     <li>
                         <form action="{{ route('logout') }}" method="POST" class="logout-form">
                             @csrf
-                            <button type="submit" class="cta-button">Logout</button>
+                            <button type="submit" class="cta-button-nav">Logout</button>
                         </form>
                     </li>
                 @else
                     {{-- Si el usuario no está autenticado, muestra el botón de Acceder --}}
-                    <li><a href="{{ route('login') }}" class="cta-button">Acceder</a></li>
+                    <li><a href="{{ route('login') }}" class="cta-button-nav">Acceder</a></li>
                 @endauth
             </ul>
         </nav>
-        
+
         {{-- BOTÓN DEL MENÚ DE HAMBURGUESA --}}
         {{-- Este botón es crucial para activar el menú desplegable en pantallas pequeñas. --}}
         {{-- Su visibilidad se controla completamente mediante las media queries en navbar.css. --}}

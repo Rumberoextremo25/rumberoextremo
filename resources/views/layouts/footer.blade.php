@@ -1,11 +1,9 @@
 <footer>
     {{-- Se asume que el archivo CSS 'footer.css' está correctamente enlazado --}}
     <link rel="stylesheet" href="{{ asset('css/footer.css') }}">
-    
+
     {{-- Este enlace es necesario para los íconos de Font Awesome --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
-
-    <div class="footer-wave"></div>
 
     <div class="container footer-grid-container">
         {{-- Sección 1: Rumbero Extremo (Acerca de) --}}
@@ -14,7 +12,11 @@
                 <img src="{{ asset('assets/img/IMG_4254.png') }}" alt="Logo Rumbero Extremo" class="footer-logo">
             </a>
             <h3>Rumbero Extremo</h3>
-            <p>Tu guía definitiva para la vida nocturna en Venezuela. Descubre eventos, conecta con amigos y vive experiencias inolvidables en los mejores lugares de rumba.</p>
+            <p>Somos la plataforma que te acompaña para tu Recreación y Entretenimiento, descubre los sitios en
+                tendencia y con las mejores promociones.
+
+                Descubre los mejores eventos y lugares, conecta con amigos y vive la experiencia de ser un Rumbero
+                Extremo</p>
         </div>
 
         {{-- Sección 2: Enlaces Rápidos --}}
@@ -32,7 +34,7 @@
         <div class="footer-section footer-connect">
             <div class="connect-icon-container">
                 {{-- Ícono SVG para la sección "Conéctate" --}}
-                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="#8A2BE2" stroke-width="1"
+                <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke-width="1"
                     stroke-linecap="round" stroke-linejoin="round" class="feather feather-share-2">
                     <circle cx="18" cy="5" r="3"></circle>
                     <circle cx="6" cy="12" r="3"></circle>
@@ -41,29 +43,23 @@
                     <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
                 </svg>
             </div>
-            <h3>Conéctate</h3>
+            <h3>Conécta con Rumbero Extremo</h3>
             <p>Mantente al tanto de nuestras últimas noticias y avances.</p>
             {{-- Íconos de redes sociales para la sección de "Conéctate" --}}
             <div class="social-icons-connect">
                 <a href="https://facebook.com/rumberoextremo" target="_blank" aria-label="Facebook" class="facebook">
                     <img src="assets/img/home/logo_facebook.png" alt="Logo de Facebook">
                 </a>
-                <a href="https://tiktok.com/rumberoextremo" target="_blank" aria-label="TikTok" class="tiktok">
-                    <img src="assets/img/home/logo_tiktok.png" alt="Logo de TikTok">
-                </a>
                 <a href="https://instagram.com/rumberoextremo" target="_blank" aria-label="Instagram" class="instagram">
                     <img src="assets/img/home/logo_instagram.png" alt="Logo de Instagram">
-                </a>
-                <a href="https://open.spotify.com/user/rumberoextremo" target="_blank" aria-label="Spotify" class="spotify">
-                    <img src="assets/img/home/logo_spotify.png" alt="Logo de Spotify">
                 </a>
             </div>
         </div>
 
         {{-- Sección 4: Suscríbete a nuestro newsletter --}}
         <div class="footer-section footer-newsletter">
-            <h3>Suscríbete a nuestro newsletter</h3>
-            <p>Recibe las últimas noticias y promociones directamente en tu bandeja de entrada.</p>
+            <h3>Suscríbete a Nuestro Newsletter</h3>
+            <p>En Rumbero Extremo las Noticias Vuelan.</p>
             <form action="{{ route('newsletter.subscribe') }}" method="POST" class="newsletter-form">
                 @csrf
                 <div class="newsletter-input-group">

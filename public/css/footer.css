@@ -1,47 +1,21 @@
-/* * Estilos CSS para el footer.
- * Adaptado a la paleta de colores y el estilo del CSS proporcionado.
+/*
+ * Estilos CSS para el footer.
+ * Adaptado a la paleta de colores y el estilo de la imagen proporcionada.
  * Diseño moderno y responsivo.
  */
 
-/* Variables CSS para consistencia */
-:root {
-  --primary-purple: #141443;
-  --light-purple-bg: #f8f8fc;
-  --text-color-dark: #333;
-  --text-color-light: #000000;
-  --border-radius: 20px;
-  --shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-  /* Nuevas variables para consistencia con el estilo original */
-  --footer-bg: #f8f8fc;
-  --text-color: var(--text-color-dark);
-  --link-color: var(--primary-purple);
-  --link-hover-color: #6a0dad;
-  --accent-color: #A601B3; /* Mantengo el color de acento del botón de suscripción */
-}
-
 /* Estilos generales del footer */
 .footer {
-  /* Reemplaza este valor con tu color o imagen de fondo. */
-  background: linear-gradient(90deg, #A601B3, #3004E1, #141443);
-  color: var(--text-color);
-  /* Footer más pequeño */
-  padding: 25px 0 15px; 
-  font-family: 'Poppins', Arial, sans-serif; /* Cambio a una fuente moderna */
+  background-color: #f8f8fc;
+  padding: 50px 0;
+  font-family: 'Roboto Condensed', Arial, sans-serif;
   position: relative;
   overflow: hidden;
+  color: #1f1f3a;
 }
 
-/* Efecto de onda decorativa superior */
 .footer-wave {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 80px;
-  background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="#f0f0f5" fill-opacity="1" d="M0,160L48,176C96,192,192,224,288,208C384,192,480,128,576,90.7C672,53,768,43,864,64C960,85,1056,139,1152,149.3C1248,160,1344,128,1392,112L1440,96L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"></path></svg>') no-repeat center bottom;
-  background-size: cover;
-  opacity: 0.3;
-  z-index: 0;
+  display: none;
 }
 
 /* Contenedor principal del footer */
@@ -58,29 +32,28 @@
 
 /* Estilos para cada sección del footer */
 .footer-section {
-  background-color: #fff;
-  border-radius: var(--border-radius);
-  padding: 20px; /* Padding reducido */
-  box-shadow: var(--shadow);
+  background-color: #e2dcdc;
+  border-radius: 25px;
+  padding: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
   text-align: center;
   display: flex;
   flex-direction: column;
   justify-content: flex-start;
   align-items: center;
-  min-height: auto; /* Altura ajustada automáticamente al contenido */
 }
 
 .footer-section h3 {
-  color: var(--primary-purple);
+  color: #3004E1;
   font-size: 1.5em;
-  margin-bottom: 15px; /* Margen reducido */
+  margin-bottom: 15px;
   font-weight: bold;
 }
 
 .footer-section p {
-  color: var(--text-color-light);
+  color: #000000;
   line-height: 1.6;
-  margin-bottom: 10px; /* Margen reducido */
+  margin-bottom: 10px;
   font-size: 0.95em;
 }
 
@@ -96,10 +69,12 @@
 }
 
 /* Enlaces Rápidos */
+/* Estilos para la sección de Enlaces Rápidos */
 .footer-links ul {
   list-style: none;
   padding: 0;
   margin: 0;
+  margin-top: 15px; /* Agrega un margen superior para bajar la lista */
   display: flex;
   flex-direction: column;
   gap: 10px;
@@ -107,32 +82,40 @@
   align-items: center;
 }
 
+.footer-links h3 {
+  color: #3004E1;
+  font-size: 1.5em;
+  margin-bottom: 15px;
+  margin-top: 10px; /* Agrega un margen superior al título */
+  font-weight: bold;
+}
+
 .footer-links li {
   width: 80%;
-  max-width: 180px;
+  max-width: 250px;
 }
 
 .footer-links a {
-  background-color: var(--primary-purple);
+  background-color: #A601B3;
   color: #fff;
   padding: 8px 15px;
   border-radius: 20px;
   text-decoration: none;
   font-weight: bold;
-  transition: background-color 0.3s ease;
+  transition: background-color 0.3s ease, transform 0.2s ease;
   display: block;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
   font-size: 0.85em;
 }
 
 .footer-links a:hover {
-  background-color: var(--link-hover-color);
+  background-color: #3004E1;
   transform: translateY(-2px);
 }
 
 /* Sección Conéctate */
 .footer-connect .connect-icon-container {
-  background-color: rgba(138, 43, 226, 0.1);
+  background-color: #e2dcdc;
   border-radius: 50%;
   padding: 20px;
   display: flex;
@@ -149,53 +132,68 @@
 .footer-connect svg {
   width: 60px;
   height: 60px;
-  color: var(--primary-purple);
-  stroke: var(--primary-purple);
+  color: #3004E1;
+  stroke: #A601B3;
 }
 
+/* Íconos de redes sociales */
 .footer-connect .social-icons-connect {
   display: flex;
-  gap: 15px;
-  margin-top: 20px;
+  gap: 15px; /* Espacio entre los íconos, puedes ajustarlo si quieres más o menos separación */
+  margin-top: 20px; /* Margen superior para separarlos del texto, ajusta si es necesario */
   align-items: center;
   justify-content: center;
+  width: 100%; /* Asegura que el contenedor abarque todo el ancho disponible */
 }
 
-/* Estilo para los logos de redes sociales */
+/* Estilo para los íconos individuales (los enlaces que contienen los íconos) */
+.social-icons-connect a {
+  font-size: 2.5em; /* Reducimos drásticamente el tamaño de los íconos */
+  color: #a0a0a0; /* Color inicial gris */
+  transition: color 0.3s ease, transform 0.3s ease;
+  /* Aseguramos que los íconos sean elementos de bloque para que el padding y el tamaño funcionen bien */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 60px; /* Ancho fijo para cada icono */
+  height: 60px; /* Alto fijo para cada icono */
+}
+
+/* Al pasar el cursor, cambiamos el color y añadimos animación */
+.social-icons-connect a:hover {
+  color: #3004E1; /* Color azul en hover */
+  transform: translateY(-5px) scale(1.1); /* Sube ligeramente y se agranda un poco */
+}
+
+/* IMPORTANTE: Si estás usando imágenes para los íconos, o un framework como Font Awesome,
+   puede que necesites ajustar las clases de los íconos directamente, por ejemplo: */
 .social-icons-connect img {
-  /* Por defecto, los hacemos en blanco y negro para que se vean negros */
-  filter: grayscale(100%) brightness(0);
-  transition: filter 0.3s ease, transform 0.3s ease;
-  height: 40px;
-  width: 40px;
+    width: 60px; /* Ajusta el tamaño de la imagen */
+    height: 60px; /* Ajusta el tamaño de la imagen */
+    filter: grayscale(100%) brightness(0.8); /* Para que las imágenes se vean en gris */
+    transition: filter 0.3s ease, transform 0.3s ease;
 }
 
-/* Al pasar el cursor, regresamos el color original */
 .social-icons-connect a:hover img {
-  filter: none;
-  transform: translateY(-5px) scale(1.2);
-}
-
-/* Regla para el ícono de TikTok */
-.social-icons-connect .tiktok:hover img {
-  filter: none;
-  transform: translateY(-5px) scale(1.2);
+    filter: none; /* Recupera el color original de la imagen en hover */
+    transform: translateY(-5px) scale(1.1);
 }
 
 /* Newsletter Section Specific Adjustments */
 .footer-section.footer-newsletter {
-  padding: 15px;
+  padding: 20px;
   justify-content: center;
 }
 
 .footer-newsletter h3 {
-  font-size: 1.2em;
+  font-size: 1.5em;
   margin-bottom: 10px;
 }
 
 .footer-newsletter p {
   font-size: 0.85em;
-  margin-bottom: 10px;
+  margin-bottom: 15px;
+  text-align: center;
 }
 
 .newsletter-input-group {
@@ -203,41 +201,41 @@
   align-items: center;
   width: 100%;
   max-width: 320px;
-  border-radius: 25px;
-  background: linear-gradient(to right, #A601B3, #141443);
-  box-shadow: 0 4px 10px #3004E1;
+  border-radius: 30px;
+  background: linear-gradient(to right, #A601B3, #3004E1);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
   margin-bottom: 8px;
   padding: 3px;
   box-sizing: border-box;
 }
 
 .newsletter-input-group input[type="email"] {
-  flex-grow: 5;
+  flex-grow: 1;
   min-width: 0;
-  padding: 8px 12px;
+  padding: 8px 15px;
   border: none;
   outline: none;
   font-size: 0.8em;
   background-color: #fff;
   border-radius: 20px 0 0 20px;
-  color: var(--text-color-dark);
+  color: #1f1f3a;
   height: 38px;
   box-sizing: border-box;
 }
 
 .newsletter-input-group input[type="email"]::placeholder {
-  color: var(--text-color-light);
+  color: #a0a0a0;
 }
 
 .newsletter-input-group .subscribe-button {
-  flex-shrink: 1;
+  flex-shrink: 0;
   flex-basis: auto;
-  width: 45px;
+  min-width: 80px;
   background-color: transparent;
   color: #fff;
   border: none;
-  padding: 8px 0px;
-  font-size: 0.75em;
+  padding: 8px 15px;
+  font-size: 0.8em;
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.2s ease;
   font-weight: bold;
@@ -250,8 +248,8 @@
 }
 
 .newsletter-input-group .subscribe-button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
   transform: translateY(-1px);
-  box-shadow: 0 2px 5px #3004E1;
 }
 
 .error-message, .success-message {
@@ -276,7 +274,7 @@
   padding-top: 2rem;
   border-top: 1px solid rgba(0, 0, 0, 0.1);
   font-size: 0.9rem;
-  color: var(--text-color-light);
+  color: #1f1f3a;
 }
 
 .footer-bottom p {
@@ -289,38 +287,11 @@
     grid-template-columns: repeat(2, 1fr);
     gap: 25px;
   }
-
-  .footer-section {
-    height: auto;
-    padding: 20px;
-  }
-
-  .footer-section h3 {
-    font-size: 1.4em;
-  }
-
-  .footer-section p {
-    font-size: 0.9em;
-  }
-
-  .footer-links li {
-    width: 90%;
-    max-width: 200px;
-  }
-
-  .newsletter-input-group {
-    max-width: 100%;
-  }
 }
 
 @media (max-width: 768px) {
   .footer {
-    padding: 20px 0 10px; /* Padding reducido para móvil */
-  }
-
-  .footer-wave {
-    height: 60px;
-    opacity: 0.2;
+    padding: 30px 0;
   }
 
   .container.footer-grid-container {
@@ -329,98 +300,32 @@
     padding: 15px;
   }
 
-  .footer-section {
-    padding: 15px; /* Padding reducido para móvil */
-  }
-
-  .footer-section h3 {
-    font-size: 1.3em;
-    margin-bottom: 15px;
-  }
-
-  .footer-section p {
-    font-size: 0.85em;
-    margin-bottom: 10px;
-  }
-
-  .footer-about .footer-logo {
-    max-width: 80px; /* Logo más pequeño */
-  }
-
   .footer-links li {
-    width: 70%;
-    max-width: 250px;
-  }
-
-  .footer-links a {
-    padding: 10px 18px;
-    font-size: 0.9em;
-  }
-
-  .footer-connect .connect-icon-container {
-    padding: 15px;
-    margin-bottom: 15px;
-  }
-
-  .footer-connect svg {
-    width: 50px;
-    height: 50px;
-  }
-
-  .footer-connect .social-icons-connect {
-    gap: 10px;
-  }
-
-  .social-icons-connect a {
-    font-size: 1.5em;
+    width: 80%;
+    max-width: 300px;
   }
 
   .newsletter-input-group {
     flex-direction: column;
-    border-radius: var(--border-radius);
-    max-width: 280px;
+    border-radius: 25px;
+    max-width: 300px;
+    background: linear-gradient(to bottom, #3004E1, #A601B3);
   }
 
   .newsletter-input-group input[type="email"] {
-    border-radius: var(--border-radius);
+    border-radius: 25px;
     margin-bottom: 8px;
     width: 100%;
     height: 45px;
     text-align: center;
+    border: 1px solid #a601b3;
   }
 
   .newsletter-input-group .subscribe-button {
     width: 100%;
-    border-radius: var(--border-radius);
+    border-radius: 25px;
     height: 45px;
     font-size: 0.9em;
     padding: 10px 0;
-  }
-}
-
-@media (max-width: 480px) {
-  .footer-section {
-    padding: 15px;
-  }
-
-  .footer-section h3 {
-    font-size: 1.2em;
-    margin-bottom: 10px;
-  }
-
-  .footer-section p {
-    font-size: 0.8em;
-  }
-
-  .footer-links li {
-    width: 90%;
-  }
-
-  .newsletter-input-group input[type="email"] {
-    font-size: 0.75em;
-  }
-
-  .newsletter-input-group .subscribe-button {
-    font-size: 0.8em;
   }
 }

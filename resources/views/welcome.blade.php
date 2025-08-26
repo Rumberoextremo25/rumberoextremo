@@ -16,27 +16,30 @@
 @section('content')
     <section class="hero">
         <div class="container">
-            <h1>¡Tu Noche Perfecta Comienza Aquí!</h1>
-            <p>Descubre los mejores eventos, fiestas y lugares para rumbear en Venezuela. Conéctate con amigos y no te
-                pierdas nada.</p>
-            <a href="{{ route('register') }}" class="cta-button">¡Regístrate y Explora!</a>
+            <h1>Tu Próxima Aventura te está esperando
+                Conecta, explora y vive sin limites
+            </h1>
+            <p>Rumbero Extremo una app donde los eventos, actividades, productos y servicios que forman parte de tu
+                recreación y entretenimiento están a tu disposición
+
+                ¡Qué esperas para ser un Rumbero afíliate!
+            </p>
+            <a href="{{ route('register') }}" class="cta-button-banner">¡Yo Soy Rumbero !</a>
         </div>
     </section>
 
     <section id="features" class="features">
         <div class="container">
-            <h2>¿Por qué Rumbero Extremo es tu mejor aliado?</h2>
+            <h2>¡Hoy los Rumberos quieren …!</h2>
             <div class="feature-grid">
                 <div class="feature-item">
-                    <img src="assets/img/home/eventos_1.jpg"
-                        alt="Eventos Actualizados">
+                    <img src="assets/img/home/eventos_1.jpg" alt="Eventos Actualizados">
                     <h3>Eventos <br> Actualizados</h3>
                     <p>Mantente al día con los eventos más calientes en tu ciudad. Desde conciertos a festivales, nunca te
                         perderás una rumba.</p>
                 </div>
                 <div class="feature-item">
-                    <img src="assets/img/home/nuevos_lugares.jpg"
-                        alt="Descubre Lugares Nuevos">
+                    <img src="assets/img/home/nuevos_lugares.jpg" alt="Descubre Lugares Nuevos">
                     <h3>Descubre lugares <br> nuevos</h3>
                     <p>Encuentra los bares, discotecas y lounges de moda, o ese rincón especial que aún no conocías.</p>
                 </div>
@@ -71,7 +74,7 @@
     </section>
     <section class="testimonials-section">
         <div class="container">
-            <h2>Lo Que Dicen Nuestros Rumberos</h2>
+            <h2>¡Ellos son Rumberos! Y Comparten sus Experiencias!</h2>
             <div class="testimonials-grid">
                 <div class="testimonial-card">
                     <p>"¡Increíble! Desde que uso Rumbero Extremo no me pierdo ni un evento. Es la mejor forma de saber

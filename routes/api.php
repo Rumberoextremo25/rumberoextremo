@@ -9,6 +9,7 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\Api\BankController;
+use App\Services\BncApiService;
 
 /*
 |--------------------------------------------------------------------------
@@ -77,7 +78,7 @@ Route::prefix('webhooks')->group(function () {
 });
 
 // --- Ruta para obtener la lista de Bancos (BankController) ---
-Route::get('/banks', [BankController::class, 'index']);
+Route::post('/banks', [BankController::class, 'index']);
 // --- Ruta para obtener las tasas del BCV (BankController) ---
 Route::get('/Services/BCVRates', [BankController::class, 'getBcvRates']);
 
@@ -91,4 +92,33 @@ Route::middleware('auth:sanctum')->group(function () {
 
 Route::get('/user', function (Request $request) {
     return $request->user();
+});
+
+
+// Rutas de prueba para la API de BNC
+
+Route::get('/test-bnc-auth', function (Request $request) {
+    try {
+        $bncService = new BncApiService();
+        $token = $bncService->getSessionToken();
+
+        if ($token) {
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Token de sesión obtenido exitosamente.',
+                'token' => $token
+            ]);
+        } else {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'No se pudo obtener el token. Revisa los logs de tu aplicación.'
+            ], 500);
+        }
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'error',
+            'message' => 'Excepción inesperada.',
+            'error_details' => $e->getMessage()
+        ], 500);
+    }
 });

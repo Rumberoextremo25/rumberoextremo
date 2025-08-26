@@ -40,7 +40,7 @@ body {
     top: 0;
     left: 0;
     height: 100%;
-    width: 25%; /* Ancho de la capa blanca en desktop */
+    width: 30%; /* Ancho de la capa blanca en desktop */
     background-color: #ffffff;
     clip-path: polygon(0 0, 85% 0, 100% 100%, 0 100%); /* Forma diagonal */
     z-index: 1; /* Por debajo del logo y la navegación */
@@ -63,7 +63,7 @@ body {
 }
 
 .header-logo img {
-    height: 60px; /* Altura del logo en desktop */
+    height: 70px; /* Altura del logo en desktop */
     width: auto;
     object-fit: contain; /* Asegura que la imagen se ajuste sin recortarse */
 }
@@ -105,13 +105,13 @@ body {
 }
 
 .main-nav .nav-links .nav-item:hover {
-    color: #ff00ff; /* Color al pasar el ratón */
+    color: #000000; /* Color al pasar el ratón */
 }
 
-.cta-button {
-    background-color: #8a2be2; /* Color de fondo del botón CTA */
-    color: white; /* Color del texto del botón */
+.cta-button-nav {
+    background-color: #A601B3; /* Color de fondo del botón CTA */
     padding: 10px 25px;
+    color: #ffffff; /* Color del texto del botón CTA */
     border-radius: 25px; /* Bordes redondeados */
     text-decoration: none;
     font-weight: bold;
@@ -121,8 +121,9 @@ body {
     white-space: nowrap;
 }
 
-.cta-button:hover {
-    background-color: #6a0dad; /* Color de fondo al pasar el ratón */
+.cta-button-nav:hover {
+    background-color: #3004E1; /* Color de fondo al pasar el ratón */
+    color: #ffffff; /* Color del texto al pasar el ratón */
     transform: translateY(-2px); /* Efecto de elevación */
 }
 
@@ -152,25 +153,97 @@ body {
     display: none;
 }
 
-@media (max-width: 991px) {
+/* --- Media Query para Teléfonos y Pantallas Pequeñas --- */
+
+@media (max-width: 768px) {
+    /* Muestra el botón de hamburguesa */
+    .menu-toggle {
+        display: block;
+        background: none;
+        border: none;
+        font-size: 2em;
+        cursor: pointer;
+        color: white;
+        z-index: 1001; /* Asegura que esté por encima del menú */
+        order: 2; /* Cambia el orden para que aparezca después del logo */
+    }
+
+    /* Oculta la navegación por defecto */
+    .main-nav {
+        display: none;
+        flex-direction: column;
+        width: 100%;
+        position: absolute;
+        top: 80px; /* Se posiciona debajo de la cabecera fija */
+        left: 0;
+        background-color: #333; /* Fondo oscuro para el menú desplegable */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        z-index: 1000;
+        padding: 20px 0;
+        text-align: center;
+        border-bottom-left-radius: 40px;
+        border-bottom-right-radius: 40px;
+    }
+
+    /* Estilo para el menú cuando está activo (visible) */
+    .main-nav.active {
+        display: flex;
+    }
+
+    /* Estilo de los enlaces dentro del menú desplegable */
+    .main-nav .nav-links {
+        flex-direction: column;
+        width: 100%;
+        gap: 0;
+    }
+    
     .main-nav .nav-links li {
-        margin-left: 15px; /* Reduce el espacio entre elementos de navegación */
+        margin: 10px 0;
+        width: 100%;
+        justify-content: center;
     }
 
     .main-nav .nav-links .nav-item {
-        padding: 6px 10px; /* Ajusta el padding para pantallas más pequeñas */
-        font-size: 0.9em; /* Reduce ligeramente el tamaño de la fuente */
+        color: white;
+        padding: 15px;
+        display: block;
     }
-
+    
     .cta-button {
-        padding: 8px 20px; /* Padding más pequeño para el botón CTA */
-        font-size: 0.9em;
+        padding: 12px 30px;
     }
-
-    /* Ajuste del icono circular en tabletas */
+    
+    /* Ajustes del header para móviles */
+    .main-header {
+        height: 60px; /* Reduce la altura de la cabecera */
+    }
+    
+    .header-container {
+        justify-content: space-between;
+        padding: 0 20px;
+    }
+    
+    /* Oculta la capa diagonal y el círculo en móviles para simplificar el diseño */
+    .main-header::before,
     .header-logo::before {
-        left: 5px; /* Mueve el icono un poco más a la derecha en tablets */
-        width: 25px; /* Un poco más pequeño */
-        height: 25px;
+        display: none;
+    }
+    
+    .header-logo {
+        position: relative;
+        left: auto;
+        width: auto;
+        padding-left: 0;
+        order: 1; /* Asegura que el logo aparezca primero */
+    }
+    
+    .header-logo img {
+        height: 45px; /* Reduce el tamaño del logo */
+    }
+    
+    .main-nav {
+        flex-grow: unset;
+        justify-content: center;
+        padding-right: 0;
     }
 }

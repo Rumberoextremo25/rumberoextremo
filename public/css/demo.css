@@ -30,7 +30,7 @@
          * Base Styles and Typography V2
          */
 body {
-    font-family: 'Roboto', sans-serif;
+    font-family: 'Roboto Condensed', sans-serif;
     margin: 0;
     padding: 0;
     background-color: var(--light-bg);
@@ -62,7 +62,7 @@ body {
 }
 
 .hero-demo h1 {
-    font-family: 'Play', sans-serif;
+    font-family: 'Roboto Condensed', sans-serif;
     font-size: 3.5em;
     font-weight: 700;
     margin: 0 0 15px;
@@ -86,7 +86,7 @@ body {
 
 .content-section h1,
 .content-section p {
-    font-family: 'Play', sans-serif;
+    font-family: 'Roboto Condensed', sans-serif;
     color: var(--text-dark);
 }
 
