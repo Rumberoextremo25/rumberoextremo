@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Gestión de Banners')
+@section('page_title_toolbar', 'Gestion de Banners')
 
 {{-- Incluye los estilos CSS definidos --}}
 @section('styles')

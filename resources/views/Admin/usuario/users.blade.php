@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Gestión de Usuarios')
+@section('page_title_toolbar', 'Gestion de Usuarios')
 
 @section('page_title', 'Lista de Usuarios')
 

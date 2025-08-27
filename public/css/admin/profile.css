@@ -1,259 +1,140 @@
-/*
- * Public/css/admin/profile.css
- * Rediseño moderno y elegante para la vista de perfil de usuario.
- */
-
-/* =========================================================================
-   Variables de Diseño
-   ========================================================================= */
-
-:root {
-  --primary-color: #6a0dad;
-  --primary-gradient: linear-gradient(135deg, #a06dfb, #6b40e3); /* Degradado más dinámico */
-  --text-color-dark: #2c3e50; /* Texto oscuro principal */
-  --text-color-medium: #7f8c8d; /* Texto secundario */
-  --background-light: #f8faff; /* Fondo de la página */
-  --card-bg-color: #ffffff; /* Fondo de las tarjetas */
-  --card-shadow: 0 12px 30px rgba(0, 0, 0, 0.08); /* Sombra más pronunciada */
-  --card-hover-shadow: 0 20px 40px rgba(0, 0, 0, 0.12); /* Sombra al pasar el ratón */
-  --border-color: #e6e9ed;
-  --border-radius-base: 1.25rem; /* Bordes más redondeados */
-  --spacing-lg: 2.5rem; /* Espaciado grande */
-  --spacing-md: 1.5rem; /* Espaciado medio */
-  --spacing-sm: 1rem; /* Espaciado pequeño */
-  --transition-speed: 0.3s ease;
-}
-
-/* =========================================================================
-   Estilos Generales
-   ========================================================================= */
-
 body {
+  background-color: #f8f9fa;
+  /* Fondo gris claro */
   font-family: 'Inter', sans-serif;
-  background-color: var(--background-light);
-  color: var(--text-color-dark);
+  color: #495057;
 }
 
+/* Contenedor principal del contenido */
 .main-content {
-  padding: var(--spacing-lg);
+  padding: 2rem 2.5rem;
+  /* Ajuste del padding general */
+  /* No usamos max-width aquí para que se expanda */
 }
 
-.page-content {
-  max-width: 1100px;
-  margin: auto;
+/* Contenedor de toda la vista de perfil */
+.profile-view-container {
+  background-color: #fff;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  padding: 2.5rem 3rem;
+  /* Padding interno como en la imagen */
 }
 
-/* =========================================================================
-   Sección de Encabezado de Perfil (Profile Hero)
-   ========================================================================= */
-
-.profile-hero-section {
+/* Sección del Encabezado del Perfil */
+.profile-header {
   display: flex;
   align-items: center;
-  gap: var(--spacing-lg);
-  padding: var(--spacing-lg);
-  background-color: var(--card-bg-color);
-  border-radius: var(--border-radius-base);
-  box-shadow: var(--card-shadow);
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: 2.5rem;
+  /* Espacio bajo el encabezado */
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid #e2e8f0;
+  /* Línea divisoria sutil */
 }
 
-.profile-avatar-wrapper {
-  position: relative;
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  background: var(--primary-gradient);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex-shrink: 0;
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
-  overflow: hidden;
+.profile-avatar {
+    width: 60px; /* Tamaño del contenedor */
+    height: 60px;
+    border-radius: 50%; /* Esto hace que el contenedor sea un círculo */
+    background-color: #9253EC; /* Color de fondo si no hay imagen */
+    overflow: hidden; /* Oculta cualquier parte de la imagen que sobresalga del círculo */
 }
 
-.profile-avatar-lg {
-  font-size: 4rem; /* Icono más grande y llamativo */
+.profile-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Asegura que la imagen cubra todo el espacio sin distorsionarse */
+}
+
+.profile-info {
+    flex-grow: 1;
+    /* Agrega un margen izquierdo para crear espacio entre el logo y el texto */
+    margin-left: 1.5rem;
+}
+
+.profile-info h2 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #3004E1;
+    margin: 0 0 0.25rem 0;
+}
+
+.profile-info p {
+    font-size: 0.95rem;
+    color: #6c757d;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.profile-info .role {
+    font-weight: 500;
+    color: #4a5568;
+}
+
+/* Botón de Editar Perfil */
+.edit-profile-button {
+  background-color: #A601B3;
+  /* Púrpura */
   color: #fff;
-}
-
-.profile-header-info {
-  flex-grow: 1;
-}
-
-.profile-display-name {
-  font-size: 2rem;
-  font-weight: 700;
-  margin: 0;
-  color: var(--text-color-dark);
-}
-
-.profile-role-tag {
-  font-size: 1.1rem;
-  font-weight: 600;
-  color: var(--primary-color);
-  margin: 0.25rem 0;
-}
-
-.profile-company {
-  font-size: 1rem;
-  color: var(--text-color-medium);
-  margin: 0.25rem 0 var(--spacing-sm) 0;
-}
-
-.edit-profile-btn {
-  background: var(--primary-gradient);
-  color: #fff;
-  padding: 0.75rem 1.5rem;
+  padding: 0.8rem 1.5rem;
   border: none;
-  border-radius: 50px;
-  cursor: pointer;
+  border-radius: 8px;
   font-size: 1rem;
   font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s ease-in-out;
   display: flex;
   align-items: center;
   gap: 0.5rem;
   text-decoration: none;
-  transition: all var(--transition-speed);
+  /* Eliminar subrayado del enlace */
 }
 
-.edit-profile-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+.edit-profile-button:hover {
+  background-color: #3004E1;
+  /* Un tono más oscuro de púrpura */
 }
 
-/* =========================================================================
-   Contenedor de Tarjetas (Profile Grid)
-   ========================================================================= */
-
-.profile-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: var(--spacing-md);
-}
-
-.profile-card {
-  background-color: var(--card-bg-color);
-  border-radius: var(--border-radius-base);
-  padding: var(--spacing-md);
-  box-shadow: var(--card-shadow);
-  transition: transform var(--transition-speed), box-shadow var(--transition-speed);
-}
-
-.profile-card:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--card-hover-shadow);
-}
-
-.card-title {
-  font-size: 1.4rem;
+/* Secciones de Información (Personal, Contacto) */
+.info-section-title {
+  font-size: 1.25rem;
+  /* Tamaño del título de sección */
   font-weight: 700;
-  color: var(--text-color-dark);
-  margin-bottom: var(--spacing-md);
+  color: #3004E1;
+  margin-top: 2rem;
+  /* Espacio superior para separar secciones */
+  margin-bottom: 1.5rem;
   padding-bottom: 0.5rem;
-  border-bottom: 2px solid var(--border-color);
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
+  border-bottom: 1px solid #e2e8f0;
+  /* Línea divisoria */
 }
 
-.card-title i {
-  color: var(--primary-color);
-  font-size: 1.5rem;
-}
-
-.detail-group {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+/* Contenedor de los detalles de información */
+.details-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  /* Tres columnas para la información */
+  gap: 1.5rem;
+  /* Espacio entre los ítems */
+  margin-bottom: 2.5rem;
+  /* Espacio inferior de la sección */
 }
 
 .detail-item {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
   padding: 0.5rem 0;
-  border-bottom: 1px dashed var(--border-color);
 }
 
-.detail-item:last-child {
-  border-bottom: none;
+.detail-label {
+  font-size: 0.9rem;
+  font-weight: 500;
+  color: #6c757d;
+  margin-bottom: 0.25rem;
 }
 
-.detail-item strong {
-  color: var(--text-color-dark);
+.detail-value {
+  font-size: 1rem;
   font-weight: 600;
-  flex-shrink: 0;
-  margin-right: 1rem;
-}
-
-.detail-item span {
-  color: var(--text-color-medium);
-  text-align: right;
-  flex-grow: 1;
-}
-
-/* =========================================================================
-   Insignias de Estado (Badges)
-   ========================================================================= */
-
-.status-badge {
-  padding: 0.35rem 1rem;
-  border-radius: 50px;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #fff;
-  text-transform: uppercase;
-  white-space: nowrap;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-}
-
-.status-success {
-  background: linear-gradient(135deg, #28a745, #50c878);
-}
-
-.status-danger {
-  background: linear-gradient(135deg, #dc3545, #ff6b6b);
-}
-
-/* =========================================================================
-   Responsividad
-   ========================================================================= */
-
-@media (max-width: 768px) {
-  .profile-hero-section {
-    flex-direction: column;
-    text-align: center;
-    gap: var(--spacing-md);
-  }
-  .profile-avatar-wrapper {
-    width: 100px;
-    height: 100px;
-  }
-  .profile-avatar-lg {
-    font-size: 3rem;
-  }
-  .profile-header-info {
-    align-items: center;
-  }
-  .edit-profile-btn {
-    width: 100%;
-    justify-content: center;
-  }
-  .profile-grid {
-    grid-template-columns: 1fr;
-  }
-  .profile-card {
-    padding: var(--spacing-sm);
-  }
-  .detail-item {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 0.25rem;
-  }
-  .detail-item strong,
-  .detail-item span {
-    width: 100%;
-    text-align: left;
-  }
+  color: #2d3748;
 }

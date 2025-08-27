@@ -1,114 +1,78 @@
-@extends('layouts.admin') {{-- Asume que tu layout base se llama admin.blade.php --}}
+{{-- resources/views/productos/index.blade.php --}}
 
-@section('title', 'Gestión de Aliados')
-@section('page_title_toolbar', 'Gestión de Aliados')
+@extends('layouts.admin')
+
+@section('title', 'Gestión de Productos')
+
+@section('page_title_toolbar', 'Listado de Productos')
 
 @push('styles')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 @endpush
 
 @section('content')
-    <div class="allies-management-container">
-        <div class="header-actions">
-            <h2>Todos los Aliados</h2>
-            <a href="{{ route('aliados.create') }}" class="add-ally-btn">
-                <i class="fas fa-plus-circle"></i> Añadir Nuevo Aliado
-            </a>
-        </div>
-
-        {{-- Mensajes de Sesión --}}
-        @if (session('success'))
-            <div class="alert alert-success alert-dismissible fade show" role="alert">
-                <i class="fas fa-check-circle"></i> {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    <div class="main-content">
+        <div class="products-card-container">
+            <div class="table-header">
+                <h2 class="title">Listado de Productos</h2>
+                <a href={{ route('aliados.create') }} class="add-product-btn">
+                    <i class="fas fa-plus"></i> Añadir nuevo producto
+                </a>
             </div>
-        @endif
-
-        @if (session('error'))
-            <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                <i class="fas fa-exclamation-triangle"></i> {{ session('error') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            
+            <div class="search-container">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="buscar productos...">
             </div>
-        @endif
 
-        {{-- Barra de Búsqueda --}}
-        <div class="search-bar">
-            <i class="fas fa-search"></i>
-            <input type="text" id="allySearch"
-                placeholder="Buscar por nombre, RIF, contacto, email, categoría, subcategoría o estado...">
-        </div>
-
-        {{-- Tabla de Aliados --}}
-        <div class="table-responsive">
-            <table class="allies-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Imagen</th>
-                        <th>Nombre</th>
-                        <th>RIF</th>
-                        <th>Categoría</th>
-                        <th>Subcategoría</th>
-                        <th>Descuento</th>
-                        <th>Descripción</th> {{-- Nueva columna para la descripción --}}
-                        <th>Contacto</th>
-                        <th>Email</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse ($allies as $ally)
+            <div class="table-responsive">
+                <table class="products-table">
+                    <thead>
                         <tr>
-                            <td data-label="ID">{{ $ally->id }}</td>
-                            <td data-label="Imagen">
-                                @if ($ally->image_url)
-                                    <img src="{{ asset('storage/' . $ally->image_url) }}" alt="Imagen de {{ $ally->company_name }}" class="ally-image">
-                                @else
-                                    <span class="no-image">No disponible</span>
-                                @endif
+                            <th>ID</th>
+                            <th>Producto</th>
+                            <th>Aliado</th>
+                            <th>Descripción</th>
+                            <th>Precio base (USD)</th>
+                            <th>Descuento (%)</th>
+                            <th>Precio final (USD)</th>
+                            <th>Estado</th>
+                            <th>Fecha de alta</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {{-- Ejemplo de una fila de datos --}}
+                        <tr>
+                            <td>1</td>
+                            <td>Devant la Riviere</td>
+                            <td>Herbert Diaz</td>
+                            <td>Prueba de sistemas</td>
+                            <td>50.00</td>
+                            <td>20%</td>
+                            <td>40.00</td>
+                            <td>
+                                <span class="status-badge status-disponible">Disponible</span>
                             </td>
-                            <td data-label="Nombre">{{ $ally->company_name }}</td>
-                            <td data-label="RIF">{{ $ally->company_rif }}</td>
-                            <td data-label="Categoría">{{ $ally->category->name ?? 'N/A' }}</td>
-                            <td data-label="Subcategoría">{{ $ally->subCategory->name ?? 'N/A' }}</td>
-                            <td data-label="Descuento">{{ $ally->discount ?? 'N/A' }}</td>
-                            <td data-label="Descripción">{{ $ally->description ?? 'N/A' }}</td> {{-- Muestra la descripción --}}
-                            <td data-label="Contacto">{{ $ally->contact_person_name }}</td>
-                            <td data-label="Email">{{ $ally->contact_email }}</td>
-                            <td data-label="Estado">
-                                <span class="status-badge status-{{ strtolower($ally->status) }}">
-                                    {{ ucfirst($ally->status) }}
-                                </span>
-                            </td>
-                            <td data-label="Acciones" class="actions">
-                                <a href="{{ route('aliado.edit', $ally->id) }}" class="btn-icon edit-btn"
-                                    title="Editar Aliado">
-                                    <i class="fas fa-pencil-alt"></i>
-                                </a>
-                                <form action="{{ route('aliados.destroy', $ally->id) }}" method="POST"
-                                    style="display:inline-block;">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn-icon delete-btn" title="Eliminar Aliado"
-                                        onclick="return confirm('¿Estás seguro de que quieres eliminar a {{ $ally->company_name }}? Esta acción no se puede deshacer.');">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-                                </form>
+                            <td>16/06/2025</td>
+                            <td class="actions">
+                                <button class="btn-icon">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                                <button class="btn-icon">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
                             </td>
                         </tr>
-                    @empty
-                        <tr>
-                            {{-- COLSPAN AJUSTADO A 12 para la nueva columna 'Descripción' --}}
-                            <td colspan="12" class="no-records-message">No hay aliados registrados en este momento.</td>
-                        </tr>
-                    @endforelse
-                </tbody>
-            </table>
+                        {{-- Puedes iterar sobre tus productos aquí --}}
+                    </tbody>
+                </table>
+            </div>
         </div>
     </div>
 @endsection
 
 @push('scripts')
-    <script src="{{ asset('js/admin/aliados.js') }}"></script>
+    {{-- Tus scripts, si los necesitas --}}
 @endpush

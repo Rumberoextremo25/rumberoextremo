@@ -1,7 +1,8 @@
 @extends('layouts.admin')
 
 @section('title', 'Ajustes de la Cuenta')
-@section('page_title_toolbar', 'Ajustes de la Cuenta')
+
+@section('page_title_toolbar', 'Gestion de Ajustes')
 
 @push('styles')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">

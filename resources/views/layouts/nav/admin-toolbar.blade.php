@@ -3,7 +3,7 @@
 <!-- El `header` principal con el nuevo diseño -->
 <header class="admin-toolbar">
     <div class="left-section">
-        <h1 class="page-title-toolbar">@yield('page_title', 'Panel Administrativo')</h1>
+        <h1 class="page-title-toolbar">@yield('page_title_toolbar', 'Panel Administrativo')</h1>
     </div>
     <div class="right-section">
         <!-- El cuadro de búsqueda con un diseño moderno -->

@@ -1,206 +1,162 @@
-/*
- * Public/css/admin/dashboard.css
- * Estilos para la vista del dashboard.
- */
-
-/* =========================================================================
-   Estilos Generales
-   ========================================================================= */
-
 body {
-    font-family: 'Poppins', sans-serif;
-    background-color: #f8faff;
-    color: #2c3e50;
+    background-color: #f8f9fa;
+    /* Fondo gris claro */
+    font-family: 'Inter', sans-serif;
+    color: #495057;
 }
 
+/* Contenedor principal del contenido de la página */
 .main-content {
-    padding: 2.5rem;
-    background-color: #f8faff;
-    min-height: 100vh;
+    /* Eliminamos max-width y margin: 0 auto; para que ocupe todo el ancho */
+    padding: 1rem 2.2rem;
+    /* Ajusta este padding para el espaciado general */
 }
 
-.welcome-section {
-    margin-bottom: 2.5rem;
+/* Contenedor de las tarjetas de métricas */
+.metrics-cards-grid {
+    display: grid;
+    /* Crea 4 columnas de igual ancho para las 4 tarjetas */
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.0rem;
+    margin-bottom: 2rem;
 }
 
-.welcome-title {
+/* Estilo de cada tarjeta de métrica */
+.metric-card-minimal {
+    background-color: #fff;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    /* Espacio entre el icono y el texto */
+}
+
+.metric-card-minimal .icon-wrapper {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    /* Icono circular */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: #fff;
+}
+
+/* Colores específicos para los wrappers de iconos */
+.metric-card-minimal.users .icon-wrapper {
+    background-color: #9253EC;
+}
+
+/* Púrpura */
+.metric-card-minimal.products .icon-wrapper {
+    background-color: #9253EC;
+}
+
+/* Púrpura */
+.metric-card-minimal.sales .icon-wrapper {
+    background-color: #9253EC;
+}
+
+/* Púrpura */
+.metric-card-minimal.satisfaction .icon-wrapper {
+    background-color: #9253EC;
+}
+
+/* Púrpura */
+
+.metric-card-minimal .details {
+    flex-grow: 1;
+    text-align: left;
+    /* Alineación a la izquierda como en la imagen */
+}
+
+.metric-card-minimal .details .value {
     font-size: 2rem;
     font-weight: 700;
-    margin: 0;
-    color: #2c3e50;
-}
-
-.welcome-message {
-    font-size: 1rem;
-    color: #7f8c8d;
-    margin-top: 0.5rem;
-}
-
-/* =========================================================================
-   Estilos de las Tarjetas de Resumen (KPIs)
-   ========================================================================= */
-
-.dashboard-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: 1.5rem;
-    margin-bottom: 2.5rem;
-}
-
-.dashboard-card {
-    background-color: #ffffff;
-    border-radius: 1rem;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
-    display: flex;
-    align-items: center;
-    padding: 1.5rem;
-    gap: 1.5rem;
-    transition: transform 0.3s ease;
-}
-
-.dashboard-card:hover {
-    transform: translateY(-5px);
-}
-
-.icon-wrapper {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 1.8rem;
-    color: #f8f9fa;
-}
-
-.primary-card .icon-wrapper { background: linear-gradient(45deg, #a06dfb, #6b40e3); }
-.info-card .icon-wrapper    { background: linear-gradient(45deg, #007bff, #00c6ff); }
-.success-card .icon-wrapper { background: linear-gradient(45deg, #28a745, #50c878); }
-.warning-card .icon-wrapper { background: linear-gradient(45deg, #ffc107, #ffd700); }
-.danger-card .icon-wrapper  { background: linear-gradient(45deg, #dc3545, #ff6b6b); }
-
-.details {
-    flex-grow: 1;
-}
-
-.value {
-    font-size: 1.8rem;
-    font-weight: 700;
+    color: #212529;
     margin-bottom: 0.25rem;
-    color: #2c3e50;
+    /* Espacio debajo del valor */
 }
 
-.label {
-    font-size: 0.9rem;
-    color: #7f8c8d;
+.metric-card-minimal .details .label {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #6c757d;
 }
 
-/* =========================================================================
-   Estilos de la Sección de Últimas Actividades
-   ========================================================================= */
-
-.latest-activity-section {
-    background-color: #ffffff;
-    border-radius: 1rem;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
-    padding: 1.5rem;
+/* Sección de Últimas Actividades */
+/* Sección de Últimas Actividades */
+.activities-section {
+    background-color: #fff;
+    border-radius: 12px;
+    /* Aumenta el padding para hacer el contenedor más grande */
+    padding: 2.5rem 3rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
 
-.section-title {
-    font-size: 1.5rem;
-    font-weight: 600;
-    margin-top: 0;
+.activities-section .section-title {
+    font-size: 1.8rem; /* Un tamaño de fuente más grande */
+    font-weight: 700;
+    color: #4a5568;
     margin-bottom: 1.5rem;
-    color: #2c3e50;
+    padding-bottom: 0.75rem;
+    border-bottom: 1px solid #e2e8f0;
 }
 
-.activity-table-container {
-    overflow-x: auto;
-}
-
-table {
+/* Estilos de la tabla de actividad */
+.activity-table {
     width: 100%;
     border-collapse: collapse;
 }
 
-table thead tr th {
-    font-weight: 600;
+.activity-table th, .activity-table td {
+    /* Aumenta el padding para celdas más grandes y espaciosas */
+    padding: 1.5rem 0;
     text-align: left;
-    padding: 1rem;
-    border-bottom: 2px solid #e6e9ed;
-    color: #7f8c8d;
-    white-space: nowrap;
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
 }
 
-table tbody tr {
-    transition: background-color 0.3s ease;
-}
-
-table tbody tr:hover {
-    background-color: #f8f9fa;
-}
-
-table tbody tr td {
-    padding: 1rem;
-    border-bottom: 1px solid #e6e9ed;
-    color: #2c3e50;
-    font-size: 0.95rem;
-}
-
-table tbody tr:last-child td {
-    border-bottom: none;
-}
-
+/* Estilos de los badges de estado */
 .status-badge {
-    padding: 0.35rem 0.75rem;
-    border-radius: 50px;
+    padding: 0.4rem 0.8rem;
+    /* Ajuste de padding para el badge */
+    border-radius: 18px;
+    /* Bordes más redondeados */
     font-size: 0.8rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    color: #fff;
-    white-space: nowrap;
-}
-
-.status-completed { background-color: #28a745; }
-.status-pending   { background-color: #ffc107; }
-.status-error     { background-color: #dc3545; }
-
-.text-center {
+    font-weight: 600;
     text-align: center;
+    display: inline-block;
+    /* Para que el padding y border-radius funcionen bien */
 }
 
-/* =========================================================================
-   Responsividad de la tabla
-   ========================================================================= */
-@media (max-width: 768px) {
-    .activity-table-container table {
-        border: 0;
-    }
-    .activity-table-container table thead {
-        display: none;
-    }
-    .activity-table-container table tr {
-        display: block;
-        margin-bottom: 1rem;
-        border: 1px solid #e6e9ed;
-        border-radius: 1rem;
-        padding: 1rem;
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.05);
-    }
-    .activity-table-container table td {
-        display: block;
-        text-align: right;
-        border-bottom: 1px solid #e6e9ed;
-        padding-top: 0.5rem;
-        padding-bottom: 0.5rem;
-    }
-    .activity-table-container table td::before {
-        content: attr(data-label);
-        float: left;
-        font-weight: 600;
-        color: #7f8c8d;
-    }
-    .activity-table-container table td:last-child {
-        border-bottom: 0;
-    }
+.status-completado {
+    background-color: #e6ffed;
+    /* Fondo verde claro */
+    color: #38a169;
+    /* Texto verde oscuro */
+}
+
+.status-pendiente {
+    background-color: #fffaf0;
+    /* Fondo amarillo claro */
+    color: #dd6b20;
+    /* Texto naranja */
+}
+
+.status-error {
+    background-color: #ffeaea;
+    /* Fondo rojo claro */
+    color: #e53e3e;
+    /* Texto rojo oscuro */
+}
+
+.no-records-message {
+    text-align: center;
+    font-style: italic;
+    color: #adb5bd;
+    padding: 2rem;
 }

@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Reportes de Ventas - Rumbero Extremo')
+@section('page_title_toolbar', 'Gestion de Reportes')
 
 @push('styles') {{-- Agregamos el CSS específico de esta vista --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">

@@ -1,6 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Gestión de Promociones')
+@section('page_title_toolbar', 'Gestion de Promociones')
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('css/admin/promotion.css') }}"> {{-- Tus estilos específicos de promociones --}}

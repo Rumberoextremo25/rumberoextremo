@@ -1,341 +1,155 @@
-/*
- * resources/css/admin/aliados/aliados.css
- * Versión mejorada con un diseño más moderno y pulido.
- */
-
-/* =========================================================================
-   Variables de Diseño
-   ========================================================================= */
-
-:root {
-  --primary-color: #6a0dad; /* Púrpura elegante */
-  --primary-gradient: linear-gradient(135deg, #a06dfb, #6b40e3); /* Degradado dinámico */
-  --text-color-dark: #2c3e50;
-  --text-color-medium: #7f8c8d;
-  --bg-light: #f8faff;
-  --bg-card: #ffffff;
-  --shadow-subtle: 0 15px 40px rgba(0, 0, 0, 0.08); /* Sombra suave y amplia */
-  --shadow-hover: 0 20px 50px rgba(0, 0, 0, 0.12);
-  --border-color: #e6e9ed;
-  --border-radius-lg: 1.5rem;
-  --border-radius-md: 1rem;
-  --border-radius-sm: 0.5rem;
-  --transition-speed: 0.3s ease;
-  
-  /* Colores de estado con degradados para consistencia */
-  --success-gradient: linear-gradient(45deg, #2ecc71, #27ae60);
-  --danger-gradient: linear-gradient(45deg, #e74c3c, #c0392b);
-  --warning-gradient: linear-gradient(45deg, #f1c40f, #f39c12);
-  --info-gradient: linear-gradient(45deg, #3498db, #2980b9);
+body {
+    background-color: #c5c6c7;
+    font-family: 'Inter', sans-serif;
+    color: #495057;
 }
 
-/* =========================================================================
-   Contenedor Principal y Encabezado
-   ========================================================================= */
-
-.allies-management-container {
-    max-width: 1400px;
-    margin: 3rem auto;
+.main-content {
     padding: 2.5rem;
-    background-color: var(--bg-card);
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-subtle);
-    transition: box-shadow var(--transition-speed);
-}
-.allies-management-container:hover {
-    box-shadow: var(--shadow-hover);
 }
 
-.header-actions {
+.products-card-container {
+    background-color: #fff;
+    border-radius: 8px;
+    padding: 2.5rem;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+}
+
+.table-header {
     display: flex;
-    flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2.5rem;
+    margin-bottom: 1.5rem;
 }
 
-.header-actions h2 {
-    font-size: 2.2rem;
-    color: var(--text-color-dark);
+.table-header h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #3004E1;
     margin: 0;
-    font-weight: 700;
-    position: relative;
-    padding-bottom: 0.75rem;
 }
 
-.header-actions h2::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 60px;
-    height: 4px;
-    background: var(--primary-gradient);
-    border-radius: 2px;
-}
-
-.add-ally-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.75rem;
-    background: var(--primary-gradient);
-    color: white;
-    padding: 0.75rem 1.75rem;
-    border-radius: 50px;
-    text-decoration: none;
-    font-weight: 600;
-    font-size: 1rem;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    border: none;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
-
-.add-ally-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-}
-
-/* =========================================================================
-   Alertas y Barra de Búsqueda
-   ========================================================================= */
-
-.alert {
-    padding: 1.25rem;
-    margin-bottom: 2rem;
-    border: 1px solid transparent;
-    border-radius: var(--border-radius-md);
-    font-size: 1rem;
-    font-weight: 500;
-}
-
-.alert-success {
-    background-color: #e6f7e9;
-    color: #28a745;
-    border-color: #c9e4d1;
-}
-
-.alert-danger {
-    background-color: #f7e6e6;
-    color: #dc3545;
-    border-color: #e4c9c9;
-}
-
-.search-bar {
-    position: relative;
-    margin-bottom: 2.5rem;
-    display: flex;
-    align-items: center;
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-md);
-    background-color: var(--bg-card);
-    padding: 0.75rem 1.5rem;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    transition: box-shadow 0.3s ease, border-color 0.3s ease;
-}
-
-.search-bar:focus-within {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 4px rgba(106, 13, 173, 0.1);
-}
-
-.search-bar i {
-    color: var(--text-color-medium);
-    margin-right: 1rem;
-    font-size: 1.2rem;
-}
-
-.search-bar input {
-    flex-grow: 1;
-    border: none;
-    background: transparent;
-    color: var(--text-color-dark);
-    font-size: 1.05rem;
-    padding: 0;
-    outline: none;
-}
-
-/* =========================================================================
-   Tabla de Aliados
-   ========================================================================= */
-
-.table-responsive {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-}
-
-.allies-table {
-    width: 100%;
-    border-collapse: separate;
-    border-spacing: 0;
-    min-width: 900px;
-    font-size: 0.95rem;
-}
-
-.allies-table thead th {
-    background-color: var(--bg-card);
-    color: var(--text-color-medium);
-    font-weight: 700;
-    text-align: left;
-    padding: 1.25rem 1.75rem;
-    text-transform: uppercase;
-    font-size: 0.85rem;
-    letter-spacing: 0.05em;
-    border-bottom: 2px solid var(--border-color);
-}
-
-.allies-table tbody tr {
-    transition: transform 0.2s ease, box-shadow 0.2s ease;
-    background-color: var(--bg-card);
-}
-
-.allies-table tbody tr:hover {
-    transform: scale(1.01);
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
-    cursor: pointer;
-}
-
-.allies-table td {
-    padding: 1.25rem 1.75rem;
-    border-bottom: 1px solid var(--border-color);
-    color: var(--text-color-dark);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 150px;
-}
-
-.allies-table tbody tr:last-child td {
-    border-bottom: none;
-}
-
-/* =========================================================================
-   Insignias de Estado (Badges) y Botones de Acción
-   ========================================================================= */
-
-.status-badge {
-    padding: 0.4rem 1rem;
-    border-radius: 50px;
-    font-size: 0.8rem;
-    font-weight: 700;
+.add-product-btn {
+    background-color: #A603B1;
     color: #fff;
-    text-transform: uppercase;
-    white-space: nowrap;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    padding: 0.75rem 1.5rem;
+    border-radius: 5px;
+    font-size: 1rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: background-color 0.2s ease;
 }
 
-.status-badge.status-activo, .status-badge.status-aprobado { background: var(--success-gradient); }
-.status-badge.status-inactivo, .status-badge.status-rechazado { background: var(--danger-gradient); }
-.status-badge.status-pendiente { background: var(--warning-gradient); color: #333; }
+.add-product-btn:hover {
+    background-color: #3004E1;
+}
 
+.search-container {
+    position: relative;
+    width: 250px;
+    margin-bottom: 1.5rem;
+}
+
+.search-container input {
+    width: 100%;
+    padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+    border: 1px solid #dcdcdc;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    color: #495057;
+}
+
+.search-container .fas {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #adb5bd;
+}
+
+/* Estilos de la tabla */
+.products-table {
+    width: 100%;
+    border-collapse: collapse;
+    text-align: left;
+    table-layout: fixed;
+}
+
+.products-table thead th {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #6c757d;
+    text-transform: uppercase;
+    padding: 1.2rem 1rem; /* Aumenta el padding horizontal */
+    border-bottom: 1px solid #868686;
+}
+
+.products-table tbody tr {
+    transition: background-color 0.2s ease;
+}
+
+.products-table tbody tr:hover {
+    background-color: #f8f9fa;
+}
+
+.products-table td {
+    font-size: 0.70rem;
+    padding: 1.2rem 1rem; /* Aumenta el padding horizontal */
+    border-bottom: 1px solid #e9ecef;
+    vertical-align: middle;
+    word-wrap: break-word;
+}
+
+/* Definición de anchos de columna para que sumen 100% */
+.products-table th:nth-child(1), .products-table td:nth-child(1) { width: 5%; } /* ID */
+.products-table th:nth-child(2), .products-table td:nth-child(2) { width: 10%; } /* Producto */
+.products-table th:nth-child(3), .products-table td:nth-child(3) { width: 10%; } /* Aliado */
+.products-table th:nth-child(4), .products-table td:nth-child(4) { width: 18%; } /* Descripción */
+.products-table th:nth-child(5), .products-table td:nth-child(5) { width: 10%; } /* Precio base */
+.products-table th:nth-child(6), .products-table td:nth-child(6) { width: 8%; }  /* Descuento */
+.products-table th:nth-child(7), .products-table td:nth-child(7) { width: 10%; } /* Precio final */
+.products-table th:nth-child(8), .products-table td:nth-child(8) { width: 7%; }  /* Estado */
+.products-table th:nth-child(9), .products-table td:nth-child(9) { width: 10%; } /* Fecha de alta */
+.products-table th:nth-child(10), .products-table td:nth-child(10) { width: 7%; } /* Acciones */
+
+/* Badge de Estado */
+.status-badge {
+    padding: 0.4rem 0.8rem;
+    border-radius: 18px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-align: center;
+    display: inline-block;
+}
+
+.status-disponible {
+    background-color: #bcb7b7;
+    color: #38c172;
+}
+
+.status-agotado {
+    background-color: #bcb7b7;
+    color: #e3342f;
+}
+
+/* Estilos para los botones de acción */
 .actions {
-    display: flex;
-    gap: 0.75rem;
-    justify-content: center;
+    white-space: nowrap;
 }
 
 .btn-icon {
-    width: 40px;
-    height: 40px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    font-size: 1rem;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    background: none;
     border: none;
-    color: white;
+    padding: 0.5rem;
+    cursor: pointer;
+    color: #8b8b9b; /* Color gris de los botones */
+    font-size: 1.1rem;
+    transition: color 0.2s ease; /* Transición suave del color */
 }
+
 .btn-icon:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
-}
-
-.btn-icon.edit-btn { background: var(--info-gradient); }
-.btn-icon.delete-btn { background: var(--danger-gradient); }
-
-/* =========================================================================
-   Responsividad
-   ========================================================================= */
-
-@media (max-width: 768px) {
-    .allies-management-container {
-        padding: 1.5rem;
-        margin: 1.5rem auto;
-        border-radius: 0;
-        box-shadow: none;
-    }
-    .header-actions {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1.5rem;
-        margin-bottom: 2rem;
-    }
-    .header-actions h2 {
-        font-size: 2rem;
-        padding-bottom: 0.5rem;
-    }
-    .add-ally-btn {
-        width: 100%;
-        justify-content: center;
-    }
-    .search-bar {
-        padding: 0.75rem;
-        margin-bottom: 2rem;
-    }
-    .search-bar input {
-        font-size: 0.95rem;
-    }
-    
-    .table-responsive {
-        border: none;
-        box-shadow: none;
-        overflow-x: hidden;
-    }
-
-    .allies-table {
-        min-width: unset;
-        width: 100%;
-        border-spacing: 0 1rem;
-    }
-
-    .allies-table thead { display: none; }
-    .allies-table tbody tr {
-        display: block;
-        margin-bottom: 1rem;
-        background-color: var(--bg-card);
-        border-radius: var(--border-radius-lg);
-        box-shadow: var(--shadow-subtle);
-        border: 1px solid var(--border-color);
-        padding: 1.5rem;
-        transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-
-    .allies-table td {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 0.75rem 0;
-        border-bottom: 1px dashed var(--border-color);
-        font-size: 0.9rem;
-        white-space: normal;
-        word-break: break-word;
-        max-width: unset;
-        text-overflow: unset;
-    }
-
-    .allies-table td:last-child {
-        border-bottom: none;
-        margin-top: 1.5rem;
-        justify-content: center;
-    }
-
-    .allies-table td::before {
-        content: attr(data-label);
-        font-weight: 700;
-        color: var(--text-color-dark);
-        flex-shrink: 0;
-        margin-right: 1rem;
-        font-size: 0.85rem;
-    }
+    color: #A603B1; /* Color rosado al pasar el cursor */
 }

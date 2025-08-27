@@ -1,6 +1,6 @@
 @extends('layouts.admin') {{-- Asume que tu layout base se llama admin.blade.php --}}
 
-@section('title', 'Gestión de Aliados Comerciales')
+@section('page_title_toolbar', 'Gestion de Aliados Comerciales')
 
 @push('styles') {{-- Agregamos el CSS específico de esta vista --}}
     {{-- Asegúrate de que Font Awesome y Google Fonts estén en tu layout admin global para evitar duplicados --}}
@@ -13,7 +13,7 @@
 @section('content')
     <div class="allies-management-container">
         <div class="header-actions">
-            <h2>Gestión de <span style="color: var(--secondary-color);">Aliados Comerciales</span></h2>
+            <h2>Gestión de <span style="color: var(--secondary-color);">Todos los Aliados Comerciales</span></h2>
             <a href="{{ route('admin.commercial-allies.create') }}" class="add-ally-btn">
                 <i class="fas fa-plus"></i> Crear Nuevo Aliado
             </a>

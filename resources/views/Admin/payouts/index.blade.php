@@ -1,5 +1,7 @@
 @extends('layouts.admin')
 
+@section('page_title_toolbar', 'Pagos Pendientes a Aliados')
+
 @section('content')
 <div class="main-content">
     <h2 class="page-title">Pagos Pendientes a Aliados</h2>
