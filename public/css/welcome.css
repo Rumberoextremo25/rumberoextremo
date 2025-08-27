@@ -253,41 +253,97 @@ h2 {
 
 .testimonials-section {
     background-color: var(--background-card);
+    padding: 60px 20px; /* Añadimos padding para el espacio vertical */
+    text-align: center; /* Centramos el título */
+}
+
+.testimonials-section h2 {
+    font-size: 2.5em; /* Ajustamos el tamaño del título */
+    color: #333; /* Color oscuro para el título */
+    margin-bottom: 50px; /* Espacio debajo del título */
 }
 
 .testimonials-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 30px;
+    max-width: 1200px; /* Ancho máximo para centrar la cuadrícula */
+    margin: 0 auto; /* Centramos la cuadrícula */
 }
 
 .testimonial-card {
     background-color: white;
-    padding: 30px;
+    padding: 60px 30px 30px; /* Ajustamos padding para espacio superior del círculo */
     border-radius: 20px;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
-    font-style: italic;
     position: relative;
     text-align: center;
+    display: flex; /* Usamos flexbox para alinear contenido */
+    flex-direction: column;
+    justify-content: space-between; /* Espaciado entre contenido */
 }
 
 .testimonial-card p {
-    margin: 0 0 15px 0;
+    margin: 20px 0 25px 0; /* Ajustamos márgenes para el texto */
     font-style: normal;
+    font-size: 1.1em; /* Un poco más grande para el texto de la reseña */
+    color: #555;
+    line-height: 1.6; /* Mejoramos la legibilidad */
 }
 
 .testimonial-card .author {
-    font-weight: 600;
+    font-weight: 700; /* Más grueso para el nombre */
     font-style: normal;
-    color: var(--primary-purple);
+    color: var(--primary-purple); /* Asumiendo que --primary-purple es el morado de la imagen */
     display: block;
     margin-bottom: 5px;
+    font-size: 1.2em; /* Tamaño de fuente para el autor */
 }
 
 .testimonial-card .location {
-    font-size: 0.9em;
-    color: var(--text-color-secondary);
+    font-size: 0.95em; /* Ligeramente más grande */
+    color: var(--text-color-secondary); /* Asumiendo un color secundario para la ubicación */
     font-style: normal;
+}
+
+/* Estilos para el círculo morado con el ícono */
+.testimonial-card::before {
+    content: ' '; /* Contenido vacío para el pseudo-elemento */
+    background-color: var(--primary-purple); /* Color morado del círculo */
+    width: 80px; /* Ancho del círculo */
+    height: 80px; /* Alto del círculo */
+    border-radius: 50%; /* Hace que sea un círculo */
+    position: absolute;
+    top: -40px; /* Sube la mitad del círculo para que sobresalga */
+    left: 50%;
+    transform: translateX(-50%); /* Centra horizontalmente */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* Aquí iría el ícono, si se usa una fuente de íconos o SVG */
+    /* Por ahora, es solo el círculo */
+}
+
+
+.testimonial-card::before {
+    content: ''; /* Quitamos el contenido de texto para usar una imagen */
+    background-color: var(--primary-purple); /* Color morado del círculo */
+    width: 80px; /* Ancho del círculo */
+    height: 80px; /* Alto del círculo */
+    border-radius: 50%; /* Hace que sea un círculo */
+    position: absolute;
+    top: -40px; /* Sube la mitad del círculo para que sobresalga */
+    left: 50%;
+    transform: translateX(-50%); /* Centra horizontalmente */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    /* === CAMBIOS APLICADOS AQUÍ === */
+    background-image: url('../assets/img/dashboard/logo_perfil.png'); /* Reemplaza con la URL real de tu SVG o PNG */
+    background-size: 50%; /* Ajusta el tamaño de la imagen dentro del círculo */
+    background-repeat: no-repeat; /* Evita que la imagen se repita */
+    background-position: center; /* Centra la imagen dentro del círculo */
 }
 
 .cta-alt {

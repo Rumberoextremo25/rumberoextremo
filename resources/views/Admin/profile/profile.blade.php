@@ -6,14 +6,7 @@
 
 @push('styles')
     {{-- Asegúrate de que Font Awesome esté cargado en tu layout global, si no, puedes añadirlo aquí --}}
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-
-    {{-- Enlaza al archivo CSS específico para la vista de perfil --}}
-    <link rel="stylesheet" href="{{ asset('css/admin/profile.css') }}">
-
-    <link rel="stylesheet" href="{{ asset('css/sidebar.css') }}">
-
-    <link rel="stylesheet" href="{{ asset('css/toolbar.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">    
 @endpush
 
 @section('content')

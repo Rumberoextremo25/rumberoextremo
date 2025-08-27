@@ -11,11 +11,21 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     {{-- Enlaza tu archivo CSS principal sin Laravel Mix --}}
-    <link rel="stylesheet" href="{{ asset('css/admin/admin.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/admin/users.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/admin/banner.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
     <link rel="stylesheet" href="{{ asset('css/sidebar.css') }}">
     <link rel="stylesheet" href="{{ asset('css/toolbar.css') }}">
+
+
+    <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/profile.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/users.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/aliados.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/banner.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/commercial.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/promotion.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/payout.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/reports.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/settings.css') }}">
 
     {{-- Aquí se inyectarán los estilos específicos de cada página --}}
     @stack('styles')

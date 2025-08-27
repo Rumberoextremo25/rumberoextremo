@@ -1,13 +1,9 @@
 @extends('layouts.admin')
 
 @section('title', 'Reportes de Ventas - Rumbero Extremo')
-@section('page_title_toolbar', 'Análisis de Ventas') {{-- Usando page_title_toolbar si tu layout lo soporta --}}
 
 @push('styles') {{-- Agregamos el CSS específico de esta vista --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-    {{-- Enlazamos al nuevo archivo CSS para los reportes --}}
-    <link rel="stylesheet" href="{{ asset('css/admin/reports.css') }}">
 @endpush
 
 @section('content')

@@ -1,391 +1,259 @@
-/* public/css/admin/profile.css */
+/*
+ * Public/css/admin/profile.css
+ * Rediseño moderno y elegante para la vista de perfil de usuario.
+ */
+
+/* =========================================================================
+   Variables de Diseño
+   ========================================================================= */
 
 :root {
-    --primary-color: #6a0dad; /* A shade of purple */
-    --secondary-color: #e0e0e0;
-    --text-color: #333;
-    --light-text-color: #666;
-    --card-bg-color: #fff;
-    --border-color: #eee;
-    --shadow-light: rgba(0, 0, 0, 0.05);
-    --border-radius: 8px;
-    --button-hover-color: #5a0bac;
-    --gap-spacing: 20px; /* Nueva variable para espaciado consistente */
-}
-
-body {
-    font-family: 'Inter', sans-serif; /* Or your preferred font */
-    background-color: #f4f7f6; /* Light background to match the image */
-    color: var(--text-color);
-    margin: 0; /* Asegura que no haya margen por defecto en el body */
-    padding: 0; /* Asegura que no haya padding por defecto en el body */
-}
-
-.dashboard-container {
-    max-width: 900px; /* Adjust as needed to match the width in the image */
-    margin: 20px auto;
-    padding: var(--gap-spacing);
-    background-color: var(--card-bg-color); /* Matches background color in the image */
-    border-radius: var(--border-radius);
-    box-shadow: 0 4px 12px var(--shadow-light);
-    display: flex;
-    flex-direction: column;
-    gap: var(--gap-spacing);
-}
-
-/* Profile Hero Section */
-.profile-hero-section {
-    display: flex;
-    align-items: center;
-    gap: var(--gap-spacing);
-    padding-bottom: var(--gap-spacing);
-    border-bottom: 1px solid var(--border-color);
-    margin-bottom: var(--gap-spacing);
-    flex-wrap: wrap; /* Permite que los elementos se envuelvan en pantallas pequeñas */
-}
-
-.profile-avatar-wrapper {
-    position: relative;
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    background-color: var(--primary-color); /* The purple circle */
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-shrink: 0; /* Prevent shrinking */
-}
-
-.profile-avatar-lg {
-    width: 60px; /* Adjust size of the icon inside the circle */
-    height: 60px;
-    filter: invert(100%) sepia(0%) saturate(7486%) hue-rotate(180deg) brightness(117%) contrast(100%); /* Makes a black icon white */
-}
-
-.profile-header-info {
-    flex-grow: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-start; /* Align text to the left */
-}
-
-.profile-display-name {
-    font-size: 1.8rem;
-    font-weight: 600;
-    margin-bottom: 5px;
-    color: var(--text-color);
-    word-break: break-word; /* Permite que el nombre se rompa si es muy largo */
-}
-
-.profile-role-tag,
-.profile-company {
-    font-size: 1rem;
-    color: var(--light-text-color);
-    margin-bottom: 2px; /* Closer to the company name / text above it */
-}
-
-.profile-company {
-    margin-bottom: 15px; /* Space before the button */
-}
-
-.edit-profile-btn {
-    background-color: var(--primary-color);
-    color: #fff;
-    padding: 8px 20px;
-    border: none;
-    border-radius: 20px; /* Pill shape */
-    cursor: pointer;
-    font-size: 0.9rem;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    text-decoration: none; /* Remove underline for links */
-    align-self: flex-end; /* Align to the right within its flex container */
-    margin-left: auto; /* Push button to the far right */
-    white-space: nowrap; /* Evita que el texto del botón se rompa */
-}
-
-.edit-profile-btn:hover {
-    background-color: var(--button-hover-color);
-}
-
-/* Profile Grid for Cards */
-.profile-grid {
-    display: grid;
-    grid-template-columns: 1fr; /* Stack on smaller screens (default) */
-    gap: var(--gap-spacing);
-}
-
-/* Profile Card Styling */
-.profile-card {
-    background-color: var(--card-bg-color);
-    border-radius: var(--border-radius);
-    padding: var(--gap-spacing);
-    box-shadow: 0 2px 8px var(--shadow-light);
-    border: 1px solid var(--border-color); /* Light border */
-}
-
-.card-title {
-    font-size: 1.3rem;
-    font-weight: 600;
-    color: var(--primary-color); /* Purple title */
-    margin-bottom: 15px;
-    padding-bottom: 10px;
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.card-title i {
-    color: var(--primary-color); /* Icon color */
-}
-
-.detail-group {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.detail-item {
-    display: flex;
-    justify-content: space-between; /* Space between label and value */
-    align-items: center;
-    padding: 5px 0;
-    border-bottom: 1px dashed #f0f0f0; /* Subtle separator */
-    flex-wrap: wrap; /* Permite que los elementos se envuelvan */
-}
-
-.detail-item:last-child {
-    border-bottom: none; /* No border for the last item */
-}
-
-.detail-item strong {
-    color: var(--text-color);
-    font-weight: 500;
-    flex-shrink: 0; /* Prevent strong tag from shrinking */
-    margin-right: 15px; /* Space between bold text and value */
-    word-break: break-word; /* Permite que el texto fuerte se rompa si es largo */
-}
-
-.detail-item span {
-    color: var(--light-text-color);
-    text-align: right;
-    flex-grow: 1; /* Allow span to take remaining space */
-    word-break: break-all; /* Permite que el valor se rompa */
-}
-
-/* Specific adjustments for the contact info card to match alignment */
-.profile-card:nth-of-type(2) .detail-item {
-    justify-content: space-between; /* Keep content spaced out */
-}
-
-/* Status Badge (if used) */
-.status-badge {
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-size: 0.8rem;
-    font-weight: 500;
-    color: #fff;
-    text-transform: uppercase;
-    white-space: nowrap; /* Evita que el texto de la insignia se rompa */
-}
-
-.status-success {
-    background-color: #28a745; /* Green */
-}
-
-.status-danger {
-    background-color: #dc3545; /* Red */
-}
-
-/* Button styles (if not globally defined) */
-.btn {
-    padding: 10px 15px;
-    border-radius: 5px;
-    text-decoration: none;
-    font-weight: 500;
-    transition: background-color 0.3s ease;
-    white-space: nowrap; /* Evita que el texto del botón se rompa */
-}
-
-.btn-primary {
-    background-color: var(--primary-color);
-    color: #fff;
-    border: 1px solid var(--primary-color);
-}
-
-.btn-primary:hover {
-    background-color: var(--button-hover-color);
-}
-
-.btn-secondary {
-    background-color: #6c757d;
-    color: #fff;
-    border: 1px solid #6c757d;
-}
-
-.btn-secondary:hover {
-    background-color: #5a6268;
-}
-
-/* Ensure Font Awesome icons are styled correctly */
-.fas, .far, .fab, .fal, .fad { /* Incluye todos los prefijos comunes de Font Awesome */
-    margin-right: 5px; /* Small space after icons */
+  --primary-color: #6a0dad;
+  --primary-gradient: linear-gradient(135deg, #a06dfb, #6b40e3); /* Degradado más dinámico */
+  --text-color-dark: #2c3e50; /* Texto oscuro principal */
+  --text-color-medium: #7f8c8d; /* Texto secundario */
+  --background-light: #f8faff; /* Fondo de la página */
+  --card-bg-color: #ffffff; /* Fondo de las tarjetas */
+  --card-shadow: 0 12px 30px rgba(0, 0, 0, 0.08); /* Sombra más pronunciada */
+  --card-hover-shadow: 0 20px 40px rgba(0, 0, 0, 0.12); /* Sombra al pasar el ratón */
+  --border-color: #e6e9ed;
+  --border-radius-base: 1.25rem; /* Bordes más redondeados */
+  --spacing-lg: 2.5rem; /* Espaciado grande */
+  --spacing-md: 1.5rem; /* Espaciado medio */
+  --spacing-sm: 1rem; /* Espaciado pequeño */
+  --transition-speed: 0.3s ease;
 }
 
 /* =========================================================================
-   Media Queries para Responsividad
+   Estilos Generales
    ========================================================================= */
 
-/* Para pantallas grandes (desktops y laptops > 992px) */
-@media (min-width: 993px) {
-    .dashboard-container {
-        margin: 40px auto; /* Más espacio en los lados para pantallas grandes */
-        padding: 30px; /* Más padding interno */
-    }
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: var(--background-light);
+  color: var(--text-color-dark);
 }
 
-/* Para tabletas y pantallas medianas (de 768px a 992px) */
-@media (min-width: 768px) and (max-width: 992px) {
-    .dashboard-container {
-        margin: 20px; /* Márgenes laterales para evitar que se pegue a los bordes */
-        max-width: none; /* Permite que ocupe todo el ancho disponible */
-    }
-
-    .profile-hero-section {
-        flex-direction: row; /* Asegura la disposición en fila si se había cambiado */
-        align-items: center;
-        text-align: left; /* Alinea el texto a la izquierda */
-    }
-
-    .profile-display-name {
-        font-size: 1.6rem;
-    }
-
-    .profile-role-tag,
-    .profile-company {
-        font-size: 0.95rem;
-    }
-
-    .edit-profile-btn {
-        padding: 7px 18px;
-        font-size: 0.85rem;
-    }
-
-    .profile-grid {
-        grid-template-columns: 1fr 1fr; /* Dos columnas */
-        gap: 15px; /* Espacio ligeramente reducido */
-    }
-
-    .profile-card {
-        padding: 18px; /* Padding de tarjeta ligeramente reducido */
-    }
-
-    .card-title {
-        font-size: 1.2rem;
-    }
-
-    .detail-item strong {
-        font-size: 0.95rem;
-    }
-
-    .detail-item span {
-        font-size: 0.9rem;
-    }
+.main-content {
+  padding: var(--spacing-lg);
 }
 
-/* Para teléfonos móviles y pantallas pequeñas (hasta 767px) */
-@media (max-width: 767px) {
-    body {
-        padding: 0; /* Asegura que no haya padding en el body */
-    }
+.page-content {
+  max-width: 1100px;
+  margin: auto;
+}
 
-    .dashboard-container {
-        margin: 10px; /* Reduce los márgenes generales */
-        padding: 15px; /* Reduce el padding interno */
-        border-radius: 0; /* Bordes rectos para ocupar todo el ancho */
-        box-shadow: none; /* Elimina la sombra para un aspecto más limpio en móvil */
-        max-width: none; /* Permite que ocupe todo el ancho disponible */
-    }
+/* =========================================================================
+   Sección de Encabezado de Perfil (Profile Hero)
+   ========================================================================= */
 
-    .profile-hero-section {
-        flex-direction: column; /* Apila el avatar y la información */
-        align-items: center; /* Centra los elementos */
-        text-align: center; /* Centra el texto */
-        gap: 15px; /* Reduce el espacio */
-        padding-bottom: 15px; /* Reduce el padding inferior */
-        margin-bottom: 15px; /* Reduce el margen inferior */
-    }
+.profile-hero-section {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-lg);
+  padding: var(--spacing-lg);
+  background-color: var(--card-bg-color);
+  border-radius: var(--border-radius-base);
+  box-shadow: var(--card-shadow);
+  margin-bottom: var(--spacing-lg);
+}
 
-    .profile-avatar-wrapper {
-        width: 80px; /* Avatar más pequeño */
-        height: 80px;
-    }
+.profile-avatar-wrapper {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: var(--primary-gradient);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
 
-    .profile-avatar-lg {
-        width: 50px; /* Icono del avatar más pequeño */
-        height: 50px;
-    }
+.profile-avatar-lg {
+  font-size: 4rem; /* Icono más grande y llamativo */
+  color: #fff;
+}
 
-    .profile-display-name {
-        font-size: 1.5rem; /* Tamaño de fuente más pequeño */
-        margin-bottom: 3px;
-    }
+.profile-header-info {
+  flex-grow: 1;
+}
 
-    .profile-role-tag,
-    .profile-company {
-        font-size: 0.9rem; /* Fuentes más pequeñas */
-        margin-bottom: 1px;
-    }
-    .profile-company {
-        margin-bottom: 10px; /* Ajuste el margen inferior del nombre de la empresa */
-    }
+.profile-display-name {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--text-color-dark);
+}
 
-    .edit-profile-btn {
-        width: 100%; /* El botón ocupa todo el ancho */
-        justify-content: center; /* Centra el contenido del botón */
-        padding: 10px 15px; /* Padding ajustado */
-        font-size: 0.9rem;
-        margin-left: 0; /* Elimina el margin-left: auto */
-        align-self: center; /* Centra el botón */
-    }
+.profile-role-tag {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--primary-color);
+  margin: 0.25rem 0;
+}
 
-    .profile-grid {
-        grid-template-columns: 1fr; /* Una sola columna para todos los cards */
-        gap: 15px; /* Espaciado reducido */
-    }
+.profile-company {
+  font-size: 1rem;
+  color: var(--text-color-medium);
+  margin: 0.25rem 0 var(--spacing-sm) 0;
+}
 
-    .profile-card {
-        padding: 15px; /* Padding de tarjeta reducido */
-    }
+.edit-profile-btn {
+  background: var(--primary-gradient);
+  color: #fff;
+  padding: 0.75rem 1.5rem;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-decoration: none;
+  transition: all var(--transition-speed);
+}
 
-    .card-title {
-        font-size: 1.1rem; /* Título de tarjeta más pequeño */
-        margin-bottom: 10px;
-        padding-bottom: 8px;
-    }
+.edit-profile-btn:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
 
-    .detail-item {
-        flex-direction: column; /* Apila la etiqueta y el valor */
-        align-items: flex-start; /* Alinea a la izquierda */
-        gap: 3px; /* Espacio reducido entre label y value */
-        padding: 8px 0; /* Padding ajustado */
-    }
+/* =========================================================================
+   Contenedor de Tarjetas (Profile Grid)
+   ========================================================================= */
 
-    .detail-item strong {
-        font-size: 0.9rem; /* Texto fuerte más pequeño */
-        margin-right: 0; /* Elimina el margen derecho */
-    }
+.profile-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--spacing-md);
+}
 
-    .detail-item span {
-        font-size: 0.85rem; /* Valor más pequeño */
-        text-align: left; /* Alinea a la izquierda */
-        width: 100%; /* Ocupa todo el ancho */
-    }
+.profile-card {
+  background-color: var(--card-bg-color);
+  border-radius: var(--border-radius-base);
+  padding: var(--spacing-md);
+  box-shadow: var(--card-shadow);
+  transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+}
 
-    .status-badge {
-        font-size: 0.75rem; /* Insignia de estado más pequeña */
-        padding: 3px 6px;
-    }
+.profile-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--card-hover-shadow);
+}
+
+.card-title {
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: var(--text-color-dark);
+  margin-bottom: var(--spacing-md);
+  padding-bottom: 0.5rem;
+  border-bottom: 2px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.card-title i {
+  color: var(--primary-color);
+  font-size: 1.5rem;
+}
+
+.detail-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px dashed var(--border-color);
+}
+
+.detail-item:last-child {
+  border-bottom: none;
+}
+
+.detail-item strong {
+  color: var(--text-color-dark);
+  font-weight: 600;
+  flex-shrink: 0;
+  margin-right: 1rem;
+}
+
+.detail-item span {
+  color: var(--text-color-medium);
+  text-align: right;
+  flex-grow: 1;
+}
+
+/* =========================================================================
+   Insignias de Estado (Badges)
+   ========================================================================= */
+
+.status-badge {
+  padding: 0.35rem 1rem;
+  border-radius: 50px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #fff;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.status-success {
+  background: linear-gradient(135deg, #28a745, #50c878);
+}
+
+.status-danger {
+  background: linear-gradient(135deg, #dc3545, #ff6b6b);
+}
+
+/* =========================================================================
+   Responsividad
+   ========================================================================= */
+
+@media (max-width: 768px) {
+  .profile-hero-section {
+    flex-direction: column;
+    text-align: center;
+    gap: var(--spacing-md);
+  }
+  .profile-avatar-wrapper {
+    width: 100px;
+    height: 100px;
+  }
+  .profile-avatar-lg {
+    font-size: 3rem;
+  }
+  .profile-header-info {
+    align-items: center;
+  }
+  .edit-profile-btn {
+    width: 100%;
+    justify-content: center;
+  }
+  .profile-grid {
+    grid-template-columns: 1fr;
+  }
+  .profile-card {
+    padding: var(--spacing-sm);
+  }
+  .detail-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+  .detail-item strong,
+  .detail-item span {
+    width: 100%;
+    text-align: left;
+  }
 }

@@ -9,9 +9,8 @@
         <div class="login-header">
             {{-- Logo de Rumbero Extremo (opcional) --}}
             {{-- Puedes añadir un logo aquí si tienes uno, con un diseño de neón o brillante si es posible. --}}
-            {{-- <img src="{{ asset('images/logo_rumbero_extremo_neon.png') }}" alt="Rumbero Extremo Logo" class="login-logo"> --}}
-            <h2>¡Únete a la Rumba!</h2> {{-- Mensaje más acorde a la temática --}}
-            <p>Ingresa tus credenciales para encender la noche.</p>
+            <img src="{{ asset('assets/img/login/IMG_4254.png') }}" alt="Rumbero Extremo Logo" class="login-logo">
+            <h2>¡Únete a la Rumba!</h2>
         </div>
 
         @if (session('status'))

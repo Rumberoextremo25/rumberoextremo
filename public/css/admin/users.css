@@ -1,452 +1,266 @@
-/* users.css */
-
-/* --- Variables de Diseño --- */
-:root {
-    --primary-color: #4A90E2; /* Azul vibrante para elementos principales */
-    --secondary-color: #50E3C2; /* Verde azulado para acentos */
-    --text-color-dark: #333; /* Texto principal oscuro */
-    --text-color-light: #666; /* Texto secundario gris */
-    --bg-light: #f9fbfd; /* Fondo claro para el cuerpo */
-    --bg-card: #ffffff; /* Fondo blanco para tarjetas y secciones */
-    --border-color: #e0e6ed; /* Bordes suaves */
-    --danger-color: #e24a4a; /* Rojo para acciones de eliminar/error */
-    --success-color: #4CAF50; /* Verde para éxito */
-    --warning-color: #FFC107; /* Amarillo para advertencias */
-    --info-color: #2196F3; /* Azul para información */
-    --shadow-light: 0 4px 12px rgba(0, 0, 0, 0.05); /* Sombra sutil */
-    --border-radius: 8px; /* Bordes redondeados */
-}
-
-/* --- Estilos Globales y Tipografía --- */
-/* NOTA: body, html, y la configuración del layout principal (sidebar/toolbar)
-   deberían manejarse en un archivo CSS global o en el layout.
-   Aquí se incluyen solo si users.css es el único archivo CSS o si sobrescribe estilos. */
 body {
+    background-color: #f4f7f9;
     font-family: 'Inter', sans-serif;
-    background-color: var(--bg-light);
-    color: var(--text-color-dark);
-    line-height: 1.6;
+    color: #333;
     margin: 0;
     padding: 0;
 }
 
-h1, h2, h3, h4, h5, h6 {
-    color: var(--text-color-dark);
-    margin-top: 0;
-    margin-bottom: 1.2rem;
-    font-weight: 600;
-}
-
-a {
-    text-decoration: none;
-    color: var(--primary-color);
-    transition: color 0.3s ease;
-}
-
-a:hover {
-    color: #3a7bc4;
-}
-
-/* --- Contenedor Principal de la Vista de Usuarios --- */
-/* Asume que hay un wrapper principal en el layout que ya maneja
-   el padding-left para el sidebar y padding-top para la toolbar.
-   Si no, estos valores deberían ir en el wrapper del contenido
-   principal de tu layout (ej. .main-content-wrapper) */
 .users-section-container {
-    background-color: var(--bg-card);
-    padding: 30px;
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-light);
-    max-width: 1200px; /* Ancho máximo para el contenido de la tabla */
-    margin: 40px auto; /* Centrar el contenedor en el espacio disponible */
-    box-sizing: border-box;
+    background-color: #FFFFFF;
+    border-radius: 12px;
+    padding: 32px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    max-width: 1200px;
+    margin: 40px auto;
 }
 
 .section-title {
-    font-size: 2rem;
-    color: var(--text-color-dark);
-    border-bottom: 2px solid var(--border-color);
-    padding-bottom: 15px;
-    margin-bottom: 30px;
-    text-align: center;
+    font-size: 24px;
+    font-weight: 600;
+    color: #3004E1;
+    margin-bottom: 24px;
 }
 
-/* --- Botón "Añadir Nuevo Usuario" --- */
 .add-button-wrapper {
     display: flex;
     justify-content: flex-end;
-    margin-bottom: 25px;
+    margin-bottom: 24px;
 }
 
 .add-user-btn {
-    background-color: var(--primary-color);
-    color: white;
-    padding: 12px 25px;
-    border-radius: 50px;
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 1rem;
+    background-color: #A601B3;
+    /* Púrpura */
+    color: #fff;
+    padding: 12px 24px;
+    border-radius: 8px;
     font-weight: 500;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background-color 0.2s ease-in-out;
 }
 
 .add-user-btn:hover {
-    background-color: #3a7bc4;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+    background-color: #3004E1;
+    /* Púrpura más oscuro al pasar el ratón */
 }
 
-.add-user-btn i {
-    font-size: 1.1rem;
+.add-user-btn .fas {
+    font-size: 16px;
 }
 
-/* --- Estado Vacío (Empty State) --- */
-.empty-state-message {
-    text-align: center;
-    padding: 50px 20px;
-    background-color: #f0f4f8;
-    border-radius: var(--border-radius);
-    color: var(--text-color-light);
-    font-size: 1.1rem;
-    margin-top: 30px;
-    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.03);
-}
-
-.empty-state-message p {
-    margin: 0;
-}
-
-/* --- Tabla de Datos --- */
 .table-wrapper {
-    overflow-x: auto; /* Permite desplazamiento horizontal para tablas anchas */
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.03);
+    overflow-x: auto;
 }
 
 .data-table {
     width: 100%;
-    border-collapse: collapse;
-    min-width: 800px; /* Asegura un ancho mínimo para una buena legibilidad en desktop */
+    border-collapse: separate;
+    /* Importante para border-spacing */
+    border-spacing: 0;
+    /* Elimina el espacio entre celdas */
+    border-radius: 8px;
+    /* Bordes redondeados para toda la tabla */
+    overflow: hidden;
+    /* Asegura que los bordes redondeados se apliquen correctamente */
+}
+
+/* Estilo para el encabezado de la tabla */
+.data-table thead {
+    background-color: #f7fafc;
+    /* Fondo gris claro para el encabezado */
 }
 
 .data-table th,
 .data-table td {
-    padding: 15px 20px;
+    padding: 16px 20px;
     text-align: left;
-    border-bottom: 1px solid var(--border-color);
-}
-
-.data-table thead {
-    background-color: var(--primary-color);
-    color: white;
+    /* Borde inferior para las divisiones de los renglones */
+    border-bottom: 1px solid #b4b5b6;
 }
 
 .data-table th {
+    font-size: 14px;
     font-weight: 600;
+    color: #718096;
     text-transform: uppercase;
-    font-size: 0.85rem;
-    letter-spacing: 0.5px;
-}
-
-.data-table tbody tr {
-    transition: background-color 0.2s ease;
-}
-
-.data-table tbody tr:nth-child(even) {
-    background-color: #fdfdfd;
+    letter-spacing: 0.05em;
 }
 
 .data-table tbody tr:hover {
-    background-color: #f0f8ff;
+    background-color: #f9fafb;
+    /* Fondo ligero al pasar el ratón */
 }
 
-.data-table td {
-    color: var(--text-color-light);
-    font-size: 0.95rem;
-    vertical-align: middle;
+/* Eliminar el borde inferior de la última fila del cuerpo de la tabla */
+.data-table tbody tr:last-child td {
+    border-bottom: none;
 }
 
-.user-id {
-    font-weight: 600;
-    color: var(--primary-color);
+.data-table tbody td {
+    font-size: 15px;
+    color: #4a5568;
 }
 
-/* --- Insignias (Badges) de Tipo y Estado --- */
+/* Estilos de los "badges" (etiquetas de estado y tipo) */
 .badge {
-    display: inline-block;
-    padding: 6px 12px;
+    padding: 4px 12px;
     border-radius: 20px;
-    font-size: 0.8rem;
+    font-size: 12px;
     font-weight: 600;
     text-transform: capitalize;
-    text-align: center;
-    white-space: nowrap;
-    line-height: 1;
+    display: inline-block;
+    /* Para que el padding y border-radius se apliquen bien */
 }
 
-/* Tipos de Usuario */
-.badge-type-admin {
-    background-color: #ffe0b2;
-    color: #e65100;
-}
-
-.badge-type-editor {
-    background-color: #c8e6c9;
-    color: #2e7d32;
-}
-
-.badge-type-viewer {
-    background-color: #bbdefb;
-    color: #1976d2;
-}
-
-.badge-type-customer {
-    background-color: #e1bee7;
-    color: #6a1b9a;
-}
-
-/* Estados */
 .badge-status-activo {
-    background-color: var(--success-color);
-    color: white;
+    background-color: #ecfdf5;
+    /* Verde claro */
+    color: #059669;
+    /* Verde oscuro */
 }
 
 .badge-status-inactivo {
-    background-color: var(--danger-color);
-    color: white;
+    background-color: #fef2f2;
+    /* Rojo claro */
+    color: #ef4444;
+    /* Rojo oscuro */
 }
 
-.badge-status-pendiente {
-    background-color: var(--warning-color);
-    color: #795548;
+.badge-type-común {
+    background-color: #e0f2fe;
+    /* Azul claro */
+    color: #0c4a6e;
+    /* Azul oscuro */
 }
 
-/* --- Botones de Acción (View, Edit, Delete) --- */
+.badge-type-afiliado {
+    background-color: #fffbeb;
+    /* Naranja claro */
+    color: #b45309;
+    /* Naranja oscuro */
+}
+
+.badge-type-aliado {
+    background-color: #f3e8ff;
+    /* Púrpura claro */
+    color: #6b21a8;
+    /* Púrpura oscuro */
+}
+
+/* Estilos de los botones de acción (Ver, Editar, Eliminar) */
 .action-group {
     display: flex;
-    gap: 8px;
-    justify-content: center;
     align-items: center;
+    gap: 8px;
 }
 
 .action-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    font-size: 1rem;
-    color: white;
-    transition: all 0.3s ease;
+    color: #a0aec0;
+    /* Gris */
+    background: none;
     border: none;
+    padding: 8px;
     cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.action-btn i {
-    font-size: 1.1rem;
-}
-
-.action-btn.view {
-    background-color: var(--info-color);
-}
-
-.action-btn.edit {
-    background-color: var(--primary-color);
-}
-
-.action-btn.delete {
-    background-color: var(--danger-color);
+    font-size: 14px;
+    transition: color 0.2s ease-in-out;
+    border-radius: 4px;
+    /* Pequeño redondeo en los botones de acción */
 }
 
 .action-btn:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+    color: #4a5568;
+    /* Gris más oscuro al pasar el ratón */
+    background-color: #edf2f7;
+    /* Fondo sutil al pasar el ratón */
 }
 
 .action-btn.view:hover {
-    background-color: #0d8cd3;
+    color: #3b82f6;
+    /* Azul al pasar el ratón */
 }
+
 .action-btn.edit:hover {
-    background-color: #3a7bc4;
+    color: #f59e0b;
+    /* Amarillo/naranja al pasar el ratón */
 }
+
 .action-btn.delete:hover {
-    background-color: #c73c3c;
+    color: #ef4444;
+    /* Rojo al pasar el ratón */
 }
 
-.delete-user-btn {
-    padding: 0;
-    margin: 0;
-}
-
-/* --- Modal de Confirmación --- */
+/* Estilos del modal de confirmación */
 .modal-overlay {
+    display: none;
+    /* Por defecto oculto */
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
-    display: flex;
+    background-color: rgba(0, 0, 0, 0.5);
     justify-content: center;
     align-items: center;
     z-index: 1000;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
-}
-
-.modal-overlay.active {
-    opacity: 1;
-    visibility: visible;
 }
 
 .modal-content {
-    background-color: var(--bg-card);
+    background-color: #fff;
     padding: 30px;
-    border-radius: var(--border-radius);
-    box-shadow: var(--shadow-light);
-    width: 90%;
-    max-width: 450px;
+    border-radius: 12px;
+    width: 400px;
     text-align: center;
-    transform: translateY(-20px);
-    transition: transform 0.3s ease;
-}
-
-.modal-overlay.active .modal-content {
-    transform: translateY(0);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
 }
 
 .modal-content h3 {
-    font-size: 1.8rem;
-    margin-bottom: 15px;
-    color: var(--text-color-dark);
+    font-size: 20px;
+    margin-bottom: 10px;
+    color: #333;
 }
 
 .modal-content p {
-    font-size: 1.1rem;
-    color: var(--text-color-light);
-    margin-bottom: 30px;
+    color: #555;
+    margin-bottom: 20px;
 }
 
 .modal-buttons {
+    margin-top: 20px;
     display: flex;
     justify-content: center;
-    gap: 15px;
+    gap: 10px;
 }
 
 .btn-cancel,
 .btn-confirm {
-    padding: 12px 25px;
-    border-radius: 50px;
-    font-size: 1rem;
+    padding: 10px 20px;
+    border-radius: 8px;
     font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
     border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
 }
 
 .btn-cancel {
-    background-color: #e0e0e0;
-    color: var(--text-color-dark);
+    background-color: #e2e8f0;
+    /* Gris claro */
+    color: #4a5568;
+    /* Gris oscuro */
 }
 
 .btn-cancel:hover {
-    background-color: #c2c2c2;
-    transform: translateY(-1px);
+    background-color: #cbd5e0;
 }
 
 .btn-confirm {
-    background-color: var(--danger-color);
-    color: white;
+    background-color: #ef4444;
+    /* Rojo */
+    color: #fff;
 }
 
 .btn-confirm:hover {
-    background-color: #c73c3c;
-    transform: translateY(-1px);
-}
-
-/* --- Media Queries para Responsividad --- */
-@media (max-width: 992px) {
-    /* Ajusta el padding del body o del main-content-wrapper si el sidebar cambia su comportamiento */
-    /* Por ejemplo, si el sidebar se oculta o se superpone en móvil,
-       ya no necesitarías padding-left en el main-content-wrapper. */
-
-    .users-section-container {
-        margin: 20px;
-        padding: 20px;
-    }
-
-    .data-table th,
-    .data-table td {
-        padding: 10px 15px;
-    }
-
-    /* Estilos de tabla en "vista de tarjeta" para móviles */
-    .data-table thead {
-        display: none; /* Oculta el encabezado de la tabla */
-    }
-
-    .data-table, .data-table tbody, .data-table tr, .data-table td {
-        display: block; /* Cada fila y celda se comporta como un bloque */
-        width: 100%;
-    }
-
-    .data-table tr {
-        margin-bottom: 15px;
-        border: 1px solid var(--border-color);
-        border-radius: var(--border-radius);
-        background-color: var(--bg-card);
-        box-shadow: var(--shadow-light);
-        padding: 15px;
-    }
-
-    .data-table td {
-        text-align: right; /* Alinea el contenido de la celda a la derecha */
-        padding-left: 50%; /* Deja espacio para la etiqueta */
-        position: relative;
-        border: none;
-    }
-
-    .data-table td::before {
-        content: attr(data-label); /* Usa el atributo data-label del HTML como etiqueta */
-        position: absolute;
-        left: 15px; /* Posiciona la etiqueta a la izquierda */
-        width: calc(50% - 30px); /* Ancho para la etiqueta */
-        padding-right: 10px;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        font-weight: 600;
-        color: var(--text-color-dark);
-        text-align: left;
-    }
-
-    .action-group {
-        justify-content: flex-start;
-        margin-top: 10px;
-    }
-}
-
-@media (max-width: 576px) {
-    .section-title {
-        font-size: 1.6rem;
-    }
-
-    .add-user-btn {
-        width: 100%;
-        justify-content: center;
-    }
-    
-    .modal-buttons {
-        flex-direction: column;
-    }
-
-    .btn-cancel, .btn-confirm {
-        width: 100%;
-    }
+    background-color: #dc2626;
 }

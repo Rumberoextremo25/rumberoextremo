@@ -2,7 +2,6 @@
 
 <!-- El `header` principal con el nuevo diseño -->
 <header class="admin-toolbar">
-    <link rel="stylesheet" href="{{ asset('css/toolbar.css') }}">
     <div class="left-section">
         <h1 class="page-title-toolbar">@yield('page_title', 'Panel Administrativo')</h1>
     </div>

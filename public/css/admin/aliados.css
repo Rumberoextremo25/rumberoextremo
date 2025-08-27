@@ -1,441 +1,341 @@
-/* resources/css/admin/aliados/aliados.css */
-
 /*
-   Nota: Este archivo asume que las variables de tema (ej. --primary-color, --card-background)
-   están definidas y cargadas previamente desde tu archivo CSS principal (app.css).
-*/
+ * resources/css/admin/aliados/aliados.css
+ * Versión mejorada con un diseño más moderno y pulido.
+ */
+
+/* =========================================================================
+   Variables de Diseño
+   ========================================================================= */
+
+:root {
+  --primary-color: #6a0dad; /* Púrpura elegante */
+  --primary-gradient: linear-gradient(135deg, #a06dfb, #6b40e3); /* Degradado dinámico */
+  --text-color-dark: #2c3e50;
+  --text-color-medium: #7f8c8d;
+  --bg-light: #f8faff;
+  --bg-card: #ffffff;
+  --shadow-subtle: 0 15px 40px rgba(0, 0, 0, 0.08); /* Sombra suave y amplia */
+  --shadow-hover: 0 20px 50px rgba(0, 0, 0, 0.12);
+  --border-color: #e6e9ed;
+  --border-radius-lg: 1.5rem;
+  --border-radius-md: 1rem;
+  --border-radius-sm: 0.5rem;
+  --transition-speed: 0.3s ease;
+  
+  /* Colores de estado con degradados para consistencia */
+  --success-gradient: linear-gradient(45deg, #2ecc71, #27ae60);
+  --danger-gradient: linear-gradient(45deg, #e74c3c, #c0392b);
+  --warning-gradient: linear-gradient(45deg, #f1c40f, #f39c12);
+  --info-gradient: linear-gradient(45deg, #3498db, #2980b9);
+}
+
+/* =========================================================================
+   Contenedor Principal y Encabezado
+   ========================================================================= */
 
 .allies-management-container {
-    max-width: 1100px; /* Ancho un poco más amplio para la tabla de aliados */
+    max-width: 1400px;
     margin: 3rem auto;
-    padding: 2rem;
-    background-color: var(--card-background);
+    padding: 2.5rem;
+    background-color: var(--bg-card);
     border-radius: var(--border-radius-lg);
     box-shadow: var(--shadow-subtle);
-    border: 1px solid var(--border-color);
+    transition: box-shadow var(--transition-speed);
+}
+.allies-management-container:hover {
+    box-shadow: var(--shadow-hover);
 }
 
 .header-actions {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
-    padding-bottom: 1rem;
-    border-bottom: 2px solid var(--primary-color);
+    margin-bottom: 2.5rem;
 }
 
 .header-actions h2 {
-    font-size: 2rem;
-    color: var(--primary-color);
+    font-size: 2.2rem;
+    color: var(--text-color-dark);
     margin: 0;
     font-weight: 700;
+    position: relative;
+    padding-bottom: 0.75rem;
+}
+
+.header-actions h2::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 60px;
+    height: 4px;
+    background: var(--primary-gradient);
+    border-radius: 2px;
 }
 
 .add-ally-btn {
     display: inline-flex;
     align-items: center;
-    gap: 0.7rem;
-    background-color: var(--primary-color);
+    gap: 0.75rem;
+    background: var(--primary-gradient);
     color: white;
-    padding: 0.7rem 1.5rem;
-    border-radius: var(--border-radius-md);
+    padding: 0.75rem 1.75rem;
+    border-radius: 50px;
     text-decoration: none;
     font-weight: 600;
-    font-size: 0.95rem;
-    transition: background-color var(--transition-speed), transform 0.2s ease, box-shadow var(--transition-speed);
+    font-size: 1rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
     border: none;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .add-ally-btn:hover {
-    background-color: var(--secondary-color);
-    transform: translateY(-1px);
-    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.1);
-}
-body.dark-mode .add-ally-btn {
-    background-color: var(--primary-color);
-}
-body.dark-mode .add-ally-btn:hover {
-    background-color: var(--secondary-color);
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
-/* Mensajes de Sesión (Alertas) */
+/* =========================================================================
+   Alertas y Barra de Búsqueda
+   ========================================================================= */
+
 .alert {
-    padding: 1rem 1.5rem;
-    margin-bottom: 1.5rem;
+    padding: 1.25rem;
+    margin-bottom: 2rem;
     border: 1px solid transparent;
     border-radius: var(--border-radius-md);
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    font-size: 0.95rem;
+    font-size: 1rem;
     font-weight: 500;
 }
 
 .alert-success {
-    background-color: rgba(var(--success-rgb), 0.1);
-    color: var(--success-color);
-    border-color: rgba(var(--success-rgb), 0.3);
+    background-color: #e6f7e9;
+    color: #28a745;
+    border-color: #c9e4d1;
 }
 
 .alert-danger {
-    background-color: rgba(var(--danger-rgb), 0.1);
-    color: var(--danger-color);
-    border-color: rgba(var(--danger-rgb), 0.3);
+    background-color: #f7e6e6;
+    color: #dc3545;
+    border-color: #e4c9c9;
 }
 
-.alert .btn-close {
-    background: none;
-    border: none;
-    font-size: 1.2rem;
-    color: inherit;
-    opacity: 0.7;
-    cursor: pointer;
-    transition: opacity 0.2s ease;
-    padding: 0.5rem;
-    line-height: 1;
-}
-
-.alert .btn-close:hover {
-    opacity: 1;
-}
-
-/* Barra de Búsqueda */
 .search-bar {
     position: relative;
-    margin-bottom: 2rem;
+    margin-bottom: 2.5rem;
     display: flex;
     align-items: center;
-    border: 1px solid var(--input-border);
+    border: 1px solid var(--border-color);
     border-radius: var(--border-radius-md);
-    background-color: var(--input-background);
-    padding: 0.6rem 1rem; /* Ajustado para el icono */
-    box-shadow: var(--shadow-subtle);
-    transition: border-color var(--transition-speed), box-shadow var(--transition-speed);
+    background-color: var(--bg-card);
+    padding: 0.75rem 1.5rem;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    transition: box-shadow 0.3s ease, border-color 0.3s ease;
 }
 
 .search-bar:focus-within {
     border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(var(--primary-rgb), 0.1);
+    box-shadow: 0 0 0 4px rgba(106, 13, 173, 0.1);
 }
 
 .search-bar i {
-    color: var(--text-color-light);
-    margin-right: 0.8rem;
-    font-size: 1rem;
+    color: var(--text-color-medium);
+    margin-right: 1rem;
+    font-size: 1.2rem;
 }
 
 .search-bar input {
     flex-grow: 1;
     border: none;
     background: transparent;
-    color: var(--text-color);
-    font-size: 1rem;
+    color: var(--text-color-dark);
+    font-size: 1.05rem;
     padding: 0;
     outline: none;
 }
 
-.search-bar input::placeholder {
-    color: var(--text-color-light);
-    opacity: 0.7;
-}
+/* =========================================================================
+   Tabla de Aliados
+   ========================================================================= */
 
-/* Tabla de Aliados */
 .table-responsive {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    border-radius: var(--border-radius-md);
-    border: 1px solid var(--border-color);
-    box-shadow: var(--shadow-subtle);
 }
 
 .allies-table {
     width: 100%;
-    border-collapse: collapse;
-    min-width: 900px; /* Asegura que la tabla no sea demasiado estrecha */
-    font-size: 0.9rem;
+    border-collapse: separate;
+    border-spacing: 0;
+    min-width: 900px;
+    font-size: 0.95rem;
 }
 
 .allies-table thead th {
-    background-color: var(--primary-color);
-    color: white;
-    font-weight: 600;
+    background-color: var(--bg-card);
+    color: var(--text-color-medium);
+    font-weight: 700;
     text-align: left;
-    padding: 1rem 1.2rem;
+    padding: 1.25rem 1.75rem;
     text-transform: uppercase;
-    font-size: 0.8rem;
-    letter-spacing: 0.04em;
-    position: sticky;
-    top: 0;
-    z-index: 10;
-}
-body.dark-mode .allies-table thead th {
-    background-color: var(--secondary-color);
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid var(--border-color);
 }
 
 .allies-table tbody tr {
-    transition: background-color var(--transition-speed);
-}
-
-.allies-table tbody tr:nth-child(even) {
-    background-color: var(--background-color);
-}
-body.dark-mode .allies-table tbody tr:nth-child(even) {
-    background-color: #2a2a3a;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    background-color: var(--bg-card);
 }
 
 .allies-table tbody tr:hover {
-    background-color: var(--border-color); /* Un color más claro al pasar el ratón */
+    transform: scale(1.01);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
     cursor: pointer;
-}
-body.dark-mode .allies-table tbody tr:hover {
-    background-color: #3a3a4a;
 }
 
 .allies-table td {
-    padding: 0.9rem 1.2rem;
+    padding: 1.25rem 1.75rem;
     border-bottom: 1px solid var(--border-color);
-    color: var(--text-color);
+    color: var(--text-color-dark);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 150px; /* Limita el ancho de las celdas para ellipsis */
+    max-width: 150px;
 }
 
 .allies-table tbody tr:last-child td {
     border-bottom: none;
 }
 
-/* Estilos para badges de estado (reutilizados de users.css si son consistentes) */
+/* =========================================================================
+   Insignias de Estado (Badges) y Botones de Acción
+   ========================================================================= */
+
 .status-badge {
-    padding: 0.3em 0.7em;
-    border-radius: var(--border-radius-sm);
-    font-size: 0.75rem;
-    font-weight: 600;
-    color: white;
-    display: inline-block;
+    padding: 0.4rem 1rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #fff;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
     white-space: nowrap;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
-.status-badge.status-activo { background-color: var(--success-color); }
-.status-badge.status-inactivo { background-color: var(--danger-color); }
-.status-badge.status-pendiente { background-color: var(--warning-color); }
-.status-badge.status-aprobado { background-color: var(--success-color); }
-.status-badge.status-rechazado { background-color: var(--danger-color); }
+.status-badge.status-activo, .status-badge.status-aprobado { background: var(--success-gradient); }
+.status-badge.status-inactivo, .status-badge.status-rechazado { background: var(--danger-gradient); }
+.status-badge.status-pendiente { background: var(--warning-gradient); color: #333; }
 
-
-/* Botones de acción en la tabla */
-.allies-table .actions {
+.actions {
     display: flex;
-    gap: 0.5rem;
-    justify-content: center; /* Centra los botones de acción */
+    gap: 0.75rem;
+    justify-content: center;
 }
 
 .btn-icon {
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    font-size: 0.9rem;
-    transition: all var(--transition-speed);
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-    text-decoration: none;
+    font-size: 1rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     border: none;
     color: white;
 }
-
 .btn-icon:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
 }
 
-.btn-icon.edit-btn { background-color: var(--info-color); }
-.btn-icon.edit-btn:hover { background-color: #0056b3; box-shadow: 0 2px 6px rgba(var(--info-rgb), 0.3); }
-body.dark-mode .btn-icon.edit-btn { background-color: var(--info-color); }
-body.dark-mode .btn-icon.edit-btn:hover { background-color: #5587f7; }
+.btn-icon.edit-btn { background: var(--info-gradient); }
+.btn-icon.delete-btn { background: var(--danger-gradient); }
 
-.btn-icon.delete-btn { background-color: var(--danger-color); }
-.btn-icon.delete-btn:hover { background-color: #bd2130; box-shadow: 0 2px 6px rgba(var(--danger-rgb), 0.3); }
-body.dark-mode .btn-icon.delete-btn { background-color: var(--danger-color); }
-body.dark-mode .btn-icon.delete-btn:hover { background-color: #e24e4e; }
-
-/* Mensaje cuando no hay registros */
-.no-records-message {
-    text-align: center;
-    padding: 2rem;
-    color: var(--text-color-light);
-    font-style: italic;
-    font-size: 1.1rem;
-}
-
-
-/* Responsive Design para la tabla de Aliados */
-@media (max-width: 1024px) {
-    .allies-management-container {
-        padding: 1.5rem;
-        margin: 2rem auto;
-    }
-    .header-actions h2 {
-        font-size: 1.8rem;
-    }
-    .add-ally-btn {
-        padding: 0.6rem 1.2rem;
-        font-size: 0.9rem;
-    }
-    .allies-table {
-        min-width: 768px; /* Ajuste para tablets */
-    }
-    .allies-table thead th,
-    .allies-table td {
-        padding: 0.8rem 1rem;
-        font-size: 0.85rem;
-    }
-    .btn-icon {
-        width: 32px;
-        height: 32px;
-        font-size: 0.8rem;
-    }
-}
+/* =========================================================================
+   Responsividad
+   ========================================================================= */
 
 @media (max-width: 768px) {
     .allies-management-container {
-        padding: 1rem;
+        padding: 1.5rem;
         margin: 1.5rem auto;
+        border-radius: 0;
+        box-shadow: none;
     }
     .header-actions {
         flex-direction: column;
         align-items: flex-start;
-        gap: 1rem;
-        margin-bottom: 1.5rem;
+        gap: 1.5rem;
+        margin-bottom: 2rem;
     }
     .header-actions h2 {
-        font-size: 1.6rem;
+        font-size: 2rem;
+        padding-bottom: 0.5rem;
     }
     .add-ally-btn {
         width: 100%;
         justify-content: center;
-        padding: 0.8rem 1.5rem;
-        font-size: 0.9rem;
     }
     .search-bar {
-        padding: 0.5rem 0.8rem;
-        margin-bottom: 1.5rem;
+        padding: 0.75rem;
+        margin-bottom: 2rem;
     }
     .search-bar input {
-        font-size: 0.9rem;
+        font-size: 0.95rem;
     }
-
+    
     .table-responsive {
         border: none;
         box-shadow: none;
-        overflow-x: hidden; /* Deshabilita el scroll horizontal en móvil para las "cards" */
+        overflow-x: hidden;
     }
 
     .allies-table {
-        border-spacing: 0 0.8rem; /* Espacio entre las "cards" */
         min-width: unset;
         width: 100%;
+        border-spacing: 0 1rem;
     }
 
-    .allies-table thead {
-        display: none; /* Oculta el encabezado de la tabla en móvil */
-    }
-
+    .allies-table thead { display: none; }
     .allies-table tbody tr {
         display: block;
         margin-bottom: 1rem;
-        background-color: var(--card-background);
-        border-radius: var(--border-radius-md);
+        background-color: var(--bg-card);
+        border-radius: var(--border-radius-lg);
         box-shadow: var(--shadow-subtle);
         border: 1px solid var(--border-color);
-        padding: 1rem;
-    }
-    .allies-table tbody tr:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
-    .allies-table tbody tr:nth-child(even) {
-        background-color: var(--card-background); /* Restablece el fondo para las cards */
-    }
-    body.dark-mode .allies-table tbody tr:nth-child(even) {
-        background-color: var(--card-background);
+        padding: 1.5rem;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
     }
 
     .allies-table td {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 0.6rem 0.4rem;
+        padding: 0.75rem 0;
         border-bottom: 1px dashed var(--border-color);
-        font-size: 0.85rem;
-        white-space: normal; /* Permite que el texto se rompa */
+        font-size: 0.9rem;
+        white-space: normal;
         word-break: break-word;
-        max-width: unset; /* Elimina la limitación de ancho */
+        max-width: unset;
         text-overflow: unset;
     }
+
     .allies-table td:last-child {
         border-bottom: none;
-        padding-bottom: 0;
-        margin-top: 0.8rem; /* Espacio antes de los botones de acción */
-        justify-content: center; /* Centra los botones de acción en la card */
+        margin-top: 1.5rem;
+        justify-content: center;
     }
 
     .allies-table td::before {
         content: attr(data-label);
-        font-weight: 600;
-        color: var(--heading-color);
+        font-weight: 700;
+        color: var(--text-color-dark);
         flex-shrink: 0;
-        margin-right: 0.8rem;
-        font-size: 0.8rem;
-    }
-    .allies-table td:first-child::before {
-        content: "ID: ";
-        font-size: 0.95rem;
-        color: var(--primary-color);
-    }
-    .allies-table td:first-child {
-        font-weight: bold;
-        color: var(--primary-color);
-        justify-content: flex-start;
-    }
-
-    .btn-icon {
-        width: 30px;
-        height: 30px;
-        font-size: 0.75rem;
-    }
-
-    .no-records-message {
-        padding: 1rem;
-        font-size: 1rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .header-actions h2 {
-        font-size: 1.4rem;
-    }
-    .add-ally-btn {
+        margin-right: 1rem;
         font-size: 0.85rem;
-    }
-    .search-bar input {
-        font-size: 0.85rem;
-    }
-    .allies-table td {
-        font-size: 0.8rem;
-    }
-    .allies-table td::before {
-        font-size: 0.75rem;
-    }
-    .btn-icon {
-        width: 28px;
-        height: 28px;
-        font-size: 0.7rem;
     }
 }

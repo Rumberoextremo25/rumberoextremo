@@ -2,7 +2,6 @@
 
 @section('content')
 <div class="main-content">
-    <link rel="stylesheet" href="{{ asset('css/Admin/payout.css') }}">
     <h2 class="page-title">Pagos Pendientes a Aliados</h2>
 
     @if (session('success'))

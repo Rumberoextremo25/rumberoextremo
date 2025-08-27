@@ -9,10 +9,6 @@
 @section('styles')
     {{-- Importa Font Awesome si no está ya en tu layout principal --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    {{-- Enlaza el CSS específico del sidebar --}}
-    <link rel="stylesheet" href="{{ asset('css/sidebar.css') }}">
-    {{-- ✅ Enlaza el nuevo CSS del dashboard --}}
-    <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
 @endsection
 
 @section('content')

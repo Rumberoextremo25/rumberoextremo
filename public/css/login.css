@@ -1,338 +1,281 @@
-/* Estilos generales para el diseño de invitado */
+/* login.css */
+
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
+
+:root {
+    --primary-purple: #9B51E0;
+    --dark-background: #0d0d1a;
+    --card-background: rgba(255, 255, 255, 0.95);
+    --text-color: #333333;
+    --text-color-light: #f4f4f4;
+    --input-background: #ffffff;
+    --input-border: #cccccc;
+    --button-background: #E040FB;
+    --button-hover-background: #C218F0;
+    --link-color: #9B51E0;
+    --link-hover-color: #7A3BA1;
+    --error-color: #e74c3c;
+    --neon-glow: 0 0 10px rgba(155, 81, 224, 0.6), 0 0 20px rgba(155, 81, 224, 0.4);
+    --button-neon-glow: 0 0 10px rgba(224, 64, 251, 0.8), 0 0 20px rgba(224, 64, 251, 0.6);
+}
+
 body {
     font-family: 'Poppins', sans-serif;
-    background: #ffffff;
-    /* Fondo blanco */
+    margin: 0;
+    padding: 0;
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    margin: 0;
-    color: #E0E0E0;
-    /* Texto claro */
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+    background-color: var(--dark-background);
+    color: var(--text-color);
     overflow: hidden;
-    /* Evita barras de desplazamiento innecesarias */
     position: relative;
 }
 
-/* Capa de fondo con efecto (opcional: para textura sutil o patrón) */
-body::before {
+/* Fondo de la página de login con gradiente animado */
+.login-container {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('../assets/img/login/fondo_login.png');
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+    /* Gradiente animado como overlay */
+    background-image: linear-gradient(135deg, rgba(26, 26, 46, 0.8) 0%, rgba(51, 0, 78, 0.8) 50%, rgba(26, 26, 46, 0.8) 100%);
+    animation: backgroundMove 20s infinite alternate;
+}
+
+@keyframes backgroundMove {
+    from { background-position: 0% 0%; }
+    to { background-position: 100% 100%; }
+}
+
+/* Overlay oscuro con desenfoque */
+.login-container::before {
     content: '';
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: url('https://plazacapital.co/media/k2/items/cache/4b840fef3f76a1200400aeae109a3d97_XL.jpg') repeat;
-    /* Patrón de marcador de posición */
-    opacity: 0.60;
-    /* Muy sutil */
-    z-index: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
+    z-index: 2;
 }
 
-/* Contenedor de inicio de sesión - Centra la tarjeta */
-.login-container {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    width: 100%;
-    min-height: 100vh;
-    z-index: 1;
-    /* Asegura que esté por encima del fondo */
-    padding: 20px;
-    /* Padding para pantallas pequeñas */
-    box-sizing: border-box;
-}
-
-/* Tarjeta de inicio de sesión - La caja principal del formulario */
 .login-card {
-    background-color: rgba(205, 205, 215, 0.95);
-    /* Fondo oscuro con transparencia */
-    border-radius: 20px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
-    /* Sombra más pronunciada para efecto 3D */
-    padding: 40px;
-    max-width: 450px;
-    /* Ancho máximo para la tarjeta */
+    position: relative;
+    z-index: 3;
+    background: var(--card-background);
+    padding: 30px 40px;
+    border-radius: 25px;
+    box-shadow: var(--neon-glow);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
     width: 100%;
+    max-width: 550px;
     text-align: center;
-    border: 1px solid rgba(255, 215, 0, 0.3);
-    /* Borde sutil dorado */
-    animation: fadeIn 1s ease-out;
-    /* Animación de entrada */
+    animation: fadeIn 0.8s ease-out;
+    transform-style: preserve-3d;
+    transition: transform 0.3s ease;
+}
+
+.login-card:hover {
+    transform: perspective(1000px) rotateY(2deg);
 }
 
 @keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(-20px);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(-30px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
-/* Encabezado de inicio de sesión */
 .login-header {
-    margin-bottom: 30px;
+    margin-bottom: 25px;
+}
+
+.login-logo {
+    max-width: 160px;
+    margin-bottom: 15px;
+    filter: drop-shadow(var(--neon-glow));
 }
 
 .login-header h2 {
-    font-family: 'Montserrat', sans-serif;
-    color: #000000;
-    /* Negro para el título */
-    font-size: 2.5em;
-    margin-bottom: 10px;
-    text-shadow: 0 0 15px rgba(255, 255, 255, 0.4);
-    /* Efecto de brillo */
+    font-size: 2.2em;
+    color: var(--text-color);
+    margin: 0;
+    font-weight: 700;
 }
 
-.login-header p {
-    font-size: 1.1em;
-    color: #000000;
-    /* Gris más claro */
-}
-
-/* Mensajes de alerta (ej. estado de la sesión) */
 .alert {
-    background-color: rgba(60, 179, 113, 0.8);
-    /* Medium Sea Green */
-    color: #000000;
-    padding: 15px;
-    border-radius: 10px;
+    background-color: #d4edda;
+    color: #155724;
+    padding: 12px 20px;
+    border-radius: 8px;
     margin-bottom: 20px;
-    font-weight: 500;
-    border: 1px solid #3CB371;
+    border: 1px solid #c3e6cb;
+    font-size: 0.9em;
 }
 
-/* Estilo del grupo de formulario */
 .form-group {
-    margin-bottom: 25px;
+    margin-bottom: 20px;
     text-align: left;
-    /* Alinea etiquetas a la izquierda */
+    position: relative;
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
     font-weight: 600;
-    color: #000000;
-    /* Negro para las etiquetas */
-    font-size: 1em;
+    color: var(--text-color);
+    font-size: 1.1em;
 }
 
 .form-control {
-    width: 100%;
-    padding: 15px 20px;
-    border: 1px solid rgba(138, 43, 226, 0.5);
-    /* Borde morado sutil */
-    border-radius: 10px;
-    background-color: rgba(40, 40, 60, 0.7);
-    /* Fondo de input más oscuro */
-    color: #000000;
+    width: calc(100% - 24px);
+    padding: 15px 12px;
+    border: 1px solid var(--input-border);
+    border-radius: 12px;
     font-size: 1em;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-    box-sizing: border-box;
-    /* Incluye padding y borde en el ancho total */
+    background-color: var(--input-background);
+    color: var(--text-color);
+    transition: all 0.3s ease;
 }
 
 .form-control::placeholder {
-    color: #c1bbbb;
-    opacity: 0.7;
+    color: #999;
 }
 
 .form-control:focus {
-    border-color: #ffffff;
-    /* Borde blanco al enfocar */
-    box-shadow: 0 0 15px rgba(162, 0, 255, 0.3);
-    /* Brillo al enfocar */
+    border-color: var(--primary-purple);
+    box-shadow: 0 0 0 3px rgba(155, 81, 224, 0.3);
     outline: none;
 }
 
-/* Retroalimentación para errores */
 .form-control.is-invalid {
-    border-color: #FF6347;
-    /* Rojo para errores */
+    border-color: var(--error-color);
 }
 
 .invalid-feedback {
-    color: #FF6347;
-    /* Rojo para mensajes de error */
+    color: var(--error-color);
     font-size: 0.85em;
     margin-top: 5px;
     display: block;
 }
 
-/* Opciones del formulario (Recuérdame y Olvidé mi Contraseña) */
 .form-options {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
+    margin-bottom: 25px;
     font-size: 0.95em;
 }
 
 .remember-me {
     display: flex;
     align-items: center;
-    color: #000000;
+    color: var(--text-color);
     cursor: pointer;
+    user-select: none;
 }
 
 .remember-me input[type="checkbox"] {
     margin-right: 8px;
-    appearance: none;
-    /* Oculta el checkbox nativo */
+    accent-color: var(--primary-purple);
     width: 18px;
     height: 18px;
-    border: 2px solid #141443;
-    /* Borde morado */
-    border-radius: 4px;
-    background-color: rgba(255, 255, 255, 0.2);
-    transition: background-color 0.2s ease, border-color 0.2s ease;
-    cursor: pointer;
-    position: relative;
-}
-
-.remember-me input[type="checkbox"]:checked {
-    background-color: #646464;
-    /* Fondo morado cuando está marcado */
-    border-color: #8A2BE2;
-}
-
-.remember-me input[type="checkbox"]:checked::after {
-    content: '\2713';
-    /* Símbolo de checkmark */
-    color: #000000;
-    font-size: 14px;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
 }
 
 .forgot-password-link {
-    color: #000000;
-    /* Negro para el enlace */
+    color: var(--link-color);
     text-decoration: none;
-    transition: color 0.3s ease, text-decoration 0.3s ease;
+    transition: color 0.3s ease, text-shadow 0.3s ease;
 }
 
 .forgot-password-link:hover {
-    color: #9932CC;
-    /* Morado oscuro al pasar el ratón */
+    color: var(--link-hover-color);
     text-decoration: underline;
+    text-shadow: 0 0 5px rgba(155, 81, 224, 0.5);
 }
 
-/* Botón de enviar */
 .btn-primary {
-    background: #A601B3;
-    /* Degradado morado */
-    color: #FFFFFF;
-    padding: 15px 30px;
+    background-image: linear-gradient(45deg, var(--primary-purple), var(--button-background));
+    color: white;
+    padding: 15px 25px;
     border: none;
-    border-radius: 25px;
-    /* Botón más redondeado */
-    font-size: 1.2em;
-    font-weight: bold;
+    border-radius: 12px;
+    font-size: 1.15em;
+    font-weight: 700;
     cursor: pointer;
+    transition: all 0.3s ease;
     width: 100%;
-    transition: background 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-    box-shadow: 0 5px 15px rgba(79, 4, 184, 0.6);
-    /* Sombra para el botón */
+    box-shadow: var(--button-neon-glow);
 }
 
 .btn-primary:hover {
-    background: linear-gradient(90deg, #141443 0%, #A601B3 100%);
-    /* Invertir degradado al pasar el ratón */
-    transform: translateY(-3px);
-    /* Efecto de elevación */
-    box-shadow: 0 8px 20px rgba(79, 4, 184, 0.6);
+    background-image: linear-gradient(45deg, var(--button-background), var(--primary-purple));
+    transform: scale(1.02);
+    box-shadow: 0 0 15px rgba(224, 64, 251, 0.9), 0 0 25px rgba(224, 64, 251, 0.7);
 }
 
-.btn-primary:active {
-    transform: translateY(0);
-    box-shadow: 0 3px 10px rgba(138, 43, 226, 0.4);
-}
-
-/* Pie de página de inicio de sesión (enlace de registro) */
 .login-footer {
-    margin-top: 30px;
-    font-size: 1em;
-    color: #000000;
+    margin-top: 25px;
+    font-size: 0.95em;
+    color: var(--text-color);
 }
 
 .login-footer a {
-    color: #000000;
-    /* Negro para el enlace de registro */
+    color: var(--link-color);
     text-decoration: none;
-    font-weight: bold;
-    transition: color 0.3s ease, text-decoration 0.3s ease;
+    font-weight: 600;
+    transition: color 0.3s ease, text-shadow 0.3s ease;
 }
 
 .login-footer a:hover {
-    color: #9932CC;
-    /* Morado oscuro al pasar el ratón */
+    color: var(--link-hover-color);
     text-decoration: underline;
+    text-shadow: 0 0 5px rgba(155, 81, 224, 0.5);
 }
 
-/* Ajustes responsivos */
+/* Media Queries para responsividad */
 @media (max-width: 768px) {
     .login-card {
-        padding: 30px;
-        margin: 0 15px;
-        /* Margen en los lados para pantallas más pequeñas */
+        margin: 20px;
+        padding: 25px;
+        max-width: 90%;
     }
-
     .login-header h2 {
-        font-size: 2em;
+        font-size: 1.8em;
     }
-
-    .login-header p {
-        font-size: 1em;
+    .form-options {
+        flex-direction: column;
+        gap: 15px;
     }
-
     .form-control {
-        padding: 12px 15px;
-        font-size: 0.95em;
-    }
-
-    .btn-primary {
-        padding: 12px 25px;
-        font-size: 1.1em;
+        padding: 12px 10px;
     }
 }
 
 @media (max-width: 480px) {
     .login-card {
-        padding: 25px;
+        margin: 15px;
+        padding: 20px;
+        max-width: 95%;
     }
-
     .login-header h2 {
-        font-size: 1.8em;
+        font-size: 1.6em;
     }
-
-    .login-header p {
-        font-size: 0.9em;
+    .login-logo {
+        max-width: 130px;
     }
-
-    .form-group label {
-        font-size: 0.9em;
-    }
-
-    .form-control {
-        padding: 10px 12px;
-        font-size: 0.9em;
-    }
-
     .btn-primary {
+        padding: 12px 20px;
         font-size: 1em;
-        padding: 10px 20px;
     }
 }

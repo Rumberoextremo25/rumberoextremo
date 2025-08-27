@@ -1,64 +1,55 @@
-/* * ESTILOS CSS PARA EL TOOLBAR DEL DASHBOARD
- * Basado en la imagen de referencia y complementando el sidebar.
- * Se recomienda incluir este código en tu archivo CSS principal o en un archivo
- * dedicado para el dashboard.
+/*
+ * ESTILOS CSS PARA EL TOOLBAR DEL DASHBOARD - Rediseño sin variables root
+ * Archivo: admin.css
+ * Un diseño moderno y minimalista, inspirado en tu tema.
  */
-
-/* =========================================================================
-   Variables y configuración global (si aún no las tienes)
-   ========================================================================= */
-
-:root {
-    --toolbar-height: 80px;
-    --toolbar-bg-color: #ffffff;
-    --toolbar-border-radius: 1.5rem;
-    --toolbar-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-    --search-bg-color: #f0f2f5;
-    --search-border-radius: 1.5rem;
-    --search-placeholder-color: #999;
-    --sidebar-width: 250px; /* Asegúrate de que esta variable esté definida, si no, define un valor por defecto. */
-    --sidebar-width-collapsed: 80px; /* Ancho del sidebar cuando está colapsado */
-    --sidebar-active-bg: #007bff; /* Ejemplo de color, ajusta según tu tema */
-}
 
 /* =========================================================================
    Contenedor principal del toolbar
    ========================================================================= */
 
 .admin-toolbar {
-    height: var(--toolbar-height);
-    background-color: var(--toolbar-bg-color);
+    height: 80px;
+    background-color: #ffffff;
     position: fixed;
-    top: 2rem; /* Alineado con el borde superior del sidebar redondeado */
-    left: var(--sidebar-width); /* Deja espacio para el sidebar */
+    top: 2rem;
+    /* El ancho del sidebar por defecto es 250px, por eso el left está en 250px */
+    left: 300px;
     right: 2rem;
     z-index: 999;
     padding: 0 2rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    border-radius: var(--toolbar-border-radius);
-    box-shadow: var(--toolbar-shadow);
-    transition: left 0.3s ease-in-out, right 0.3s ease-in-out, padding 0.3s ease-in-out; /* Añadimos 'right' y 'padding' a la transición */
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    transition: left 0.3s ease-in-out, right 0.3s ease-in-out;
+}
+
+/* Cuando el sidebar está colapsado (asumiendo que hay una clase en el body),
+   ajustamos la posición izquierda del toolbar a 80px */
+.main-layout.sidebar-collapsed .admin-toolbar {
+    left: 80px;
 }
 
 /* =========================================================================
-   Sección izquierda (Título de la página)
+   Sección izquierda (Título de la página y botón de colapsar)
    ========================================================================= */
 
 .admin-toolbar .left-section {
     display: flex;
     align-items: center;
+    gap: 1.5rem;
 }
 
 .admin-toolbar .page-title-toolbar {
-    font-size: 1.5rem;
+    font-size: 1.8rem;
     font-weight: 700;
-    color: #333;
+    color: #333333;
     margin: 0;
-    white-space: nowrap; /* Evita que el título se rompa en varias líneas */
-    overflow: hidden; /* Oculta el texto que desborda */
-    text-overflow: ellipsis; /* Añade puntos suspensivos si el texto es demasiado largo */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 /* =========================================================================
@@ -80,168 +71,133 @@
 
 .search-icon {
     position: absolute;
-    left: 1.25rem;
+    left: 1rem;
     color: #999;
+    font-size: 1.1rem;
 }
 
 .search-input {
-    width: 250px; /* Ancho inicial */
-    max-width: 100%; /* Asegura que no desborde en pantallas pequeñas */
-    padding: 0.75rem 1.25rem 0.75rem 3rem;
-    border: none;
-    border-radius: var(--search-border-radius);
-    background-color: var(--search-bg-color);
+    width: 280px;
+    max-width: 100%;
+    padding: 0.9rem 1.5rem 0.9rem 3rem;
+    border: 1px solid transparent;
+    border-radius: 2rem;
+    background-color: #f0f2f5;
     font-size: 1rem;
-    transition: all 0.3s ease;
+    transition: all 0.3s ease-in-out;
 }
 
 .search-input::placeholder {
-    color: var(--search-placeholder-color);
+    color: #999;
 }
 
 .search-input:focus {
     outline: none;
-    box-shadow: 0 0 0 2px var(--sidebar-active-bg);
+    border-color: #3004E1;
+    box-shadow: 0 0 0 4px rgba(48, 4, 225, 0.2);
 }
 
-/* Estilos del perfil de usuario */
+/* Estilos del perfil de usuario y avatar */
+.profile-section {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
 .profile-link {
     display: flex;
     align-items: center;
     text-decoration: none;
-    color: #333;
-    transition: color 0.3s ease;
+    color: #333333;
+    transition: color 0.3s ease-in-out;
 }
 
 .profile-link:hover {
-    color: var(--sidebar-active-bg);
+    color: #3004E1;
 }
 
-.profile-link .user-name {
+.user-name {
     font-size: 1rem;
-    font-weight: 500;
-    margin-right: 1rem;
-    display: none; /* Ocultar el nombre en pantallas más pequeñas por defecto */
+    font-weight: 600;
+    margin: 0;
+    white-space: nowrap;
 }
 
-.profile-link .avatar {
-    width: 40px;
-    height: 40px;
+.avatar {
+    width: 50px;
+    height: 50px;
     border-radius: 50%;
     object-fit: cover;
-    border: 2px solid #ddd;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    border: 3px solid #E6E6E6;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease-in-out;
+}
+
+.profile-link:hover .avatar {
+    transform: scale(1.05);
+    border-color: #3004E1;
 }
 
 /* =========================================================================
-   Adaptación para pantallas más pequeñas (Media Queries)
+   Responsividad
    ========================================================================= */
 
-/* Para pantallas de tabletas y computadoras portátiles pequeñas (hasta 992px) */
+/* Tablets y laptops pequeñas (hasta 992px) */
 @media (max-width: 992px) {
     .admin-toolbar {
-        left: 2rem; /* El sidebar podría colapsarse o desaparecer */
-        right: 2rem;
-        padding: 0 1.5rem; /* Reducimos el padding */
-        justify-content: space-between; /* Mantener espacio entre elementos */
-    }
-
-    .admin-toolbar .page-title-toolbar {
-        font-size: 1.2rem; /* Tamaño de fuente ligeramente más pequeño */
-    }
-
-    .search-input {
-        width: 200px; /* Reduce el ancho del campo de búsqueda */
-        padding: 0.6rem 1rem 0.6rem 2.5rem; /* Ajusta el padding para el icono */
-    }
-
-    .search-icon {
-        left: 0.8rem; /* Ajusta la posición del icono de búsqueda */
-    }
-}
-
-/* Para pantallas de tabletas en modo retrato y teléfonos grandes (hasta 768px) */
-@media (max-width: 768px) {
-    .admin-toolbar {
-        top: 1rem; /* Acercamos el toolbar al borde superior */
+        top: 1rem;
         left: 1rem;
         right: 1rem;
-        padding: 0 1rem; /* Reducimos aún más el padding */
-        height: var(--toolbar-height); /* Mantenemos la altura, o la puedes reducir si es necesario */
+        padding: 0 1.5rem;
     }
 
     .admin-toolbar .page-title-toolbar {
-        font-size: 1.1rem; /* Tamaño de fuente más pequeño */
-    }
-
-    .admin-toolbar .right-section {
-        gap: 1rem; /* Reduce el espacio entre los elementos de la sección derecha */
+        font-size: 1.4rem;
     }
 
     .search-input {
-        width: 150px; /* Reduce aún más el ancho del campo de búsqueda */
-        padding: 0.5rem 0.8rem 0.5rem 2.2rem; /* Más ajustes de padding */
+        width: 200px;
+        padding: 0.8rem 1rem 0.8rem 2.5rem;
     }
 
     .search-icon {
-        left: 0.7rem;
-        font-size: 0.9rem; /* Icono de búsqueda ligeramente más pequeño */
+        left: 0.8rem;
     }
 
-    .profile-link .user-name {
-        display: none; /* Asegura que el nombre de usuario esté oculto en estas pantallas */
+    .user-name {
+        display: none;
     }
 }
 
-/* Para pantallas de teléfonos móviles (hasta 576px) */
-@media (max-width: 576px) {
+/* Móviles (hasta 768px) */
+@media (max-width: 768px) {
     .admin-toolbar {
+        height: 60px;
         top: 0.5rem;
         left: 0.5rem;
         right: 0.5rem;
-        padding: 0 0.5rem; /* Padding mínimo */
-        height: 60px; /* Podrías reducir la altura del toolbar para ahorrar espacio */
+        padding: 0 1rem;
+        border-radius: 1rem;
     }
 
     .admin-toolbar .left-section {
-        flex-grow: 1; /* Permite que la sección izquierda ocupe más espacio */
+        gap: 1rem;
     }
 
     .admin-toolbar .page-title-toolbar {
-        font-size: 1rem; /* Un tamaño de fuente aún más pequeño */
-        text-align: left; /* Alinea el texto a la izquierda */
-        margin-right: 0.5rem; /* Espacio entre el título y el siguiente elemento */
-    }
-
-    .admin-toolbar .right-section {
-        gap: 0.5rem; /* Espacio mínimo entre los elementos de la sección derecha */
+        font-size: 1.2rem;
     }
 
     .search-box-container {
-        /* En pantallas muy pequeñas, podrías querer ocultar el campo de búsqueda
-           y mostrar solo el icono, o convertirlo en un botón de búsqueda que
-           expanda el campo al hacer clic. Por ahora, lo haremos más compacto. */
-        width: auto; /* Permite que el contenedor de búsqueda se ajuste a su contenido */
+        display: none;
     }
 
-    .search-input {
-        width: 100px; /* Ancho muy pequeño para el campo de búsqueda */
-        padding: 0.4rem 0.6rem 0.4rem 1.8rem; /* Padding aún más reducido */
-        font-size: 0.9rem;
+    .profile-link {
+        margin-left: auto;
     }
 
-    .search-icon {
-        left: 0.6rem;
-        font-size: 0.8rem;
+    .avatar {
+        width: 40px;
+        height: 40px;
     }
-
-    .profile-link .avatar {
-        width: 35px; /* Avatar un poco más pequeño */
-        height: 35px;
-    }
-}
-
-/* Cuando el sidebar está colapsado (ejemplo, asumiendo una clase 'sidebar-collapsed' en el body o un contenedor padre) */
-body.sidebar-collapsed .admin-toolbar {
-    left: var(--sidebar-width-collapsed); /* Ajusta el 'left' cuando el sidebar está colapsado */
 }

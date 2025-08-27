@@ -4,16 +4,13 @@
 @section('page_title_toolbar', 'Gestión de Aliados')
 
 @push('styles')
-    {{-- Asegúrate de que Font Awesome esté cargado en tu layout global --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    {{-- Enlaza al archivo CSS específico para la vista de aliados --}}
-    <link rel="stylesheet" href="{{ asset('css/admin/aliados.css') }}">
 @endpush
 
 @section('content')
     <div class="allies-management-container">
         <div class="header-actions">
-            <h2>Gestión de Aliados</h2>
+            <h2>Todos los Aliados</h2>
             <a href="{{ route('aliados.create') }}" class="add-ally-btn">
                 <i class="fas fa-plus-circle"></i> Añadir Nuevo Aliado
             </a>

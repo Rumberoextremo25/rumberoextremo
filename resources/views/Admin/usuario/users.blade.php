@@ -13,7 +13,7 @@
 
 @section('content')
     <div class="users-section-container">
-        <h2 class="section-title">Gestión de Usuarios</h2>
+        <h2 class="section-title">Todos los usuarios</h2>
 
         <div class="add-button-wrapper">
             <a href="{{ route('add-user') }}" class="add-user-btn">

@@ -1,340 +1,364 @@
-/* Variables de color (pueden ser las mismas que en app.css o importadas) */
+/*
+ * resources/css/admin/promotions/index.css
+ * Rediseño moderno para la gestión de promociones.
+ */
+
+/* =========================================================================
+   Variables de Diseño (Basadas en una paleta más suave)
+   ========================================================================= */
+
 :root {
-    --primary-color: #4A90E2;
-    --secondary-color: #5BC0BE;
-    --accent-color: #F7B731;
-    --text-color: #333;
-    --light-text-color: #666;
-    --background-color: #f4f7f6;
-    --card-background: #ffffff;
-    --border-color: #e0e0e0;
-    --hover-bg: #f9f9f9;
-    --danger-color: #e74c3c;
-    --success-color: #2ecc71;
+    --primary-color: #6a0dad; /* Morado elegante */
+    --primary-gradient: linear-gradient(135deg, #a06dfb, #6b40e3); /* Degradado principal */
+    --accent-color: #fca311; /* Naranja para acentos llamativos */
+
+    --text-color-dark: #2c3e50;
+    --text-color-medium: #7f8c8d;
+    --text-color-light: #fefefe;
+    
+    --bg-light: #f8faff;
+    --bg-card: #ffffff;
+
+    --shadow-subtle: 0 15px 40px rgba(0, 0, 0, 0.08);
+    --shadow-medium: 0 20px 50px rgba(0, 0, 0, 0.12);
+    --border-color: #e6e9ed;
+    
+    --border-radius-lg: 1.5rem;
+    --border-radius-md: 1rem;
+    --border-radius-sm: 0.5rem;
+    --button-radius: 50px;
+    --transition-speed: 0.3s ease;
+
+    --danger-gradient: linear-gradient(45deg, #e74c3c, #c0392b);
+    --success-gradient: linear-gradient(45deg, #2ecc71, #27ae60);
+    --info-color: #3498db;
+    --warning-color: #f1c40f;
 }
+
+body {
+    background-color: var(--bg-light);
+    color: var(--text-color-dark);
+    font-family: 'Inter', sans-serif;
+    margin: 0;
+}
+
+/* =========================================================================
+   Contenedor Principal y Header
+   ========================================================================= */
 
 .promotions-management-container {
-    width: 100%; /* Ocupa todo el ancho disponible del contenedor padre (.admin-main-content) */
-    max-width: 1200px; /* <--- ESTO ES CLAVE: Define un ancho máximo. Si el padre es más ancho, este se centrará. */
-    background-color: var(--card-background);
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: var(--shadow-medium);
-    box-sizing: border-box; /* Incluye padding y border en el tamaño total */
+    max-width: 1400px;
+    margin: 3rem auto;
+    padding: 2.5rem;
+    background-color: var(--bg-card);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-subtle);
+    transition: box-shadow var(--transition-speed);
 }
-
-/* --- Resto de tus estilos específicos de promociones (sin cambios mayores) --- */
+.promotions-management-container:hover {
+    box-shadow: var(--shadow-medium);
+}
 
 .header-actions {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
-    flex-wrap: wrap;
-    gap: 15px;
+    margin-bottom: 2.5rem;
 }
 
 .header-actions h2 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 2.5rem;
+    color: var(--text-color-dark);
     margin: 0;
-    font-size: 2.2rem;
-    color: var(--text-color);
     font-weight: 700;
+    position: relative;
+    padding-bottom: 0.75rem;
+    letter-spacing: -0.05em;
+}
+.header-actions h2::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    width: 60px;
+    height: 4px;
+    background: var(--primary-gradient);
+    border-radius: 2px;
 }
 
 .add-promotion-btn {
-    background-color: var(--primary-color);
-    color: #fff;
-    padding: 12px 25px;
-    border-radius: 8px;
-    text-decoration: none;
-    font-weight: 600;
+    background: var(--primary-gradient);
+    color: white;
+    padding: 0.75rem 1.75rem;
+    border-radius: var(--button-radius);
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    transition: background-color 0.3s ease, transform 0.2s ease;
-    box-shadow: var(--shadow-light);
-}
-
-.add-promotion-btn:hover {
-    background-color: #3a7bd5;
-    transform: translateY(-2px);
-}
-
-.add-promotion-btn i {
+    gap: 0.75rem;
     font-size: 1rem;
+    font-weight: 600;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
+.add-promotion-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* =========================================================================
+   Tabla de Promociones
+   ========================================================================= */
 
 .table-responsive {
     overflow-x: auto;
-    margin-top: 20px;
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-subtle);
+    border: 1px solid var(--border-color);
+    transition: box-shadow var(--transition-speed);
+}
+.table-responsive:hover {
+    box-shadow: var(--shadow-medium);
 }
 
 .data-table {
     width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-    background-color: var(--card-background);
-}
-
-.data-table thead th {
-    background-color: var(--background-color);
-    color: var(--text-color);
-    padding: 15px 20px;
-    text-align: left;
-    font-weight: 600;
-    border-bottom: 2px solid var(--border-color);
-    text-transform: uppercase;
-    font-size: 0.85rem;
-}
-
-.data-table tbody td {
-    padding: 15px 20px;
-    border-bottom: 1px solid var(--border-color);
-    vertical-align: middle;
-    color: var(--light-text-color);
+    border-collapse: separate;
+    border-spacing: 0;
+    min-width: 800px;
     font-size: 0.95rem;
 }
-
+.data-table thead th {
+    background-color: var(--bg-card);
+    color: var(--text-color-medium);
+    font-weight: 700;
+    padding: 1.25rem 1.75rem;
+    text-align: left;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    border-bottom: 2px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+.data-table tbody tr {
+    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+}
 .data-table tbody tr:hover {
-    background-color: var(--hover-bg);
+    background-color: #f7f9fc;
+    transform: scale(1.01);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+}
+
+.data-table td {
+    padding: 1.25rem 1.75rem;
+    border-bottom: 1px solid var(--border-color);
+    color: var(--text-color-dark);
+}
+.data-table tbody tr:last-child td {
+    border-bottom: none;
 }
 
 .data-table img {
-    width: 70px;
-    height: 70px;
-    border-radius: 8px;
+    width: 90px;
+    height: 60px;
+    border-radius: var(--border-radius-sm);
     object-fit: cover;
     border: 1px solid var(--border-color);
+    transition: transform 0.2s ease;
+}
+.data-table img:hover {
+    transform: scale(1.05);
 }
 
 .data-table .actions {
     display: flex;
-    gap: 8px;
+    gap: 0.75rem;
     align-items: center;
     justify-content: flex-end;
 }
-
 .btn-icon {
+    width: 40px;
+    height: 40px;
     background: none;
     border: none;
     cursor: pointer;
     font-size: 1.1rem;
-    padding: 8px;
-    border-radius: 6px;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    border-radius: 50%;
+    transition: all 0.3s ease;
     display: inline-flex;
     align-items: center;
     justify-content: center;
 }
-
-.edit-btn {
-    color: var(--primary-color);
+.btn-icon:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
 }
-
-.edit-btn:hover {
-    background-color: rgba(74, 144, 226, 0.1);
-}
-
-.delete-btn {
-    color: var(--danger-color);
-}
-
-.delete-btn:hover {
-    background-color: rgba(231, 76, 60, 0.1);
-}
-
-.delete-form {
-    display: inline-block;
-    margin: 0;
-    padding: 0;
-}
+.edit-btn { color: var(--info-color); }
+.edit-btn:hover { background-color: rgba(52, 152, 219, 0.1); }
+.delete-btn { color: var(--danger-color); }
+.delete-btn:hover { background-color: rgba(231, 76, 60, 0.1); }
+.delete-form { display: inline-block; }
 
 .no-records-message {
     text-align: center;
-    padding: 50px 20px;
-    color: var(--light-text-color);
-    font-size: 1.1rem;
-    background-color: var(--card-background);
-    border-radius: 12px;
-    margin-top: 20px;
-    box-shadow: var(--shadow-light);
+    padding: 3rem;
+    color: var(--text-color-medium);
+    font-style: italic;
+    font-size: 1.2rem;
+    border: 2px dashed var(--border-color);
+    border-radius: var(--border-radius-md);
+    margin-top: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    box-shadow: var(--shadow-subtle);
+}
+.no-records-message i {
+    font-size: 3rem !important;
+    color: var(--primary-color);
+    opacity: 0.5;
 }
 
-/* Modal de Confirmación */
+/* =========================================================================
+   Modal de Confirmación
+   ========================================================================= */
 .modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.6);
+    background-color: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(5px);
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000;
-    visibility: hidden;
+    z-index: 9999;
     opacity: 0;
-    transition: opacity 0.3s ease, visibility 0.3s ease;
+    visibility: hidden;
+    transition: opacity 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), visibility 0.4s;
 }
-
 .modal-overlay.active {
-    visibility: visible;
     opacity: 1;
+    visibility: visible;
 }
 
 .modal-content {
-    background-color: var(--card-background);
-    padding: 30px;
-    border-radius: 12px;
-    box-shadow: var(--shadow-medium);
-    width: 90%;
+    background-color: var(--bg-card);
+    padding: 2.5rem;
+    border-radius: var(--border-radius-lg);
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
     max-width: 500px;
-    transform: translateY(-20px);
-    transition: transform 0.3s ease;
+    width: 90%;
+    text-align: center;
+    transform: scale(0.9);
+    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+    border: 1px solid var(--border-color);
 }
-
 .modal-overlay.active .modal-content {
-    transform: translateY(0);
+    transform: scale(1);
 }
 
-.modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 15px;
+.modal-icon {
+    color: var(--danger-color);
+    font-size: 3.5rem;
+    margin-bottom: 1.5rem;
+    animation: bounceIn 0.6s ease-in-out;
+}
+@keyframes bounceIn {
+    0% { transform: scale(0.3); opacity: 0; }
+    50% { transform: scale(1.1); opacity: 1; }
+    70% { transform: scale(0.9); }
+    100% { transform: scale(1); }
 }
 
-.modal-header h3 {
-    margin: 0;
+.modal-title {
     font-size: 1.8rem;
-    color: var(--text-color);
+    color: var(--text-color-dark);
+    font-weight: 700;
+    margin: 0 0 0.5rem;
 }
-
-.close-modal-btn {
-    background: none;
-    border: none;
-    font-size: 2rem;
-    cursor: pointer;
-    color: var(--light-text-color);
-    transition: color 0.2s ease;
+.modal-body p {
+    font-size: 1rem;
+    color: var(--text-color-medium);
+    line-height: 1.6;
+    margin: 0;
 }
-
-.close-modal-btn:hover {
-    color: var(--text-color);
-}
-
-.modal-body {
-    margin-bottom: 25px;
-    font-size: 1.1rem;
-    color: var(--light-text-color);
-}
+.modal-body strong { font-weight: 700; }
 
 .modal-footer {
     display: flex;
-    justify-content: flex-end;
-    gap: 10px;
+    justify-content: center;
+    gap: 1.25rem;
+    margin-top: 2rem;
 }
-
 .modal-footer .btn {
-    padding: 10px 20px;
-    border-radius: 8px;
-    cursor: pointer;
+    padding: 0.8rem 1.8rem;
+    border-radius: var(--button-radius);
     font-weight: 600;
-    transition: background-color 0.3s ease, color 0.3s ease;
+    cursor: pointer;
+    border: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    color: white;
 }
-
-.cancel-modal-btn {
-    background-color: var(--border-color);
-    color: var(--text-color);
-    border: 1px solid var(--border-color);
+.modal-footer .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
 }
+.modal-footer .cancel-modal-btn { background: var(--primary-gradient); }
+.modal-footer .confirm-modal-btn { background: var(--danger-gradient); }
 
-.cancel-modal-btn:hover {
-    background-color: #dcdcdc;
-}
+/* =========================================================================
+   Media Queries para Responsividad
+   ========================================================================= */
 
-.confirm-modal-btn {
-    background-color: var(--danger-color);
-    color: #fff;
-    border: 1px solid var(--danger-color);
-}
-
-.confirm-modal-btn:hover {
-    background-color: #c0392b;
-}
-
-/* Media Queries para Responsividad de la Tabla */
 @media screen and (max-width: 900px) {
-    .data-table thead {
-        display: none;
+    .promotions-management-container {
+        padding: 1.5rem;
+        margin: 1.5rem auto;
+        border-radius: 0;
+        box-shadow: none;
     }
-
+    .header-actions {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1.5rem;
+    }
+    .add-promotion-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    .data-table thead { display: none; }
     .data-table, .data-table tbody, .data-table tr, .data-table td {
         display: block;
         width: 100%;
     }
-
     .data-table tr {
-        margin-bottom: 15px;
+        margin-bottom: 1.5rem;
+        border-radius: var(--border-radius-md);
+        box-shadow: var(--shadow-subtle);
         border: 1px solid var(--border-color);
-        border-radius: 8px;
-        box-shadow: var(--shadow-light);
-        padding: 10px;
-        background-color: var(--card-background);
+        padding: 1.25rem;
     }
-
     .data-table td {
+        border-bottom: 1px dashed var(--border-color);
+        padding: 0.75rem 0;
         text-align: right;
-        padding-left: 50%;
         position: relative;
-        border: none;
-        padding-top: 8px;
-        padding-bottom: 8px;
     }
-
     .data-table td::before {
         content: attr(data-label);
         position: absolute;
-        left: 10px;
-        width: calc(50% - 20px);
-        padding-right: 10px;
-        white-space: nowrap;
-        text-align: left;
+        left: 0;
         font-weight: 600;
-        color: var(--text-color);
+        color: var(--text-color-dark);
     }
-
     .data-table .actions {
+        margin-top: 1rem;
         justify-content: flex-start;
-        margin-top: 10px;
-        padding-top: 10px;
-        border-top: 1px solid var(--border-color);
-    }
-
-    .data-table img {
-        width: 50px;
-        height: 50px;
-    }
-
-    .promotions-management-container {
-        padding: 20px;
-    }
-
-    .header-actions {
-        flex-direction: column;
-        align-items: flex-start;
-        margin-bottom: 20px;
-    }
-
-    .header-actions h2 {
-        font-size: 1.8rem;
-    }
-
-    .add-promotion-btn {
-        width: 100%;
-        justify-content: center;
-        margin-top: 10px;
     }
 }
