@@ -20,27 +20,27 @@
                 </div>
                 <div class="details">
                     <div class="value">{{ number_format($totalUsers) ?? '0' }}</div>
-                    <div class="label">Total usuarios</div>
+                    <div class="label">Usuarios Registrados</div>
                 </div>
             </div>
 
             <div class="metric-card-minimal products">
                 <div class="icon-wrapper">
-                    <i class="fas fa-box"></i>
+                    <i class="fas fa-handshake"></i>
                 </div>
                 <div class="details">
-                    <div class="value">25</div> {{-- Asume una variable para productos activos --}}
-                    <div class="label">Productos activos</div>
+                    <div class="value">{{ number_format($totalAllies) ?? '0' }}</div>
+                    <div class="label">Aliados Registrados</div>
                 </div>
             </div>
 
             <div class="metric-card-minimal sales">
                 <div class="icon-wrapper">
-                    <i class="fas fa-dollar-sign"></i>
+                    <i class="fas fa-globe"></i>
                 </div>
                 <div class="details">
-                    <div class="value">N/A</div> {{-- O usa {{ number_format($todaySales, 2) ?? 'N/A' }} si tienes el dato --}}
-                    <div class="label">Ventas hoy</div>
+                    <div class="value">{{ number_format($pageViews) ?? '0' }}</div>
+                    <div class="label">Visitas Pagina Web</div>
                 </div>
             </div>
 
@@ -49,8 +49,8 @@
                     <i class="fas fa-chart-line"></i>
                 </div>
                 <div class="details">
-                    <div class="value">N/A</div> {{-- O usa {{ $customerSatisfaction ?? 'N/A' }} --}}
-                    <div class="label">Satisfacción del cliente</div>
+                    <div class="value">{{ number_format($totalSales, 2) ?? 'N/A' }}</div>
+                    <div class="label">Ventas</div>
                 </div>
             </div>
         </div>
@@ -69,23 +69,16 @@
                         </tr>
                     </thead>
                     <tbody>
-                        {{-- Ejemplo de datos (reemplaza con tus variables $latestActivities) --}}
-                        @php
-                            $latestActivities = [
-                                ['activity' => 'Nuevo producto añadido: Devant la Riviere', 'user' => 'Herbert Diaz', 'date' => '16/06/2025 19:38', 'status' => 'Completado', 'status_class' => 'status-completado'],
-                                ['activity' => 'Últimas actividades', 'user' => 'María Gómez', 'date' => '16/06/2025 18:39', 'status' => 'Pendiente', 'status_class' => 'status-pendiente'],
-                                ['activity' => 'Últimas actividades', 'user' => 'Carlos Ruíz', 'date' => '16/06/2025 16:38', 'status' => 'Completado', 'status_class' => 'status-completado'],
-                                ['activity' => 'Últimas actividades', 'user' => 'Admin. R.E.', 'date' => '16/06/2025 14:38', 'status' => 'Error', 'status_class' => 'status-error'],
-                                ['activity' => 'Últimas actividades', 'user' => 'Sistema', 'date' => '16/06/2025 19:38', 'status' => 'Completado', 'status_class' => 'status-completado'],
-                            ];
-                        @endphp
-
                         @forelse ($latestActivities as $activity)
                             <tr>
                                 <td>{{ $activity['activity'] }}</td>
                                 <td>{{ $activity['user'] }}</td>
                                 <td>{{ $activity['date'] }}</td>
-                                <td><span class="status-badge {{ $activity['status_class'] }}">{{ $activity['status'] }}</span></td>
+                                <td>
+                                    <span class="status-badge {{ $activity['status_class'] }}">
+                                        {{ $activity['status'] }}
+                                    </span>
+                                </td>
                             </tr>
                         @empty
                             <tr>

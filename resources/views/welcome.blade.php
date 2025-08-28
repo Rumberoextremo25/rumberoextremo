@@ -16,14 +16,14 @@
 @section('content')
     <section class="hero">
         <div class="container">
-            <h1>Tu Próxima Aventura te está esperando
-                Conecta, explora y vive sin limites
+            <h1>Tu Próxima Aventura te<br> 
+                está esperando
             </h1>
-            <p>Rumbero Extremo una app donde los eventos, actividades, productos y servicios que forman parte de tu
-                recreación y entretenimiento están a tu disposición
+            <h3>Conecta, explora y vive sin limites<br> 
 
                 ¡Qué esperas para ser un Rumbero afíliate!
-            </p>
+            </h3>
+            <br>
             <a href="{{ route('register') }}" class="cta-button-banner">¡Yo Soy Rumbero !</a>
         </div>
     </section>

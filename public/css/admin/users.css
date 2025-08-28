@@ -30,7 +30,6 @@ body {
 
 .add-user-btn {
     background-color: #A601B3;
-    /* Púrpura */
     color: #fff;
     padding: 12px 24px;
     border-radius: 8px;
@@ -44,7 +43,6 @@ body {
 
 .add-user-btn:hover {
     background-color: #3004E1;
-    /* Púrpura más oscuro al pasar el ratón */
 }
 
 .add-user-btn .fas {
@@ -53,31 +51,25 @@ body {
 
 .table-wrapper {
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch; /* Mejora el desplazamiento en iOS */
 }
 
 .data-table {
     width: 100%;
     border-collapse: separate;
-    /* Importante para border-spacing */
     border-spacing: 0;
-    /* Elimina el espacio entre celdas */
     border-radius: 8px;
-    /* Bordes redondeados para toda la tabla */
     overflow: hidden;
-    /* Asegura que los bordes redondeados se apliquen correctamente */
 }
 
-/* Estilo para el encabezado de la tabla */
 .data-table thead {
     background-color: #f7fafc;
-    /* Fondo gris claro para el encabezado */
 }
 
 .data-table th,
 .data-table td {
     padding: 16px 20px;
     text-align: left;
-    /* Borde inferior para las divisiones de los renglones */
     border-bottom: 1px solid #b4b5b6;
 }
 
@@ -91,10 +83,8 @@ body {
 
 .data-table tbody tr:hover {
     background-color: #f9fafb;
-    /* Fondo ligero al pasar el ratón */
 }
 
-/* Eliminar el borde inferior de la última fila del cuerpo de la tabla */
 .data-table tbody tr:last-child td {
     border-bottom: none;
 }
@@ -104,7 +94,6 @@ body {
     color: #4a5568;
 }
 
-/* Estilos de los "badges" (etiquetas de estado y tipo) */
 .badge {
     padding: 4px 12px;
     border-radius: 20px;
@@ -112,45 +101,33 @@ body {
     font-weight: 600;
     text-transform: capitalize;
     display: inline-block;
-    /* Para que el padding y border-radius se apliquen bien */
 }
 
 .badge-status-activo {
     background-color: #ecfdf5;
-    /* Verde claro */
     color: #059669;
-    /* Verde oscuro */
 }
 
 .badge-status-inactivo {
     background-color: #fef2f2;
-    /* Rojo claro */
     color: #ef4444;
-    /* Rojo oscuro */
 }
 
 .badge-type-común {
     background-color: #e0f2fe;
-    /* Azul claro */
     color: #0c4a6e;
-    /* Azul oscuro */
 }
 
 .badge-type-afiliado {
     background-color: #fffbeb;
-    /* Naranja claro */
     color: #b45309;
-    /* Naranja oscuro */
 }
 
 .badge-type-aliado {
     background-color: #f3e8ff;
-    /* Púrpura claro */
     color: #6b21a8;
-    /* Púrpura oscuro */
 }
 
-/* Estilos de los botones de acción (Ver, Editar, Eliminar) */
 .action-group {
     display: flex;
     align-items: center;
@@ -159,7 +136,6 @@ body {
 
 .action-btn {
     color: #a0aec0;
-    /* Gris */
     background: none;
     border: none;
     padding: 8px;
@@ -167,35 +143,27 @@ body {
     font-size: 14px;
     transition: color 0.2s ease-in-out;
     border-radius: 4px;
-    /* Pequeño redondeo en los botones de acción */
 }
 
 .action-btn:hover {
     color: #4a5568;
-    /* Gris más oscuro al pasar el ratón */
     background-color: #edf2f7;
-    /* Fondo sutil al pasar el ratón */
 }
 
 .action-btn.view:hover {
     color: #3b82f6;
-    /* Azul al pasar el ratón */
 }
 
 .action-btn.edit:hover {
     color: #f59e0b;
-    /* Amarillo/naranja al pasar el ratón */
 }
 
 .action-btn.delete:hover {
     color: #ef4444;
-    /* Rojo al pasar el ratón */
 }
 
-/* Estilos del modal de confirmación */
 .modal-overlay {
     display: none;
-    /* Por defecto oculto */
     position: fixed;
     top: 0;
     left: 0;
@@ -246,9 +214,7 @@ body {
 
 .btn-cancel {
     background-color: #e2e8f0;
-    /* Gris claro */
     color: #4a5568;
-    /* Gris oscuro */
 }
 
 .btn-cancel:hover {
@@ -257,10 +223,82 @@ body {
 
 .btn-confirm {
     background-color: #ef4444;
-    /* Rojo */
     color: #fff;
 }
 
 .btn-confirm:hover {
     background-color: #dc2626;
+}
+
+/* ------------------- MEDIA QUERIES PARA LA RESPONSIVIDAD ------------------- */
+
+/* Pantallas medianas (tablets, hasta 992px) */
+@media (max-width: 992px) {
+    .users-section-container {
+        padding: 24px;
+        margin: 20px auto;
+    }
+
+    .section-title {
+        font-size: 20px;
+        margin-bottom: 16px;
+    }
+
+    .add-button-wrapper {
+        margin-bottom: 16px;
+    }
+
+    .add-user-btn {
+        padding: 10px 20px;
+        font-size: 14px;
+    }
+
+    .data-table th,
+    .data-table td {
+        padding: 12px 16px;
+    }
+
+    .data-table th {
+        font-size: 12px;
+    }
+
+    .data-table tbody td {
+        font-size: 14px;
+    }
+
+    .action-btn {
+        padding: 6px;
+    }
+
+    .modal-content {
+        width: 90%;
+        padding: 20px;
+    }
+}
+
+/* Pantallas pequeñas (móviles, hasta 576px) */
+@media (max-width: 576px) {
+    .users-section-container {
+        padding: 16px;
+        margin: 10px auto;
+    }
+
+    .section-title {
+        font-size: 18px;
+    }
+
+    /* Oculta las columnas menos importantes para mejorar la legibilidad en móviles */
+    .data-table th:nth-child(2),
+    .data-table td:nth-child(2),
+    .data-table th:nth-child(4),
+    .data-table td:nth-child(4),
+    .data-table th:nth-child(5),
+    .data-table td:nth-child(5) {
+        display: none;
+    }
+    
+    .data-table th,
+    .data-table td {
+        padding: 10px;
+    }
 }

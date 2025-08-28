@@ -1,54 +1,47 @@
 body {
-  background-color: #f8f9fa;
-  /* Fondo gris claro */
-  font-family: 'Inter', sans-serif;
-  color: #495057;
+    background-color: #f8f9fa;
+    font-family: 'Inter', sans-serif;
+    color: #495057;
 }
 
 /* Contenedor principal del contenido */
 .main-content {
-  padding: 2rem 2.5rem;
-  /* Ajuste del padding general */
-  /* No usamos max-width aquí para que se expanda */
+    padding: 2rem 2.5rem;
 }
 
 /* Contenedor de toda la vista de perfil */
 .profile-view-container {
-  background-color: #fff;
-  border-radius: 12px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
-  padding: 2.5rem 3rem;
-  /* Padding interno como en la imagen */
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    padding: 2.5rem 3rem;
 }
 
 /* Sección del Encabezado del Perfil */
 .profile-header {
-  display: flex;
-  align-items: center;
-  margin-bottom: 2.5rem;
-  /* Espacio bajo el encabezado */
-  padding-bottom: 1.5rem;
-  border-bottom: 1px solid #e2e8f0;
-  /* Línea divisoria sutil */
+    display: flex;
+    align-items: center;
+    margin-bottom: 2.5rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 1px solid #e2e8f0;
 }
 
 .profile-avatar {
-    width: 60px; /* Tamaño del contenedor */
+    width: 60px;
     height: 60px;
-    border-radius: 50%; /* Esto hace que el contenedor sea un círculo */
-    background-color: #9253EC; /* Color de fondo si no hay imagen */
-    overflow: hidden; /* Oculta cualquier parte de la imagen que sobresalga del círculo */
+    border-radius: 50%;
+    background-color: #9253EC;
+    overflow: hidden;
 }
 
 .profile-avatar img {
     width: 100%;
     height: 100%;
-    object-fit: cover; /* Asegura que la imagen cubra todo el espacio sin distorsionarse */
+    object-fit: cover;
 }
 
 .profile-info {
     flex-grow: 1;
-    /* Agrega un margen izquierdo para crear espacio entre el logo y el texto */
     margin-left: 1.5rem;
 }
 
@@ -71,70 +64,131 @@ body {
     color: #4a5568;
 }
 
-/* Botón de Editar Perfil */
 .edit-profile-button {
-  background-color: #A601B3;
-  /* Púrpura */
-  color: #fff;
-  padding: 0.8rem 1.5rem;
-  border: none;
-  border-radius: 8px;
-  font-size: 1rem;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s ease-in-out;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  text-decoration: none;
-  /* Eliminar subrayado del enlace */
+    background-color: #A601B3;
+    color: #fff;
+    padding: 0.8rem 1.5rem;
+    border: none;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    text-decoration: none;
 }
 
 .edit-profile-button:hover {
-  background-color: #3004E1;
-  /* Un tono más oscuro de púrpura */
+    background-color: #3004E1;
 }
 
-/* Secciones de Información (Personal, Contacto) */
 .info-section-title {
-  font-size: 1.25rem;
-  /* Tamaño del título de sección */
-  font-weight: 700;
-  color: #3004E1;
-  margin-top: 2rem;
-  /* Espacio superior para separar secciones */
-  margin-bottom: 1.5rem;
-  padding-bottom: 0.5rem;
-  border-bottom: 1px solid #e2e8f0;
-  /* Línea divisoria */
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #3004E1;
+    margin-top: 2rem;
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #e2e8f0;
 }
 
-/* Contenedor de los detalles de información */
 .details-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  /* Tres columnas para la información */
-  gap: 1.5rem;
-  /* Espacio entre los ítems */
-  margin-bottom: 2.5rem;
-  /* Espacio inferior de la sección */
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2.5rem;
 }
 
 .detail-item {
-  display: flex;
-  flex-direction: column;
-  padding: 0.5rem 0;
+    display: flex;
+    flex-direction: column;
+    padding: 0.5rem 0;
 }
 
 .detail-label {
-  font-size: 0.9rem;
-  font-weight: 500;
-  color: #6c757d;
-  margin-bottom: 0.25rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #6c757d;
+    margin-bottom: 0.25rem;
 }
 
 .detail-value {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #2d3748;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #2d3748;
+}
+
+/* ------------------- MEDIA QUERIES PARA LA RESPONSIVIDAD ------------------- */
+
+/* Pantallas medianas (tablets, hasta 992px) */
+@media (max-width: 992px) {
+    .main-content {
+        padding: 1.5rem;
+    }
+
+    .profile-view-container {
+        padding: 2rem;
+    }
+
+    .details-grid {
+        /* Cambia a 2 columnas para tablets */
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+}
+
+/* Pantallas pequeñas (móviles, hasta 576px) */
+@media (max-width: 576px) {
+    .main-content {
+        padding: 1rem;
+    }
+
+    .profile-view-container {
+        padding: 1.5rem;
+    }
+    
+    .profile-header {
+        /* Permite que los elementos se apilen verticalmente si es necesario */
+        flex-direction: column; 
+        text-align: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .profile-avatar {
+        width: 80px;
+        height: 80px;
+        margin-bottom: 1rem; /* Espacio entre el avatar y el texto */
+    }
+
+    .profile-info {
+        margin-left: 0;
+        margin-bottom: 1rem; /* Espacio entre la info y el botón */
+    }
+    
+    .profile-info h2 {
+        font-size: 1.5rem;
+    }
+
+    .profile-info p {
+        font-size: 0.85rem;
+    }
+
+    .edit-profile-button {
+        width: 100%; /* El botón ocupa todo el ancho */
+        justify-content: center;
+        font-size: 0.9rem;
+    }
+
+    .info-section-title {
+        font-size: 1.1rem;
+        margin-top: 1.5rem;
+    }
+
+    .details-grid {
+        /* Cambia a 1 columna para móviles */
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
 }

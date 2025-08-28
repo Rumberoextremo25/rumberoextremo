@@ -5,16 +5,16 @@
  */
 
 /* =========================================================================
-   Contenedor principal del toolbar
-   ========================================================================= */
+    Contenedor principal del toolbar
+    ========================================================================= */
 
 .admin-toolbar {
-    height: 80px;
+    height: 70px;
     background-color: #ffffff;
     position: fixed;
     top: 2rem;
-    /* El ancho del sidebar por defecto es 250px, por eso el left está en 250px */
-    left: 300px;
+    /* Por defecto, el `left` se ajusta a pantallas de escritorio */
+    left: 290px;
     right: 2rem;
     z-index: 999;
     padding: 0 2rem;
@@ -26,15 +26,14 @@
     transition: left 0.3s ease-in-out, right 0.3s ease-in-out;
 }
 
-/* Cuando el sidebar está colapsado (asumiendo que hay una clase en el body),
-   ajustamos la posición izquierda del toolbar a 80px */
+/* Cuando el sidebar está colapsado, ajustamos la posición izquierda del toolbar */
 .main-layout.sidebar-collapsed .admin-toolbar {
     left: 80px;
 }
 
 /* =========================================================================
-   Sección izquierda (Título de la página y botón de colapsar)
-   ========================================================================= */
+    Sección izquierda (Título de la página)
+    ========================================================================= */
 
 .admin-toolbar .left-section {
     display: flex;
@@ -53,8 +52,8 @@
 }
 
 /* =========================================================================
-   Sección derecha (Búsqueda y perfil)
-   ========================================================================= */
+    Sección derecha (Búsqueda y perfil)
+    ========================================================================= */
 
 .admin-toolbar .right-section {
     display: flex;
@@ -139,33 +138,46 @@
 }
 
 /* =========================================================================
-   Responsividad
-   ========================================================================= */
+    Responsividad: Adaptación a diferentes tamaños de pantalla
+    ========================================================================= */
 
-/* Tablets y laptops pequeñas (hasta 992px) */
-@media (max-width: 992px) {
+/* Tablets y laptops pequeñas (hasta 1200px) */
+@media (max-width: 1200px) {
     .admin-toolbar {
-        top: 1rem;
-        left: 1rem;
-        right: 1rem;
+        left: 280px;
+        right: 1.5rem;
         padding: 0 1.5rem;
     }
-
-    .admin-toolbar .page-title-toolbar {
-        font-size: 1.4rem;
-    }
-
     .search-input {
         width: 200px;
-        padding: 0.8rem 1rem 0.8rem 2.5rem;
     }
+}
 
+/* Tablets pequeñas y móviles en horizontal (hasta 992px) */
+@media (max-width: 992px) {
+    .admin-toolbar {
+        height: 70px;
+        top: 1.5rem;
+        left: 1.5rem;
+        right: 1.5rem;
+        border-radius: 1.2rem;
+    }
+    .main-layout.sidebar-collapsed .admin-toolbar {
+        left: 1.5rem; /* El sidebar no se ve, por lo tanto el toolbar se extiende */
+    }
+    .admin-toolbar .page-title-toolbar {
+        font-size: 1.5rem;
+    }
+    .search-input {
+        width: 180px;
+        padding: 0.8rem 1.5rem 0.8rem 2.5rem;
+    }
     .search-icon {
         left: 0.8rem;
     }
-
-    .user-name {
-        display: none;
+    .avatar {
+        width: 45px;
+        height: 45px;
     }
 }
 
@@ -178,24 +190,23 @@
         right: 0.5rem;
         padding: 0 1rem;
         border-radius: 1rem;
+        justify-content: space-between;
     }
-
     .admin-toolbar .left-section {
         gap: 1rem;
     }
-
     .admin-toolbar .page-title-toolbar {
         font-size: 1.2rem;
     }
-
     .search-box-container {
-        display: none;
+        display: none; /* Oculta la barra de búsqueda para ahorrar espacio */
     }
-
-    .profile-link {
-        margin-left: auto;
+    .profile-section {
+        gap: 0.5rem;
     }
-
+    .user-name {
+        display: none; /* Oculta el nombre de usuario en móviles */
+    }
     .avatar {
         width: 40px;
         height: 40px;

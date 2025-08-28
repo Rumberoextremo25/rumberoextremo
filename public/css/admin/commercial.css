@@ -1,414 +1,224 @@
-/*
- * resources/css/admin/commercial-allies/index.css
- * Rediseño moderno y atractivo para la gestión de aliados comerciales.
- */
-
-/* =========================================================================
-   Variables de Diseño (Adaptadas a una paleta más moderna)
-   ========================================================================= */
-
-:root {
-    --primary-color: #6a0dad; /* Púrpura elegante */
-    --primary-gradient: linear-gradient(135deg, #a06dfb, #6b40e3); /* Degradado principal */
-    --secondary-color: #20c997; /* Verde menta para acentos */
-    --secondary-gradient: linear-gradient(45deg, #20c997, #179973);
-
-    --text-color-dark: #2c3e50;
-    --text-color-medium: #7f8c8d;
-    --text-color-light: #fefefe;
-    
-    --bg-light: #f8faff;
-    --bg-card: #ffffff;
-
-    --shadow-subtle: 0 15px 40px rgba(0, 0, 0, 0.08);
-    --shadow-medium: 0 20px 50px rgba(0, 0, 0, 0.12);
-    --border-color: #e6e9ed;
-    
-    --border-radius-lg: 1.5rem;
-    --border-radius-md: 1rem;
-    --border-radius-sm: 0.5rem;
-    --button-radius: 50px;
-    --transition-speed: 0.3s ease;
-
-    --success-gradient: linear-gradient(45deg, #2ecc71, #27ae60);
-    --danger-gradient: linear-gradient(45deg, #e74c3c, #c0392b);
-    --info-gradient: linear-gradient(45deg, #3498db, #2980b9);
-    --warning-gradient: linear-gradient(45deg, #f1c40f, #f39c12);
-}
-
 body {
-    background-color: var(--bg-light);
-    color: var(--text-color-dark);
     font-family: 'Inter', sans-serif;
-    margin: 0;
-}
-
-/* =========================================================================
-   Contenedor Principal de la Vista de Aliados
-   ========================================================================= */
-
-.allies-management-container {
-    max-width: 1400px;
-    margin: 3rem auto;
-    padding: 2.5rem;
-    background-color: var(--bg-card);
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-subtle);
-    transition: box-shadow var(--transition-speed);
-}
-.allies-management-container:hover {
-    box-shadow: var(--shadow-medium);
-}
-
-.header-actions {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 2.5rem;
-}
-
-.header-actions h2 {
-    font-size: 2.2rem;
-    color: var(--text-color-dark);
-    margin: 0;
-    font-weight: 700;
-    position: relative;
-    padding-bottom: 0.75rem;
-}
-.header-actions h2::after {
-    content: '';
-    position: absolute;
-    left: 0;
-    bottom: 0;
-    width: 60px;
-    height: 4px;
-    background: var(--primary-gradient);
-    border-radius: 2px;
+    background-color: #f3f4f6;
 }
 
 .add-ally-btn {
-    background: var(--primary-gradient);
-    color: white;
-    padding: 0.75rem 1.75rem;
-    border-radius: var(--button-radius);
-    display: inline-flex;
-    align-items: center;
-    gap: 0.75rem;
-    font-size: 1rem;
+    background-image: linear-gradient(to right, #5d56f9, #8a2be2);
+    color: #ffffff;
+    padding: 1rem 2rem;
+    border-radius: 9999px;
     font-weight: 600;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-}
-.add-ally-btn:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
-}
-
-/* =========================================================================
-   Alertas y Mensajes
-   ========================================================================= */
-
-.alert {
-    padding: 1.25rem;
-    margin-bottom: 2rem;
-    border-radius: var(--border-radius-md);
-    font-size: 1rem;
-    font-weight: 500;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-}
-.alert-success {
-    background-color: #e6f7e9;
-    color: #28a745;
-    border-color: #c9e4d1;
-}
-.alert-danger {
-    background-color: #f7e6e6;
-    color: #dc3545;
-    border-color: #e4c9c9;
-}
-.alert .btn-close {
-    font-size: 1.5rem;
-    opacity: 0.5;
-}
-.alert .btn-close:hover {
-    opacity: 1;
-    transform: rotate(90deg);
-}
-
-.no-records-message {
-    text-align: center;
-    padding: 3rem;
-    color: var(--text-color-medium);
-    font-style: italic;
-    font-size: 1.2rem;
-    border: 2px dashed var(--border-color);
-    border-radius: var(--border-radius-md);
-    margin-top: 2.5rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
     display: flex;
-    flex-direction: column;
     align-items: center;
-    gap: 1.5rem;
-    box-shadow: var(--shadow-subtle);
-}
-.no-records-message i {
-    font-size: 3rem !important;
-    color: var(--primary-color);
-    opacity: 0.5;
+    gap: 0.5rem;
+    text-decoration: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-/* =========================================================================
-   Tabla de Aliados
-   ========================================================================= */
+.add-ally-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
 
-.table-responsive {
+.allies-table-container {
     overflow-x: auto;
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-subtle);
-    border: 1px solid var(--border-color);
-    transition: box-shadow var(--transition-speed);
-}
-.table-responsive:hover {
-    box-shadow: var(--shadow-medium);
+    -webkit-overflow-scrolling: touch;
 }
 
-.data-table {
-    width: 100%;
+.allies-table {
+    min-width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-    min-width: 750px;
-    font-size: 0.95rem;
-}
-.data-table thead th {
-    background-color: var(--bg-card);
-    color: var(--text-color-medium);
-    font-weight: 700;
-    padding: 1.25rem 1.75rem;
-    text-transform: uppercase;
-    font-size: 0.85rem;
-    letter-spacing: 0.05em;
-    border-bottom: 2px solid var(--border-color);
-    position: sticky;
-    top: 0;
-    z-index: 10;
-}
-.data-table tbody tr {
-    transition: background-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
-}
-.data-table tbody tr:hover {
-    background-color: #f7f9fc;
-    transform: scale(1.01);
-    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+    border-radius: 1.5rem;
+    overflow: hidden;
 }
 
-.data-table td {
-    padding: 1.25rem 1.75rem;
-    border-bottom: 1px solid var(--border-color);
-    color: var(--text-color-dark);
+.allies-table thead tr {
+    background-color: #f9fafb;
+    color: #4b5563;
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 0.875rem;
 }
-.data-table tbody tr:last-child td {
+
+.allies-table th,
+.allies-table td {
+    padding: 1.25rem 1.5rem;
+    text-align: left;
+}
+
+.allies-table tbody tr {
+    background-color: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    transition: background-color 0.2s ease;
+}
+
+.allies-table tbody tr:last-child {
     border-bottom: none;
 }
 
-.data-table td img {
-    max-width: 80px;
-    height: 50px;
-    object-fit: contain;
-    transition: transform 0.2s ease;
-}
-.data-table td img:hover {
-    transform: scale(1.1);
+.allies-table tbody tr:hover {
+    background-color: #fefefe;
 }
 
-.star-rating {
-    display: inline-flex;
-    gap: 0.2rem;
-}
-.star-rating i {
-    font-size: 1rem;
-}
-.star-rating .fas.fa-star {
-    color: #f1c40f;
-}
-.star-rating .far.fa-star {
-    color: #bdc3c7;
-}
-
-.actions {
-    display: flex;
-    gap: 0.75rem;
-    justify-content: center;
-}
-.btn-icon {
+.ally-logo {
     width: 40px;
     height: 40px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border-radius: 50%;
-    font-size: 1rem;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    border: none;
-    color: white;
+    border-radius: 0.5rem;
+    object-fit: contain;
+    background-color: #f3f4f6;
+    padding: 0.25rem;
 }
-.btn-icon:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
-}
-.btn-icon.edit-btn { background: var(--info-gradient); }
-.btn-icon.delete-btn { background: var(--danger-gradient); }
 
-/* =========================================================================
-   Estilos para el Modal de Confirmación
-   ========================================================================= */
+.star-rating .fas.fa-star {
+    color: #fbbf24;
+}
+
+.star-rating .far.fa-star {
+    color: #e5e7eb;
+}
+
+.btn-icon {
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    transition: background-color 0.2s ease;
+}
+
+.btn-icon.edit-btn {
+    color: #4f46e5;
+}
+
+.btn-icon.edit-btn:hover {
+    background-color: #e0e7ff;
+}
+
+.btn-icon.delete-btn {
+    color: #ef4444;
+}
+
+.btn-icon.delete-btn:hover {
+    background-color: #fee2e2;
+}
+
+.no-records-message {
+    color: #9ca3af;
+    text-align: center;
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+}
+
+.no-records-message .add-ally-btn {
+    margin-top: 2rem;
+    display: inline-flex;
+    font-size: 0.875rem;
+    padding: 0.75rem 1.5rem;
+}
+
+/* Estilos del modal */
 .modal-overlay {
+    display: none;
     position: fixed;
-    top: 0;
+    z-index: 1000;
     left: 0;
+    top: 0;
     width: 100%;
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(5px);
-    display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 9999;
-    opacity: 0;
-    visibility: hidden;
-    transition: opacity 0.4s cubic-bezier(0.25, 0.8, 0.25, 1), visibility 0.4s;
-}
-
-.modal-overlay.show {
-    opacity: 1;
-    visibility: visible;
+    animation: fadeIn 0.3s ease-out;
 }
 
 .modal-content {
-    background-color: var(--bg-card);
-    padding: 2.5rem;
-    border-radius: var(--border-radius-lg);
-    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2);
-    max-width: 500px;
+    background: #ffffff;
+    border-radius: 1.5rem;
     width: 90%;
-    text-align: center;
-    transform: scale(0.9);
-    transition: transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
-    border: 1px solid var(--border-color);
-}
-.modal-overlay.show .modal-content {
-    transform: scale(1);
+    max-width: 500px;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    padding: 2rem;
+    animation: slideUp 0.3s ease-out;
 }
 
-.modal-icon {
-    color: var(--danger-color);
-    font-size: 3.5rem;
-    margin-bottom: 1.5rem;
-    animation: bounceIn 0.6s ease-in-out;
-}
-@keyframes bounceIn {
-    0% { transform: scale(0.3); opacity: 0; }
-    50% { transform: scale(1.1); opacity: 1; }
-    70% { transform: scale(0.9); }
-    100% { transform: scale(1); }
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #e5e7eb;
+    padding-bottom: 1rem;
+    margin-bottom: 1rem;
 }
 
-.modal-title {
-    font-size: 1.8rem;
-    color: var(--text-color-dark);
+.modal-header h3 {
+    font-size: 1.25rem;
     font-weight: 700;
-    margin: 0 0 0.5rem;
+    color: #1f2937;
 }
+
+.close-modal-btn {
+    font-size: 2rem;
+    color: #9ca3af;
+    cursor: pointer;
+    background: none;
+    border: none;
+    line-height: 1;
+}
+
 .modal-body p {
     font-size: 1rem;
-    color: var(--text-color-medium);
-    line-height: 1.6;
-    margin: 0;
-}
-.modal-body strong {
-    font-weight: 700;
+    color: #4b5563;
 }
 
 .modal-footer {
     display: flex;
-    justify-content: center;
-    gap: 1.25rem;
-    margin-top: 2rem;
+    justify-content: flex-end;
+    gap: 1rem;
+    margin-top: 1.5rem;
 }
-.modal-footer .btn {
-    padding: 0.8rem 1.8rem;
-    border-radius: var(--button-radius);
+
+.btn {
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
     font-weight: 600;
     cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+.cancel-modal-btn {
+    background-color: #e5e7eb;
+    color: #4b5563;
     border: none;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    color: white;
-}
-.modal-footer .btn:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
-}
-.modal-footer .cancel-modal-btn {
-    background: var(--primary-gradient);
-}
-.modal-footer .confirm-modal-btn {
-    background: var(--danger-gradient);
 }
 
-/* =========================================================================
-   Media Queries para Responsividad
-   ========================================================================= */
+.confirm-modal-btn {
+    background-color: #ef4444;
+    color: #ffffff;
+    border: none;
+}
 
-@media (max-width: 768px) {
-    .allies-management-container {
-        padding: 1.5rem;
-        margin: 1.5rem auto;
-        border-radius: 0;
-        box-shadow: none;
+@keyframes fadeIn {
+    from {
+        opacity: 0;
     }
-    .header-actions {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 1.5rem;
+
+    to {
+        opacity: 1;
     }
-    .add-ally-btn {
-        width: 100%;
-        justify-content: center;
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
     }
-    .data-table thead { display: none; }
-    .data-table, .data-table tbody, .data-table tr, .data-table td {
-        display: block;
-        width: 100%;
-    }
-    .data-table tr {
-        margin-bottom: 1.5rem;
-        border-radius: var(--border-radius-md);
-        box-shadow: var(--shadow-subtle);
-        border: 1px solid var(--border-color);
-        padding: 1.25rem;
-    }
-    .data-table td {
-        border-bottom: 1px dashed var(--border-color);
-        padding: 0.75rem 0;
-        text-align: right;
-        position: relative;
-    }
-    .data-table td::before {
-        content: attr(data-label);
-        position: absolute;
-        left: 0;
-        font-weight: 600;
-        color: var(--text-color-dark);
-    }
-    .actions {
-        margin-top: 1rem;
-        justify-content: flex-start;
-    }
-    .modal-content {
-        padding: 2rem;
-    }
-    .modal-title {
-        font-size: 1.6rem;
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
     }
 }

@@ -7,9 +7,7 @@ body {
 
 /* Contenedor principal del contenido de la página */
 .main-content {
-    /* Eliminamos max-width y margin: 0 auto; para que ocupe todo el ancho */
     padding: 1rem 2.2rem;
-    /* Ajusta este padding para el espaciado general */
 }
 
 /* Contenedor de las tarjetas de métricas */
@@ -30,14 +28,12 @@ body {
     display: flex;
     align-items: center;
     gap: 1rem;
-    /* Espacio entre el icono y el texto */
 }
 
 .metric-card-minimal .icon-wrapper {
     width: 48px;
     height: 48px;
     border-radius: 50%;
-    /* Icono circular */
     display: flex;
     align-items: center;
     justify-content: center;
@@ -50,27 +46,21 @@ body {
     background-color: #9253EC;
 }
 
-/* Púrpura */
 .metric-card-minimal.products .icon-wrapper {
     background-color: #9253EC;
 }
 
-/* Púrpura */
 .metric-card-minimal.sales .icon-wrapper {
     background-color: #9253EC;
 }
 
-/* Púrpura */
 .metric-card-minimal.satisfaction .icon-wrapper {
     background-color: #9253EC;
 }
 
-/* Púrpura */
-
 .metric-card-minimal .details {
     flex-grow: 1;
     text-align: left;
-    /* Alineación a la izquierda como en la imagen */
 }
 
 .metric-card-minimal .details .value {
@@ -78,7 +68,6 @@ body {
     font-weight: 700;
     color: #212529;
     margin-bottom: 0.25rem;
-    /* Espacio debajo del valor */
 }
 
 .metric-card-minimal .details .label {
@@ -88,17 +77,15 @@ body {
 }
 
 /* Sección de Últimas Actividades */
-/* Sección de Últimas Actividades */
 .activities-section {
     background-color: #fff;
     border-radius: 12px;
-    /* Aumenta el padding para hacer el contenedor más grande */
     padding: 2.5rem 3rem;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
 }
 
 .activities-section .section-title {
-    font-size: 1.8rem; /* Un tamaño de fuente más grande */
+    font-size: 1.8rem;
     font-weight: 700;
     color: #4a5568;
     margin-bottom: 1.5rem;
@@ -113,7 +100,6 @@ body {
 }
 
 .activity-table th, .activity-table td {
-    /* Aumenta el padding para celdas más grandes y espaciosas */
     padding: 1.5rem 0;
     text-align: left;
     border-bottom: 1px solid #e9ecef;
@@ -123,35 +109,26 @@ body {
 /* Estilos de los badges de estado */
 .status-badge {
     padding: 0.4rem 0.8rem;
-    /* Ajuste de padding para el badge */
     border-radius: 18px;
-    /* Bordes más redondeados */
     font-size: 0.8rem;
     font-weight: 600;
     text-align: center;
     display: inline-block;
-    /* Para que el padding y border-radius funcionen bien */
 }
 
 .status-completado {
     background-color: #e6ffed;
-    /* Fondo verde claro */
     color: #38a169;
-    /* Texto verde oscuro */
 }
 
 .status-pendiente {
     background-color: #fffaf0;
-    /* Fondo amarillo claro */
     color: #dd6b20;
-    /* Texto naranja */
 }
 
 .status-error {
     background-color: #ffeaea;
-    /* Fondo rojo claro */
     color: #e53e3e;
-    /* Texto rojo oscuro */
 }
 
 .no-records-message {
@@ -159,4 +136,46 @@ body {
     font-style: italic;
     color: #adb5bd;
     padding: 2rem;
+}
+
+/* ------------------- MEDIA QUERIES PARA LA RESPONSIVIDAD ------------------- */
+
+/* Pantallas medianas (ej. tablets, 992px o menos) */
+@media (max-width: 992px) {
+    .metrics-cards-grid {
+        /* Cambia a 2 columnas en pantallas medianas */
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.5rem;
+    }
+}
+
+/* Pantallas pequeñas (ej. móviles, 576px o menos) */
+@media (max-width: 576px) {
+    .main-content {
+        padding: 1rem;
+    }
+    
+    .metrics-cards-grid {
+        /* Cambia a 1 columna en pantallas pequeñas */
+        grid-template-columns: 1fr;
+    }
+
+    .activities-section {
+        padding: 1.5rem;
+    }
+
+    .activities-section .section-title {
+        font-size: 1.5rem;
+    }
+
+    .activity-table th, .activity-table td {
+        padding: 1rem 0;
+        font-size: 0.875rem;
+    }
+
+    /* Oculta las columnas menos importantes para mejorar la legibilidad en móviles */
+    .activity-table th:nth-child(2),
+    .activity-table td:nth-child(2) {
+        display: none;
+    }
 }

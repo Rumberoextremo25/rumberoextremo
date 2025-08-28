@@ -4,78 +4,90 @@
 
 @section('page_title', 'Detalles del Usuario')
 
-@push('styles') {{-- Agregamos el CSS específico de esta vista --}}
-    {{-- Asegúrate de que Font Awesome esté en tu layout admin global para evitar duplicados --}}
+@push('styles')
+    {{-- Dependencias de CSS para la nueva vista --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    {{-- Enlazamos al nuevo archivo CSS para los detalles del usuario --}}
-    <link rel="stylesheet" href="{{ asset('css/admin/users.css') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 @endpush
 
 @section('content')
-    <div class="user-details-section">
-        <h2>Detalles del Usuario: {{ $user->firstname }} {{ $user->lastname }}</h2>
+    <div class="user-profile-container">
+        {{-- Encabezado del Perfil --}}
+        <div class="profile-header">
+            <div class="profile-avatar">
+                <div class="avatar-icon-wrapper">
+                    <i class="fas fa-user-circle"></i>
+                </div>
+            </div>
+            <div class="profile-info">
+                <h1>{{ $user->firstname }} {{ $user->lastname }}</h1>
+                <p class="user-role">{{ $user->user_type }}</p>
+                <p class="user-email">{{ $user->email }}</p>
+            </div>
+        </div>
+        
+        <hr class="section-divider">
 
-        <div class="user-info-grid">
-            <div class="info-group">
-                <label>ID:</label>
-                <p>{{ $user->id }}</p>
-            </div>
-            <div class="info-group">
-                <label>Nombre Completo:</label>
-                <p>{{ $user->firstname }} {{ $user->lastname }}</p>
-            </div>
-            <div class="info-group">
-                <label>Correo Electrónico:</label>
-                <p>{{ $user->email }}</p>
-            </div>
-            <div class="info-group">
-                <label>Tipo de Usuario:</label>
-                <p>
-                    <span class="type-badge type-{{ strtolower($user->user_type) }}">
-                        {{ $user->user_type }}
-                    </span>
-                </p>
-            </div>
-            <div class="info-group">
-                <label>Estado:</label>
-                <p>
-                    <span class="status-badge status-{{ strtolower($user->status) }}">
-                        {{ $user->status }}
-                    </span>
-                </p>
-            </div>
-            <div class="info-group">
-                <label>Teléfono:</label>
-                <p>{{ $user->phone1 ?? 'N/A' }}</p>
-            </div>
-            <div class="info-group">
-                <label>Fecha de Registro:</label>
-                <p>{{ \Carbon\Carbon::parse($user->registrationDate)->format('d/m/Y H:i') }}</p>
-            </div>
-            <div class="info-group">
-                <label>Última Actualización:</label>
-                <p>{{ \Carbon\Carbon::parse($user->updated_at)->format('d/m/Y H:i') ?? 'N/A' }}</p>
-            </div>
-            <div class="info-group full-width">
-                <label>Notas Internas:</label>
-                <p>{{ $user->notes ?? 'No hay notas.' }}</p>
+        {{-- Sección de Información del Usuario --}}
+        <div class="info-section">
+            <h2><i class="fas fa-info-circle"></i> Información General</h2>
+            <div class="info-grid">
+                <div class="info-group">
+                    <span class="info-label">ID del Usuario:</span>
+                    <span class="info-value">{{ $user->id }}</span>
+                </div>
+                <div class="info-group">
+                    <span class="info-label">Tipo de Usuario:</span>
+                    <span class="info-value">{{ $user->user_type }}</span>
+                </div>
+                <div class="info-group">
+                    <span class="info-label">Estado:</span>
+                    <span class="info-value">{{ $user->status }}</span>
+                </div>
+                <div class="info-group">
+                    <span class="info-label">Teléfono:</span>
+                    <span class="info-value">{{ $user->phone1 ?? 'N/A' }}</span>
+                </div>
+                <div class="info-group">
+                    <span class="info-label">Fecha de Registro:</span>
+                    <span class="info-value">{{ \Carbon\Carbon::parse($user->registrationDate)->format('d/m/Y H:i') }}</span>
+                </div>
+                <div class="info-group">
+                    <span class="info-label">Última Actualización:</span>
+                    <span class="info-value">{{ \Carbon\Carbon::parse($user->updated_at)->format('d/m/Y H:i') ?? 'N/A' }}</span>
+                </div>
             </div>
         </div>
 
+        <hr class="section-divider">
+
+        {{-- Sección de Notas --}}
+        <div class="info-section full-width-section">
+            <h2><i class="fas fa-clipboard-list"></i> Notas Internas</h2>
+            <div class="info-group">
+                <span class="info-value notes-text">{{ $user->notes ?? 'No hay notas.' }}</span>
+            </div>
+        </div>
+
+        <hr class="section-divider">
+
+        {{-- Botones de Acción --}}
         <div class="button-group">
-            <a href="{{ route('users') }}" class="btn btn-back">
-                <i class="fas fa-arrow-circle-left"></i> Volver a Usuarios
-            </a>
-            <a href="{{ route('users.edit', $user->id) }}" class="btn btn-edit">
+            <a href="{{ route('users.edit', $user->id) }}" class="btn-primary">
                 <i class="fas fa-edit"></i> Editar Usuario
             </a>
-            <form action="{{ route('users.destroy', $user->id) }}" method="POST" onsubmit="return confirm('¿Estás seguro de que quieres eliminar a {{ $user->firstName }} {{ $user->lastName }}? Esta acción es irreversible.');">
+            <form action="{{ route('users.destroy', $user->id) }}" method="POST" onsubmit="return confirm('¿Estás seguro de que quieres eliminar a {{ $user->firstname }} {{ $user->lastname }}? Esta acción es irreversible.');">
                 @csrf
                 @method('DELETE')
-                <button type="submit" class="btn btn-delete">
+                <button type="submit" class="btn-danger">
                     <i class="fas fa-trash-alt"></i> Eliminar Usuario
                 </button>
             </form>
+            <a href="{{ route('users') }}" class="btn-secondary">
+                <i class="fas fa-arrow-circle-left"></i> Volver a Usuarios
+            </a>
         </div>
     </div>
 @endsection

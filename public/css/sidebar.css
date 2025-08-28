@@ -1,99 +1,25 @@
-/* -- resources/css/sidebar.css -- */
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
-
 body {
-    font-family: 'Poppins', sans-serif;
-    background-color: #F0F0F5;
-    margin: 0;
-    padding: 0;
+    background-color: #f0f2f5;
+    padding: 1rem 2.2rem;
 }
-
-/* =========================================================================
-   Contenedor principal para el sidebar y el contenido (opcional, pero útil)
-   ========================================================================= */
-
-.main-layout {
-    display: flex;
-    min-height: 100vh;
-}
-
-/* =========================================================================
-   Estilos del logo superior
-   ========================================================================= */
-
-.logo-container {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 280px; /* Reemplazado por el valor directo */
-    height: 120px;
-    background-color: transparent;
-    box-shadow: none;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-bottom-right-radius: 0;
-    border-bottom-left-radius: 0;
-    z-index: 1001;
-    transition: width 0.3s ease-in-out; /* Reemplazado por el valor directo */
-}
-
-.logo-container .logo-img {
-    max-width: 150px;
-    height: auto;
-}
-
-/* =========================================================================
-   Estilos del sidebar principal
-   ========================================================================= */
 
 .admin-sidebar {
-    width: 290px; /* Reemplazado por el valor directo */
-    height: calc(100vh - 120px - 80px);
-    background-color: #141443; /* Reemplazado por el valor directo */
-    color: #E0E0E0; /* Reemplazado por el valor directo */
-    position: fixed;
-    top: 120px;
-    left: 0;
+    width: 220px;
+    /* La altura se ajustará para que la barra lateral no se desborde */
+    height: calc(65vh - 3rem); 
+    background-color: #141443;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 20px;
+    margin-top: 120px;
+    position: fixed; 
+    top: 1.5rem; 
+    left: 1.5rem;
     display: flex;
     flex-direction: column;
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
-    border-radius: 0.8rem;
-    margin-top: 5px;
-    transition: all 0.3s ease-in-out; /* Reemplazado por el valor directo */
-    z-index: 1000;
-    overflow-y: auto;
-}
-
-/* =========================================================================
-   Estilos del scrollbar
-   ========================================================================= */
-.admin-sidebar::-webkit-scrollbar {
-    width: 8px;
-}
-
-.admin-sidebar::-webkit-scrollbar-track {
-    background: transparent; /* Reemplazado por el valor directo */
-}
-
-.admin-sidebar::-webkit-scrollbar-thumb {
-    background-color: #000000; /* Reemplazado por el valor directo */
-    border-radius: 10px;
-    border: 2px solid #1A123C; /* Reemplazado por el valor directo */
-}
-
-/* Ocultamos el header interno, ya que el logo está fuera */
-.sidebar-header {
-    display: none;
-}
-
-/* =========================================================================
-   Estilos de los enlaces de navegación
-   ========================================================================= */
-
-.sidebar-nav {
-    padding: 1rem;
-    flex-grow: 1;
+    justify-content: flex-start;
+    transition: width 0.3s ease, transform 0.3s ease;
+    z-index: 999;
 }
 
 .sidebar-nav ul {
@@ -102,125 +28,108 @@ body {
     margin: 0;
 }
 
+.sidebar-header {
+    text-align: center;
+    padding-top: 1rem;
+    padding-bottom: 2rem;
+}
+
+.sidebar-logo {
+    max-width: 60%;
+    height: auto;
+}
+
 .sidebar-nav-item {
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.5rem;
 }
 
-.sidebar-nav-link {
-    display: flex;
-    align-items: center;
-    padding: 1rem 1.25rem;
-    color: #ffffff; /* Reemplazado por el valor directo */
-    text-decoration: none;
-    font-weight: 500;
-    border-radius: 0.5rem; /* Reemplazado por el valor directo */
-    transition: all 0.3s ease; /* Reemplazado por el valor directo */
-    gap: 1rem;
-}
-
-.sidebar-nav-link:hover {
-    background-color: rgba(255, 255, 255, 0.08); /* Reemplazado por el valor directo */
-    color: #E0E0E0; /* Reemplazado por el valor directo */
-}
-
-.sidebar-nav-link.active-link {
-    background: #3004E1; /* Reemplazado por el valor directo */
-    color: #ffffff; /* Reemplazado por el valor directo */
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-}
-
-.sidebar-nav-link i {
-    min-width: 24px;
-    font-size: 1.4rem;
-    color: #A601B3; /* Reemplazado por el valor directo */
-    transition: color 0.3s ease; /* Reemplazado por el valor directo */
-}
-
-.sidebar-nav-link.active-link i {
-    color: #ffffff; /* Reemplazado por el valor directo */
-}
-
-.sidebar-link-text {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.sidebar-heading {
-    display: none;
-}
-
-/* =========================================================================
-   Estilos del pie de página (Cerrar sesión) - NUEVA POSICIÓN Y ESTILO
-   ========================================================================= */
-
-.logout-container {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 200px; /* Reemplazado por el valor directo */
-    height: 80px;
-    background-color: transparent;
-    box-shadow: none;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    border-top-right-radius: 0;
-    border-top-left-radius: 0;
-    z-index: 1001;
-    transition: width 0.3s ease-in-out; /* Reemplazado por el valor directo */
-}
-
+.sidebar-nav-link,
 .sidebar-logout-link {
     display: flex;
     align-items: center;
-    padding: 1rem 1.25rem;
-    color: #1A123C; /* Reemplazado por el valor directo */
+    gap: 1.25rem;
+    padding: 1.25rem 1.5rem;
+    color: #e0e0e0;
     text-decoration: none;
-    font-weight: 600;
-    border-radius: 0.5rem; /* Reemplazado por el valor directo */
-    transition: all 0.3s ease; /* Reemplazado por el valor directo */
-    gap: 1rem;
+    border-radius: 10px;
+    transition: background-color 0.2s, color 0.2s;
 }
 
+.sidebar-nav-link:hover,
 .sidebar-logout-link:hover {
-    background-color: #A601B3; /* Reemplazado por el valor directo */
-    color: #1A123C; /* Reemplazado por el valor directo */
+    background-color: #A601b3;
+    color: #ffffff;
 }
 
+.sidebar-nav-link.active {
+    background-color: #3004E1;
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.sidebar-nav-link i,
 .sidebar-logout-link i {
-    font-size: 1.4rem;
-    color: #1A123C; /* Reemplazado por el valor directo */
+    font-size: 1.5rem;
+    width: 25px;
+    text-align: center;
 }
 
-/* =========================================================================
-   Estado colapsado
-   ========================================================================= */
-
-.admin-sidebar.collapsed {
-    width: 80px; /* Reemplazado por el valor directo */
+.sidebar-link-text {
+    font-size: 1.1rem;
+    letter-spacing: 0.5px;
 }
 
-.logo-container.collapsed {
-    width: 80px; /* Reemplazado por el valor directo */
+.logout-container {
+    margin-top: auto;
 }
 
-.logout-container.collapsed {
-    width: 80px; /* Reemplazado por el valor directo */
-}
+/* --- Nuevos estilos para la funcionalidad responsive --- */
 
-.admin-sidebar.collapsed .sidebar-nav-link,
-.logout-container.collapsed .sidebar-logout-link {
-    justify-content: center;
-    gap: 0;
-    padding: 1rem 0.5rem;
-}
-
-.admin-sidebar.collapsed .sidebar-link-text,
-.logout-container.collapsed .sidebar-logout-link span {
+/* El botón de menú está oculto en escritorios */
+.menu-toggle {
     display: none;
+    position: fixed;
+    top: 1.5rem;
+    left: 1.5rem;
+    background-color: #A601b3;
+    color: #fff;
+    border: none;
+    padding: 0.75rem 1rem;
+    border-radius: 10px;
+    z-index: 1001;
+    cursor: pointer;
 }
 
-.admin-sidebar.collapsed .sidebar-nav {
-    padding: 1rem 0;
+/* Media query para pantallas pequeñas (hasta 768px) */
+@media (max-width: 768px) {
+    .admin-sidebar {
+        width: 0;
+        padding: 0;
+        transform: translateX(-100%); /* Oculta la barra lateral */
+        left: 0;
+        border-radius: 0;
+        top: 0;
+        height: 100vh;
+    }
+    
+    .admin-sidebar.open {
+        width: 250px; /* Ancho de la barra lateral al abrirse */
+        transform: translateX(0); /* Muestra la barra lateral */
+        padding: 1.5rem;
+    }
+
+    /* Oculta los textos del menú para que solo se vean los íconos */
+    .sidebar-link-text {
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .admin-sidebar.open .sidebar-link-text {
+        opacity: 1;
+    }
+
+    /* Muestra el botón de menú */
+    .menu-toggle {
+        display: block;
+    }
 }

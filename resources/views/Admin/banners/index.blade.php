@@ -1,20 +1,13 @@
 @extends('layouts.admin')
 
-@section('page_title_toolbar', 'Gestion de Banners')
-
-{{-- Incluye los estilos CSS definidos --}}
-@section('styles')
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-    {{-- Enlaza al archivo CSS específico para la vista de banners --}}
-    
-@endsection
+@section('page_title_toolbar', 'Gestión de Banners')
 
 @section('content')
-    <div class="allies-management-container"> {{-- Reutilizando la clase del contenedor principal --}}
-        <div class="header-actions">
-            <h2>Gestión de <span style="color: var(--secondary-color);">Banners</span></h2>
-            <a href="{{ route('admin.banners.create') }}" class="add-ally-btn">
+
+    <div class="card-container">
+        <div class="card-header">
+            <h2 class="card-title">Gestión de <span style="color: #8a3ffc;">Banners</span></h2>
+            <a href="{{ route('admin.banners.create') }}" class="add-new-btn">
                 <i class="fas fa-plus"></i> Crear Nuevo Banner
             </a>
         </div>
@@ -23,30 +16,26 @@
         @if (session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 <i class="fas fa-check-circle"></i> {{ session('success') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         @endif
 
         @if (session('error'))
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                 <i class="fas fa-exclamation-circle"></i> {{ session('error') }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         @endif
 
-        <div class="table-responsive">
+        <div class="table-container">
             @if ($banners->isEmpty())
-                <p class="no-records-message">
-                    <i class="fas fa-images" style="font-size: 3rem; margin-bottom: 1rem; color: var(--border-color);"></i>
-                    <br>
-                    No hay banners para mostrar.
-                    <br>
-                    <a href="{{ route('admin.banners.create') }}" class="add-ally-btn" style="margin-top: 1rem;">
+                <div class="no-records-message">
+                    <i class="fas fa-images no-records-icon"></i>
+                    <p>No hay banners para mostrar.</p>
+                    <a href="{{ route('admin.banners.create') }}" class="add-new-btn">
                         <i class="fas fa-plus"></i> Añadir el primer Banner
                     </a>
-                </p>
+                </div>
             @else
-                <table class="data-table"> {{-- Reutilizando la clase de tabla de datos --}}
+                <table class="data-table">
                     <thead>
                         <tr>
                             <th>ID</th>
@@ -62,11 +51,11 @@
                             <tr>
                                 <td data-label="ID">{{ $banner->id }}</td>
                                 <td data-label="Título">{{ $banner->title }}</td>
-                                <td data-label="Imagen">
+                                <td data-label="Imagen" class="banner-image-cell">
                                     @if($banner->image_url)
-                                        <img src="{{ $banner->image_url }}" alt="{{ $banner->title }}" style="max-width: 80px; height: auto; border-radius: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.1);">
+                                        <img src="{{ $banner->image_url }}" alt="{{ $banner->title }}">
                                     @else
-                                        <span style="color: var(--light-text-color);">No imagen</span>
+                                        <span class="no-image-text">No imagen</span>
                                     @endif
                                 </td>
                                 <td data-label="Orden">{{ $banner->order }}</td>
@@ -97,5 +86,6 @@
 @endsection
 
 @push('scripts')
-    <script src="{{ asset('js/admin/banner.js') }}"></script>
+    {{-- Scripts específicos si los hubiera --}}
+
 @endpush

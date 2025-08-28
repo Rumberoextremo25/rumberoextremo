@@ -1,304 +1,108 @@
-/*
- * resources/css/admin/reports/index.css
- * Hoja de estilos para la vista de reportes de ventas.
- */
-
-/* =========================================================================
-   Variables de Diseño (Paleta moderna y profesional)
-   ========================================================================= */
-
-:root {
-    /* Paleta de colores */
-    --primary-color: #4a63e8; /* Azul primario más vivo */
-    --primary-gradient: linear-gradient(135deg, #6c86ff, #4a63e8); /* Degradado moderno */
-    --secondary-color: #21a8d0; /* Azul claro para acentos */
-    --text-color-dark: #333333;
-    --text-color-medium: #6c757d;
-    --text-color-light: #f8f9fa;
-    --bg-light: #f0f2f5; /* Fondo más suave */
-    --bg-card: #ffffff;
-    --bg-card-alt: #f8f9fa;
-    --border-color: #e2e8f0;
-    --shadow-subtle: 0 4px 12px rgba(0, 0, 0, 0.08);
-    --shadow-medium: 0 10px 30px rgba(0, 0, 0, 0.12);
-    
-    /* Variables de componentes */
-    --border-radius-lg: 1.5rem;
-    --border-radius-md: 0.75rem;
-    --border-radius-sm: 0.5rem;
-    --button-radius: 50px;
-    --transition-speed: 0.3s ease;
-
-    /* Colores funcionales */
-    --success-color: #28a745;
-    --danger-color: #dc3545;
-    --warning-color: #ffc107;
-    --info-color: #17a2b8;
-
-    /* Fuentes y espaciado */
-    --font-heading: 'Inter', sans-serif;
-    --font-body: 'Inter', sans-serif;
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #f3f4f6;
 }
-
-/* =========================================================================
-   Contenedor Principal
-   ========================================================================= */
-
-.reports-container {
-    max-width: 1400px;
-    margin: 3rem auto;
-    padding: 2.5rem;
-    background-color: var(--bg-card);
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-subtle);
-    border: 1px solid var(--border-color);
-    transition: box-shadow var(--transition-speed);
-}
-
-.reports-container:hover {
-    box-shadow: var(--shadow-medium);
-}
-
-.reports-container h1 {
-    font-family: var(--font-heading);
-    font-size: 2.8rem;
-    color: var(--primary-color);
-    margin-bottom: 2.5rem;
-    font-weight: 800;
-    text-align: center;
-    letter-spacing: -0.05em;
-    position: relative;
-    padding-bottom: 0.75rem;
-}
-
-.reports-container h1::after {
-    content: '';
-    position: absolute;
-    left: 50%;
-    bottom: 0;
-    transform: translateX(-50%);
-    width: 80px;
-    height: 4px;
-    background: var(--primary-gradient);
-    border-radius: 2px;
-}
-
-/* =========================================================================
-   Tarjeta de Reportes (Reports Card)
-   ========================================================================= */
 
 .reports-card {
-    background-color: var(--bg-card-alt);
-    padding: 2rem;
-    border-radius: var(--border-radius-md);
-    box-shadow: var(--shadow-subtle);
-    border: 1px solid var(--border-color);
-    margin-bottom: 2rem;
-    transition: transform 0.2s ease, box-shadow 0.3s ease;
-}
-
-.reports-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+    background-color: #ffffff;
+    padding: 2.5rem;
+    border-radius: 1.5rem;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
 }
 
 .reports-card h3 {
-    font-family: var(--font-heading);
-    font-size: 1.8rem;
-    color: var(--text-color-dark);
-    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
     font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 2rem;
     display: flex;
     align-items: center;
-    gap: 0.8rem;
-    padding-bottom: 0.8rem;
-    border-bottom: 1px solid var(--border-color);
+    gap: 0.75rem;
 }
 
 .reports-card h3 i {
-    color: var(--primary-color);
-    font-size: 1.5rem;
+    color: #8a2be2;
 }
-
-/* =========================================================================
-   Formulario y Acciones (Grid de filtros)
-   ========================================================================= */
 
 .reports-actions-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1.5rem;
-    margin-bottom: 2.5rem;
     align-items: flex-end;
+    margin-bottom: 2rem;
 }
 
 .form-group {
-    margin-bottom: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
 .form-group label {
-    display: block;
-    color: var(--text-color-medium);
-    font-size: 0.9rem;
     font-weight: 600;
-    margin-bottom: 0.5rem;
+    color: #4b5563;
 }
 
 .form-control,
 .form-select {
     width: 100%;
-    padding: 0.9rem 1.25rem;
-    border: 1px solid var(--border-color);
-    border-radius: var(--border-radius-md);
-    font-size: 1rem;
-    color: var(--text-color-dark);
-    background-color: var(--bg-card);
-    transition: all 0.3s ease;
-    box-sizing: border-box;
-    -webkit-appearance: none;
-    -moz-appearance: none;
-    appearance: none;
-}
-
-.form-control:hover,
-.form-select:hover {
-    border-color: var(--text-color-medium);
+    padding: 0.75rem 1rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.75rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    color: #1f2937;
 }
 
 .form-control:focus,
 .form-select:focus {
     outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 4px rgba(74, 99, 232, 0.2);
+    border-color: #8a2be2;
+    box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.2);
 }
 
-.select-wrapper {
-    position: relative;
-}
-
-.select-wrapper::after {
-    content: '\f078';
-    font-family: 'Font Awesome 6 Free';
-    font-weight: 900;
-    position: absolute;
-    right: 1.25rem;
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-color-medium);
-    pointer-events: none;
-    font-size: 0.9rem;
-}
-
-/* Botones de acción (Modernos y con degradado) */
 .modern-button {
-    background: var(--primary-gradient);
-    color: white;
-    padding: 0.9rem 1.5rem;
-    border: none;
-    border-radius: var(--button-radius);
-    cursor: pointer;
-    font-size: 0.95rem;
-    font-weight: 700;
-    transition: transform 0.2s ease, box-shadow 0.3s ease;
-    display: inline-flex;
+    padding: 0.75rem 1.5rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+    display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.75rem;
-    text-decoration: none;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    gap: 0.5rem;
+    cursor: pointer;
+    border: none;
+    color: #ffffff;
+    background-image: linear-gradient(to right, #5d56f9, #8a2be2);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     width: 100%;
 }
 
 .modern-button:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
-.modern-button.today-report {
-    background: linear-gradient(135deg, #4299e1, #21a8d0);
-    box-shadow: 0 4px 15px rgba(33, 168, 208, 0.3);
-}
-.modern-button.today-report:hover {
-    box-shadow: 0 8px 20px rgba(33, 168, 208, 0.4);
+.today-report {
+    background-image: linear-gradient(to right, #20c997, #17a2b8);
 }
 
-.modern-button.download-pdf {
-    background: linear-gradient(135deg, #f05454, #dc3545);
-    box-shadow: 0 4px 15px rgba(220, 53, 69, 0.3);
-}
-.modern-button.download-pdf:hover {
-    box-shadow: 0 8px 20px rgba(220, 53, 69, 0.4);
+.today-report:hover {
+    transform: translateY(-2px);
 }
 
-/* Contenedor del gráfico */
+.download-pdf {
+    background-color: #ef4444;
+    background-image: none;
+}
+
+.download-pdf:hover {
+    background-color: #dc2626;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
 .chart-container {
     position: relative;
+    height: 400px;
     width: 100%;
-    height: 450px;
-    background-color: var(--bg-card);
-    border-radius: var(--border-radius-md);
-    padding: 2rem;
-    box-shadow: var(--shadow-subtle);
-    border: 1px solid var(--border-color);
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-}
-
-/* =========================================================================
-   Media Queries para Responsividad
-   ========================================================================= */
-
-@media (max-width: 992px) {
-    .reports-container {
-        padding: 1.5rem;
-    }
-}
-
-@media (max-width: 768px) {
-    .reports-container h1 {
-        font-size: 2.2rem;
-        margin-bottom: 2rem;
-    }
-    .reports-card {
-        padding: 1.5rem;
-    }
-    .reports-card h3 {
-        font-size: 1.6rem;
-        margin-bottom: 1.25rem;
-    }
-    .reports-actions-grid {
-        grid-template-columns: 1fr;
-    }
-    .chart-container {
-        height: 350px;
-        padding: 1.5rem;
-    }
-    .modern-button {
-        padding: 0.8rem 1.5rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .reports-container {
-        padding: 1rem;
-    }
-    .reports-container h1 {
-        font-size: 1.8rem;
-    }
-    .reports-card {
-        padding: 1rem;
-    }
-    .reports-card h3 {
-        font-size: 1.4rem;
-        gap: 0.5rem;
-    }
-    .chart-container {
-        height: 300px;
-        padding: 1rem;
-    }
-    .modern-button {
-        font-size: 0.9rem;
-    }
 }

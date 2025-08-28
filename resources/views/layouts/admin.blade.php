@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -27,16 +28,30 @@
     <link rel="stylesheet" href="{{ asset('css/admin/reports.css') }}">
     <link rel="stylesheet" href="{{ asset('css/admin/settings.css') }}">
 
+    <link rel="stylesheet" href="{{ asset('css/admin/add-user-redesign.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/user-details.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/edit-user.css') }}">
+
+    <link rel="stylesheet" href="{{ asset('css/admin/profile-update.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/aliados-form.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/banner-form.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/banner-edit.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/commercial.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/commercial-form.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/commercial-edit-form.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/promotion-create.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/promotion-edit.css') }}">
+
     {{-- Aquí se inyectarán los estilos específicos de cada página --}}
     @stack('styles')
 </head>
-<body> {{-- Puedes quitar 'dark-mode' para probar el modo claro --}}
 
-    {{-- Sidebar --}}
-    @include('layouts.nav.admin-sidebar')
+<body> {{-- Puedes quitar 'dark-mode' para probar el modo claro --}}
 
     {{-- Contenido Principal --}}
     <main class="main-content">
+        {{-- Sidebar --}}
+        @include('layouts.nav.admin-sidebar')
         {{-- Barra Superior (Toolbar) --}}
         @include('layouts.nav.admin-toolbar')
 
@@ -49,4 +64,5 @@
     {{-- Aquí se inyectarán los scripts específicos de cada página --}}
     @stack('scripts')
 </body>
+
 </html>
