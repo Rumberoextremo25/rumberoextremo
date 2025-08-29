@@ -1,24 +1,10 @@
-:root {
-    --primary-purple: #5D12D2;
-    --secondary-purple: #9258E2;
-    --hero-gradient-start: #4A129E;
-    --hero-gradient-end: #6C1FD7;
-    --button-pink: #6c05cd;
-    --button-hover-pink: #3004E1;
-    --text-color-light: #f4f4f4;
-    --text-color-dark: #333333;
-    --text-color-secondary: #666666;
-    --background-light: #ffffff;
-    --background-card: #f9f9f9;
-}
-
 body {
     font-family: 'Roboto Condensed', sans-serif;
     margin: 0;
     padding: 0;
     line-height: 1.6;
-    color: var(--text-color-dark);
-    background-color: var(--background-light);
+    color: #333333;
+    background-color: #ffffff;
 }
 
 .container {
@@ -38,7 +24,7 @@ h3 {
 /* 2. Barra de Navegación             */
 /* ---------------------------------- */
 .header {
-    background-color: var(--background-light);
+    background-color: #ffffff;
     padding: 15px 0;
     display: flex;
     justify-content: space-between;
@@ -63,7 +49,7 @@ h3 {
     font-family: 'Roboto Condensed', sans-serif;
     font-weight: 800;
     font-size: 1.5em;
-    color: var(--primary-purple);
+    color: #5D12D2;
 }
 
 .header .nav-links {
@@ -74,13 +60,13 @@ h3 {
 
 .header .nav-links a {
     text-decoration: none;
-    color: var(--text-color-dark);
+    color: #333333;
     font-weight: 500;
     transition: color 0.3s ease;
 }
 
 .header .nav-links a:hover {
-    color: var(--primary-purple);
+    color: #5D12D2;
 }
 
 .nav-button {
@@ -103,9 +89,6 @@ h3 {
 /* 3. Sección Hero                    */
 /* ---------------------------------- */
 .hero {
-    /* Quita esta línea: */
-    /* background: linear-gradient(135deg, #4A129E, #6C1FD7); */ 
-    
     color: white;
     padding: 120px 0;
     text-align: left;
@@ -125,7 +108,7 @@ h3 {
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%; 
+    height: 100%;
     z-index: 1;
 }
 
@@ -168,8 +151,8 @@ h3 {
 
 .cta-button-banner:hover {
     transform: translateY(-3px);
-    background-color: #A601B3; /* Color de fondo al pasar el ratón */
-    color: #ffffff; /* Color del texto al pasar el ratón */
+    background-color: #A601B3;
+    color: #ffffff;
 }
 
 /* ---------------------------------- */
@@ -183,11 +166,11 @@ h2 {
     font-size: 2.5em;
     text-align: center;
     margin-bottom: 40px;
-    color: var(--primary-purple);
+    color: #5D12D2;
 }
 
 .features {
-    background-color: var(--background-light);
+    background-color: #ffffff;
     padding: 60px 0;
 }
 
@@ -195,7 +178,7 @@ h2 {
     font-size: 2.5em;
     text-align: center;
     margin-bottom: 40px;
-    color: var(--primary-purple);
+    color: #5D12D2;
 }
 
 .feature-grid {
@@ -206,18 +189,15 @@ h2 {
 }
 
 .feature-item {
-    background-color: var(--feature-card-bg);
+    background-color: #f9f9f9;
     border-radius: 40px;
-    /* Bordes más redondeados */
     overflow: hidden;
-    /* Para que la imagen no se salga del borde redondeado */
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     display: flex;
     flex-direction: column;
     align-items: center;
     padding-bottom: 30px;
-    /* Espacio para el texto de abajo */
 }
 
 .feature-item:hover {
@@ -238,7 +218,7 @@ h2 {
     font-size: 1.5em;
     margin-top: 20px;
     margin-bottom: 5px;
-    color: var(--primary-purple);
+    color: #5D12D2;
     font-weight: 700;
     line-height: 1.2;
     padding: 0 20px;
@@ -246,73 +226,72 @@ h2 {
 
 .feature-item p {
     font-size: 1em;
-    color: var(--text-color-dark);
+    color: #333333;
     padding: 0 20px;
     text-align: center;
 }
 
 .testimonials-section {
-    background-color: var(--background-card);
-    padding: 60px 20px; /* Añadimos padding para el espacio vertical */
-    text-align: center; /* Centramos el título */
+    background-color: #f9f9f9;
+    padding: 60px 20px;
+    text-align: center;
 }
 
 .testimonials-section h2 {
-    font-size: 2.5em; /* Ajustamos el tamaño del título */
-    color: #333; /* Color oscuro para el título */
-    margin-bottom: 50px; /* Espacio debajo del título */
+    font-size: 2.5em;
+    color: #333;
+    margin-bottom: 50px;
 }
 
 .testimonials-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
     gap: 30px;
-    max-width: 1200px; /* Ancho máximo para centrar la cuadrícula */
-    margin: 0 auto; /* Centramos la cuadrícula */
+    max-width: 1200px;
+    margin: 0 auto;
 }
 
 .testimonial-card {
     background-color: white;
-    padding: 60px 30px 30px; /* Ajustamos padding para espacio superior del círculo */
+    padding: 60px 30px 30px;
     border-radius: 20px;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
     position: relative;
     text-align: center;
-    display: flex; /* Usamos flexbox para alinear contenido */
+    display: flex;
     flex-direction: column;
-    justify-content: space-between; /* Espaciado entre contenido */
+    justify-content: space-between;
 }
 
 .testimonial-card p {
-    margin: 20px 0 25px 0; /* Ajustamos márgenes para el texto */
+    margin: 20px 0 25px 0;
     font-style: normal;
-    font-size: 1.1em; /* Un poco más grande para el texto de la reseña */
+    font-size: 1.1em;
     color: #555;
-    line-height: 1.6; /* Mejoramos la legibilidad */
+    line-height: 1.6;
 }
 
 .testimonial-card .author {
-    font-weight: 700; /* Más grueso para el nombre */
+    font-weight: 700;
     font-style: normal;
-    color: var(--primary-purple); /* Asumiendo que --primary-purple es el morado de la imagen */
+    color: #5D12D2;
     display: block;
     margin-bottom: 5px;
-    font-size: 1.2em; /* Tamaño de fuente para el autor */
+    font-size: 1.2em;
 }
 
 .testimonial-card .location {
-    font-size: 0.95em; /* Ligeramente más grande */
-    color: var(--text-color-secondary); /* Asumiendo un color secundario para la ubicación */
+    font-size: 0.95em;
+    color: #666666;
     font-style: normal;
 }
 
 /* Estilos para el círculo morado con el ícono */
 .testimonial-card::before {
-    content: ' '; /* Contenido vacío para el pseudo-elemento */
-    background-color: var(--primary-purple); /* Color morado del círculo */
-    width: 80px; /* Ancho del círculo */
-    height: 80px; /* Alto del círculo */
-    border-radius: 50%; /* Hace que sea un círculo */
+    content: '';
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
     position: absolute;
     top: -40px; /* Sube la mitad del círculo para que sobresalga */
     left: 50%;
@@ -320,34 +299,27 @@ h2 {
     display: flex;
     align-items: center;
     justify-content: center;
-    /* Aquí iría el ícono, si se usa una fuente de íconos o SVG */
-    /* Por ahora, es solo el círculo */
-}
+    z-index: 10; /* Asegura que esté por encima de la tarjeta si hay conflicto */
 
+    /* === CAMBIOS APLICADOS AQUÍ PARA EL EFECTO DEGRADADO === */
+    /* Primero, el fondo del degradado (será el "borde") */
+    background: linear-gradient(90deg, #A601B3, #3004E1); /* Degradado morado a azul */
 
-.testimonial-card::before {
-    content: ''; /* Quitamos el contenido de texto para usar una imagen */
-    background-color: var(--primary-purple); /* Color morado del círculo */
-    width: 80px; /* Ancho del círculo */
-    height: 80px; /* Alto del círculo */
-    border-radius: 50%; /* Hace que sea un círculo */
-    position: absolute;
-    top: -40px; /* Sube la mitad del círculo para que sobresalga */
-    left: 50%;
-    transform: translateX(-50%); /* Centra horizontalmente */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    
-    /* === CAMBIOS APLICADOS AQUÍ === */
-    background-image: url('../assets/img/dashboard/logo_perfil.png'); /* Reemplaza con la URL real de tu SVG o PNG */
-    background-size: 50%; /* Ajusta el tamaño de la imagen dentro del círculo */
-    background-repeat: no-repeat; /* Evita que la imagen se repita */
-    background-position: center; /* Centra la imagen dentro del círculo */
+    /* Luego, la imagen de perfil centrada sobre un fondo blanco */
+    /* Usamos otra propiedad background para la imagen. Se superpondrá al degradado. */
+    background-image: url('../assets/img/home/logo_perfil.png'); /* Tu imagen de perfil */
+    background-size: 80% 80%, cover; /* Tamaño de la imagen de perfil y del degradado */
+    background-repeat: no-repeat, no-repeat; /* Evita repeticiones */
+    background-position: center center, center center; /* Centra la imagen de perfil y el degradado */
+    background-clip: padding-box, border-box; /* Asegura que la imagen de perfil no se salga del padding y el degradado ocupe el borde */
+    background-origin: content-box, border-box; /* Origen de la imagen de perfil desde el contenido, y del degradado desde el borde */
+
+    /* Opcional: añade un pequeño borde blanco interno para separar la imagen del degradado */
+    border: 4px solid #A601B3; /* Este "borde" blanco será el espacio entre la imagen y el degradado */
 }
 
 .cta-alt {
-    background: linear-gradient(to right, var(--button-pink), #FF6B8B);
+    background: linear-gradient(to right, #6c05cd, #FF6B8B);
     color: white;
     text-align: center;
     border-radius: 20px;
@@ -364,7 +336,7 @@ h2 {
 
 .cta-alt .cta-button {
     background-color: white;
-    color: var(--button-pink);
+    color: #6c05cd;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
@@ -372,7 +344,7 @@ h2 {
 /* 5. Carrusel de Imágenes            */
 /* ---------------------------------- */
 .image-carousel-section {
-    background-color: var(--background-card);
+    background-color: #f9f9f9;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -384,7 +356,6 @@ h2 {
     position: relative;
     overflow: hidden;
     width: 80%;
-    /* Ajustado para un mejor aspecto */
     border-radius: 40px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
@@ -405,7 +376,6 @@ h2 {
     top: 50%;
     transform: translateY(-50%);
     background: linear-gradient(to right, #6C1FD7, #4A129E);
-    /* Gradiente de color */
     color: white;
     border: none;
     font-size: 1.5em;

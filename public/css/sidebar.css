@@ -5,9 +5,8 @@ body {
 
 .admin-sidebar {
     width: 220px;
-    /* La altura se ajustará para que la barra lateral no se desborde */
     height: calc(80vh - 3rem); 
-    background-color: #141443;
+    background-color: #1f1f3a;
     padding: 1.5rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     border-radius: 20px;
@@ -49,7 +48,7 @@ body {
     align-items: center;
     gap: 1.25rem;
     padding: 1.25rem 1.5rem;
-    color: #e0e0e0;
+    color: #e0e0e0; /* El texto es blanco */
     text-decoration: none;
     border-radius: 10px;
     transition: background-color 0.2s, color 0.2s;
@@ -58,12 +57,12 @@ body {
 .sidebar-nav-link:hover,
 .sidebar-logout-link:hover {
     background-color: #A601b3;
-    color: #ffffff;
+    color: #ffffff; /* El texto se mantiene blanco en hover */
 }
 
 .sidebar-nav-link.active {
     background-color: #3004E1;
-    color: #ffffff;
+    color: #ffffff; /* El texto se mantiene blanco cuando está activo */
     font-weight: 600;
 }
 
@@ -72,6 +71,16 @@ body {
     font-size: 1.5rem;
     width: 25px;
     text-align: center;
+    color: #A601b3; /* ¡Aquí el cambio! Los íconos son morados */
+}
+
+.sidebar-nav-link:hover i,
+.sidebar-logout-link:hover i {
+    color: #ffffff; /* Los íconos se vuelven blancos al pasar el mouse */
+}
+
+.sidebar-nav-link.active i {
+    color: #ffffff; /* Los íconos de los enlaces activos también son blancos */
 }
 
 .sidebar-link-text {

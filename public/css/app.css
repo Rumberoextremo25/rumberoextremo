@@ -88,8 +88,8 @@
 /* Footer General Styling */
 footer {
     /* Fondo con degradado morado a fucsia */
-    background: linear-gradient(90deg, #9202e0, #FF2E63);
-    color: #FFFFFF; /* Texto blanco para todo el pie de página */
+    background: url('..assets/img/home/fondo_footer.png');
+    color: #ffffff; /* Texto blanco para todo el pie de página */
     padding: 40px 20px 20px; /* Relleno superior, horizontal e inferior */
     font-family: 'Poppins', sans-serif; /* Consistente con el resto de tu app */
     position: relative;
@@ -191,7 +191,7 @@ footer .container {
 
 .newsletter-input-group input[type="email"] {
     flex-grow: 1; /* Permite que la entrada ocupe el espacio disponible */
-    padding: 15px 20px; /* Aumenta el padding para hacer la barra más larga */
+    padding: 17px 25px; /* Aumenta el padding para hacer la barra más larga */
     border: none;
     outline: none;
     background-color: rgba(255, 255, 255, 0.9); /* Fondo blanco ligeramente transparente */

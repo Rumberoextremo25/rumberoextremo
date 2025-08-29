@@ -38,7 +38,7 @@
                     <li class="sidebar-nav-item">
                         <a href="{{ route('aliados.index') }}"
                             class="sidebar-nav-link {{ request()->routeIs('aliados.*') ? 'active' : '' }}">
-                            <i class="fa-solid fa-gem"></i> <span class="sidebar-link-text">Aliados</span>
+                            <i class="fa-solid fa-handshake"></i><span class="sidebar-link-text">Aliados</span>
                         </a>
                     </li>
                 @endif
