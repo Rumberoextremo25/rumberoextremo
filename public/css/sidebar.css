@@ -5,20 +5,40 @@ body {
 
 .admin-sidebar {
     width: 220px;
-    height: calc(80vh - 3rem); 
+    height: calc(80vh - 3rem); /* Adjusted to make scroll possible */
     background-color: #1f1f3a;
     padding: 1.5rem;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     border-radius: 20px;
-    margin-top: 100px;
-    position: fixed; 
-    top: 1.5rem; 
+    margin-top: 100px; /* Adjusted to be consistent */
+    position: fixed;
+    top: 1.5rem;
     left: 1.5rem;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
     transition: width 0.3s ease, transform 0.3s ease;
     z-index: 999;
+}
+
+.sidebar-nav {
+    flex-grow: 1;
+    overflow-y: auto;
+    padding-right: 15px;
+}
+
+/* Make the scrollbar transparent */
+.sidebar-nav::-webkit-scrollbar {
+    width: 8px;
+    background-color: transparent;
+}
+
+.sidebar-nav::-webkit-scrollbar-track {
+    background-color: transparent;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+    background-color: transparent;
 }
 
 .sidebar-nav ul {
@@ -48,7 +68,7 @@ body {
     align-items: center;
     gap: 1.25rem;
     padding: 1.25rem 1.5rem;
-    color: #e0e0e0; /* El texto es blanco */
+    color: #e0e0e0;
     text-decoration: none;
     border-radius: 10px;
     transition: background-color 0.2s, color 0.2s;
@@ -57,31 +77,51 @@ body {
 .sidebar-nav-link:hover,
 .sidebar-logout-link:hover {
     background-color: #A601b3;
-    color: #ffffff; /* El texto se mantiene blanco en hover */
+    color: #ffffff;
 }
 
 .sidebar-nav-link.active {
     background-color: #3004E1;
-    color: #ffffff; /* El texto se mantiene blanco cuando está activo */
+    color: #ffffff;
     font-weight: 600;
 }
 
+/* ------------------ Solution Added Below ------------------ */
+
 .sidebar-nav-link i,
-.sidebar-logout-link i {
+.sidebar-logout-link i,
+.sidebar-nav-link img { /* Add the 'img' selector here */
     font-size: 1.5rem;
     width: 25px;
+    height: auto; /* Ensures aspect ratio is maintained */
     text-align: center;
-    color: #A601b3; /* ¡Aquí el cambio! Los íconos son morados */
+    color: #A601b3;
 }
 
 .sidebar-nav-link:hover i,
-.sidebar-logout-link:hover i {
-    color: #ffffff; /* Los íconos se vuelven blancos al pasar el mouse */
+.sidebar-logout-link:hover i,
+.sidebar-nav-link:hover img { /* Add the 'img' selector here */
+    color: #ffffff;
 }
 
-.sidebar-nav-link.active i {
-    color: #ffffff; /* Los íconos de los enlaces activos también son blancos */
+.sidebar-nav-link.active i,
+.sidebar-nav-link.active img { /* Add the 'img' selector here */
+    color: #ffffff;
 }
+
+/* You might need to add this for your image to be colored by CSS */
+/* If the image is a solid color and not a vector graphic, this won't work */
+.sidebar-nav-link img {
+    filter: brightness(0) saturate(100%) invert(43%) sepia(90%) saturate(1900%) hue-rotate(264deg) brightness(83%) contrast(100%);
+}
+
+.sidebar-nav-link:hover img,
+.sidebar-nav-link.active img {
+    filter: brightness(0) saturate(100%) invert(100%) sepia(1%) saturate(7499%) hue-rotate(274deg) brightness(119%) contrast(100%);
+}
+
+/* ------------------ End of Solution ------------------ */
+
 
 .sidebar-link-text {
     font-size: 1.1rem;
@@ -92,9 +132,8 @@ body {
     margin-top: auto;
 }
 
-/* --- Nuevos estilos para la funcionalidad responsive --- */
+/* --- Responsive styles --- */
 
-/* El botón de menú está oculto en escritorios */
 .menu-toggle {
     display: none;
     position: fixed;
@@ -109,25 +148,23 @@ body {
     cursor: pointer;
 }
 
-/* Media query para pantallas pequeñas (hasta 768px) */
 @media (max-width: 768px) {
     .admin-sidebar {
+        height: 100vh;
         width: 0;
         padding: 0;
-        transform: translateX(-100%); /* Oculta la barra lateral */
+        transform: translateX(-100%);
         left: 0;
-        border-radius: 0;
         top: 0;
-        height: 100vh;
+        border-radius: 0;
     }
-    
+
     .admin-sidebar.open {
-        width: 250px; /* Ancho de la barra lateral al abrirse */
-        transform: translateX(0); /* Muestra la barra lateral */
+        width: 250px;
+        transform: translateX(0);
         padding: 1.5rem;
     }
 
-    /* Oculta los textos del menú para que solo se vean los íconos */
     .sidebar-link-text {
         opacity: 0;
         transition: opacity 0.3s ease;
@@ -137,7 +174,6 @@ body {
         opacity: 1;
     }
 
-    /* Muestra el botón de menú */
     .menu-toggle {
         display: block;
     }

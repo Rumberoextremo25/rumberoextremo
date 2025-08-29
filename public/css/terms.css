@@ -21,20 +21,20 @@ body {
 
 /* Policy Container - The main content box */
 .policy-container {
-    background-color: #141443; /* Fondo ligeramente más claro y transparente para el contenido */
+    background-color: #f3eef3; /* Fondo ligeramente más claro y transparente para el contenido */
     border-radius: 15px;
     box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5); /* Sombra más pronunciada */
     padding: 40px;
     max-width: 900px; /* Ancho máximo para legibilidad */
     width: 100%;
     margin: 20px auto; /* Centra el contenedor y añade margen */
-    border: 1px solid rgba(183, 0, 255, 0.3); /* Borde sutil dorado */
+    border: 1px solid rgba(13, 0, 255, 0.3); /* Borde sutil dorado */
 }
 
 /* Main Title */
 .policy-container h1 {
     font-family: 'Montserrat', sans-serif; /* Montserrat para títulos */
-    color: #ffffff; /* Dorado/Amarillo para el título principal */
+    color: #000000; /* Dorado/Amarillo para el título principal */
     font-size: 3em;
     text-align: center;
     margin-bottom: 20px;
@@ -45,18 +45,18 @@ body {
 .policy-container .last-updated {
     text-align: center;
     font-size: 0.9em;
-    color: #B0B0B0; /* Gris más claro */
+    color: #000000; /* Gris más claro */
     margin-bottom: 40px;
     font-style: italic;
 }
 
 /* Individual Policy Sections */
 .policy-section {
-    background-color: rgba(30, 30, 50, 0.7); /* Fondo para cada sección */
+    background-color: #A601B3; /* Fondo para cada sección */
     border-radius: 10px;
     padding: 30px;
     margin-bottom: 30px;
-    border-left: 5px solid #8A2BE2; /* Borde morado a la izquierda */
+    border-left: 5px solid #3004E1; /* Borde morado a la izquierda */
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -109,7 +109,7 @@ body {
 
 /* Contact Section */
 .policy-contact {
-    background-color: rgba(30, 30, 50, 0.7);
+    background-color: #A601B3;
     border-radius: 10px;
     padding: 30px;
     margin-top: 40px;
@@ -141,7 +141,7 @@ body {
 }
 
 .policy-contact ul li a:hover {
-    color: #9932CC; /* Morado oscuro al pasar el ratón */
+    color: #A601B3; /* Morado oscuro al pasar el ratón */
     text-decoration: underline;
 }
 

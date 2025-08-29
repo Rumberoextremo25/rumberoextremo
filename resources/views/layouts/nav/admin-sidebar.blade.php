@@ -42,6 +42,37 @@
                         </a>
                     </li>
                 @endif
+
+                {{-- Contenedor de Gestión de Contenido --}}
+                @if (Auth::user()->role === 'admin')
+                    <li class="sidebar-nav-item sidebar-parent-item">
+                        <div class="sidebar-nav-link">
+                            <i class="fa-solid fa-box-archive"></i>
+                            <span class="sidebar-link-text">Contenido</span>
+                        </div>
+                        <ul class="sidebar-nav-submenu">
+                            <li class="sidebar-nav-subitem">
+                                <a href="{{ route('admin.banners.index') }}"
+                                    class="sidebar-nav-link {{ request()->routeIs('banners.*') ? 'active' : '' }}">
+                                    <i class="fa-solid fa-images"></i> Banners
+                                </a>
+                            </li>
+                            <li class="sidebar-nav-subitem">
+                                <a href="{{ route('admin.commercial-allies.index') }}"
+                                    class="sidebar-nav-link {{ request()->routeIs('aliados-comerciales.*') ? 'active' : '' }}">
+                                    <i class="fa-solid fa-store"></i> Aliados Comerciales
+                                </a>
+                            </li>
+                            <li class="sidebar-nav-subitem">
+                                <a href="{{ route('admin.promotions.index') }}"
+                                    class="sidebar-nav-link {{ request()->routeIs('promociones.*') ? 'active' : '' }}">
+                                    <i class="fa-solid fa-tags"></i> Promociones
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+                @endif
+
                 {{-- Reportes --}}
                 @if (Auth::user()->role === 'admin' || Auth::user()->role === 'aliado')
                     <li class="sidebar-nav-item">
@@ -51,6 +82,19 @@
                         </a>
                     </li>
                 @endif
+
+                {{-- Payout --}}
+                @if (Auth::user()->role === 'admin')
+                    <li class="sidebar-nav-item">
+                        <a href="{{ route('Admin.payouts.pending') }}"
+                            class="sidebar-nav-link {{ request()->routeIs('payouts.*') ? 'active' : '' }}">
+                            <img src="{{ asset('assets/img/dashboard/pago_proveedores.png') }}" alt="Pago a Proveedores"
+                                class="sidebar-icon">
+                            <span class="sidebar-link-text">Pago a Proveedores</span>
+                        </a>
+                    </li>
+                @endif
+
                 {{-- Configuración --}}
                 @if (Auth::user()->role === 'admin')
                     <li class="sidebar-nav-item">

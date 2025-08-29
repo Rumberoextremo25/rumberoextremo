@@ -63,6 +63,8 @@ class BncApiService
                     "swTestOperation" => false
                 ];
 
+                Log::info('Enviando solicitud a la API de BNC', ['request' => $solicitud]);
+
                 $response = Http::post($this->authApiUrl, $solicitud);
 
                 if ($response->successful()) {
