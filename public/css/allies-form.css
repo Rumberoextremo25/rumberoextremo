@@ -1,249 +1,182 @@
-:root {
-    /* Paleta de Colores - Inspirado en la imagen de referencia */
-    --color-primary: #9B5DE5; /* Púrpura para acentos y botones */
-    --color-secondary: #FEE440; /* Amarillo para elementos complementarios */
-    --color-background: #F3F6F9; /* Fondo muy claro, casi blanco */
-    --color-surface: #FFFFFF; /* Blanco puro para la tarjeta */
-    --color-text-dark: #333333; /* Texto oscuro para alta legibilidad */
-    --color-text-secondary: #6A6A6A; /* Gris para subtítulos y placeholders */
-    --color-error: #FF6B6B; /* Rojo para mensajes de error */
-    --color-purple-gradient: linear-gradient(135deg, #9B5DE5, #6A37A5);
-
-    /* Fuentes - Combina una fuente audaz para títulos y una más legible para el cuerpo */
-    --font-heading: 'Poppins', sans-serif;
-    --font-body: 'Poppins', sans-serif;
-
-    /* Sombras - Para dar profundidad a los elementos */
-    --shadow-soft: 0 10px 30px rgba(0, 0, 0, 0.08);
-}
-
 body {
-    background-color: var(--color-background);
-    color: var(--color-text-dark);
-    font-family: var(--font-body);
-    margin: 0;
-    padding: 0;
-}
-
-/* ---------------------------------- */
-/* 2. Estructura de la Sección        */
-/* ---------------------------------- */
-
-.allies-contact-section {
+    background-image: #ffffff;
+    background-size: 400% 400%;
+    animation: gradient-animation 15s ease infinite;
+    font-family: 'Poppins', sans-serif;
+    color: #4a4a4a;
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    padding: 2rem 1rem;
-    background-color: var(--color-background); /* Fondo ahora es de un solo color */
+    margin: 0;
+    padding: 20px;
     box-sizing: border-box;
 }
 
+@keyframes gradient-animation {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.allies-container {
+    width: 50%;
+    max-width: 700px;
+    translate: 280px;
+    margin-top: 80px;
+}
+
 .contact-card {
-    background-color: var(--color-surface);
+    background-color: #ffffff;
     border-radius: 20px;
-    box-shadow: var(--shadow-soft);
-    padding: 2.8rem;
-    max-width: 900px;
-    width: 100%;
-    transition: transform 0.3s ease;
+    padding: 40px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
-
-.contact-card:hover {
-    transform: translateY(-5px);
-}
-
-/* ---------------------------------- */
-/* 3. Encabezado de la Tarjeta        */
-/* ---------------------------------- */
 
 .card-header {
     text-align: center;
-    margin-bottom: 2rem;
+    margin-bottom: 30px;
 }
 
-.card-header h1 {
-    font-family: var(--font-heading);
+.card-header .title {
+    font-family: 'Montserrat', sans-serif;
+    font-size: 2.2rem;
     font-weight: 800;
-    font-size: clamp(1.8rem, 4vw, 2.8rem);
-    background: var(--color-purple-gradient);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin-bottom: 0.5rem;
+    color: #4c1d95;
+    margin: 0;
+    line-height: 1.2;
 }
 
 .card-header .subtitle {
-    font-family: var(--font-body);
-    color: var(--color-text-secondary);
-    font-weight: 400;
-    max-width: 600px;
-    margin: 0 auto;
-    line-height: 1.6;
+    font-size: 1rem;
+    color: #6a6a6a;
+    margin-top: 10px;
+    line-height: 1.4;
 }
-
-/* ---------------------------------- */
-/* 4. Estilos del Formulario          */
-/* ---------------------------------- */
 
 .form-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-    gap: 1.5rem;
+    gap: 20px;
+    grid-template-columns: 1fr 1fr;
+    margin-bottom: 30px;
 }
 
-.input-group.full-width {
+.form-grid .full-width {
     grid-column: 1 / -1;
 }
 
 .input-group {
-    position: relative;
     display: flex;
     flex-direction: column;
 }
 
 .input-group label {
-    font-family: var(--font-body);
+    font-size: 0.9rem;
     font-weight: 600;
-    color: var(--color-text-dark);
-    margin-bottom: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    color: #333;
+    margin-bottom: 8px;
 }
 
-.form-icon {
-    color: var(--color-primary);
-    font-size: 1rem;
-}
-
-input,
-textarea,
-select {
+.input-group input,
+.input-group textarea,
+.custom-select-wrapper select {
     width: 100%;
-    padding: 0.75rem 1rem;
-    background-color: #F8F9FA;
-    border: 1px solid #E0E0E0;
+    padding: 12px 15px;
+    border: 1px solid #e0e0e0;
     border-radius: 10px;
-    color: var(--color-text-dark);
-    font-family: var(--font-body);
     font-size: 1rem;
-    box-sizing: border-box;
+    color: #333;
     transition: all 0.3s ease;
+    background-color: #f9f9f9;
 }
 
-input:focus,
-textarea:focus,
-select:focus {
+.input-group input:focus,
+.input-group textarea:focus,
+.custom-select-wrapper select:focus {
     outline: none;
-    border-color: var(--color-primary);
-    box-shadow: 0 0 0 3px rgba(155, 93, 229, 0.2);
-    background-color: #FFF;
+    border-color: #8c42f6;
+    box-shadow: 0 0 0 3px rgba(140, 66, 246, 0.2);
+    background-color: #ffffff;
 }
 
-input::placeholder,
-textarea::placeholder {
-    color: var(--color-text-secondary);
-    opacity: 1;
-}
-
-textarea {
+.input-group textarea {
     resize: vertical;
+    min-height: 100px;
 }
 
-.select-wrapper {
+.input-group input::placeholder,
+.input-group textarea::placeholder {
+    color: #aaa;
+}
+
+/* Custom Select */
+.custom-select-wrapper {
     position: relative;
 }
 
-.select-wrapper select {
+.custom-select-wrapper select {
     appearance: none;
     -webkit-appearance: none;
-    -moz-appearance: none;
-    padding-right: 2.5rem;
+    background-color: #f9f9f9;
+    padding-right: 40px; /* Espacio para la flecha */
 }
 
-.select-wrapper .select-arrow {
+.custom-select-wrapper .select-arrow {
     position: absolute;
-    right: 1rem;
+    right: 15px;
     top: 50%;
     transform: translateY(-50%);
-    color: var(--color-text-secondary);
+    color: #8c42f6;
     pointer-events: none;
-    transition: transform 0.3s ease;
+    transition: color 0.3s ease;
 }
-
-.select-wrapper select:focus + .select-arrow {
-    transform: translateY(-50%) rotate(180deg);
-    color: var(--color-primary);
-}
-
-/* ---------------------------------- */
-/* 5. Botón de Envío y Errores        */
-/* ---------------------------------- */
 
 .form-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.75rem;
-    width: 100%;
-    padding: 1rem 1.5rem;
+    width: 40%;
+    background: #A601B3;
+    color: #fff;
+    padding: 15px;
     border: none;
     border-radius: 10px;
-    background: var(--color-purple-gradient);
-    color: white;
-    font-family: var(--font-heading);
-    font-weight: 700;
     font-size: 1.1rem;
+    font-weight: 600;
+    translate: 155px;
     cursor: pointer;
-    margin-top: 2rem;
-    box-shadow: 0 5px 20px rgba(155, 93, 229, 0.3);
     transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .form-button:hover {
-    background: linear-gradient(135deg, #6A37A5, #9B5DE5);
-    transform: translateY(-3px);
-    box-shadow: 0 8px 25px rgba(155, 93, 229, 0.4);
+    background: #3004E1;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
-
-.form-button:active {
-    transform: translateY(0);
-    box-shadow: 0 3px 15px rgba(155, 93, 229, 0.2);
-}
-
-.button-icon {
-    font-size: 1.25rem;
-}
-
-/* ---------------------------------- */
-/* 6. Mensajes de Error               */
-/* ---------------------------------- */
 
 .error-message {
-    color: var(--color-error);
+    color: #ff3860;
     font-size: 0.85rem;
-    margin-top: 0.5rem;
+    margin-top: 5px;
 }
 
-/* ---------------------------------- */
-/* 7. Responsividad y Ajustes Fino    */
-/* ---------------------------------- */
-
-@media (max-width: 600px) {
-    .contact-card {
-        padding: 1.5rem;
-    }
-
-    .card-header h1 {
-        font-size: 2rem;
-    }
-
+/* Responsive */
+@media (max-width: 768px) {
     .form-grid {
-        gap: 1rem;
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 500px) {
+    .contact-card {
+        padding: 25px;
     }
 
-    .form-button {
-        font-size: 1rem;
-        padding: 0.9rem 1.2rem;
+    .card-header .title {
+        font-size: 1.8rem;
     }
 }

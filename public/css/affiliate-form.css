@@ -1,149 +1,108 @@
-:root {
-    /* Variables CSS para fácil personalización */
-    --primary-color: #FF4081; /* Un rosa vibrante, ideal para "Rumbero Extremo" */
-    --secondary-color: #2c3e50; /* Un gris oscuro para texto y detalles */
-    --background-light: #f4f7f6; /* Fondo suave para la sección */
-    --card-background: #ffffff; /* Fondo blanco para la tarjeta del formulario */
-    --border-color: #e0e0e0;
-    --focus-border: #FF80AB; /* Tono más claro del primario para el focus */
-    --text-color: #333333;
-    --placeholder-color: #9e9e9e;
-    --error-color: #e74c3c; /* Rojo para mensajes de error */
-    --button-hover: #e91e63; /* Tono más oscuro del primario para hover */
-    --shadow-light: rgba(0, 0, 0, 0.08);
-    --shadow-medium: rgba(0, 0, 0, 0.15);
-}
-
 body {
+    background-image: #ffffff;
+    background-size: 400% 400%;
+    animation: gradient-animation 15s ease infinite;
     font-family: 'Poppins', sans-serif;
-    color: var(--text-color);
-    background-color: var(--background-light);
-    line-height: 1.6;
+    color: #4a4a4a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
     margin: 0;
-    padding: 0;
-}
-
-/* ---------------------------------- */
-/* 2. Estructura de la Sección        */
-/* ---------------------------------- */
-
-/* El contenedor principal ahora maneja su propio espaciado */
-.affiliate-section {
-    width: 100%;
-    max-width: 900px;
-    padding: 30px;
+    padding: 20px;
     box-sizing: border-box;
-    /* Añadimos márgenes para separarlo visualmente del navbar y del footer */
-    margin: 40px auto;
 }
 
-.contact-card {
-    background: var(--card-background);
-    border-radius: 15px;
-    box-shadow: 0 15px 30px var(--shadow-light);
+@keyframes gradient-animation {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+.affiliate-container {
+    width: 100%;
+    max-width: 700px;
+    margin-top: 100px;
+    padding: 20px;
+    translate: 250px;
+}
+
+.affiliate-card {
+    background-color: #ffffff;
+    border-radius: 20px;
     padding: 40px;
-    overflow: hidden;
-    position: relative;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
 }
-
-/* ---------------------------------- */
-/* 3. Encabezado de la Tarjeta        */
-/* ---------------------------------- */
 
 .card-header {
     text-align: center;
     margin-bottom: 30px;
-    padding-bottom: 20px;
-    border-bottom: 1px solid var(--border-color);
 }
 
-.card-header h1 {
+.card-header .title {
     font-family: 'Montserrat', sans-serif;
+    font-size: 2.2rem;
     font-weight: 800;
-    color: var(--primary-color);
-    font-size: 2.5em;
-    margin-bottom: 10px;
-    position: relative;
-    display: inline-block;
-}
-
-.card-header h1::after {
-    content: '';
-    display: block;
-    width: 60px;
-    height: 4px;
-    background: var(--primary-color);
-    margin: 10px auto 0;
-    border-radius: 2px;
+    color: #4c1d95;
+    margin: 0;
+    line-height: 1.2;
 }
 
 .card-header .subtitle {
-    font-size: 1.1em;
-    color: var(--secondary-color);
-    max-width: 700px;
-    margin: 0 auto;
-    line-height: 1.5;
+    font-size: 1rem;
+    color: #6a6a6a;
+    margin-top: 10px;
+    line-height: 1.4;
 }
-
-/* ---------------------------------- */
-/* 4. Estilos del Formulario          */
-/* ---------------------------------- */
 
 .form-grid {
     display: grid;
+    gap: 20px;
     grid-template-columns: 1fr 1fr;
-    gap: 25px;
     margin-bottom: 30px;
 }
 
-.input-group {
-    position: relative;
-}
-
-.input-group.full-width {
+.form-grid .full-width {
     grid-column: 1 / -1;
 }
 
-.input-group label {
-    display: block;
-    margin-bottom: 8px;
-    color: var(--secondary-color);
-    font-weight: 600;
-    font-size: 0.95em;
+.input-group {
     display: flex;
-    align-items: center;
+    flex-direction: column;
 }
 
-.form-icon {
-    margin-right: 8px;
-    color: var(--primary-color);
+.input-group label {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
 }
 
 .input-group input,
 .input-group textarea,
-.input-group select {
+.custom-select-wrapper select {
     width: 100%;
     padding: 12px 15px;
-    border: 1px solid var(--border-color);
-    border-radius: 8px;
-    font-size: 1em;
-    color: var(--text-color);
-    background-color: var(--background-light);
+    border: 1px solid #e0e0e0;
+    border-radius: 10px;
+    font-size: 1rem;
+    color: #333;
     transition: all 0.3s ease;
-    box-sizing: border-box;
-}
-
-.input-group input::placeholder,
-.input-group textarea::placeholder {
-    color: var(--placeholder-color);
+    background-color: #f9f9f9;
 }
 
 .input-group input:focus,
 .input-group textarea:focus,
-.input-group select:focus {
+.custom-select-wrapper select:focus {
     outline: none;
-    border-color: var(--focus-border);
-    box-shadow: 0 0 0 3px rgba(255, 64, 129, 0.1);
+    border-color: #8c42f6;
+    box-shadow: 0 0 0 3px rgba(140, 66, 246, 0.2);
     background-color: #ffffff;
 }
 
@@ -152,84 +111,105 @@ body {
     min-height: 100px;
 }
 
-.select-wrapper {
-    position: relative;
-    width: 100%;
+.input-group input::placeholder,
+.input-group textarea::placeholder {
+    color: #aaa;
 }
 
-.select-wrapper select {
+/* Social Media Input */
+.input-with-icons {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-with-icons input {
+    padding-right: 120px; /* Ajusta el padding para dejar espacio a los íconos */
+}
+
+.social-icons {
+    position: absolute;
+    right: 15px;
+    display: flex;
+    gap: 10px;
+}
+
+.social-icons i {
+    color: #aaa;
+    font-size: 1.2rem;
+    transition: color 0.3s ease;
+}
+
+/* Custom Select */
+.custom-select-wrapper {
+    position: relative;
+}
+
+.custom-select-wrapper select {
     appearance: none;
     -webkit-appearance: none;
-    -moz-appearance: none;
-    padding-right: 40px;
-    background-image: none;
+    background-color: #f9f9f9;
+    padding-right: 40px; /* Espacio para la flecha */
 }
 
-.select-arrow {
+.custom-select-wrapper .select-arrow {
     position: absolute;
     right: 15px;
     top: 50%;
     transform: translateY(-50%);
-    color: var(--secondary-color);
+    color: #aaa;
     pointer-events: none;
+    transition: color 0.3s ease;
 }
 
+/* Checkbox */
 .checkbox-group {
     display: flex;
     align-items: flex-start;
-    gap: 10px;
+    margin-bottom: 25px;
 }
 
 .checkbox-group input[type="checkbox"] {
-    position: relative;
-    top: 3px;
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
     -webkit-appearance: none;
     appearance: none;
-    background-color: var(--background-light);
-    margin: 0;
-    font: inherit;
-    color: var(--secondary-color);
-    width: 1.15em;
-    height: 1.15em;
-    border: 0.15em solid currentColor;
-    border-radius: 0.15em;
-    transform: translateY(-0.075em);
-    display: grid;
-    place-content: center;
-    transition: background-color 0.2s, transform 0.2s ease-in-out;
-}
-
-.checkbox-group input[type="checkbox"]::before {
-    content: "";
-    width: 0.65em;
-    height: 0.65em;
-    clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%);
-    transform: scale(0);
-    transform-origin: bottom left;
-    transition: transform 0.2s ease-in-out;
-    box-shadow: inset 1em 1em var(--card-background);
+    cursor: pointer;
+    margin-top: 2px;
+    transition: all 0.2s ease;
+    position: relative;
+    background-color: #f9f9f9;
 }
 
 .checkbox-group input[type="checkbox"]:checked {
-    background-color: var(--primary-color);
-    color: var(--primary-color);
-    border-color: var(--primary-color);
+    background-color: #8c42f6;
+    border-color: #8c42f6;
 }
 
 .checkbox-group input[type="checkbox"]:checked::before {
-    transform: scale(1);
-    background-color: var(--card-background);
+    content: '\f00c';
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    color: #fff;
+    font-size: 14px;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
 
-
 .checkbox-group label {
-    display: block;
-    font-weight: 400;
-    margin-bottom: 0;
+    font-size: 0.9rem;
+    color: #6a6a6a;
+    margin-left: 10px;
+    cursor: pointer;
 }
 
 .checkbox-group a {
-    color: var(--primary-color);
+    color: #8c42f6;
     text-decoration: none;
     font-weight: 600;
 }
@@ -238,99 +218,46 @@ body {
     text-decoration: underline;
 }
 
-.error-message {
-    color: var(--error-color);
-    font-size: 0.85em;
-    margin-top: 5px;
-    display: block;
-    position: absolute;
-    bottom: -20px;
-    left: 0;
-}
-
-/* ---------------------------------- */
-/* 5. Botón de Envío y Errores        */
-/* ---------------------------------- */
-
 .form-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: auto;
-    padding: 15px 30px;
-    background-color: var(--primary-color);
-    color: white;
+    width: 50%;
+    background: #A601B3;
+    color: #fff;
+    padding: 15px;
     border: none;
-    border-radius: 50px;
-    font-size: 1.1em;
-    font-weight: 700;
+    translate: 140px;
+    border-radius: 10px;
+    font-size: 1.1rem;
+    font-weight: 600;
     cursor: pointer;
     transition: all 0.3s ease;
-    box-shadow: 0 8px 15px var(--shadow-light);
-    margin: 0 auto;
-}
-
-.form-button .button-icon {
-    margin-right: 10px;
-    font-size: 1.2em;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
 .form-button:hover {
-    background-color: var(--button-hover);
-    box-shadow: 0 10px 20px var(--shadow-medium);
+    background: #3004E1;
     transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
 
-/* ---------------------------------- */
-/* 6. Responsividad y Ajustes Fino    */
-/* ---------------------------------- */
+.error-message {
+    color: #ff3860;
+    font-size: 0.85rem;
+    margin-top: 5px;
+}
 
-/* Media Queries para responsividad */
+/* Responsive */
 @media (max-width: 768px) {
-    .contact-card {
-        padding: 30px 20px;
-    }
-
-    .card-header h1 {
-        font-size: 2em;
-    }
-
-    .card-header .subtitle {
-        font-size: 1em;
-    }
-
     .form-grid {
         grid-template-columns: 1fr;
-        gap: 20px;
-    }
-
-    .input-group.full-width {
-        grid-column: auto;
-    }
-
-    .form-button {
-        width: 100%;
-        padding: 15px;
     }
 }
 
-@media (max-width: 480px) {
-    .contact-card {
-        margin: 20px;
+@media (max-width: 500px) {
+    .affiliate-card {
+        padding: 25px;
     }
 
-    .card-header h1 {
-        font-size: 1.8em;
-    }
-
-    .card-header .subtitle {
-        font-size: 0.9em;
-    }
-
-    .input-group input,
-    .input-group textarea,
-    .input-group select {
-        padding: 10px 12px;
-        font-size: 0.9em;
+    .card-header .title {
+        font-size: 1.8rem;
     }
 }
