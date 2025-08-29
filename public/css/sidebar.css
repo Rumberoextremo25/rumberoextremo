@@ -76,12 +76,12 @@ body {
 
 .sidebar-nav-link:hover,
 .sidebar-logout-link:hover {
-    background-color: #A601b3;
+    background-color: #3004E1;
     color: #ffffff;
 }
 
 .sidebar-nav-link.active {
-    background-color: #3004E1;
+    background-color: #A601B3;
     color: #ffffff;
     font-weight: 600;
 }
