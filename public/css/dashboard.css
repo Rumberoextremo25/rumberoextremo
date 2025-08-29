@@ -30,32 +30,26 @@ body {
     gap: 1rem;
 }
 
+/* 🎨 MODIFICACIÓN CLAVE AQUÍ: Iconos como imágenes sin fondo circular */
 .metric-card-minimal .icon-wrapper {
-    width: 48px;
+    /* Eliminamos estilos de fondo circular y colores fijos */
+    width: 48px; /* Mantén un tamaño fijo para el contenedor */
     height: 48px;
-    border-radius: 50%;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.5rem;
-    color: #fff;
+    /* Los siguientes estilos se eliminan porque ya no se necesita el fondo ni el borde circular */
+    /* border-radius: 50%; */
+    /* background-color: #9253EC; */
+    /* font-size: 1.5rem; */
+    /* color: #fff; */
 }
 
-/* Colores específicos para los wrappers de iconos */
-.metric-card-minimal.users .icon-wrapper {
-    background-color: #9253EC;
-}
-
-.metric-card-minimal.products .icon-wrapper {
-    background-color: #9253EC;
-}
-
-.metric-card-minimal.sales .icon-wrapper {
-    background-color: #9253EC;
-}
-
-.metric-card-minimal.satisfaction .icon-wrapper {
-    background-color: #9253EC;
+/* Estilo para las imágenes dentro del wrapper */
+.metric-card-minimal .icon-wrapper img {
+    width: 100%; /* La imagen ocupará todo el ancho del contenedor */
+    height: 100%; /* La imagen ocupará todo el alto del contenedor */
+    object-fit: contain; /* Ajusta la imagen dentro del contenedor sin distorsionarla */
 }
 
 .metric-card-minimal .details {
@@ -139,24 +133,19 @@ body {
 }
 
 /* ------------------- MEDIA QUERIES PARA LA RESPONSIVIDAD ------------------- */
-
-/* Pantallas medianas (ej. tablets, 992px o menos) */
 @media (max-width: 992px) {
     .metrics-cards-grid {
-        /* Cambia a 2 columnas en pantallas medianas */
         grid-template-columns: repeat(2, 1fr);
         gap: 1.5rem;
     }
 }
 
-/* Pantallas pequeñas (ej. móviles, 576px o menos) */
 @media (max-width: 576px) {
     .main-content {
         padding: 1rem;
     }
     
     .metrics-cards-grid {
-        /* Cambia a 1 columna en pantallas pequeñas */
         grid-template-columns: 1fr;
     }
 
@@ -173,7 +162,6 @@ body {
         font-size: 0.875rem;
     }
 
-    /* Oculta las columnas menos importantes para mejorar la legibilidad en móviles */
     .activity-table th:nth-child(2),
     .activity-table td:nth-child(2) {
         display: none;

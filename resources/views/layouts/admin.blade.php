@@ -44,6 +44,13 @@
 
     {{-- Aquí se inyectarán los estilos específicos de cada página --}}
     @stack('styles')
+
+    <div class="sidebar-header">
+        <a href="{{ route('welcome') }}">
+            <img src="{{ asset('assets/img/logo_sidebar.png') }}" alt="Rumbero Extremo Logo" class="logo-image">
+        </a>
+        {{-- Other sidebar header content, like the app title or a menu toggle --}}
+    </div>
 </head>
 
 <body> {{-- Puedes quitar 'dark-mode' para probar el modo claro --}}

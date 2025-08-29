@@ -1,8 +1,6 @@
 @extends('layouts.admin')
 
-@section('title', 'Añadir Nuevo Usuario')
-
-@section('page_title', 'Añadir Nuevo Usuario')
+@section('page_title_toolbar', 'Añadir Nuevo Usuario')
 
 @push('styles')
     {{-- Dependencias de CSS para la nueva vista, adaptadas al diseño de perfil --}}
@@ -110,3 +108,11 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.getElementById('cancelAddUser').addEventListener('click', function() {
+        history.back();
+    });
+</script>
+@endpush

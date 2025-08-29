@@ -2,13 +2,10 @@
 
 @section('page_title_toolbar', 'Gestion de Usuarios')
 
-@section('page_title', 'Lista de Usuarios')
-
 @section('styles')
     {{-- Font Awesome y Google Fonts (pueden ir en el layout principal si son globales) --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    
 @endsection
 
 @section('content')
@@ -31,12 +28,12 @@
                     <thead>
                         <tr>
                             <th>ID</th>
-                            <th>Nombre Completo</th>
+                            <th>Nombre completo</th>
                             <th>Email</th>
-                            <th>Tipo</th>
+                            <th>Tipo de usuario</th>
                             <th>Estado</th>
                             <th>Teléfono</th>
-                            <th>Registro</th>
+                            <th>Fecha de registro</th>
                             <th>Acciones</th>
                         </tr>
                     </thead>
@@ -57,7 +54,7 @@
                                     </span>
                                 </td>
                                 <td data-label="Teléfono">{{ $user->phone1 ?? 'N/A' }}</td>
-                                <td data-label="Registro">{{ \Carbon\Carbon::parse($user->registrationDate)->format('d/m/Y') }}</td>
+                                <td data-label="Registro">{{ \Carbon\Carbon::parse($user->registrationDate)->format('Y-m-d') }}</td>
                                 <td data-label="Acciones">
                                     <div class="action-group">
                                         <a href="{{ route('users.show', $user->id) }}" class="action-btn view" title="Ver Detalles">
@@ -66,7 +63,7 @@
                                         <a href="{{ route('users.edit', $user->id) }}" class="action-btn edit" title="Editar Usuario">
                                             <i class="fas fa-edit"></i>
                                         </a>
-                                        <form action="{{ route('users.destroy', $user->id) }}" method="POST">
+                                        <form action="{{ route('users.destroy', $user->id) }}" method="POST" class="delete-form">
                                             @csrf
                                             @method('DELETE')
                                             <button type="submit" class="action-btn delete delete-user-btn" title="Eliminar Usuario">
@@ -99,3 +96,49 @@
         </div>
     </div>
 @endsection
+
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const deleteButtons = document.querySelectorAll('.delete-user-btn');
+        const modal = document.getElementById('confirmationModal');
+        const confirmBtn = document.getElementById('confirmDeleteBtn');
+        const cancelBtn = document.getElementById('cancelDeleteBtn');
+        let formToSubmit = null;
+
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                // Prevent the form from submitting immediately
+                e.preventDefault();
+
+                // Get the parent form element
+                formToSubmit = this.closest('form');
+
+                // Display the modal
+                modal.classList.add('active');
+            });
+        });
+
+        confirmBtn.addEventListener('click', function() {
+            // If a form is stored, submit it and hide the modal
+            if (formToSubmit) {
+                formToSubmit.submit();
+            }
+        });
+
+        cancelBtn.addEventListener('click', function() {
+            // Hide the modal and reset the form reference
+            modal.classList.remove('active');
+            formToSubmit = null;
+        });
+
+        // Optional: Hide modal if user clicks outside of it
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                modal.classList.remove('active');
+                formToSubmit = null;
+            }
+        });
+    });
+</script>
+@endpush

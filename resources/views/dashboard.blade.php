@@ -16,7 +16,8 @@
         <div class="metrics-cards-grid">
             <div class="metric-card-minimal users">
                 <div class="icon-wrapper">
-                    <i class="fas fa-users"></i>
+                    {{-- Reemplazado el icono por una imagen --}}
+                    <img src="{{ asset('assets/img/dashboard/logo_usuarios.png') }}" alt="Ícono de Usuarios">
                 </div>
                 <div class="details">
                     <div class="value">{{ number_format($totalUsers) ?? '0' }}</div>
@@ -24,9 +25,10 @@
                 </div>
             </div>
 
-            <div class="metric-card-minimal products">
+            <div class="metric-card-minimal products"> {{-- 'products' en el CSS original, pero representa 'aliados' --}}
                 <div class="icon-wrapper">
-                    <i class="fas fa-handshake"></i>
+                    {{-- Reemplazado el icono por una imagen --}}
+                    <img src="{{ asset('assets/img/dashboard/logo_aliados.png') }}" alt="Ícono de Aliados">
                 </div>
                 <div class="details">
                     <div class="value">{{ number_format($totalAllies) ?? '0' }}</div>
@@ -34,9 +36,10 @@
                 </div>
             </div>
 
-            <div class="metric-card-minimal sales">
+            <div class="metric-card-minimal sales"> {{-- 'sales' en el CSS original, pero representa 'visitas' --}}
                 <div class="icon-wrapper">
-                    <i class="fas fa-globe"></i>
+                    {{-- Reemplazado el icono por una imagen --}}
+                    <img src="{{ asset('assets/img/dashboard/logo_visitas.png') }}" alt="Ícono de Visitas">
                 </div>
                 <div class="details">
                     <div class="value">{{ number_format($pageViews) ?? '0' }}</div>
@@ -44,9 +47,10 @@
                 </div>
             </div>
 
-            <div class="metric-card-minimal satisfaction">
+            <div class="metric-card-minimal satisfaction"> {{-- 'satisfaction' en el CSS original, pero representa 'ventas' --}}
                 <div class="icon-wrapper">
-                    <i class="fas fa-chart-line"></i>
+                    {{-- Reemplazado el icono por una imagen --}}
+                    <img src="{{ asset('assets/img/dashboard/logo_ventas.png') }}" alt="Ícono de Ventas">
                 </div>
                 <div class="details">
                     <div class="value">{{ number_format($totalSales, 2) ?? 'N/A' }}</div>

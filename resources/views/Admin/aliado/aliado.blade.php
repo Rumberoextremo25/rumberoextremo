@@ -1,4 +1,4 @@
-{{-- resources/views/aliados/index.blade.php --}}
+{{-- resources/views/Admin/aliado/aliado.blade.php --}}
 
 @extends('layouts.admin')
 
@@ -9,81 +9,82 @@
 @push('styles')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    {{-- Enlazamos al nuevo archivo CSS para la gestión de aliados --}}
+    {{-- Enlaza aquí tu archivo CSS de estilos --}}
 @endpush
 
 @section('content')
-    <div class="main-content">
-        <div class="aliados-card-container">
-            <div class="table-header">
-                <h2 class="title">Listado de Aliados</h2>
-                <a href={{ route('aliados.create') }} class="add-aliado-btn">
-                    <i class="fas fa-plus"></i> Añadir nuevo aliado
-                </a>
-            </div>
-            
+    <div class="users-section-container">
+        <h2 class="section-title">Listado de Aliados</h2>
+
+        <div class="header-actions">
             <div class="search-container">
                 <i class="fas fa-search"></i>
-                <input type="text" placeholder="buscar aliados...">
+                <input type="text" placeholder="Buscar Aliados...">
             </div>
+            <a href="{{ route('aliados.create') }}" class="add-user-btn">
+                <i class="fas fa-plus-circle"></i> Añadir nuevo aliado
+            </a>
+        </div>
 
-            <div class="table-responsive">
-                <table class="aliados-table">
-                    <thead>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nombre</th>
+                        <th>Tipo de Aliado</th>
+                        <th>Categoría</th>
+                        <th>Subcategoría</th>
+                        <th>Descuento</th>
+                        <th>Estado</th>
+                        <th>Fecha de registro</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse($allies as $ally)
                         <tr>
-                            <th>ID</th>
-                            <th>Nombre</th>
-                            <th>Tipo de Aliado</th>
-                            <th>Contacto</th>
-                            <th>Email</th>
-                            <th>Teléfono</th>
-                            <th>Estado</th>
-                            <th>Fecha de registro</th>
-                            <th>Acciones</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {{-- Ejemplo de una fila de datos --}}
-                        {{-- @forelse($aliados as $aliado) --}}
-                        <tr>
-                            <td>1</td>
-                            <td>Rumbero Extremo C.A.</td>
-                            <td>Empresa</td>
-                            <td>Juan Pérez</td>
-                            <td>contacto@rumberoextremo.com</td>
-                            <td>+58 412 1234567</td>
-                            <td>
-                                <span class="status-badge status-activo">Activo</span>
+                            <td data-label="ID">{{ $ally->id }}</td>
+                            <td data-label="Nombre Empresa">{{ $ally->company_name }}</td>
+                            <td data-label="Tipo de Aliado">
+                                <span class="badge badge-type-{{ strtolower($ally->businessType->name ?? 'sin-tipo') }}">
+                                    {{ $ally->businessType->name ?? 'N/A' }}
+                                </span>
                             </td>
-                            <td>16/06/2025</td>
-                            <td class="actions">
-                                <a href="{{ route('aliados.index', 1) }}" class="btn-icon view">
-                                    <i class="fas fa-eye"></i>
-                                </a>
-                                <a href="{{ route('aliado.edit', 1) }}" class="btn-icon edit">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <form action="{{ route('aliados.destroy', 1) }}" method="POST" style="display:inline;">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn-icon delete" onclick="return confirm('¿Estás seguro de que quieres eliminar a este aliado?');">
-                                        <i class="fas fa-trash-alt"></i>
-                                    </button>
-                                </form>
+                            <td data-label="Categoria">{{ $ally->category->name ?? 'N/A' }}</td>
+                            <td data-label="Subcategoria">{{ $ally->subCategory->name ?? 'N/A' }}</td>
+                            <td data-label="Descuento">{{ $ally->discount ?? 'N/A' }}%</td>
+                            <td data-label="Estado">
+                                <span class="badge badge-status-{{ strtolower($ally->status) }}">
+                                    {{ $ally->status }}
+                                </span>
+                            </td>
+                            <td data-label="Fecha de registro">{{ \Carbon\Carbon::parse($ally->registration_date)->format('Y-m-d') }}</td>
+                            <td data-label="Acciones">
+                                <div class="action-group">
+                                    <a href="{{ route('aliados.index', $ally->id) }}" class="action-btn view" title="Ver Detalles">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                    <a href="{{ route('aliado.edit', $ally->id) }}" class="action-btn edit" title="Editar Aliado">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <form action="{{ route('aliados.destroy', $ally->id) }}" method="POST" class="delete-form" style="display:inline;">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="action-btn delete delete-aliado-btn" title="Eliminar Aliado">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                         </tr>
-                        {{-- @empty --}}
+                    @empty
                         <tr>
-                            <td colspan="9" class="empty-state">No hay aliados registrados.</td>
+                            <td colspan="10" class="empty-state">No hay aliados registrados.</td>
                         </tr>
-                        {{-- @endforelse --}}
-                    </tbody>
-                </table>
-            </div>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
     </div>
 @endsection
-
-@push('scripts')
-    {{-- Tus scripts, si los necesitas --}}
-@endpush
