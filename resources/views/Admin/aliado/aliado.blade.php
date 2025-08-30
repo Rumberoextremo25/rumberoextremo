@@ -68,13 +68,6 @@
                                     <a href="{{ route('aliado.edit', $ally->id) }}" class="action-btn edit" title="Editar Aliado">
                                         <i class="fas fa-edit"></i>
                                     </a>
-                                    <form action="{{ route('aliados.destroy', $ally->id) }}" method="POST" class="delete-form" style="display:inline;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="action-btn delete delete-aliado-btn" title="Eliminar Aliado">
-                                            <i class="fas fa-trash-alt"></i>
-                                        </button>
-                                    </form>
                                 </div>
                             </td>
                         </tr>

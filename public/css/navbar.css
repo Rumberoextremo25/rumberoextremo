@@ -1,36 +1,36 @@
 /* Base styles - estos estilos se aplican a todos los tamaños de pantalla
-   y serán sobrescritos por las media queries si es necesario. */
+    y serán sobrescritos por las media queries si es necesario. */
 body {
-    margin-top: -20px; /* Ajustado para compensar la altura de la navbar fija en desktop */
+    margin-top: -20px;
     font-family: Arial, sans-serif;
     background-color: #f0f2f5;
-    min-height: 120vh; /* Asegura que el body tenga al menos la altura del viewport */
+    min-height: 120vh;
 }
 
 .main-header {
-    position: fixed; /* Mantiene la cabecera fija en la parte superior */
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
-    background: linear-gradient(to right, rgba(192, 96, 240, 0.3), rgba(128, 0, 128, 0.3)); /* Degradado de fondo */
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2); /* Sombra para darle profundidad */
-    z-index: 1000; /* Asegura que la cabecera esté por encima de otros elementos */
-    height: 80px; /* Altura fija para la barra de navegación en pantallas grandes */
-    overflow: hidden; /* Oculta cualquier contenido que se desborde */
-    border-bottom-right-radius: 40px; /* Bordes redondeados inferiores */
+    background: linear-gradient(to right, rgba(192, 96, 240, 0.3), rgba(128, 0, 128, 0.3));
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+    height: 80px;
+    overflow: hidden;
+    border-bottom-right-radius: 40px;
     border-bottom-left-radius: 40px;
 }
 
 .header-container {
-    display: flex; /* Usa Flexbox para alinear elementos */
-    justify-content: space-between; /* Espacia el logo y la navegación */
-    align-items: center; /* Centra verticalmente los elementos */
-    width: 90%; /* Ancho del contenedor interno */
-    max-width: 1200px; /* Ancho máximo para evitar que se estire demasiado */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 90%;
+    max-width: 1200px;
     height: 100%;
     position: relative;
-    z-index: 2; /* Para que esté por encima de la capa blanca diagonal */
-    margin: 0 auto; /* Centra el contenedor horizontalmente */
+    z-index: 2;
+    margin: 0 auto;
 }
 
 /* Capa blanca con forma diagonal en el lado izquierdo */
@@ -40,109 +40,109 @@ body {
     top: 0;
     left: 0;
     height: 100%;
-    width: 30%; /* Ancho de la capa blanca en desktop */
+    width: 30%;
     background-color: #ffffff;
-    clip-path: polygon(0 0, 85% 0, 100% 100%, 0 100%); /* Forma diagonal */
-    z-index: 1; /* Por debajo del logo y la navegación */
+    clip-path: polygon(0 0, 85% 0, 100% 100%, 0 100%);
+    z-index: 1;
 }
 
 .main-header::after {
-    content: none; /* Se elimina el pseudo-elemento ::after que se había usado antes */
+    content: none;
 }
 
 .header-logo {
-    display: flex; /* Permite alinear el logo y el pseudo-elemento ::before */
-    justify-content: flex-start; /* Alinea el contenido a la izquierda */
-    align-items: center; /* Centra verticalmente */
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
     height: 100%;
     position: absolute;
-    left: 0px; /* Mueve el logo completamente a la izquierda en desktop */
-    width: 25%; /* Ancho del contenedor del logo */
-    z-index: 3; /* Para que esté por encima de la capa blanca */
-    padding-left: 0; /* Asegura que no haya padding empujándolo */
+    left: 0px;
+    width: 25%;
+    z-index: 3;
+    padding-left: 0;
 }
 
 .header-logo img {
-    height: 70px; /* Altura del logo en desktop */
+    height: 70px;
     width: auto;
-    object-fit: contain; /* Asegura que la imagen se ajuste sin recortarse */
+    object-fit: contain;
 }
 
 .main-nav {
-    flex-grow: 1; /* Permite que la navegación ocupe el espacio restante */
+    flex-grow: 1;
     display: flex;
-    justify-content: flex-end; /* Alinea los elementos de navegación a la derecha */
+    justify-content: flex-end;
     align-items: center;
     height: 100%;
     position: relative;
     z-index: 3;
-    padding-right: 30px; /* Espacio a la derecha de la navegación */
+    padding-right: 30px;
 }
 
 .main-nav .nav-links {
-    list-style: none; /* Elimina los puntos de la lista */
+    list-style: none;
     margin: 0;
     padding: 0;
-    display: flex; /* Organiza los enlaces en una fila */
+    display: flex;
     align-items: center;
     height: 100%;
 }
 
 .main-nav .nav-links li {
-    margin-left: 25px; /* Espacio entre los elementos de la lista */
+    margin-left: 25px;
     height: 100%;
     display: flex;
     align-items: center;
 }
 
 .main-nav .nav-links .nav-item {
-    text-decoration: none; /* Elimina el subrayado de los enlaces */
-    color: #ffffff; /* Color del texto blanco */
-    font-weight: bold; /* Texto en negrita */
+    text-decoration: none;
+    color: #ffffff;
+    font-weight: bold;
     padding: 8px 12px;
-    transition: color 0.3s ease; /* Transición suave del color al pasar el ratón */
-    white-space: nowrap; /* Evita que el texto se rompa en varias líneas */
+    transition: color 0.3s ease;
+    white-space: nowrap;
 }
 
 .main-nav .nav-links .nav-item:hover {
-    color: #000000; /* Color al pasar el ratón */
+    color: #000000;
 }
 
 .cta-button-nav {
-    background-color: #A601B3; /* Color de fondo del botón CTA */
+    background-color: #A601B3;
     padding: 10px 25px;
-    color: #ffffff; /* Color del texto del botón CTA */
-    border-radius: 25px; /* Bordes redondeados */
+    color: #ffffff;
+    border-radius: 25px;
     text-decoration: none;
     font-weight: bold;
-    transition: background-color 0.3s ease, transform 0.2s ease; /* Transiciones suaves */
-    border: none; /* Sin borde */
-    cursor: pointer; /* Cursor de puntero */
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    border: none;
+    cursor: pointer;
     white-space: nowrap;
 }
 
 .cta-button-nav:hover {
-    background-color: #3004E1; /* Color de fondo al pasar el ratón */
-    color: #ffffff; /* Color del texto al pasar el ratón */
-    transform: translateY(-2px); /* Efecto de elevación */
+    background-color: #3004E1;
+    color: #ffffff;
+    transform: translateY(-2px);
 }
 
 .logout-form {
     margin: 0;
-    display: inline-block; /* Permite que el formulario se alinee con otros elementos */
+    display: inline-block;
 }
 
 /* Círculo decorativo al lado del logo */
 .header-logo::before {
     content: '';
     position: absolute;
-    top: 50%; /* Centra verticalmente */
-    left: 10px; /* Posición horizontal del círculo en desktop */
-    transform: translateY(-50%); /* Ajusta el centrado vertical */
-    width: 30px; /* Tamaño del círculo */
+    top: 50%;
+    left: 10px;
+    transform: translateY(-50%);
+    width: 30px;
     height: 30px;
-    background-color: rgba(255, 255, 255, 0.3); /* Color blanco semitransparente */
-    border-radius: 50%; /* Hace que sea un círculo */
+    background-color: rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -154,7 +154,6 @@ body {
 }
 
 /* --- Media Query para Teléfonos y Pantallas Pequeñas --- */
-
 @media (max-width: 768px) {
     /* Muestra el botón de hamburguesa */
     .menu-toggle {
@@ -164,19 +163,19 @@ body {
         font-size: 2em;
         cursor: pointer;
         color: white;
-        z-index: 1001; /* Asegura que esté por encima del menú */
-        order: 2; /* Cambia el orden para que aparezca después del logo */
+        z-index: 1001;
+        order: 2;
     }
-
+    
     /* Oculta la navegación por defecto */
     .main-nav {
         display: none;
         flex-direction: column;
         width: 100%;
         position: absolute;
-        top: 80px; /* Se posiciona debajo de la cabecera fija */
+        top: 60px; /* Reduced to match mobile header height */
         left: 0;
-        background-color: #333; /* Fondo oscuro para el menú desplegable */
+        background-color: #333;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         z-index: 1000;
         padding: 20px 0;
@@ -184,12 +183,12 @@ body {
         border-bottom-left-radius: 40px;
         border-bottom-right-radius: 40px;
     }
-
+    
     /* Estilo para el menú cuando está activo (visible) */
     .main-nav.active {
         display: flex;
     }
-
+    
     /* Estilo de los enlaces dentro del menú desplegable */
     .main-nav .nav-links {
         flex-direction: column;
@@ -202,7 +201,7 @@ body {
         width: 100%;
         justify-content: center;
     }
-
+    
     .main-nav .nav-links .nav-item {
         color: white;
         padding: 15px;
@@ -215,7 +214,7 @@ body {
     
     /* Ajustes del header para móviles */
     .main-header {
-        height: 60px; /* Reduce la altura de la cabecera */
+        height: 60px;
     }
     
     .header-container {
@@ -234,11 +233,11 @@ body {
         left: auto;
         width: auto;
         padding-left: 0;
-        order: 1; /* Asegura que el logo aparezca primero */
+        order: 1;
     }
     
     .header-logo img {
-        height: 45px; /* Reduce el tamaño del logo */
+        height: 45px;
     }
     
     .main-nav {
