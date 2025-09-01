@@ -1,5 +1,5 @@
 /* Base styles - estos estilos se aplican a todos los tamaños de pantalla
-    y serán sobrescritos por las media queries si es necesario. */
+        y serán sobrescritos por las media queries si es necesario. */
 body {
     margin-top: -20px;
     font-family: Arial, sans-serif;
@@ -151,98 +151,114 @@ body {
 /* El botón de hamburguesa se oculta por defecto en desktop */
 .menu-toggle {
     display: none;
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    cursor: pointer;
+    color: white;
+    z-index: 1001;
+    padding: 5px;
 }
 
 /* --- Media Query para Teléfonos y Pantallas Pequeñas --- */
 @media (max-width: 768px) {
+
     /* Muestra el botón de hamburguesa */
     .menu-toggle {
         display: block;
-        background: none;
-        border: none;
-        font-size: 2em;
-        cursor: pointer;
-        color: white;
-        z-index: 1001;
-        order: 2;
-    }
-    
-    /* Oculta la navegación por defecto */
-    .main-nav {
-        display: none;
-        flex-direction: column;
-        width: 100%;
         position: absolute;
-        top: 60px; /* Reduced to match mobile header height */
-        left: 0;
-        background-color: #333;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-        z-index: 1000;
-        padding: 20px 0;
-        text-align: center;
-        border-bottom-left-radius: 40px;
-        border-bottom-right-radius: 40px;
+        right: 20px;
+        top: 50%;
+        transform: translateY(-50%);
     }
-    
-    /* Estilo para el menú cuando está activo (visible) */
-    .main-nav.active {
-        display: flex;
-    }
-    
-    /* Estilo de los enlaces dentro del menú desplegable */
-    .main-nav .nav-links {
-        flex-direction: column;
-        width: 100%;
-        gap: 0;
-    }
-    
-    .main-nav .nav-links li {
-        margin: 10px 0;
-        width: 100%;
-        justify-content: center;
-    }
-    
-    .main-nav .nav-links .nav-item {
-        color: white;
-        padding: 15px;
-        display: block;
-    }
-    
-    .cta-button {
-        padding: 12px 30px;
-    }
-    
+
     /* Ajustes del header para móviles */
     .main-header {
-        height: 60px;
+        height: 70px;
     }
-    
+
     .header-container {
-        justify-content: space-between;
-        padding: 0 20px;
+        padding: 0 15px;
+        width: 100%;
     }
-    
+
     /* Oculta la capa diagonal y el círculo en móviles para simplificar el diseño */
     .main-header::before,
     .header-logo::before {
         display: none;
     }
-    
+
     .header-logo {
         position: relative;
         left: auto;
         width: auto;
         padding-left: 0;
-        order: 1;
-    }
-    
-    .header-logo img {
-        height: 45px;
-    }
-    
-    .main-nav {
-        flex-grow: unset;
         justify-content: center;
-        padding-right: 0;
+    }
+
+    .header-logo img {
+        height: 50px;
+    }
+
+    /* Estilo para la navegación en móviles */
+    .main-nav {
+        position: fixed;
+        top: 70px;
+        left: 0;
+        width: 100%;
+        background: linear-gradient(to bottom, rgba(192, 96, 240, 0.95), rgba(128, 0, 128, 0.95));
+        flex-direction: column;
+        justify-content: flex-start;
+        align-items: center;
+        height: auto;
+        padding: 20px 0;
+        transform: translateY(-100%);
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.3s ease;
+        border-bottom-left-radius: 20px;
+        border-bottom-right-radius: 20px;
+        box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    /* Estilo para el menú cuando está activo (visible) */
+    .main-nav.active {
+        transform: translateY(0);
+        opacity: 1;
+        visibility: visible;
+    }
+
+    /* Estilo de los enlaces dentro del menú desplegable */
+    .main-nav .nav-links {
+        flex-direction: column;
+        width: 100%;
+        gap: 0;
+        height: auto;
+    }
+
+    .main-nav .nav-links li {
+        margin: 0;
+        width: 100%;
+        justify-content: center;
+        height: auto;
+        padding: 12px 0;
+    }
+
+    .main-nav .nav-links .nav-item {
+        color: white;
+        padding: 12px 20px;
+        display: block;
+        width: 100%;
+        text-align: center;
+    }
+
+    .main-nav .nav-links .nav-item:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+        border-radius: 5px;
+    }
+
+    .cta-button-nav {
+        padding: 12px 30px;
+        margin: 10px 0;
     }
 }

@@ -1,3 +1,8 @@
+/*
+ * -----------------------------------------------------
+ *                     Estilos Generales
+ * -----------------------------------------------------
+ */
 body {
     font-family: 'Roboto Condensed', sans-serif;
     margin: 0;
@@ -85,9 +90,11 @@ h3 {
     box-shadow: 0 8px 20px rgba(108, 31, 215, 0.5);
 }
 
-/* ---------------------------------- */
-/* 3. Sección Hero                    */
-/* ---------------------------------- */
+/*
+ * -----------------------------------------------------
+ *                     3. Sección Hero
+ * -----------------------------------------------------
+ */
 .hero {
     color: white;
     padding: 200px 0;
@@ -100,6 +107,10 @@ h3 {
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
+    /* --- Ajustes para Responsividad --- */
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .hero::before {
@@ -134,7 +145,9 @@ h3 {
     z-index: 3;
     text-align: left;
     font-size: 1.4rem;
-    margin-left: 180px;
+    /* Eliminamos el margin-left fijo para la responsividad */
+    margin-right: auto;
+    margin-left: 10%;
 }
 
 .cta-button-banner {
@@ -156,9 +169,11 @@ h3 {
     color: #ffffff;
 }
 
-/* ---------------------------------- */
-/* 4. Secciones de Contenido          */
-/* ---------------------------------- */
+/*
+ * -----------------------------------------------------
+ *                    4. Secciones de Contenido
+ * -----------------------------------------------------
+ */
 section {
     padding: 60px 0;
 }
@@ -294,29 +309,21 @@ h2 {
     height: 80px;
     border-radius: 50%;
     position: absolute;
-    top: -40px; /* Sube la mitad del círculo para que sobresalga */
+    top: -40px;
     left: 50%;
-    transform: translateX(-50%); /* Centra horizontalmente */
+    transform: translateX(-50%);
     display: flex;
     align-items: center;
     justify-content: center;
-    z-index: 10; /* Asegura que esté por encima de la tarjeta si hay conflicto */
-
-    /* === CAMBIOS APLICADOS AQUÍ PARA EL EFECTO DEGRADADO === */
-    /* Primero, el fondo del degradado (será el "borde") */
-    background: linear-gradient(90deg, #A601B3, #3004E1); /* Degradado morado a azul */
-
-    /* Luego, la imagen de perfil centrada sobre un fondo blanco */
-    /* Usamos otra propiedad background para la imagen. Se superpondrá al degradado. */
-    background-image: url('../assets/img/home/logo_perfil.png'); /* Tu imagen de perfil */
-    background-size: 80% 80%, cover; /* Tamaño de la imagen de perfil y del degradado */
-    background-repeat: no-repeat, no-repeat; /* Evita repeticiones */
-    background-position: center center, center center; /* Centra la imagen de perfil y el degradado */
-    background-clip: padding-box, border-box; /* Asegura que la imagen de perfil no se salga del padding y el degradado ocupe el borde */
-    background-origin: content-box, border-box; /* Origen de la imagen de perfil desde el contenido, y del degradado desde el borde */
-
-    /* Opcional: añade un pequeño borde blanco interno para separar la imagen del degradado */
-    border: 4px solid #A601B3; /* Este "borde" blanco será el espacio entre la imagen y el degradado */
+    z-index: 10;
+    background: linear-gradient(90deg, #A601B3, #3004E1);
+    background-image: url('../assets/img/home/logo_perfil.png');
+    background-size: 80% 80%, cover;
+    background-repeat: no-repeat, no-repeat;
+    background-position: center center, center center;
+    background-clip: padding-box, border-box;
+    background-origin: content-box, border-box;
+    border: 4px solid #A601B3;
 }
 
 .cta-alt {
@@ -423,15 +430,53 @@ h2 {
     background-color: #6c05cd;
 }
 
-/* ---------------------------------- */
-/* 7. Responsividad                   */
-/* ---------------------------------- */
-@media (max-width: 768px) {
+/*
+ * -----------------------------------------------------
+ *                   7. Responsividad
+ * -----------------------------------------------------
+ */
+@media (max-width: 992px) {
+    .hero {
+        padding: 150px 0;
+    }
+
     .hero h1 {
         font-size: 2.5em;
+    }
+}
+
+@media (max-width: 768px) {
+    .hero {
+        padding: 120px 0;
+    }
+
+    .hero .container {
+        text-align: center;
+    }
+
+    .hero h1 {
+        font-size: 2em;
+        line-height: 1.2;
     }
 
     .hero p {
         font-size: 1em;
+        max-width: 90%;
+        margin: 0 auto 20px auto;
+    }
+
+    .cta-button-banner {
+        padding: 12px 25px;
+        font-size: 0.9em;
+    }
+}
+
+@media (max-width: 576px) {
+    .hero {
+        padding: 100px 0;
+    }
+
+    .hero h1 {
+        font-size: 1.8em;
     }
 }
