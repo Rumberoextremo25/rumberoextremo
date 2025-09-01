@@ -20,6 +20,7 @@
     {{-- La directiva @vite se encarga de incluir resources/css/app.css --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/affiliate-form.css') }}">
     @stack('styles')
 </head>
 <body class="antialiased">

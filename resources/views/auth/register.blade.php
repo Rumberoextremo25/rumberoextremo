@@ -43,7 +43,7 @@
 
             {{-- Nuevo campo desplegable para tipo de usuario --}}
             <div class="form-group">
-                <label for="user_type">¿Eres un Rumbero o un Aliado?</label>
+                <label for="user_type">¿Eres un Rumbero o Aliado?</label>
                 <select id="user_type" name="user_type" class="form-control @error('user_type') is-invalid @enderror" required>
                     <option value="">Selecciona una opción</option>
                     <option value="user" {{ old('user_type') == 'user' ? 'selected' : '' }}>Usuario Rumbero</option>
@@ -85,6 +85,8 @@
                 <a class="already-registered-link" href="{{ route('login') }}">
                     ¿Ya tienes cuenta? Inicia sesión
                 </a>
+
+                <br>
 
                 <button type="submit" class="btn btn-primary">
                     Registrarme

@@ -24,7 +24,7 @@
                 ¡Qué esperas para ser un Rumbero afíliate!
             </h3>
             <br>
-            <a href="{{ route('register') }}" class="cta-button-banner">¡Yo Soy Rumbero !</a>
+            <a href="{{ route('register') }}" class="cta-button-banner">¡Yo Soy Rumbero!</a>
         </div>
     </section>
 

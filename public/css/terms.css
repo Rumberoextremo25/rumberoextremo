@@ -52,11 +52,11 @@ body {
 
 /* Individual Policy Sections */
 .policy-section {
-    background-color: #A601B3; /* Fondo para cada sección */
+    background-color: #3004E1; /* Fondo para cada sección */
     border-radius: 10px;
     padding: 30px;
     margin-bottom: 30px;
-    border-left: 5px solid #3004E1; /* Borde morado a la izquierda */
+    border-left: 5px solid #A601B3; /* Borde morado a la izquierda */
     transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
@@ -109,7 +109,7 @@ body {
 
 /* Contact Section */
 .policy-contact {
-    background-color: #A601B3;
+    background-color: #3004E1; /* Fondo morado oscuro */
     border-radius: 10px;
     padding: 30px;
     margin-top: 40px;

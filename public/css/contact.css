@@ -27,8 +27,8 @@
 }
 
 /*
- * Base Styles and Typography V2
- */
+         * Base Styles and Typography V2
+         */
 body {
     font-family: 'Roboto Condensed', sans-serif;
     margin: 0;
@@ -47,8 +47,8 @@ body {
 }
 
 /*
- * Hero Section for Contact Page
- */
+         * Hero Section for Contact Page
+         */
 .hero-contact {
     position: relative;
     /* Use the new color variables for a gradient */
@@ -78,8 +78,8 @@ body {
 }
 
 /*
- * Main Content Section
- */
+         * Main Content Section
+         */
 .content-section {
     padding: 50px 0;
     text-align: center;
@@ -91,23 +91,14 @@ body {
     color: var(--text-dark);
     text-align: center;
     margin-bottom: 20px;
+    position: relative;
 }
 
-.content-section h1::after {
-    content: '';
-    width: 80px;
-    height: 4px;
-    background-color: var(--primary-blue);
-    position: absolute;
-    bottom: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    border-radius: 2px;
-}
+/* Se ha eliminado el pseudoelemento ::after que creaba la línea azul */
 
 /*
- * Contact Form Styles
- */
+         * Contact Form Styles
+         */
 .contact-form-container {
     background-color: var(--card-bg);
     border-radius: var(--border-radius-lg);
@@ -387,5 +378,15 @@ body {
 
     .map-container iframe {
         height: 300px;
+    }
+}
+
+@media (max-width: 480px) {
+    .contact-form-container {
+        padding: 20px;
+    }
+
+    .contact-form button {
+        padding: 15px;
     }
 }

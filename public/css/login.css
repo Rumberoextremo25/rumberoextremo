@@ -1,24 +1,4 @@
 /* login.css */
-
-@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap');
-
-:root {
-    --primary-purple: #9B51E0;
-    --dark-background: #0d0d1a;
-    --card-background: rgba(255, 255, 255, 0.95);
-    --text-color: #333333;
-    --text-color-light: #f4f4f4;
-    --input-background: #ffffff;
-    --input-border: #cccccc;
-    --button-background: #E040FB;
-    --button-hover-background: #C218F0;
-    --link-color: #9B51E0;
-    --link-hover-color: #7A3BA1;
-    --error-color: #e74c3c;
-    --neon-glow: 0 0 10px rgba(155, 81, 224, 0.6), 0 0 20px rgba(155, 81, 224, 0.4);
-    --button-neon-glow: 0 0 10px rgba(224, 64, 251, 0.8), 0 0 20px rgba(224, 64, 251, 0.6);
-}
-
 body {
     font-family: 'Poppins', sans-serif;
     margin: 0;
@@ -27,8 +7,8 @@ body {
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    background-color: var(--dark-background);
-    color: var(--text-color);
+    background-color: #0d0d1a;
+    color: #333333;
     overflow: hidden;
     position: relative;
 }
@@ -40,7 +20,6 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    background-image: url('../assets/img/login/fondo_login.png');
     background-size: cover;
     background-position: center;
     display: flex;
@@ -53,8 +32,13 @@ body {
 }
 
 @keyframes backgroundMove {
-    from { background-position: 0% 0%; }
-    to { background-position: 100% 100%; }
+    from {
+        background-position: 0% 0%;
+    }
+
+    to {
+        background-position: 100% 100%;
+    }
 }
 
 /* Overlay oscuro con desenfoque */
@@ -73,10 +57,10 @@ body {
 .login-card {
     position: relative;
     z-index: 3;
-    background: var(--card-background);
+    background: rgba(255, 255, 255, 0.95);
     padding: 30px 40px;
     border-radius: 25px;
-    box-shadow: var(--neon-glow);
+    box-shadow: 0 0 10px rgba(155, 81, 224, 0.6), 0 0 20px rgba(155, 81, 224, 0.4);
     border: 1px solid rgba(255, 255, 255, 0.2);
     backdrop-filter: blur(10px);
     width: 100%;
@@ -92,8 +76,15 @@ body {
 }
 
 @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(-30px); }
-    to { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .login-header {
@@ -103,12 +94,12 @@ body {
 .login-logo {
     max-width: 160px;
     margin-bottom: 15px;
-    filter: drop-shadow(var(--neon-glow));
+    filter: drop-shadow(0 0 10px rgba(155, 81, 224, 0.6), 0 0 20px rgba(155, 81, 224, 0.4));
 }
 
 .login-header h2 {
     font-size: 2.2em;
-    color: var(--text-color);
+    color: #333333;
     margin: 0;
     font-weight: 700;
 }
@@ -133,18 +124,18 @@ body {
     display: block;
     margin-bottom: 6px;
     font-weight: 600;
-    color: var(--text-color);
+    color: #333333;
     font-size: 1.1em;
 }
 
 .form-control {
     width: calc(100% - 24px);
     padding: 15px 12px;
-    border: 1px solid var(--input-border);
+    border: 1px solid #cccccc;
     border-radius: 12px;
     font-size: 1em;
-    background-color: var(--input-background);
-    color: var(--text-color);
+    background-color: #ffffff;
+    color: #333333;
     transition: all 0.3s ease;
 }
 
@@ -153,17 +144,17 @@ body {
 }
 
 .form-control:focus {
-    border-color: var(--primary-purple);
+    border-color: #9B51E0;
     box-shadow: 0 0 0 3px rgba(155, 81, 224, 0.3);
     outline: none;
 }
 
 .form-control.is-invalid {
-    border-color: var(--error-color);
+    border-color: #e74c3c;
 }
 
 .invalid-feedback {
-    color: var(--error-color);
+    color: #e74c3c;
     font-size: 0.85em;
     margin-top: 5px;
     display: block;
@@ -180,32 +171,32 @@ body {
 .remember-me {
     display: flex;
     align-items: center;
-    color: var(--text-color);
+    color: #333333;
     cursor: pointer;
     user-select: none;
 }
 
 .remember-me input[type="checkbox"] {
     margin-right: 8px;
-    accent-color: var(--primary-purple);
+    accent-color: #A601B3;
     width: 18px;
     height: 18px;
 }
 
 .forgot-password-link {
-    color: var(--link-color);
+    color: #3004E1;
     text-decoration: none;
     transition: color 0.3s ease, text-shadow 0.3s ease;
 }
 
 .forgot-password-link:hover {
-    color: var(--link-hover-color);
+    color: #A601B3;
     text-decoration: underline;
     text-shadow: 0 0 5px rgba(155, 81, 224, 0.5);
 }
 
 .btn-primary {
-    background-image: linear-gradient(45deg, var(--primary-purple), var(--button-background));
+    background-image: #3004E1;
     color: white;
     padding: 15px 25px;
     border: none;
@@ -215,30 +206,30 @@ body {
     cursor: pointer;
     transition: all 0.3s ease;
     width: 100%;
-    box-shadow: var(--button-neon-glow);
+    box-shadow: 0 0 10px #A601B3;
 }
 
 .btn-primary:hover {
-    background-image: linear-gradient(45deg, var(--button-background), var(--primary-purple));
+    background-image: #3004E1;
     transform: scale(1.02);
-    box-shadow: 0 0 15px rgba(224, 64, 251, 0.9), 0 0 25px rgba(224, 64, 251, 0.7);
+    box-shadow: 0 0 15px #A601B3;
 }
 
 .login-footer {
     margin-top: 25px;
     font-size: 0.95em;
-    color: var(--text-color);
+    color: #333333;
 }
 
 .login-footer a {
-    color: var(--link-color);
+    color: #3004E1;
     text-decoration: none;
     font-weight: 600;
     transition: color 0.3s ease, text-shadow 0.3s ease;
 }
 
 .login-footer a:hover {
-    color: var(--link-hover-color);
+    color: #3004E1;
     text-decoration: underline;
     text-shadow: 0 0 5px rgba(155, 81, 224, 0.5);
 }
@@ -250,13 +241,16 @@ body {
         padding: 25px;
         max-width: 90%;
     }
+
     .login-header h2 {
         font-size: 1.8em;
     }
+
     .form-options {
         flex-direction: column;
         gap: 15px;
     }
+
     .form-control {
         padding: 12px 10px;
     }
@@ -268,12 +262,15 @@ body {
         padding: 20px;
         max-width: 95%;
     }
+
     .login-header h2 {
         font-size: 1.6em;
     }
+
     .login-logo {
         max-width: 130px;
     }
+
     .btn-primary {
         padding: 12px 20px;
         font-size: 1em;

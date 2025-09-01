@@ -90,7 +90,7 @@ h3 {
 /* ---------------------------------- */
 .hero {
     color: white;
-    padding: 120px 0;
+    padding: 200px 0;
     text-align: left;
     position: relative;
     overflow: hidden;
@@ -133,7 +133,8 @@ h3 {
     position: relative;
     z-index: 3;
     text-align: left;
-    margin-left: 50px;
+    font-size: 1.4rem;
+    margin-left: 180px;
 }
 
 .cta-button-banner {
