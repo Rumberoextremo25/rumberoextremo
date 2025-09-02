@@ -10,6 +10,7 @@ use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\Api\BankController;
 use App\Services\BncApiService;
+use Illuminate\Support\Facades\Http;
 
 /*
 |--------------------------------------------------------------------------
@@ -97,28 +98,70 @@ Route::get('/user', function (Request $request) {
 
 // Rutas de prueba para la API de BNC
 
-Route::get('/test-bnc-auth', function (Request $request) {
+Route::get('/test-bnc-auth', function () {
     try {
-        $bncService = new BncApiService();
-        $token = $bncService->getSessionToken();
-
-        if ($token) {
-            return response()->json([
-                'status' => 'success',
-                'message' => 'Token de sesión obtenido exitosamente.',
-                'token' => $token
-            ]);
-        } else {
-            return response()->json([
-                'status' => 'error',
-                'message' => 'No se pudo obtener el token. Revisa los logs de tu aplicación.'
-            ], 500);
-        }
-    } catch (\Exception $e) {
+        $service = new App\Services\BncApiService();
+        
+        // Test 1: Configuración
+        $config = [
+            'auth_url' => env('BNC_AUTH_API_URL'),
+            'client_guid' => env('BNC_CLIENT_GUID'),
+            'master_key_length' => strlen(env('BNC_MASTER_KEY'))
+        ];
+        
+        // Test 2: DataCypher
+        $cypher = new App\Services\DataCypher(env('BNC_MASTER_KEY'));
+        $encryptionTest = $cypher->testEncryption();
+        
+        // Test 3: Intento real
+        $token = $service->getSessionToken();
+        
         return response()->json([
-            'status' => 'error',
-            'message' => 'Excepción inesperada.',
-            'error_details' => $e->getMessage()
+            'config' => $config,
+            'encryption_test' => $encryptionTest,
+            'token' => $token ? substr($token, 0, 50) . '...' : null,
+            'token_length' => $token ? strlen($token) : 0,
+            'success' => !is_null($token)
+        ]);
+        
+    } catch (Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage(),
+            'file' => $e->getFile(),
+            'line' => $e->getLine()
+        ], 500);
+    }
+});
+
+// Crea una ruta temporal para debug
+Route::get('/debug-bnc', function () {
+    return [
+        'BNC_AUTH_API_URL' => env('BNC_AUTH_API_URL'),
+        'BNC_CLIENT_GUID' => env('BNC_CLIENT_GUID'),
+        'BNC_MASTER_KEY' => substr(env('BNC_MASTER_KEY'), 0, 10) . '...',
+        'master_key_length' => strlen(env('BNC_MASTER_KEY')),
+        'app_env' => env('APP_ENV')
+    ];
+});
+
+Route::get('/test-bnc-connection', function () {
+    try {
+        $url = 'https://servicios.bncenlinea.com:16500/api/Auth/LogOn';
+        
+        // Test de conectividad básica
+        $response = Http::timeout(10)->get($url);
+        
+        return response()->json([
+            'url' => $url,
+            'status' => $response->status(),
+            'headers' => $response->headers(),
+            'body' => $response->body()
+        ]);
+        
+    } catch (Exception $e) {
+        return response()->json([
+            'error' => $e->getMessage(),
+            'url' => $url
         ], 500);
     }
 });

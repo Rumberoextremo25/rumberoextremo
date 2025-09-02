@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Services\DataCypher;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\URL;
 
@@ -11,9 +12,15 @@ class AppServiceProvider extends ServiceProvider
      * Register any application services.
      */
     public function register(): void
-    {
-        //
-    }
+{
+    $this->app->singleton(\App\Services\BncApiService::class, function ($app) {
+        return new \App\Services\BncApiService();
+    });
+
+    $this->app->singleton(DataCypher::class, function ($app) {
+            return new DataCypher(env('BNC_MASTER_KEY'));
+        });
+}
 
     /**
      * Bootstrap any application services.

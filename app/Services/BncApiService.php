@@ -23,6 +23,8 @@ class BncApiService
     private string $bcvRatesApiUrl;
     private int $bcvCacheDuration;
 
+    protected DataCypher $dataCypher;
+
     public function __construct()
     {
         // Carga las variables directamente del archivo .env usando env()
@@ -38,59 +40,149 @@ class BncApiService
         // Y las variables del BCV de la misma manera
         $this->bcvRatesApiUrl = env('BCV_RATES_API_URL');
         $this->bcvCacheDuration = env('BCV_RATES_CACHE_MINUTES', 60);
+
+        // ✅ Inicializar DataCypher con la master key
+        $this->dataCypher = new DataCypher($this->masterKey);
     }
 
     /**
-     * Obtiene y devuelve el token de sesión de la API del BNC.
-     * El token se almacena en caché para evitar peticiones repetidas.
-     *
-     * @return string|null El token de sesión si se obtiene con éxito, o null en caso de error.
+     * Genera un reference único por día
      */
+    private function generateDailyReference(): string
+    {
+        return 'APP_' . date('Ymd') . '_' . substr(uniqid(), -6);
+    }
+
     public function getSessionToken(): ?string
     {
         return Cache::remember('bnc_session_token', now()->addMinutes(59), function () {
             try {
-                $cliente = '{"ClientGUID":"' . $this->clientGuid . '"}';
+                // 1. Validar configuración básica
+                if (empty($this->authApiUrl) || empty($this->masterKey) || empty($this->clientGuid)) {
+                    Log::error('Configuración incompleta');
+                    return null;
+                }
 
-                $value = $this->encrypt($cliente, $this->masterKey);
-                $validation = $this->createHash($cliente);
+                if (!filter_var($this->authApiUrl, FILTER_VALIDATE_URL)) {
+                    Log::error('URL de API inválida', ['url' => $this->authApiUrl]);
+                    return null;
+                }
 
+                // 2. Validar GUID
+                if (!preg_match('/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/i', $this->clientGuid)) {
+                    Log::error('ClientGUID con formato inválido', ['guid' => $this->clientGuid]);
+                    return null;
+                }
+
+                // 3. Testear encryptación (CRÍTICO)
+                $testResult = $this->dataCypher->testEncryption();
+                if (!$testResult['success']) {
+                    Log::error('Test de encryptación falló', $testResult);
+                    return null;
+                }
+
+                // 4. Construir JSON de forma segura
+                $cliente = json_encode(['ClientGUID' => $this->clientGuid]);
+                if ($cliente === false) {
+                    Log::error('Error al codificar JSON');
+                    return null;
+                }
+
+                // ✅ USAR DATACYPHER PARA ENCRYPTACIÓN Y HASH
+                $value = $this->dataCypher->encryptAES($cliente);
+                $validation = $this->dataCypher->encryptSHA256($cliente);
+
+                // ✅ SOLICITUD CON FORMATO CORRECTO (mayúsculas) y MODO PRUEBA
                 $solicitud = [
                     "ClientGUID" => $this->clientGuid,
-                    "value" => $value,
+                    "Value" => $value,
                     "Validation" => $validation,
-                    "Reference" => '',
-                    "swTestOperation" => false
+                    "Reference" => $this->generateDailyReference(),
+                    "swTestOperation" => true  // ← MODO PRUEBA ACTIVADO
                 ];
+
+                Log::debug('DEBUG - Request completo a BNC', [
+                    'url' => $this->authApiUrl,
+                    'cliente_json' => $cliente,
+                    'cliente_hex' => bin2hex($cliente),
+                    'value_encrypted' => $value,
+                    'validation_hash' => $validation,
+                    'master_key_first10' => substr($this->masterKey, 0, 10),
+                    'full_request' => $solicitud
+                ]);
 
                 Log::info('Enviando solicitud a la API de BNC', ['request' => $solicitud]);
 
-                $response = Http::post($this->authApiUrl, $solicitud);
+                $response = Http::timeout(30)
+                    ->retry(3, 100)
+                    ->withHeaders([
+                        'Content-Type' => 'application/json',
+                        'Accept' => 'application/json',
+                        'User-Agent' => 'Laravel-BNC-Client/1.0'
+                    ])
+                    ->post($this->authApiUrl, $solicitud);
 
+                // ✅ MEJOR MANEJO DE RESPUESTA - Verificar status "OK"
                 if ($response->successful()) {
-                    $token = $response->json('value');
-                    if ($token) {
-                        Log::info('BNC Session Token obtenido exitosamente.', ['token' => substr($token, 0, 10) . '...']);
-                        return $token;
+                    $responseData = $response->json();
+
+                    // Verificar si la respuesta tiene status OK
+                    if (isset($responseData['status']) && $responseData['status'] === 'OK') {
+                        if (isset($responseData['value']) && !empty($responseData['value'])) {
+                            $token = $responseData['value'];
+                            Log::info('BNC Session Token obtenido exitosamente.');
+                            return $token;
+                        } else {
+                            Log::error('Campo "value" vacío en respuesta OK', [
+                                'response' => $responseData
+                            ]);
+                            return null;
+                        }
                     } else {
-                        Log::error('Fallo al extraer el token. El campo "value" no se encontró o estaba vacío.', ['response' => $response->json()]);
+                        Log::error('Error en la API BNC - Status no es OK', [
+                            'status_response' => $responseData['status'] ?? 'NO_STATUS',
+                            'message' => $responseData['message'] ?? 'NO_MESSAGE',
+                            'full_response' => $responseData
+                        ]);
                         return null;
                     }
                 } else {
-                    Log::error('Fallo en la conexión o la API de autenticación BNC devolvió un error.', [
-                        'status' => $response->status(),
-                        'response' => $response->json(),
+                    Log::error('Error HTTP en la API BNC', [
+                        'http_status' => $response->status(),
+                        'response' => $response->json() ?? $response->body(),
                     ]);
                     return null;
                 }
             } catch (\Illuminate\Http\Client\ConnectionException $e) {
-                Log::error('Error de conexión a la API de autenticación BNC: ' . $e->getMessage());
+                Log::error('Error de conexión: ' . $e->getMessage());
+                return null;
+            } catch (\Illuminate\Http\Client\RequestException $e) {
+                Log::error('Error en la petición HTTP: ' . $e->getMessage());
+                Log::error('Response body: ' . ($e->response->body() ?? 'No response'));
                 return null;
             } catch (Exception $e) {
-                Log::error('Excepción inesperada al obtener el token de sesión: ' . $e->getMessage());
+                Log::error('Excepción inesperada: ' . $e->getMessage());
+                Log::error('File: ' . $e->getFile() . ' Line: ' . $e->getLine());
                 return null;
             }
         });
+    }
+
+    /**
+     * Método para testing manual
+     */
+    public function testEncryptionManual(): array
+    {
+        return $this->dataCypher->testEncryption();
+    }
+
+    /**
+     * Limpia el cache del token
+     */
+    public function clearTokenCache(): void
+    {
+        Cache::forget('bnc_session_token');
+        Log::info('Cache de token BNC limpiado');
     }
 
     /**
@@ -331,30 +423,6 @@ class BncApiService
             return null;
         }
     }
-
-    /**
-     * Implementa la lógica de encriptación que la API BNC requiere.
-     *
-     * @param string $data
-     * @param string $key
-     * @return string
-     */
-    private function encrypt(string $data, string $key): string
-    {
-        // Asegúrate de que tu clave sea de 32 bytes (256 bits) para AES-256.
-        $key = substr(hash('sha256', $key, true), 0, 32);
-
-        // Generar un IV aleatorio. El IV debe ser único para cada encriptación.
-        $iv = openssl_random_pseudo_bytes(openssl_cipher_iv_length('aes-256-cbc'));
-
-        // Encriptar los datos
-        $encrypted = openssl_encrypt($data, 'aes-256-cbc', $key, OPENSSL_RAW_DATA, $iv);
-
-        // Concatenar el IV con los datos encriptados para poder desencriptar más tarde.
-        // Luego, codificar todo en Base64 para enviarlo de forma segura.
-        return base64_encode($iv . $encrypted);
-    }
-
     /**
      * Implementa la lógica de creación de hash que la API BNC requiere.
      *
@@ -386,5 +454,38 @@ class BncApiService
     private function refere(): string
     {
         return uniqid('ref_', true);
+    }
+
+    private function encrypt(string $data, string $key): string
+    {
+        // 1. Preparar clave de 32 bytes
+        $key = substr(hash('sha256', $key, true), 0, 32);
+
+        // 2. IV FIJO (usar primeros 16 bytes de la clave)
+        $iv = substr($key, 0, 16);
+
+        // 3. Encryptar
+        $encrypted = openssl_encrypt($data, 'aes-256-cbc', $key, OPENSSL_RAW_DATA, $iv);
+
+        // 4. Devolver SOLO los datos encryptados en base64
+        return base64_encode($encrypted);
+    }
+
+    private function decrypt(string $encryptedData, string $key): string
+    {
+        // 1. Preparar clave (EXACTAMENTE igual que en encrypt)
+        $key = substr(hash('sha256', $key, true), 0, 32);
+
+        // 2. MISMO IV que en encrypt
+        $iv = substr($key, 0, 16);
+
+        // 3. Decryptar
+        return openssl_decrypt(
+            base64_decode($encryptedData),
+            'aes-256-cbc',
+            $key,
+            OPENSSL_RAW_DATA,
+            $iv
+        );
     }
 }
