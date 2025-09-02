@@ -1,8 +1,8 @@
 /*
- * -----------------------------------------------------
- *                     Estilos Generales
- * -----------------------------------------------------
- */
+ * -----------------------------------------------------
+ * Estilos Generales
+ * -----------------------------------------------------
+ */
 body {
     font-family: 'Roboto Condensed', sans-serif;
     margin: 0;
@@ -26,7 +26,7 @@ h3 {
 }
 
 /* ---------------------------------- */
-/* 2. Barra de Navegación             */
+/* 2. Barra de Navegación           */
 /* ---------------------------------- */
 .header {
     background-color: #ffffff;
@@ -91,10 +91,10 @@ h3 {
 }
 
 /*
- * -----------------------------------------------------
- *                     3. Sección Hero
- * -----------------------------------------------------
- */
+ * -----------------------------------------------------
+ * 3. Sección Hero
+ * -----------------------------------------------------
+ */
 .hero {
     color: white;
     padding: 200px 0;
@@ -170,10 +170,10 @@ h3 {
 }
 
 /*
- * -----------------------------------------------------
- *                    4. Secciones de Contenido
- * -----------------------------------------------------
- */
+ * -----------------------------------------------------
+ * 4. Secciones de Contenido
+ * -----------------------------------------------------
+ */
 section {
     padding: 60px 0;
 }
@@ -431,10 +431,10 @@ h2 {
 }
 
 /*
- * -----------------------------------------------------
- *                   7. Responsividad
- * -----------------------------------------------------
- */
+ * -----------------------------------------------------
+ * 7. Responsividad
+ * -----------------------------------------------------
+ */
 @media (max-width: 992px) {
     .hero {
         padding: 150px 0;
@@ -448,10 +448,19 @@ h2 {
 @media (max-width: 768px) {
     .hero {
         padding: 120px 0;
+        /* Ajustamos el fondo para que cubra toda la pantalla en móviles */
+        background-size: 100% 100%;
+        background-attachment: scroll; /* Para evitar efectos extraños al hacer scroll */
     }
 
     .hero .container {
+        /* Hacemos que el contenedor ocupe el 100% del ancho */
+        width: 100%;
+        padding: 0 20px;
+        box-sizing: border-box; /* Aseguramos que el padding no desborde */
         text-align: center;
+        /* Centramos el contenido de texto */
+        margin-left: 0;
     }
 
     .hero h1 {

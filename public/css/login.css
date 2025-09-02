@@ -240,6 +240,7 @@ body {
         margin: 20px;
         padding: 25px;
         max-width: 90%;
+        width: 100%; /* Asegura que la tarjeta ocupe el ancho disponible */
     }
 
     .login-header h2 {
@@ -252,6 +253,7 @@ body {
     }
 
     .form-control {
+        width: 100%; /* Ajusta el ancho de los campos al 100% */
         padding: 12px 10px;
     }
 }

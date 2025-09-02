@@ -1,40 +1,12 @@
-:root {
-    /* Color Palette V2 */
-    --primary-blue: #3004E1;
-    /* Azul verdoso suave y moderno */
-    --secondary-orange: #A601B3;
-    /* Naranja vibrante para acentos */
-    --light-bg: #ecf0f1;
-    /* Fondo gris muy claro */
-    --dark-bg: #34495e;
-    /* Gris azulado oscuro para contraste */
-    --text-dark: #2c3e50;
-    /* Gris carbón para texto principal */
-    --text-light: #ecf0f1;
-    /* Gris claro para el texto en fondos oscuros */
-    --card-bg: #fff;
-    /* Fondo blanco para las tarjetas */
-
-    /* Shadows V2 */
-    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08);
-    --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.12);
-    --shadow-lg: 0 10px 24px rgba(0, 0, 0, 0.2);
-
-    /* Borders V2 */
-    --border-radius-lg: 18px;
-    --border-radius-md: 10px;
-    --border-radius-sm: 5px;
-}
-
 /*
-         * Base Styles and Typography V2
-         */
+ * Base Styles and Typography V2
+ */
 body {
     font-family: 'Roboto Condensed', sans-serif;
     margin: 0;
     padding: 0;
-    background-color: var(--light-bg);
-    color: var(--text-dark);
+    background-color: #ecf0f1;
+    color: #2c3e50;
     line-height: 1.6;
     box-sizing: border-box;
     overflow-y: auto;
@@ -47,17 +19,16 @@ body {
 }
 
 /*
-         * Hero Section for Contact Page
-         */
+ * Hero Section for Contact Page
+ */
 .hero-contact {
     position: relative;
-    /* Use the new color variables for a gradient */
-    background: linear-gradient(135deg, var(--primary-blue), var(--secondary-orange));
-    color: var(--text-light);
+    background: linear-gradient(135deg, #3004E1, #A601B3);
+    color: #ecf0f1;
     padding: 80px 20px;
-    border-bottom-left-radius: var(--border-radius-lg);
-    border-bottom-right-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-lg);
+    border-bottom-left-radius: 18px;
+    border-bottom-right-radius: 18px;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
     text-align: center;
     z-index: 1;
 }
@@ -78,8 +49,8 @@ body {
 }
 
 /*
-         * Main Content Section
-         */
+ * Main Content Section
+ */
 .content-section {
     padding: 50px 0;
     text-align: center;
@@ -88,21 +59,19 @@ body {
 .content-section h1 {
     font-family: 'Roboto Condensed', sans-serif;
     font-size: 2.8em;
-    color: var(--text-dark);
+    color: #2c3e50;
     text-align: center;
     margin-bottom: 20px;
     position: relative;
 }
 
-/* Se ha eliminado el pseudoelemento ::after que creaba la línea azul */
-
 /*
-         * Contact Form Styles
-         */
+ * Contact Form Styles
+ */
 .contact-form-container {
-    background-color: var(--card-bg);
-    border-radius: var(--border-radius-lg);
-    box-shadow: var(--shadow-md);
+    background-color: #fff;
+    border-radius: 18px;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
     padding: 40px;
     max-width: 700px;
     margin: 0 auto;
@@ -112,19 +81,18 @@ body {
 }
 
 .contact-form-container:hover {
-    box-shadow: var(--shadow-lg);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
 }
 
 .contact-form {
     display: flex;
     flex-direction: column;
     gap: 20px;
-    /* Aumento del espacio entre campos */
 }
 
 .contact-form label {
     font-weight: 500;
-    color: var(--text-dark);
+    color: #2c3e50;
     margin-top: 5px;
     font-size: 0.95em;
 }
@@ -144,10 +112,8 @@ body {
 .contact-form textarea {
     width: 100%;
     padding: 16px;
-    /* Aumento del padding */
     border: 2px solid #ddd;
-    /* Borde más visible */
-    border-radius: var(--border-radius-md);
+    border-radius: 10px;
     font-family: 'Roboto Condensed', sans-serif;
     font-size: 1em;
     box-sizing: border-box;
@@ -158,13 +124,12 @@ body {
 .contact-form input:focus,
 .contact-form textarea:focus {
     outline: none;
-    border-color: var(--primary-blue);
+    border-color: #3004E1;
     box-shadow: 0 0 0 4px rgba(166, 1, 179, 0.25);
 }
 
 .contact-form textarea {
     min-height: 180px;
-    /* Aumento del alto del campo de texto */
     resize: vertical;
 }
 
@@ -172,50 +137,31 @@ body {
     display: block;
     width: 100%;
     padding: 18px;
-    /* Aumento del padding del botón */
-    background-color: var(--primary-blue);
-    color: var(--text-light);
+    background-color: #3004E1;
+    color: #ecf0f1;
     border: none;
-    border-radius: var(--border-radius-md);
+    border-radius: 10px;
     font-weight: 700;
     font-size: 1.1em;
     cursor: pointer;
     transition: background-color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
     margin-top: 20px;
     letter-spacing: 1px;
     text-transform: uppercase;
 }
 
 .contact-form button:hover {
-    background-color: var(--secondary-orange);
+    background-color: #A601B3;
     transform: translateY(-3px);
-    /* Efecto de elevación más pronunciado */
-    box-shadow: var(--shadow-md);
-}
-
-.contact-info {
-    text-align: center;
-    margin-top: 30px;
-    font-size: 1.1em;
-    color: var(--text-dark);
-}
-
-.contact-info a {
-    color: var(--primary-blue);
-    text-decoration: none;
-    font-weight: 500;
-}
-
-.contact-info a:hover {
-    text-decoration: underline;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
 /* Alert and Error Message Styles */
 .alert {
     padding: 15px;
     margin-bottom: 20px;
-    border-radius: var(--border-radius-md);
+    border-radius: 10px;
 }
 
 .alert-success {
@@ -246,7 +192,7 @@ body {
 }
 
 .contact-info a {
-    color: var(--primary-blue);
+    color: #3004E1;
     text-decoration: none;
     font-weight: 500;
 }
@@ -262,7 +208,7 @@ body {
 
 .social-media h2 {
     font-size: 2.5em;
-    color: var(--primary-blue);
+    color: #3004E1;
     margin-bottom: 30px;
 }
 
@@ -278,14 +224,13 @@ body {
     height: 60px;
     border-radius: 50%;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
-    background-color: var(--dark-bg);
-    /* Nuevo color de fondo para los iconos */
+    background-color: #34495e;
     position: relative;
 }
 
 .social-links a:hover {
     transform: translateY(-5px) scale(1.1);
-    box-shadow: var(--shadow-md);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.12);
 }
 
 .social-links img {
@@ -294,7 +239,6 @@ body {
     padding: 10px;
     box-sizing: border-box;
     filter: brightness(0) invert(1);
-    /* Filtro para hacer los iconos blancos */
 }
 
 .social-links a.facebook:hover {
@@ -315,13 +259,13 @@ body {
 
 /* Google Map Section */
 .google-map-section {
-    background: linear-gradient(135deg, var(--primary-blue), var(--secondary-orange));
-    color: var(--text-light);
+    background: linear-gradient(135deg, #3004E1, #A601B3);
+    color: #ecf0f1;
     padding: 80px 0;
     text-align: center;
     margin-top: 50px;
-    border-top-left-radius: var(--border-radius-lg);
-    border-top-right-radius: var(--border-radius-lg);
+    border-top-left-radius: 18px;
+    border-top-right-radius: 18px;
 }
 
 .google-map-section h2 {
@@ -341,9 +285,9 @@ body {
 }
 
 .map-container {
-    border-radius: var(--border-radius-lg);
+    border-radius: 18px;
     overflow: hidden;
-    box-shadow: var(--shadow-lg);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
     max-width: 90%;
     margin: 0 auto;
 }
@@ -370,6 +314,16 @@ body {
 
     .contact-form-container {
         padding: 25px;
+    }
+
+    /* Cambio clave: los campos de formulario se apilan en una sola columna */
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .form-row .form-group {
+        width: 100%;
     }
 
     .social-links {

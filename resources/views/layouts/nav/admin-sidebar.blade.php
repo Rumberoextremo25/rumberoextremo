@@ -119,15 +119,24 @@
         </div>
     </nav>
 </aside>
-
-{{-- El script para el menú móvil va aquí --}}
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const menuToggle = document.querySelector('.menu-toggle');
-        const sidebar = document.querySelector('.admin-sidebar');
-
-        menuToggle.addEventListener('click', function() {
-            sidebar.classList.toggle('open');
+<!-- El script para el menú móvil va aquí -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const menuToggle = document.querySelector('.menu-toggle');
+            const sidebar = document.querySelector('.admin-sidebar');
+    
+            // Función para abrir/cerrar el menú
+            menuToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('open');
+            });
+    
+            // Opcional: Cierra el menú cuando se hace clic fuera de él
+            document.addEventListener('click', function(event) {
+                const isClickInsideSidebar = sidebar.contains(event.target);
+                const isClickOnToggle = menuToggle.contains(event.target);
+                if (!isClickInsideSidebar && !isClickOnToggle && sidebar.classList.contains('open')) {
+                    sidebar.classList.remove('open');
+                }
+            });
         });
-    });
-</script>
+    </script>
