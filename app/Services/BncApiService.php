@@ -102,58 +102,97 @@ class BncApiService
     public function initiateC2PPayment(array $data): ?array
     {
         try {
-            // Validar campos requeridos
-            $requiredFields = ['banco', 'telefono', 'cedula', 'monto', 'terminal', 'token'];
+            Log::info('Iniciando pago C2P', ['data_keys' => array_keys($data)]);
+
+            // 1. ✅ Validar campos requeridos (EXACTAMENTE como legacy)
+            $requiredFields = ['banco', 'telefono', 'cedula', 'monto', 'token', 'terminal'];
             foreach ($requiredFields as $field) {
                 if (empty($data[$field])) {
                     throw new Exception("Campo requerido faltante: $field");
                 }
             }
 
-            // Obtener token de sesión
+            // 2. ✅ OBTENER TOKEN DE SESIÓN
             $sessionToken = $this->getSessionToken();
             if (!$sessionToken) {
-                Log::error('No se pudo obtener token de sesión para pago C2P');
+                Log::error('No se pudo obtener token de sesión para C2P');
                 return null;
             }
 
-            // Estructurar payload C2P
+            // 3. ✅ ESTRUCTURAR DATOS C2P (EXACTAMENTE como legacy - SIN CAMBIOS)
             $soliC2p = [
-                "DebtorBankCode" => intval($data['banco']),
-                "DebtorCellPhone" => $this->formatPhoneNumber($data['telefono']),
-                "DebtorID" => $data['cedula'],
-                "Amount" => floatval($data['monto']),
-                "Token" => $data['token'],
-                "Terminal" => $data['terminal'],
-                "TransactionID" => $data['transaction_id'] ?? 'C2P-' . time() . '-' . rand(1000, 9999),
+                "DebtorBankCode" => intval($data['banco']),          // ← intval() como legacy
+                "DebtorCellPhone" => $data['telefono'],              // ← Raw, sin formato (¡REMOVER formatPhoneNumber!)
+                "DebtorID" => $data['cedula'],                       // ← Raw, mantener "V" si existe
+                "Amount" => floatval($data['monto']),                // ← floatval() como legacy
+                "Token" => $data['token'],                           // ← Raw
+                "Terminal" => $data['terminal']                      // ← Raw
+                // ← ¡NO incluir TransactionID, ChildClientID, BranchID!
             ];
 
-            // Encriptar datos C2P completos
+            Log::debug('Datos C2P preparados (legacy style)', ['soliC2p' => $soliC2p]);
+
+            // 4. ✅ ENCRIPTAR LOS DATOS C2P (usar DataCypher)
             $jsonC2p = json_encode($soliC2p);
+            if ($jsonC2p === false) {
+                Log::error('Error al codificar JSON para C2P');
+                return null;
+            }
+
             $value = $this->dataCypher->encryptAES($jsonC2p);
             $validation = $this->dataCypher->encryptSHA256($jsonC2p);
 
-            // Construir solicitud final
+            // 5. ✅ CONSTRUIR SOLICITUD FINAL (EXACTA como legacy)
             $solicitud = [
                 "ClientGUID" => $this->clientGuid,
-                "Value" => $value,
-                "Validation" => $validation,
+                "value" => $value,           // ← minúscula como legacy
+                "Validation" => $validation, // ← mayúscula como legacy
                 "Reference" => $this->generateDailyReference(),
                 "swTestOperation" => false
             ];
 
-            // Enviar request
-            $response = $this->sendEncryptedRequestWithToken($this->c2pApiUrl, $solicitud, $sessionToken);
+            Log::debug('Solicitud completa preparada', [
+                'client_guid' => $this->clientGuid,
+                'value_length' => strlen($value),
+                'validation' => $validation,
+                'reference' => $solicitud['Reference']
+            ]);
 
-            // Manejar token caducado
-            if (
-                is_array($response) && isset($response['http_status']) &&
-                in_array($response['http_status'], [401, 403])
-            ) {
-                return $this->retryWithNewToken($this->c2pApiUrl, $solicitud, 'C2P');
+            // 6. ✅ HACER REQUEST DIRECTAMENTE (sin sendEncryptedRequestWithToken)
+            $response = Http::timeout(30)
+                ->withHeaders([
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                    'Authorization' => 'Bearer ' . $sessionToken,
+                    'X-Client-GUID' => $this->clientGuid,
+                    'X-Merchant-ID' => $this->merchantId
+                ])
+                ->post($this->c2pApiUrl, $solicitud);
+
+            // 7. ✅ MANEJAR RESPUESTA
+            if ($response->successful() || $response->status() === 409) {
+                $responseBody = $response->body();
+
+                if (!empty($responseBody)) {
+                    $jsonResponse = json_decode($responseBody, true);
+
+                    if (is_array($jsonResponse)) {
+                        Log::info('Respuesta C2P recibida', [
+                            'status' => $jsonResponse['status'] ?? 'unknown',
+                            'message' => $jsonResponse['message'] ?? 'unknown',
+                            'http_status' => $response->status()
+                        ]);
+                        return $jsonResponse;
+                    }
+                }
             }
 
-            return $response;
+            Log::error('Error en request C2P', [
+                'status' => $response->status(),
+                'response' => $response->body()
+            ]);
+
+            return null;
         } catch (Exception $e) {
             Log::error('Excepción en pago C2P: ' . $e->getMessage());
             return null;
@@ -192,19 +231,22 @@ class BncApiService
                 return null;
             }
 
+            // ✅ ESTRUCTURAR DATOS VPOS (EXACTAMENTE como legacy)
             $soliVpos = [
-                "TransactionIdentifier" => (string) $data['identificador'],
+                "TransactionIdentifier" => $data['identificador'],      // ← Raw
                 "Amount" => floatval($data['monto']),
                 "idCardType" => intval($data['tipTarjeta']),
-                "CardNumber" => (string) $data['tarjeta'],
-                "dtExpiration" => (string) $data['fechExp'],
-                "CardHolderName" => (string) $data['nomTarjeta'],
+                "CardNumber" => intval($data['tarjeta']),              // ← intval() como legacy
+                "dtExpiration" => intval($data['fechExp']),            // ← intval() como legacy
+                "CardHolderName" => $data['nomTarjeta'],               // ← Raw
                 "AccountType" => intval($data['tipCuenta']),
-                "CVV" => (string) $data['cvv'],
-                "CardPIN" => (string) $data['pin'],
-                "CardHolderID" => (string) $data['identificacion'],
-                "AffiliationNumber" => (string) $data['afiliacion']
+                "CVV" => intval($data['cvv']),                         // ← intval() como legacy
+                "CardPIN" => intval($data['pin']),                     // ← intval() como legacy
+                "CardHolderID" => intval($data['identificacion']),     // ← intval() como legacy
+                "AffiliationNumber" => intval($data['afiliacion'])     // ← intval() como legacy
             ];
+
+            Log::debug('Datos VPOS preparados (legacy style)', ['soliVpos' => $soliVpos]);
 
             $jsonVpos = json_encode($soliVpos);
             $value = $this->dataCypher->encryptAES($jsonVpos);
@@ -212,22 +254,47 @@ class BncApiService
 
             $solicitud = [
                 "ClientGUID" => $this->clientGuid,
-                "Value" => $value,
-                "Validation" => $validation,
+                "value" => $value,           // ← minúscula como legacy
+                "Validation" => $validation, // ← mayúscula como legacy
                 "Reference" => $this->generateDailyReference(),
                 "swTestOperation" => false
             ];
 
-            $response = $this->sendEncryptedRequestWithToken($this->vposApiUrl, $solicitud, $sessionToken);
+            // ✅ HACER REQUEST DIRECTAMENTE (sin wrapper)
+            $response = Http::timeout(30)
+                ->withHeaders([
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                    'Authorization' => 'Bearer ' . $sessionToken,
+                    'X-Client-GUID' => $this->clientGuid,
+                    'X-Merchant-ID' => $this->merchantId
+                ])
+                ->post($this->vposApiUrl, $solicitud);
 
-            if (
-                is_array($response) && isset($response['http_status']) &&
-                in_array($response['http_status'], [401, 403])
-            ) {
-                return $this->retryWithNewToken($this->vposApiUrl, $solicitud, 'VPOS');
+            // ✅ MANEJAR RESPUESTA
+            if ($response->successful() || $response->status() === 409) {
+                $responseBody = $response->body();
+
+                if (!empty($responseBody)) {
+                    $jsonResponse = json_decode($responseBody, true);
+
+                    if (is_array($jsonResponse)) {
+                        Log::info('Respuesta VPOS recibida', [
+                            'status' => $jsonResponse['status'] ?? 'unknown',
+                            'message' => $jsonResponse['message'] ?? 'unknown',
+                            'http_status' => $response->status()
+                        ]);
+                        return $jsonResponse;
+                    }
+                }
             }
 
-            return $response;
+            Log::error('Error en request VPOS', [
+                'status' => $response->status(),
+                'response' => $response->body()
+            ]);
+
+            return null;
         } catch (Exception $e) {
             Log::error('Excepción en pago VPOS: ' . $e->getMessage());
             return null;
@@ -253,38 +320,67 @@ class BncApiService
                 return null;
             }
 
+            // ✅ ESTRUCTURAR DATOS P2P (EXACTAMENTE como legacy)
             $soliP2p = [
                 "BeneficiaryBankCode" => intval($data['banco']),
-                "BeneficiaryCellPhone" => $this->formatPhoneNumber($data['telefono']),
-                "BeneficiaryID" => $data['cedula'],
-                "BeneficiaryName" => $data['beneficiario'],
+                "BeneficiaryCellPhone" => $data['telefono'],              // ← Raw, sin formato
+                "BeneficiaryID" => $data['cedula'],                       // ← Raw
+                "BeneficiaryName" => $data['beneficiario'],               // ← Raw
                 "Amount" => floatval($data['monto']),
-                "Description" => $data['descripcion'],
-                "BeneficiaryEmail" => $data['email'] ?? ''
+                "Description" => $data['descripcion'],                    // ← Raw
+                "BeneficiaryEmail" => $data['email'] ?? null              // ← null en lugar de ''
             ];
 
-            $jsonP2p = json_encode(array_filter($soliP2p));
+            Log::debug('Datos P2P preparados (legacy style)', ['soliP2p' => $soliP2p]);
+
+            // ✅ ENCRIPTAR SIN FILTRAR (como legacy)
+            $jsonP2p = json_encode($soliP2p);                            // ← SIN array_filter
             $value = $this->dataCypher->encryptAES($jsonP2p);
             $validation = $this->dataCypher->encryptSHA256($jsonP2p);
 
             $solicitud = [
                 "ClientGUID" => $this->clientGuid,
-                "Value" => $value,
-                "Validation" => $validation,
+                "value" => $value,           // ← minúscula como legacy
+                "Validation" => $validation, // ← mayúscula como legacy
                 "Reference" => $this->generateDailyReference(),
                 "swTestOperation" => false
             ];
 
-            $response = $this->sendEncryptedRequestWithToken($this->p2pApiUrl, $solicitud, $sessionToken);
+            // ✅ HACER REQUEST DIRECTAMENTE (sin wrapper)
+            $response = Http::timeout(30)
+                ->withHeaders([
+                    'Content-Type' => 'application/json',
+                    'Accept' => 'application/json',
+                    'Authorization' => 'Bearer ' . $sessionToken,
+                    'X-Client-GUID' => $this->clientGuid,
+                    'X-Merchant-ID' => $this->merchantId
+                ])
+                ->post($this->p2pApiUrl, $solicitud);
 
-            if (
-                is_array($response) && isset($response['http_status']) &&
-                in_array($response['http_status'], [401, 403])
-            ) {
-                return $this->retryWithNewToken($this->p2pApiUrl, $solicitud, 'P2P');
+            // ✅ MANEJAR RESPUESTA
+            if ($response->successful() || $response->status() === 409) {
+                $responseBody = $response->body();
+
+                if (!empty($responseBody)) {
+                    $jsonResponse = json_decode($responseBody, true);
+
+                    if (is_array($jsonResponse)) {
+                        Log::info('Respuesta P2P recibida', [
+                            'status' => $jsonResponse['status'] ?? 'unknown',
+                            'message' => $jsonResponse['message'] ?? 'unknown',
+                            'http_status' => $response->status()
+                        ]);
+                        return $jsonResponse;
+                    }
+                }
             }
 
-            return $response;
+            Log::error('Error en request P2P', [
+                'status' => $response->status(),
+                'response' => $response->body()
+            ]);
+
+            return null;
         } catch (Exception $e) {
             Log::error('Excepción en pago P2P: ' . $e->getMessage());
             return null;
