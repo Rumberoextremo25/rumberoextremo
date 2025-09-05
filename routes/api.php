@@ -166,3 +166,18 @@ Route::get('/test-bnc-connection', function () {
         ], 500);
     }
 });
+
+// Crear una ruta temporal de diagnóstico
+Route::get('/api/debug/bnc-config', function () {
+    return response()->json([
+        'APP_ENV' => env('APP_ENV'),
+        'BNC_BANKS_API_URL' => env('BNC_BANKS_API_URL'),
+        'BNC_AUTH_API_URL' => env('BNC_AUTH_API_URL'),
+        'BNC_CLIENT_GUID' => env('BNC_CLIENT_GUID') ? 'SET' : 'MISSING',
+        'BNC_MERCHANT_ID' => env('BNC_MERCHANT_ID') ? 'SET' : 'MISSING',
+        'BNC_MASTER_KEY' => env('BNC_MASTER_KEY') ? 'SET' : 'MISSING',
+        'client_guid_length' => strlen(env('BNC_CLIENT_GUID', '')),
+        'merchant_id_length' => strlen(env('BNC_MERCHANT_ID', '')),
+        'master_key_length' => strlen(env('BNC_MASTER_KEY', ''))
+    ]);
+});

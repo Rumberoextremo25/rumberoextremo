@@ -631,4 +631,49 @@ class BncApiService
         $debugInfo = $bncApiService->checkBncConnection();
         return response()->json($debugInfo);
     }
+
+    // Agregar este método al BncApiService // Validar y probar conectividad en producción
+    public function testProductionConnectivity(): array
+    {
+        $results = [];
+
+        // 1. Test DNS
+        $host = parse_url($this->banksApiUrl, PHP_URL_HOST);
+        $results['dns_lookup'] = gethostbyname($host);
+
+        // 2. Test puerto
+        $port = parse_url($this->banksApiUrl, PHP_URL_PORT) ?: 16500;
+        $results['port_check'] = @fsockopen($host, $port, $errno, $errstr, 10);
+
+        // 3. Test SSL
+        $results['ssl_cert'] = true;
+        try {
+            $client = new \GuzzleHttp\Client();
+            $response = $client->get($this->banksApiUrl, [
+                'verify' => true, // Forzar verificación SSL
+                'timeout' => 10
+            ]);
+        } catch (\GuzzleHttp\Exception\RequestException $e) {
+            $results['ssl_cert'] = false;
+            $results['ssl_error'] = $e->getMessage();
+        }
+
+        // 4. Test request real
+        try {
+            $response = Http::timeout(15)
+                ->withoutVerifying() // ⚠️ Solo para测试
+                ->get($this->banksApiUrl);
+
+            $results['direct_request'] = [
+                'status' => $response->status(),
+                'success' => $response->successful()
+            ];
+        } catch (Exception $e) {
+            $results['direct_request'] = [
+                'error' => $e->getMessage()
+            ];
+        }
+
+        return $results;
+    }
 }
