@@ -33,47 +33,38 @@ class PaymentController extends Controller
     {
         Log::info('Solicitud recibida para iniciar pago C2P.', ['request_data' => $request->all()]);
 
-        DB::beginTransaction(); // Inicia una transacción de base de datos
+        DB::beginTransaction();
         try {
-            // 1. Validar los datos de entrada de la solicitud
+            // 1. Validar los datos de entrada (EXACTAMENTE como el payload del BNC)
             $validatedData = $request->validate([
-                'order_id' => 'required|exists:orders,id',
-                'DebtorBankCode' => 'required|string', 
-                'DebtorCellPhone' => 'required|string|regex:/^[0-9]{11}$/',
-                'DebtorID' => 'required|string|min:6|max:15',
+                'DebtorBankCode' => 'required|integer',
+                'DebtorCellPhone' => 'required|string|regex:/^[0-9]{10,15}$/',
+                'DebtorID' => 'required|string|min:6|max:20',
                 'Amount' => 'required|numeric|min:0.01',
-                'Token' => 'required|string|digits:6',
+                'Token' => 'required|string|regex:/^[0-9]{6,7}$/', // ← Token de 6-7 dígitos
                 'Terminal' => 'required|string|max:50',
+                'ChildClientID' => 'nullable|string|max:50',
+                'BranchID' => 'nullable|string|max:50',
             ]);
 
-            // Cargar la orden y su aliado asociado
-            $order = Order::with('ally')->find($validatedData['order_id']);
-            if (!$order) {
-                throw new \Exception('Orden no encontrada para el pago C2P.');
-            }
-            $ally = $order->ally;
-            if (!$ally) {
-                throw new \Exception('Aliado no asociado a la orden para el pago C2P.');
-            }
-
-            // 2. Preparar los datos para la API de BNC.
-            // Los nombres de las claves del array deben coincidir con los esperados por el método en el servicio.
-            // En tu caso: telefono, cedula, banco, token, terminal, monto.
+            // 2. Preparar datos para el BNC (EXACTAMENTE como el payload esperado)
             $bncC2pData = [
+                'banco' => $validatedData['DebtorBankCode'],
                 'telefono' => $validatedData['DebtorCellPhone'],
                 'cedula' => $validatedData['DebtorID'],
-                'banco' => $validatedData['DebtorBankCode'],
-                'token' => $validatedData['Token'],
-                'terminal' => $validatedData['Terminal'],
                 'monto' => $validatedData['Amount'],
+                'token' => $validatedData['Token'], // ← Token de 6-7 dígitos
+                'terminal' => $validatedData['Terminal'],
+                'child_client_id' => $validatedData['ChildClientID'] ?? null,
+                'branch_id' => $validatedData['BranchID'] ?? null,
             ];
-            
-            // 3. Delegar la llamada a la API del BNC al servicio
+
+            Log::debug('Datos preparados para BNC C2P', ['bncC2pData' => $bncC2pData]);
+
+            // 3. Delegar la llamada al servicio BNC
             $bncResponse = $this->bncApiService->initiateC2PPayment($bncC2pData);
 
             // 4. Validar la respuesta del BNC
-            // Se verifica que la respuesta no sea nula y que el 'Status' sea 'OK'.
-            // La clave "status" que usaste antes, según las APIs de BNC, a menudo es "Status" con mayúscula inicial.
             if (is_null($bncResponse) || !isset($bncResponse['Status']) || $bncResponse['Status'] !== 'OK') {
                 $errorMessage = $bncResponse['Message'] ?? 'Fallo al procesar el pago C2P con la pasarela de pagos.';
                 Log::error('Fallo al procesar pago C2P con BNC.', [
@@ -83,52 +74,26 @@ class PaymentController extends Controller
                 throw new \Exception($errorMessage);
             }
 
-            // 5. Pago exitoso con el BNC: Actualizar la orden y registrar el pago pendiente al aliado
-            $order->status = 'completed'; // O el estado final que corresponda
-            $order->payment_method = 'C2P';
-            // Se usa el campo 'value' de la respuesta del BNC como ID de transacción si es aplicable.
-            $order->transaction_id = $bncResponse['TransactionIdentifier'] ?? 'N/A'; // Asume que la respuesta tiene un 'TransactionIdentifier'
-            $order->paid_amount = $validatedData['Amount'];
-            $order->save();
-
-            // Calcular el monto para el aliado y la comisión de la plataforma
-            $rumberoCommissionAmount = $order->discount_amount ?? 0;
-            $amountToPayToAlly = $validatedData['Amount'] - $rumberoCommissionAmount;
-
-            // 6. Registrar el pago pendiente al aliado en la base de datos
-            PartnerPayout::create([
-                'order_id' => $order->id,
-                'partner_id' => $ally->id,
-                'amount' => $amountToPayToAlly,
-                'commission_amount' => $rumberoCommissionAmount,
-                'status' => 'pending', 
-                'bank_name' => $ally->bank_name,
-                'account_number' => $ally->account_number,
-                'account_type' => $ally->account_type,
-                'id_document' => $ally->id_document,
-                'notes' => "Pago C2P de orden #{$order->id}.",
-            ]);
-
             DB::commit();
 
-            Log::info('Pago C2P procesado y pago a aliado registrado como pendiente.', ['order_id' => $order->id]);
+            Log::info('Pago C2P procesado exitosamente en BNC');
             return response()->json([
-                'message' => 'Pago C2P procesado exitosamente. El pago a su aliado ha sido registrado y se procesará pronto.',
+                'message' => 'Pago C2P procesado exitosamente.',
                 'data' => [
-                    'order_id' => $order->id,
-                    'transaction_id' => $order->transaction_id,
-                    'amount_paid_by_customer' => $order->paid_amount,
+                    'bnc_reference' => $bncResponse['Reference'] ?? null,
+                    'bnc_status' => $bncResponse['Status'] ?? null,
+                    'transaction_id' => $bncResponse['TransactionIdentifier'] ?? null,
+                    'amount_processed' => $validatedData['Amount']
                 ]
             ], 200);
-
         } catch (ValidationException $e) {
             DB::rollBack();
-            Log::warning('Error de validación al iniciar pago C2P.', ['errors' => $e->errors()]);
+            Log::warning('Error de validación en pago C2P', ['errors' => $e->errors()]);
             return response()->json(['message' => 'Datos de entrada inválidos.', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error('Excepción inesperada al iniciar pago C2P: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
-            return response()->json(['message' => 'Ha ocurrido un error inesperado al procesar tu solicitud.', 'error' => $e->getMessage()], 500);
+            Log::error('Error en pago C2P: ' . $e->getMessage());
+            return response()->json(['message' => $e->getMessage()], 500);
         }
     }
 
@@ -149,10 +114,10 @@ class PaymentController extends Controller
             // 1. Validar los datos de entrada
             $validatedData = $request->validate([
                 'order_id' => 'required|exists:orders,id',
-                'CardNumber' => 'required|string', 
+                'CardNumber' => 'required|string',
                 'dtExpiration' => 'required|string|regex:/^(0[1-9]|1[0-2])\/?([0-9]{4}|[0-9]{2})$/',
                 'CardHolderName' => 'nullable|string|max:255',
-                'CVV' => 'required|string|digits_between:3,4', 
+                'CVV' => 'required|string|digits_between:3,4',
                 'Amount' => 'required|numeric|min:0.01',
                 'Terminal' => 'required|string|max:50',
             ]);
@@ -172,7 +137,7 @@ class PaymentController extends Controller
             if (strlen($expiration) === 4) {
                 $expiration = substr($expiration, 0, 2) . '20' . substr($expiration, 2, 2);
             }
-            
+
             // Adaptar las claves del array a las que el método processCardPayment del servicio espera
             $bncCardData = [
                 "TransactionIdentifier" => "ORDER-{$order->id}-" . uniqid(), // Genera un ID de transacción único si no lo tienes
@@ -235,9 +200,8 @@ class PaymentController extends Controller
                     'amount_paid_by_customer' => $order->paid_amount,
                 ]
             ], 200);
-
         } catch (ValidationException $e) {
-            DB::rollBack(); 
+            DB::rollBack();
             Log::warning('Error de validación al procesar pago con tarjeta.', ['errors' => $e->errors()]);
             return response()->json(['message' => 'Datos de entrada inválidos.', 'errors' => $e->errors()], 422);
         } catch (\Exception $e) {
@@ -333,7 +297,6 @@ class PaymentController extends Controller
                     'amount_paid_by_customer' => $order->paid_amount,
                 ]
             ], 200);
-
         } catch (ValidationException $e) {
             DB::rollBack();
             Log::warning('Error de validación al iniciar pago P2P.', ['errors' => $e->errors()]);
