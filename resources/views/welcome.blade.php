@@ -19,6 +19,7 @@
             <h1>Tu Próxima Aventura te<br> 
                 está esperando
             </h1>
+            <br>
             <h3>Conecta, explora y vive sin limites<br> 
 
                 ¡Qué esperas para ser un Rumbero afíliate!
@@ -34,9 +35,8 @@
             <div class="feature-grid">
                 <div class="feature-item">
                     <img src="assets/img/home/eventos_1.jpg" alt="Eventos Actualizados">
-                    <h3>Eventos <br> Actualizados</h3>
-                    <p>Mantente al día con los eventos más calientes en tu ciudad. Desde conciertos a festivales, nunca te
-                        perderás una rumba.</p>
+                    <h3>Eventos <br> Rumberos</h3>
+                    <p>Nuevos Aliados,  Conectar con Rumberos, Promociones Aliadas</p>
                 </div>
                 <div class="feature-item">
                     <img src="assets/img/home/nuevos_lugares.jpg" alt="Descubre Lugares Nuevos">

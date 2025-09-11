@@ -194,7 +194,7 @@
                     </button>
                     <div class="faq-answer">
                         <p>Puedes comunicarte a través de nuestros canales de atención:
-                            - WhatsApp +584143806713
+                            - WhatsApp +584265570676
                             - Correo electrónico rumberoextremo@gmail.com
                             - DM Instagram @rumberoextremo
                         </p>

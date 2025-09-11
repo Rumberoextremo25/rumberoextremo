@@ -18,22 +18,21 @@
     <main class="main-content">
         <section class="hero-demo">
             <div class="container">
+                <br>
                 <h1>Vive la Experiencia Rumbero Extremo</h1>
-                <p>Nuestra aplicación conecta a la comunidad fiestera de Venezuela con los lugares y eventos más exclusivos, ¡con beneficios increíbles!</p>
             </div>
         </section>
 
         <section class="content-section">
             <div class="container">
                 <h1>Descubre Rumbero Extremo en Acción</h1>
-                <p>Mira un breve video para entender cómo nuestra aplicación te ayuda a encontrar los mejores eventos y a
-                    planificar tus noches de fiesta.</p>
+                <p>Videos de cómo registrarte como Aliado Comercial y Rumbero.</p>
 
                 <div class="form-buttons">
-                    <a href="{{ route('demo.aliado') }}" class="form-button">
+                    <a href="{{ route('demo.aliado') }}" class="form-button" style="text-align: center;">
                         <i class="fas fa-handshake"></i> Regístrate como Aliado Comercial
                     </a>
-                    <a href="{{ route('demo.afiliado') }}" class="form-button">
+                    <a href="{{ route('demo.afiliado') }}" class="form-button" style="text-align: center;">
                         <i class="fas fa-user-plus"></i> Regístrate como Rumbero
                     </a>
                 </div>

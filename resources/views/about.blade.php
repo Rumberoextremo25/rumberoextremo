@@ -62,14 +62,21 @@
             <h2>La Fuerza Detrás de Nuestro Éxito</h2>
             <p class="team-description">
                 En el corazón de nuestra organización reside un equipo de profesionales dedicados y apasionados, cuyo
-                talento y
-                compromiso son la base de todo lo que logramos. Cada miembro aporta una riqueza de experiencia, habilidades
-                diversas y una visión unificada para superar expectativas y entregar resultados excepcionales. Creemos
-                firmemente que la colaboración, la innovación y el deseo constante de aprender y mejorar son los pilares que
-                nos
-                impulsan hacia adelante. Es la sinergia de nuestro equipo lo que nos permite abordar desafíos complejos,
-                desarrollar soluciones creativas y, en última instancia, ofrecer un valor inigualable a nuestros usuarios y
-                aliados.
+                talento y compromiso son la
+                base de todo lo que logramos. Cada miembro aporta una riqueza de experiencia, habilidades diversas y una
+                visión unificada para
+                superar expectativas y entregar resultados excepcionales.
+            </p>
+            <br>
+            <div class="team-members-grid">
+                <p>Creemos firmemente que la colaboración, la innovación y el deseo constante de aprender y mejorar son los
+                    pilares que nos impulsan
+                    hacia adelante.</p>
+            </div>
+            <br>
+            <p>Es la sinergia de nuestro equipo lo que nos permite abordar desafíos complejos, desarrollar soluciones
+                creativas y, en última instancia,
+                ofrecer un valor inigualable a nuestros usuarios y aliados.</p>
             </p>
         </section>
     </main>

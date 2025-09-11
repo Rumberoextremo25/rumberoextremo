@@ -522,73 +522,11 @@ class BncApiService
      */
 
     /**
-     * Envía request encriptado con token
-     */
-    private function sendEncryptedRequestWithToken(string $url, array $solicitud, string $token): ?array
-    {
-        try {
-            $response = Http::timeout(30)
-                ->withHeaders([
-                    'Content-Type' => 'application/json',
-                    'Accept' => 'application/json',
-                    'Authorization' => 'Bearer ' . $token,
-                    'X-Client-GUID' => $this->clientGuid,
-                    'X-Merchant-ID' => $this->merchantId
-                ])
-                ->post($url, $solicitud);
-
-            if ($response->successful() || $response->status() === 409) {
-                $jsonResponse = $response->json();
-                $jsonResponse['http_status'] = $response->status();
-                return $jsonResponse;
-            }
-
-            return [
-                'http_status' => $response->status(),
-                'error' => $response->body()
-            ];
-        } catch (Exception $e) {
-            Log::error('Error en sendEncryptedRequestWithToken: ' . $e->getMessage());
-            return null;
-        }
-    }
-
-    /**
-     * Reintenta operación con nuevo token
-     */
-    private function retryWithNewToken(string $url, array $solicitud, string $operation): ?array
-    {
-        Log::warning("Token caducado en $operation, renovando");
-        Cache::forget('bnc_session_token');
-        $newToken = $this->getSessionToken();
-
-        if ($newToken) {
-            Log::info("Token renovado, reintentando $operation");
-            return $this->sendEncryptedRequestWithToken($url, $solicitud, $newToken);
-        }
-
-        Log::error("No se pudo renovar token para $operation");
-        return null;
-    }
-
-    /**
      * Genera referencia única diaria
      */
     private function generateDailyReference(): string
     {
         return 'APP_' . date('Ymd') . '_' . substr(uniqid(), -6);
-    }
-
-    /**
-     * Formatea número de teléfono
-     */
-    private function formatPhoneNumber(string $phone): string
-    {
-        $cleanPhone = preg_replace('/[^0-9]/', '', $phone);
-        if (strlen($cleanPhone) === 8) {
-            return '502' . $cleanPhone;
-        }
-        return $cleanPhone;
     }
 
     /**
@@ -608,33 +546,6 @@ class BncApiService
         return $this->dataCypher->testEncryption();
     }
 
-    /**
-     * Método encrypt legacy (compatible con el BNC)
-     */
-    private function encrypt(string $data, string $key): string
-    {
-        try {
-            // 1. Preparar clave de 32 bytes
-            $key = substr(hash('sha256', $key, true), 0, 32);
-
-            // 2. IV FIJO (usar primeros 16 bytes de la clave)
-            $iv = substr($key, 0, 16);
-
-            // 3. Encryptar
-            $encrypted = openssl_encrypt(
-                $data,
-                'aes-256-cbc',
-                $key,
-                OPENSSL_RAW_DATA,
-                $iv
-            );
-
-            return $encrypted ? base64_encode($encrypted) : '';
-        } catch (Exception $e) {
-            Log::error('Error en encrypt legacy: ' . $e->getMessage());
-            return '';
-        }
-    }
 
     /**
      * Método decrypt legacy (compatible con el BNC - para respuestas)
@@ -662,16 +573,6 @@ class BncApiService
             Log::error('Error en decrypt legacy: ' . $e->getMessage());
             return '';
         }
-    }
-
-    public function testBothDecryptionMethods(string $encryptedValue): array
-    {
-        return [
-            'encrypted_value' => $encryptedValue,
-            'legacy_decrypt' => $this->decrypt($encryptedValue, $this->masterKey),
-            'datacypher_decrypt' => $this->dataCypher->decryptAES($encryptedValue),
-            'master_key_preview' => substr($this->masterKey, 0, 10) . '...'
-        ];
     }
 
     public function checkBncConnection(): array
@@ -714,58 +615,6 @@ class BncApiService
         } catch (Exception $e) {
             $results['connectivity'] = [
                 'success' => false,
-                'error' => $e->getMessage()
-            ];
-        }
-
-        return $results;
-    }
-
-    // En tu controlador
-    public function debugBnc(BncApiService $bncApiService)
-    {
-        $debugInfo = $bncApiService->checkBncConnection();
-        return response()->json($debugInfo);
-    }
-
-    // Agregar este método al BncApiService // Validar y probar conectividad en producción
-    public function testProductionConnectivity(): array
-    {
-        $results = [];
-
-        // 1. Test DNS
-        $host = parse_url($this->banksApiUrl, PHP_URL_HOST);
-        $results['dns_lookup'] = gethostbyname($host);
-
-        // 2. Test puerto
-        $port = parse_url($this->banksApiUrl, PHP_URL_PORT) ?: 16500;
-        $results['port_check'] = @fsockopen($host, $port, $errno, $errstr, 10);
-
-        // 3. Test SSL
-        $results['ssl_cert'] = true;
-        try {
-            $client = new \GuzzleHttp\Client();
-            $response = $client->get($this->banksApiUrl, [
-                'verify' => true, // Forzar verificación SSL
-                'timeout' => 10
-            ]);
-        } catch (\GuzzleHttp\Exception\RequestException $e) {
-            $results['ssl_cert'] = false;
-            $results['ssl_error'] = $e->getMessage();
-        }
-
-        // 4. Test request real
-        try {
-            $response = Http::timeout(15)
-                ->withoutVerifying() // ⚠️ Solo para测试
-                ->get($this->banksApiUrl);
-
-            $results['direct_request'] = [
-                'status' => $response->status(),
-                'success' => $response->successful()
-            ];
-        } catch (Exception $e) {
-            $results['direct_request'] = [
                 'error' => $e->getMessage()
             ];
         }

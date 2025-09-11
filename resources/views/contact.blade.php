@@ -20,8 +20,6 @@
         <section class="hero-contact">
             <div class="container">
                 <h1>Hablemos, estamos listos para escucharte</h1>
-                <p>Ya sea que tengas una pregunta, una sugerencia o quieras asociarte con nosotros, estamos a un mensaje de
-                    distancia.</p>
             </div>
         </section>
 
