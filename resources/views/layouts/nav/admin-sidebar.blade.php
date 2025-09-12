@@ -46,10 +46,6 @@
                 {{-- Contenedor de Gestión de Contenido --}}
                 @if (Auth::user()->role === 'admin')
                     <li class="sidebar-nav-item sidebar-parent-item">
-                        <div class="sidebar-nav-link">
-                            <i class="fa-solid fa-box-archive"></i>
-                            <span class="sidebar-link-text">Contenido</span>
-                        </div>
                         <ul class="sidebar-nav-submenu">
                             <li class="sidebar-nav-subitem">
                                 <a href="{{ route('admin.banners.index') }}"
