@@ -3,169 +3,208 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Payout;
+use App\Models\Ally;
 use Illuminate\Http\Request;
-use App\Models\PartnerPayout; // Asumo que este es el nombre de tu modelo para los pagos a aliados
-use App\Models\Ally; // Asumo que 'Ally' es el nombre de tu modelo para los Aliados
-use League\Csv\Writer; // Necesitarás instalar league/csv: composer require league/csv
-use SplTempFileObject; // Para el archivo CSV en memoria
-use Illuminate\Support\Facades\DB; // Para transacciones de base de datos
-use Illuminate\Support\Facades\Log; // Para logging
-use Illuminate\Support\Carbon; // Para manejo de fechas
-use Symfony\Component\HttpFoundation\StreamedResponse; // Asegúrate de importar esto
-use Illuminate\Http\Response; // <-- ¡Importa Illuminate\Http\Response!
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Illuminate\Support\Facades\Storage;
 
 class PayoutController extends Controller
 {
     /**
-     * Muestra una lista de pagos pendientes a aliados en el panel de administración.
-     *
-     * @return \Illuminate\View\View
+     * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $pendingPayouts = PartnerPayout::with('ally', 'order')
-                                        ->where('status', 'pending')
-                                        ->orderBy('created_at', 'asc')
-                                        ->get();
+        $query = Payout::with(['ally', 'sale'])
+            ->orderBy('generation_date', 'desc');
 
-        return view('Admin.payouts.index', compact('pendingPayouts'));
-    }
-
-    /**
-     * Genera un archivo CSV con los datos de las transferencias pendientes seleccionadas.
-     * Este CSV está formateado para ser compatible con la carga masiva en plataformas bancarias (ej. BNC Online Empresas).
-     *
-     * @param Request $request Contiene los IDs de los pagos a procesar.
-     * @return \Symfony\Component\HttpFoundation\StreamedResponse|\Illuminate\Http\Response
-     * // <-- ¡CAMBIO AQUÍ! Añadimos |Illuminate\Http\Response
-     */
-    public function generateCsv(Request $request): StreamedResponse|Response
-    {
-        // 1. Validar que se hayan seleccionado IDs de pagos.
-        // Si la validación falla, Laravel automáticamente lanza una Illuminate\Validation\ValidationException.
-        // El manejador de excepciones de Laravel convierte esto en un Illuminate\Http\Response (ej. JsonResponse 422).
-        $request->validate([
-            'payout_ids' => 'required|array',
-            'payout_ids.*' => 'exists:partner_payouts,id',
-        ]);
-
-        $selectedPayoutIds = $request->input('payout_ids');
-
-        // 2. Obtener los pagos seleccionados que estén pendientes.
-        $payoutsToProcess = PartnerPayout::with('ally', 'order')
-                                        ->whereIn('id', $selectedPayoutIds)
-                                        ->where('status', 'pending')
-                                        ->get();
-
-        // 3. Si no se encontraron pagos pendientes para los IDs seleccionados, lanzar una excepción.
-        // Esto interrumpe el flujo y Laravel lo capturará.
-        if ($payoutsToProcess->isEmpty()) {
-            Log::warning("Intento de generar CSV sin pagos pendientes para IDs: " . implode(', ', $selectedPayoutIds));
-            throw new NotFoundHttpException('No se encontraron pagos pendientes válidos para los IDs seleccionados.');
+        // Filtrar por estado si se especifica
+        if ($request->has('status') && $request->status != 'all') {
+            $query->where('status', $request->status);
+        } else {
+            $query->whereIn('status', ['pending', 'processing']);
         }
 
-        // --- Configuración y generación del CSV ---
-        $csv = Writer::createFromFileObject(new SplTempFileObject());
-        $csv->setOutputBOM(Writer::BOM_UTF8);
-        $csv->setDelimiter(';'); // Define el delimitador (común: , ; |). Ajusta según el banco.
-
-        // Encabezados del CSV. ADAPTA ESTOS NOMBRES Y ORDEN A LOS REQUERIMIENTOS ESPECÍFICOS DE TU BANCO.
-        $csv->insertOne([
-            'Cuenta Origen', 'Tipo Operacion', 'Cuenta Destino', 'Tipo Cuenta Destino',
-            'Tipo Documento Beneficiario', 'Documento Beneficiario', 'Nombre Beneficiario',
-            'Monto', 'Concepto', 'Email Beneficiario'
-        ]);
-
-        // Datos bancarios de Rumbero Extremo (cuenta de origen)
-        $rumberoAccountNumber = env('RUMBERO_BANK_ACCOUNT_NUMBER');
-        $rumberoAccountType = env('RUMBERO_BANK_ACCOUNT_TYPE');
-
-        foreach ($payoutsToProcess as $payout) {
-            $ally = $payout->ally;
-
-            if (!$ally || empty($ally->account_number) || empty($ally->account_type) || empty($ally->id_document) || empty($ally->name)) {
-                Log::error("Datos bancarios incompletos para el aliado ID: " . ($ally->id ?? 'N/A') . " asociado al pago #{$payout->id}. Este pago no se incluirá en el CSV.");
-                throw new BadRequestHttpException("Datos bancarios incompletos para el aliado del pago ID #{$payout->id}.");
-            }
-
-            $docType = '';
-            $idDocumentValue = $ally->id_document;
-            if (!empty($idDocumentValue)) {
-                $firstChar = strtoupper(substr($idDocumentValue, 0, 1));
-                if (in_array($firstChar, ['V', 'E', 'P', 'G', 'J'])) {
-                    $docType = $firstChar;
-                    $idDocumentValue = substr($idDocumentValue, 1);
-                } else {
-                    $docType = 'V';
-                }
-            }
-
-            $formattedAmount = number_format($payout->amount, 2, '.', '');
-
-            $csv->insertOne([
-                $rumberoAccountNumber,
-                'TRANSFERENCIA',
-                $ally->account_number,
-                ($ally->account_type === 'corriente' ? 'C' : 'A'),
-                $docType,
-                $idDocumentValue,
-                $ally->name,
-                $formattedAmount,
-                "Pago OE#{$payout->order->id} | Ref:RE-P". $payout->id,
-                $ally->email
+        // Filtrar por rango de fechas
+        if ($request->has('fecha_inicio') && $request->has('fecha_fin')) {
+            $query->whereBetween('generation_date', [
+                $request->fecha_inicio,
+                $request->fecha_fin
             ]);
         }
 
-        $filename = 'transferencias_rumberoextremo_' . Carbon::now()->format('Ymd_His') . '.csv';
+        // Filtrar por aliado
+        if ($request->has('ally_id')) {
+            $query->where('ally_id', $request->ally_id);
+        }
 
-        // Retorna la respuesta HTTP para descargar el archivo CSV
-        return response((string) $csv, 200, [
-            'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
-            'Pragma' => 'no-cache',
-            'Expires' => '0',
-        ]);
+        $payouts = $query->paginate(20);
+        $allies = Ally::active()->get();
+
+        return view('Admin.payouts.index', compact('payouts', 'allies'));
     }
 
     /**
-     * Marca los pagos seleccionados como procesados después de la carga del CSV
-     * y la confirmación en la plataforma bancaria.
-     *
-     * @param Request $request Contiene los IDs de los pagos a marcar y una referencia de la transacción.
-     * @return \Illuminate\Http\RedirectResponse
+     * Display only pending payouts
      */
-    public function markProcessed(Request $request)
+    public function pending(Request $request)
+    {
+        $query = Payout::with(['ally', 'sale'])
+            ->where('status', 'pending')
+            ->orderBy('generation_date', 'desc');
+
+        // Filtrar por rango de fechas
+        if ($request->has('fecha_inicio') && $request->has('fecha_fin')) {
+            $query->whereBetween('generation_date', [
+                $request->fecha_inicio,
+                $request->fecha_fin
+            ]);
+        }
+
+        $payouts = $query->paginate(20);
+        $allies = Ally::active()->get();
+
+        return view('Admin.payouts.pending', compact('payouts', 'allies'));
+    }
+
+    /**
+     * Generate BNC file for payouts
+     */
+    public function generateBncFile(Request $request)
     {
         $request->validate([
-            'payout_ids' => 'required|array',
-            'payout_ids.*' => 'exists:partner_payouts,id',
-            'transaction_reference' => 'nullable|string|max:255',
+            'fecha_inicio' => 'required|date',
+            'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
+            'tipo_cuenta' => 'required|in:corriente,ahorro',
+            'concepto' => 'nullable|string|max:100',
         ]);
 
-        $selectedPayoutIds = $request->input('payout_ids');
-        $transactionReference = $request->input('transaction_reference');
-
-        DB::beginTransaction();
         try {
-            PartnerPayout::whereIn('id', $selectedPayoutIds)
-                        ->where('status', 'pending')
-                        ->update([
-                            'status' => 'processed',
-                            'transaction_reference' => $transactionReference,
-                            'processed_at' => now(),
-                            'notes' => DB::raw("CONCAT(COALESCE(notes, ''), '\nProcesado en lote: {$transactionReference}')")
-                        ]);
+            // Obtener payouts pendientes
+            $payouts = Payout::with(['ally', 'sale'])
+                ->where('status', 'pending')
+                ->whereBetween('generation_date', [
+                    $request->fecha_inicio,
+                    $request->fecha_fin
+                ])
+                ->get();
 
-            DB::commit();
-            Log::info("Pagos a aliados marcados como procesados. IDs: " . implode(', ', $selectedPayoutIds));
-            return redirect()->back()->with('success', 'Pagos marcados como procesados exitosamente.');
+            if ($payouts->isEmpty()) {
+                return redirect()->back()->with('error', 'No hay pagos pendientes en el rango de fechas especificado');
+            }
 
+            // Crear instancia del controlador de API
+            $paymentController = new \App\Http\Controllers\Api\PaymentController(
+                app(\App\Services\BncApiService::class)
+            );
+
+            // Usar el método público
+            $archivoNombre = $paymentController->generarArchivoBNC($payouts, $request->tipo_cuenta, $request->concepto);
+
+            // Actualizar estado a processing
+            Payout::whereIn('id', $payouts->pluck('id'))
+                ->update(['status' => 'processing']);
+
+            // Descargar el archivo
+            $filePath = storage_path('app/pagos/bnc/' . $archivoNombre);
+
+            return response()->download($filePath)->deleteFileAfterSend(true);
         } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error("Error al marcar pagos como procesados: " . $e->getMessage(), ['exception' => $e]);
-            return redirect()->back()->with('error', 'Hubo un error al marcar los pagos como procesados. Inténtalo de nuevo.');
+            return redirect()->back()->with('error', 'Error al generar archivo: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Confirm payouts processing
+     */
+    public function confirmPayouts(Request $request)
+    {
+        $request->validate([
+            'payout_ids' => 'required',
+            'fecha_pago' => 'required|date',
+            'referencia_pago' => 'required|string|max:100',
+            'archivo_comprobante' => 'nullable|file|mimes:pdf,jpg,png|max:5120',
+        ]);
+
+        try {
+            $payoutIds = json_decode($request->payout_ids, true);
+
+            // Crear instancia del controlador de API
+            $paymentController = new \App\Http\Controllers\Api\PaymentController(
+                app(\App\Services\BncApiService::class)
+            );
+
+            // Crear un request artificial para el método del API
+            $apiRequest = new \Illuminate\Http\Request([
+                'payout_ids' => $payoutIds,
+                'fecha_pago' => $request->fecha_pago,
+                'referencia_pago' => $request->referencia_pago,
+                'archivo_comprobante' => $request->file('archivo_comprobante'),
+            ]);
+
+            $response = $paymentController->confirmarPagosProcesados($apiRequest);
+
+            if ($response->getStatusCode() === 200) {
+                return redirect()->route('admin.payouts.index')->with('success', 'Pagos confirmados exitosamente');
+            } else {
+                $errorData = json_decode($response->getContent(), true);
+                return redirect()->back()->with('error', $errorData['message'] ?? 'Error al confirmar pagos');
+            }
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Error: ' . $e->getMessage());
+        }
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        $allies = Ally::active()->get();
+        return view('Admin.payouts.create', compact('allies'));
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'ally_id' => 'required|exists:allies,id',
+            'sale_amount' => 'required|numeric|min:0.01',
+            'commission_percentage' => 'required|numeric|min:0|max:100',
+            'commission_amount' => 'required|numeric|min:0',
+            'sale_reference' => 'nullable|string|max:100',
+            'status' => 'required|in:pending,processing,paid',
+            'notes' => 'nullable|string',
+        ]);
+
+        try {
+            $ally = Ally::findOrFail($request->ally_id);
+
+            $payout = Payout::create([
+                'ally_id' => $request->ally_id,
+                'sale_amount' => $request->sale_amount,
+                'commission_percentage' => $request->commission_percentage,
+                'commission_amount' => $request->commission_amount,
+                'sale_reference' => $request->sale_reference,
+                'status' => $request->status,
+                'generation_date' => now(),
+                'ally_payment_method' => $ally->default_payment_method ?? 'transfer',
+                'ally_account_number' => $ally->account_number,
+                'ally_bank' => $ally->bank_name,
+                'notes' => $request->notes,
+            ]);
+
+            return redirect()->route('admin.payouts.show', $payout->id)
+                ->with('success', 'Pago manual creado exitosamente.');
+        } catch (\Exception $e) {
+            return redirect()->back()
+                ->with('error', 'Error al crear el pago: ' . $e->getMessage())
+                ->withInput();
+        }
+    }
+
+    public function show(Payout $payout)
+    {
+        $payout->load(['ally', 'sale.client', 'sale.branch']);
+        return view('Admin.payouts.show', compact('payout'));
     }
 }

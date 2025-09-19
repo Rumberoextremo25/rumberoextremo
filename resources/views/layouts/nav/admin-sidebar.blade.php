@@ -2,6 +2,9 @@
     <i class="fa-solid fa-bars"></i>
 </button>
 
+<!-- Overlay para cerrar el menú -->
+<div class="sidebar-overlay"></div>
+
 <aside class="admin-sidebar">
     {{-- Navegación del Sidebar --}}
     <nav class="sidebar-nav">
@@ -72,7 +75,7 @@
                 {{-- Reportes --}}
                 @if (Auth::user()->role === 'admin' || Auth::user()->role === 'aliado')
                     <li class="sidebar-nav-item">
-                        <a href="{{ route('reports.sales') }}"
+                        <a href="{{ route('admin.reports.sales') }}"
                             class="sidebar-nav-link {{ request()->routeIs('reports.*') ? 'active' : '' }}">
                             <i class="fa-solid fa-file-invoice"></i> <span class="sidebar-link-text">Reportes</span>
                         </a>
@@ -82,10 +85,10 @@
                 {{-- Payout --}}
                 @if (Auth::user()->role === 'admin')
                     <li class="sidebar-nav-item">
-                        <a href="{{ route('Admin.payouts.pending') }}"
+                        <a href="{{ route('admin.payouts.index') }}"
                             class="sidebar-nav-link {{ request()->routeIs('payouts.*') ? 'active' : '' }}">
-                            <img src="{{ asset('assets/img/dashboard/pago_proveedores.png') }}" alt="Pago a Proveedores"
-                                class="sidebar-icon">
+                            <img src="{{ asset('assets/img/dashboard/pago_proveedores.png') }}"
+                                alt="Pago a Proveedores" class="sidebar-icon">
                             <span class="sidebar-link-text">Pago a Proveedores</span>
                         </a>
                     </li>
@@ -115,24 +118,42 @@
         </div>
     </nav>
 </aside>
-<!-- El script para el menú móvil va aquí -->
-    <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const menuToggle = document.querySelector('.menu-toggle');
-            const sidebar = document.querySelector('.admin-sidebar');
-    
-            // Función para abrir/cerrar el menú
-            menuToggle.addEventListener('click', function() {
-                sidebar.classList.toggle('open');
-            });
-    
-            // Opcional: Cierra el menú cuando se hace clic fuera de él
-            document.addEventListener('click', function(event) {
-                const isClickInsideSidebar = sidebar.contains(event.target);
-                const isClickOnToggle = menuToggle.contains(event.target);
-                if (!isClickInsideSidebar && !isClickOnToggle && sidebar.classList.contains('open')) {
-                    sidebar.classList.remove('open');
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const menuToggle = document.querySelector('.menu-toggle');
+        const sidebar = document.querySelector('.admin-sidebar');
+        const overlay = document.querySelector('.sidebar-overlay');
+        const body = document.body;
+
+        function toggleMenu() {
+            sidebar.classList.toggle('open');
+            overlay.classList.toggle('active');
+            body.classList.toggle('no-scroll');
+            menuToggle.classList.toggle('active');
+        }
+
+        menuToggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            toggleMenu();
+        });
+
+        overlay.addEventListener('click', toggleMenu);
+
+        // Cerrar menú al hacer clic en un link
+        const sidebarLinks = document.querySelectorAll('.sidebar-nav-link, .sidebar-logout-link');
+        sidebarLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth <= 768) {
+                    toggleMenu();
                 }
             });
         });
-    </script>
+
+        // Cerrar con tecla ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && sidebar.classList.contains('open')) {
+                toggleMenu();
+            }
+        });
+    });
+</script>

@@ -11,6 +11,7 @@ use App\Http\Controllers\Admin\CommercialAllyController;
 use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\AllyController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\PayoutController;
 
 //RUTAS DE LAS VISTAS DE LA LANDING UBICADAS EN EL CONTROLADOR DE PAGE
@@ -68,8 +69,12 @@ Route::get('/get-subcategories', [AllyController::class, 'getSubcategories'])->n
 
 
 // Rutas para reportes de ventas
-Route::get('/reports/sales', [AdminController::class, 'reports'])->name('reports.sales');
-//Route::get('/reports/sales/pdf', [SalesController::class, 'downloadPdf'])->name('reports.sales.pdf');
+Route::prefix('admin')->name('admin.')->group(function () {
+    // Reportes
+    Route::get('/reports/sales', [ReportController::class, 'sales'])->name('reports.sales');
+    Route::get('/reports/sales/data', [ReportController::class, 'salesData'])->name('reports.sales.data');
+    Route::post('/reports/sales/export', [ReportController::class, 'exportSales'])->name('reports.sales.export');
+});
 
 // Rutas para el Perfil (asumiendo que es el perfil del admin logueado)
 Route::middleware(['auth'])->group(function () {
@@ -101,11 +106,16 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
     Route::resource('promotions', PromotionController::class);
 });
 
-//Rutas para transferencias bancarias
-Route::middleware(['auth'])->group(function () { // Asegura que solo administradores puedan acceder
-    Route::get('/admin/payouts/pending', [PayoutController::class, 'index'])->name('Admin.payouts.pending');
-    Route::get('/admin/payouts/generate-csv', [PayoutController::class, 'generateCsv'])->name('admin.payouts.generate_csv');
-    Route::post('/admin/payouts/mark-processed', [PayoutController::class, 'markProcessed'])->name('admin.payouts.mark_processed');
+// Rutas de administración para payouts
+Route::prefix('admin')->name('admin.')->group(function () {
+    // Rutas de payouts
+    Route::get('/payouts', [PayoutController::class, 'index'])->name('payouts.index');
+    Route::get('/payouts/pending', [PayoutController::class, 'pending'])->name('payouts.pending');
+    Route::get('/payouts/create', [PayoutController::class, 'create'])->name('payouts.create');
+    Route::post('/payouts', [PayoutController::class, 'store'])->name('payouts.store');
+    Route::get('/payouts/{payout}', [PayoutController::class, 'show'])->name('payouts.show');
+    Route::post('/payouts/generate-bnc', [PayoutController::class, 'generateBncFile'])->name('payouts.generate_bnc');
+    Route::post('/payouts/confirm', [PayoutController::class, 'confirmPayouts'])->name('payouts.confirm');
 });
 
 require __DIR__ . '/auth.php';

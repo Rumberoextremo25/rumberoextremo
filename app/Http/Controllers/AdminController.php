@@ -28,7 +28,7 @@ class AdminController extends Controller
 
         $totalUsers = User::count();
         $totalAllies = Ally::count();
-        $totalSales = Sale::sum('total');
+        $totalSales = Sale::sum('total_amount');
 
         // Obtener el número total de visitas desde tu tabla 'page_visits'
         $pageViews = PageVisit::sum('visits_count');
