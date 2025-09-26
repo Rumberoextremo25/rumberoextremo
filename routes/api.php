@@ -134,48 +134,6 @@ Route::get('/user', function (Request $request) {
 
 // Rutas de prueba para la API de BNC
 
-Route::get('/test-bnc-auth', function () {
-    try {
-        $service = new App\Services\BncApiService();
-
-        // Test 1: Configuración
-        $config = [
-            'auth_url' => env('BNC_AUTH_API_URL'),
-            'client_guid' => env('BNC_CLIENT_GUID'),
-            'master_key_length' => env('BNC_MASTER_KEY') ? strlen(env('BNC_MASTER_KEY')) : 0,
-            'merchant_id' => env('BNC_MERCHANT_ID'),
-            'has_master_key' => !empty(env('BNC_MASTER_KEY'))
-        ];
-
-        // Test 2: DataCypher
-        $cypher = new App\Services\DataCypher(env('BNC_MASTER_KEY'));
-        $encryptionTest = $cypher->testCompatibilityWithLegacy();
-
-        // Test 3: Intento real de token
-        $token = $service->getSessionToken();
-
-        // Test 4: Probar bancos (opcional)
-        $banks = $service->getBanksFromBnc();
-
-        return response()->json([
-            'config' => $config,
-            'encryption_test' => $encryptionTest,
-            'token' => $token ? substr($token, 0, 50) . '...' : null,
-            'token_length' => $token ? strlen($token) : 0,
-            'banks_count' => is_array($banks) ? count($banks) : 0,
-            'banks_sample' => is_array($banks) ? array_slice($banks, 0, 3) : null,
-            'success' => !is_null($token)
-        ]);
-    } catch (Exception $e) {
-        return response()->json([
-            'error' => $e->getMessage(),
-            'file' => $e->getFile(),
-            'line' => $e->getLine(),
-            'timestamp' => now()->toISOString()
-        ], 500);
-    }
-});
-
 // Crea una ruta temporal para debug
 Route::get('/debug-bnc', function () {
     return [
@@ -209,35 +167,6 @@ Route::get('/test-bnc-connection', function () {
 });
 
 
-// Ruta de prueba para el cifrado P2P usando DataCypher
-
-Route::get('/test-p2p-encryption', function () {
-    $cypher = new App\Services\DataCypher(env('BNC_MASTER_KEY'));
-
-    $testData = [
-        "BeneficiaryBankCode" => 191,
-        "BeneficiaryCellPhone" => "584242207524",
-        "BeneficiaryID" => "V23000760",
-        "BeneficiaryName" => "María Rodríguez Solís",
-        "Amount" => 15.8,
-        "Description" => "Pago de servicios profesionales septiembre 2024",
-        "BeneficiaryEmail" => null
-    ];
-
-    // ✅ JSON corregido
-    $jsonData = json_encode($testData, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-
-    $result = $cypher->encryptLegacyFormat($testData);
-
-    return response()->json([
-        'test_data' => $testData,
-        'json_data' => json_encode($testData),
-        'encrypted_value' => $result['value'],
-        'value_length' => strlen($result['value']),
-        'validation_hash' => $result['validation']
-    ]);
-});
-
 // Ruta de prueba para comparar tokens (autorización vs cliente)
 
 Route::get('/debug-tokens', function () {
@@ -255,4 +184,44 @@ Route::get('/debug-tokens', function () {
         'client_token' => $clientToken,
         'difference' => 'auth_token va en header, client_token va en datos'
     ]);
+});
+
+// Ruta de prueba para encriptación AES (DataCypher)
+Route::get('/test-aes-encryption', function () {
+    $encryptionKey = env('BNC_MASTER_KEY');
+    $dataToEncrypt = "TestString123";
+
+    $cypher = new App\Services\DataCypher($encryptionKey);
+
+    // Test de encriptación
+    $encryptedData = $cypher->encryptAES($dataToEncrypt);
+    $decryptedData = $cypher->decryptAES($encryptedData);
+
+    return response()->json([
+        'original_data' => $dataToEncrypt,
+        'encrypted_data' => $encryptedData,
+        'decryption_success' => $decryptedData === $dataToEncrypt
+    ]);
+});
+
+// Ruta de prueba para verificar compatibilidad legacy
+Route::get('/test/legacy-compatibility', function () {
+    try {
+        $bncService = app(\App\Services\BncApiService::class); // Ajusta el namespace según tu servicio
+        
+        $result = $bncService->verifyLegacyCompatibility();
+        
+        return response()->json([
+            'success' => $result,
+            'message' => $result ? '✅ Compatibilidad legacy verificada' : '❌ Error en compatibilidad legacy',
+            'timestamp' => now()->toISOString()
+        ]);
+        
+    } catch (Exception $e) {
+        return response()->json([
+            'success' => false,
+            'error' => $e->getMessage(),
+            'timestamp' => now()->toISOString()
+        ], 500);
+    }
 });

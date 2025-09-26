@@ -22,15 +22,20 @@ return new class extends Migration
             // Add document field
             $table->string('id_document', 20)->nullable()->after('bank');
             
-            // Add index for commission percentage
-            $table->index('commission_percentage');
-            $table->index('default_payment_method');
+            // Add index for commission percentage (CON NOMBRE EXPLÍCITO)
+            $table->index('commission_percentage', 'allies_commission_percentage_index');
+            $table->index('default_payment_method', 'allies_payment_method_index');
         });
     }
 
     public function down(): void
     {
         Schema::table('allies', function (Blueprint $table) {
+            // Eliminar índices por nombre explícito
+            $table->dropIndex('allies_commission_percentage_index');
+            $table->dropIndex('allies_payment_method_index');
+            
+            // Eliminar columnas
             $table->dropColumn([
                 'commission_percentage',
                 'default_payment_method',
@@ -38,9 +43,6 @@ return new class extends Migration
                 'bank',
                 'id_document'
             ]);
-            
-            $table->dropIndex(['commission_percentage']);
-            $table->dropIndex(['default_payment_method']);
         });
     }
 };

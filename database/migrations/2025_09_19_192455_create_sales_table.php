@@ -10,40 +10,42 @@ return new class extends Migration
     {
         Schema::create('sales', function (Blueprint $table) {
             $table->id();
-            
-            // Foreign keys (sin constraint inicial)
-            $table->unsignedBigInteger('client_id');
-            $table->unsignedBigInteger('branch_id');
-            $table->unsignedBigInteger('ally_id');
-            
-            // Amount fields
-            $table->decimal('total_amount', 10, 2);
-            $table->decimal('paid_amount', 10, 2);
-            
-            // Payment information
-            $table->string('payment_method', 50);
+
+            // Foreign keys (HACER NULLABLE campos requeridos)
+            $table->unsignedBigInteger('client_id')->nullable();
+            $table->unsignedBigInteger('branch_id')->nullable(); // ← CAMBIO AQUÍ
+            $table->unsignedBigInteger('ally_id')->nullable();   // ← CAMBIO AQUÍ
+
+            // Amount fields (HACER NULLABLE si no siempre los envías)
+            $table->decimal('total_amount', 10, 2)->nullable(); // ← CAMBIO AQUÍ
+            $table->decimal('paid_amount', 10, 2)->nullable();  // ← CAMBIO AQUÍ
+
+            // Payment information (HACER NULLABLE)
+            $table->string('payment_method', 50)->nullable(); // ← CAMBIO AQUÍ
+
+            // Campos que ya están nullable se mantienen igual
             $table->string('bank_reference', 100)->nullable();
             $table->string('transaction_id', 100)->nullable();
             $table->string('status', 20)->default('completed');
-            
-            // Dates
-            $table->timestamp('sale_date');
+
+            // Dates (HACER NULLABLE si no siempre los envías)
+            $table->timestamp('sale_date')->nullable(); // ← CAMBIO AQUÍ
             $table->timestamp('payment_date')->nullable();
-            
-            // Client and transaction details
+
+            // Client and transaction details (ya nullable)
             $table->string('terminal', 50)->nullable();
             $table->integer('destination_bank')->nullable();
             $table->string('client_phone', 15)->nullable();
             $table->string('client_id_number', 20)->nullable();
-            
-            // Additional information
+
+            // Additional information (ya nullable)
             $table->text('description')->nullable();
             $table->string('authorization_code', 100)->nullable();
             $table->json('bank_response')->nullable();
-            
+
             // Timestamps
             $table->timestamps();
-            
+
             // Indexes
             $table->index('bank_reference');
             $table->index('transaction_id');

@@ -3,16 +3,17 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use App\Services\BncApiService;
+use App\Models\Ally;
 use App\Models\Payout;
 use App\Models\Sale;
-use App\Models\Ally;
+use App\Services\BncApiService;
+use Exception;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Validation\ValidationException;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\ValidationException;
 
 class PaymentController extends Controller
 {
@@ -25,8 +26,6 @@ class PaymentController extends Controller
 
     /**
      * Inicia un pago C2P (Pago Móvil) con la API del BNC.
-     * El monto total va a la cuenta de Rumbero Extremo.
-     * Luego, se registra el pago pendiente al aliado.
      */
     public function initiateC2PPayment(Request $request): JsonResponse
     {
@@ -34,125 +33,104 @@ class PaymentController extends Controller
 
         DB::beginTransaction();
         try {
-            // 1. ✅ Validar los datos de entrada
-            $validatedData = $request->validate([
-                'banco' => 'required|integer',
-                'telefono' => 'required|string|regex:/^[0-9]{10,15}$/',
-                'cedula' => 'required|string|min:6|max:20',
-                'monto' => 'required|numeric|min:0.01',
-                'token' => 'required|string|regex:/^[0-9]{6,7}$/',
-                'terminal' => 'required|string|max:50',
-                // Campos adicionales
-                'cliente_id' => 'required|integer|exists:clientes,id',
-                'sucursal_id' => 'required|integer|exists:sucursales,id',
-                'aliado_id' => 'required|integer|exists:aliados,id',
+            // 1. Validar campos esenciales
+            $bankValidatedData = $request->validate([
+                'DebtorBankCode' => 'required|integer',
+                'DebtorCellPhone' => 'required|string|regex:/^[0-9]{10,15}$/',
+                'DebtorID' => 'required|string|min:6|max:20',
+                'Amount' => 'required|numeric|min:0.01',
+                'Token' => 'required|string|regex:/^[0-9]{6,7}$/',
+                'Terminal' => 'required|string|max:50',
+            ]);
+
+            // 2. Campos adicionales opcionales
+            $systemValidatedData = $request->validate([
+                'ChildClientID' => 'nullable|string|max:50',
+                'BranchID' => 'nullable|string|max:50',
+                'cliente_id' => 'nullable|integer|exists:clientes,id',
+                'sucursal_id' => 'nullable|integer|exists:sucursales,id',
+                'aliado_id' => 'nullable|integer|exists:aliados,id',
                 'descripcion' => 'nullable|string|max:255',
             ]);
 
-            // 2. ✅ Obtener porcentaje del aliado
-            $aliado = Ally::find($validatedData['aliado_id']);
-            if (!$aliado) {
-                throw new \Exception('Aliado no encontrado');
-            }
+            $validatedData = array_merge($bankValidatedData, $systemValidatedData);
 
-            $porcentajeAliado = $aliado->porcentaje_comision;
-            $montoAliado = ($validatedData['monto'] * $porcentajeAliado) / 100;
-
-            // 3. ✅ Preparar datos para el BNC
+            // 3. Preparar datos para BNC
             $bncC2pData = [
-                'banco' => intval($validatedData['banco']),
-                'telefono' => $validatedData['telefono'],
-                'cedula' => $validatedData['cedula'],
-                'monto' => floatval($validatedData['monto']),
-                'token' => $validatedData['token'],
-                'terminal' => $validatedData['terminal'],
+                'DebtorBankCode' => (int)$validatedData['DebtorBankCode'],
+                'DebtorCellPhone' => $validatedData['DebtorCellPhone'],
+                'DebtorID' => $validatedData['DebtorID'],
+                'Amount' => (float)$validatedData['Amount'],
+                'Token' => $validatedData['Token'],
+                'Terminal' => $validatedData['Terminal'],
+                'ChildClientID' => $validatedData['ChildClientID'] ?? '',
+                'BranchID' => $validatedData['BranchID'] ?? ''
             ];
 
             Log::debug('Datos preparados para BNC C2P', ['bncC2pData' => $bncC2pData]);
 
-            // 4. ✅ Delegar la llamada al servicio BNC
+            // 4. Ejecutar pago C2P
             $bncResponse = $this->bncApiService->initiateC2PPayment($bncC2pData);
 
-            // 5. ✅ Validar la respuesta del BNC
-            if (is_null($bncResponse) || !isset($bncResponse['Status']) || $bncResponse['Status'] !== 'OK') {
-                $errorMessage = $bncResponse['Message'] ?? 'Fallo al procesar el pago C2P con la pasarela de pagos.';
-                Log::error('Fallo al procesar pago C2P con BNC.', [
-                    'bnc_response' => $bncResponse,
-                    'error_message' => $errorMessage
-                ]);
+            // 5. ✅ CORRECCIÓN: Validar respuesta del BNC
+            if (!$this->isBncResponseSuccessful($bncResponse)) {
+                $errorMessage = $bncResponse['Message'] ?? $bncResponse['message'] ?? 'Fallo al procesar el pago C2P.';
+                Log::error('Fallo al procesar pago C2P', ['bnc_response' => $bncResponse]);
                 throw new \Exception($errorMessage);
             }
 
-            // 6. ✅ GUARDAR EN LA TABLA VENTAS
+            // 6. Procesar aliado y comisiones
+            $aliadoData = $this->processAliadoData($validatedData);
+
+            // 7. Guardar venta
             $venta = Sale::create([
-                'cliente_id' => $validatedData['cliente_id'],
-                'sucursal_id' => $validatedData['sucursal_id'],
-                'aliado_id' => $validatedData['aliado_id'],
-                'monto_total' => $validatedData['monto'],
-                'monto_pagado' => $validatedData['monto'],
+                'cliente_id' => $validatedData['cliente_id'] ?? null,
+                'sucursal_id' => $validatedData['sucursal_id'] ?? null,
+                'aliado_id' => $validatedData['aliado_id'] ?? null,
+                'monto_total' => $validatedData['Amount'],
+                'monto_pagado' => $validatedData['Amount'],
                 'metodo_pago' => 'pago_movil',
                 'referencia_banco' => $bncResponse['Reference'] ?? null,
                 'transaction_id' => $bncResponse['TransactionIdentifier'] ?? null,
                 'estado' => 'completado',
                 'fecha_venta' => now(),
                 'fecha_pago' => now(),
-                'terminal' => $validatedData['terminal'],
-                'banco_destino' => $validatedData['banco'],
-                'telefono_cliente' => $validatedData['telefono'],
-                'cedula_cliente' => $validatedData['cedula'],
+                'terminal' => $validatedData['Terminal'],
+                'banco_destino' => $validatedData['DebtorBankCode'],
+                'telefono_cliente' => $validatedData['DebtorCellPhone'],
+                'cedula_cliente' => $validatedData['DebtorID'],
                 'descripcion' => $validatedData['descripcion'] ?? 'Pago móvil procesado',
-                'codigo_autorizacion' => $bncResponse['AuthorizationCode'] ?? null,
+                'codigo_autorizacion' => $bncResponse['AuthorizationCode'] ?? $bncResponse['Code'] ?? null,
                 'respuesta_banco' => json_encode($bncResponse),
             ]);
 
-            // 7. ✅ GUARDAR EN LA TABLA PAYOUTS (PAGO A ALIADOS)
-            $payout = Payout::create([
-                'venta_id' => $venta->id,
-                'aliado_id' => $validatedData['aliado_id'],
-                'monto_venta' => $validatedData['monto'],
-                'porcentaje_comision' => $porcentajeAliado,
-                'monto_comision' => $montoAliado,
-                'estado' => 'pendiente',
-                'fecha_generacion' => now(),
-                'fecha_pago' => null,
-                'referencia_venta' => $bncResponse['Reference'] ?? null,
-                'metodo_pago_aliado' => $aliado->metodo_pago_default ?? 'transferencia',
-                'cuenta_aliado' => $aliado->cuenta_bancaria,
-                'banco_aliado' => $aliado->banco,
-            ]);
-
-            Log::info('Transacción guardada en base de datos', [
-                'venta_id' => $venta->id,
-                'payout_id' => $payout->id,
-                'referencia_banco' => $venta->referencia_banco,
-                'monto_aliado' => $montoAliado
-            ]);
+            // 8. Guardar payout si hay aliado
+            $payout = $this->createPayout($venta, $aliadoData, $bncResponse);
 
             DB::commit();
 
-            Log::info('Pago C2P procesado exitosamente con registro en ventas and payouts');
+            Log::info('Pago C2P procesado exitosamente');
             return response()->json([
+                'success' => true,
                 'message' => 'Pago C2P procesado exitosamente.',
-                'data' => [
-                    'bnc_reference' => $bncResponse['Reference'] ?? null,
-                    'bnc_status' => $bncResponse['Status'] ?? null,
-                    'transaction_id' => $bncResponse['TransactionIdentifier'] ?? null,
-                    'amount_processed' => $validatedData['monto'],
-                    'venta_id' => $venta->id,
-                    'payout_id' => $payout->id,
-                    'porcentaje_aliado' => $porcentajeAliado,
-                    'monto_aliado' => $montoAliado,
-                    'fecha_venta' => $venta->fecha_venta->format('Y-m-d H:i:s')
-                ]
+                'data' => $this->buildSuccessResponse($venta, $payout, $bncResponse, $validatedData, $aliadoData)
             ], 200);
         } catch (ValidationException $e) {
             DB::rollBack();
             Log::warning('Error de validación en pago C2P', ['errors' => $e->errors()]);
-            return response()->json(['message' => 'Datos de entrada inválidos.', 'errors' => $e->errors()], 422);
+            return response()->json([
+                'success' => false,
+                'message' => 'Datos de entrada inválidos.',
+                'errors' => $e->errors()
+            ], 422);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error en pago C2P: ' . $e->getMessage());
-            return response()->json(['message' => $e->getMessage()], 500);
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'bnc_response' => $bncResponse ?? null
+            ], 500);
         }
     }
 
@@ -165,129 +143,121 @@ class PaymentController extends Controller
 
         DB::beginTransaction();
         try {
-            // 1. ✅ Validar los datos de entrada
-            $validatedData = $request->validate([
-                'identificador' => 'required|string|max:50',
-                'monto' => 'required|numeric|min:0.01',
-                'tipTarjeta' => 'required|integer',
-                'tarjeta' => 'required|numeric',
-                'fechExp' => 'required|numeric|digits:6',
-                'nomTarjeta' => 'required|string|max:255',
-                'tipCuenta' => 'required|integer',
-                'cvv' => 'required|numeric|digits_between:3,4',
-                'pin' => 'required|numeric',
-                'identificacion' => 'required|numeric',
-                'afiliacion' => 'required|numeric',
-                // Campos adicionales
-                'cliente_id' => 'required|integer|exists:clientes,id',
-                'sucursal_id' => 'required|integer|exists:sucursales,id',
-                'aliado_id' => 'required|integer|exists:aliados,id',
+            // 1. Validar campos esenciales
+            $bankValidatedData = $request->validate([
+                'TransactionIdentifier' => 'required|string|max:50',
+                'Amount' => 'required|numeric|min:0.01',
+                'idCardType' => 'required|integer',
+                'CardNumber' => 'required|string|max:20',
+                'dtExpiration' => 'required|numeric|digits:6',
+                'CardHolderName' => 'required|string|max:255',
+                'AccountType' => 'required|integer',
+                'CVV' => 'required|numeric|digits_between:3,4',
+                'CardPIN' => 'required|numeric',
+                'CardHolderID' => 'required|numeric',
+                'AffiliationNumber' => 'required|numeric',
+                'OperationRef' => 'required|string|max:100',
+            ]);
+
+            // 2. Campos adicionales opcionales
+            $systemValidatedData = $request->validate([
+                'ChildClientID' => 'nullable|string|max:50',
+                'BranchID' => 'nullable|string|max:50',
+                'cliente_id' => 'nullable|integer|exists:clientes,id',
+                'sucursal_id' => 'nullable|integer|exists:sucursales,id',
+                'aliado_id' => 'nullable|integer|exists:aliados,id',
                 'descripcion' => 'nullable|string|max:255',
             ]);
 
-            // 2. ✅ Obtener porcentaje del aliado
-            $aliado = Ally::find($validatedData['aliado_id']);
-            if (!$aliado) {
-                throw new \Exception('Aliado no encontrado');
-            }
+            $validatedData = array_merge($bankValidatedData, $systemValidatedData);
 
-            $porcentajeAliado = $aliado->porcentaje_comision;
-            $montoAliado = ($validatedData['monto'] * $porcentajeAliado) / 100;
-
-            // 3. ✅ Preparar datos para el BNC
+            // 3. Preparar datos para BNC
             $bncCardData = [
-                'identificador' => $validatedData['identificador'],
-                'monto' => floatval($validatedData['monto']),
-                'tipTarjeta' => intval($validatedData['tipTarjeta']),
-                'tarjeta' => intval($validatedData['tarjeta']),
-                'fechExp' => intval($validatedData['fechExp']),
-                'nomTarjeta' => $validatedData['nomTarjeta'],
-                'tipCuenta' => intval($validatedData['tipCuenta']),
-                'cvv' => intval($validatedData['cvv']),
-                'pin' => intval($validatedData['pin']),
-                'identificacion' => intval($validatedData['identificacion']),
-                'afiliacion' => intval($validatedData['afiliacion'])
+                'TransactionIdentifier' => $validatedData['TransactionIdentifier'],
+                'Amount' => (float)$validatedData['Amount'],
+                'idCardType' => (int)$validatedData['idCardType'],
+                'CardNumber' => $validatedData['CardNumber'],
+                'dtExpiration' => (int)$validatedData['dtExpiration'],
+                'CardHolderName' => $validatedData['CardHolderName'],
+                'AccountType' => (int)$validatedData['AccountType'],
+                'CVV' => (int)$validatedData['CVV'],
+                'CardPIN' => (int)$validatedData['CardPIN'],
+                'CardHolderID' => (int)$validatedData['CardHolderID'],
+                'AffiliationNumber' => (int)$validatedData['AffiliationNumber'],
+                'OperationRef' => $validatedData['OperationRef'],
+                'ChildClientID' => $validatedData['ChildClientID'] ?? '',
+                'BranchID' => $validatedData['BranchID'] ?? ''
             ];
 
             Log::debug('Datos preparados para BNC VPOS', ['bncCardData' => $bncCardData]);
 
-            // 4. Delegar la llamada al servicio BNC
+            // 4. Ejecutar pago VPOS
             $bncResponse = $this->bncApiService->processCardPayment($bncCardData);
 
-            // 5. Validar la respuesta del BNC
-            if (is_null($bncResponse) || !isset($bncResponse['status']) || $bncResponse['status'] !== 'OK') {
-                $errorMessage = $bncResponse['message'] ?? 'Fallo al procesar el pago con la pasarela VPOS.';
-                Log::error('Fallo al procesar pago VPOS.', [
-                    'bnc_response' => $bncResponse,
-                    'error_message' => $errorMessage
-                ]);
+            // 5. ✅ CORRECCIÓN: Validar respuesta del BNC
+            if (!$this->isBncResponseSuccessful($bncResponse)) {
+                $errorMessage = $bncResponse['Message'] ?? $bncResponse['message'] ?? 'Fallo al procesar el pago con tarjeta.';
+                Log::error('Fallo al procesar pago VPOS', ['bnc_response' => $bncResponse]);
                 throw new \Exception($errorMessage);
             }
 
-            // 6. ✅ GUARDAR EN LA TABLA VENTAS
+            // 6. Procesar aliado y comisiones
+            $aliadoData = $this->processAliadoData($validatedData);
+
+            // 7. Guardar venta
             $venta = Sale::create([
-                'cliente_id' => $validatedData['cliente_id'],
-                'sucursal_id' => $validatedData['sucursal_id'],
-                'aliado_id' => $validatedData['aliado_id'],
-                'monto_total' => $validatedData['monto'],
-                'monto_pagado' => $validatedData['monto'],
+                'cliente_id' => $validatedData['cliente_id'] ?? null,
+                'sucursal_id' => $validatedData['sucursal_id'] ?? null,
+                'aliado_id' => $validatedData['aliado_id'] ?? null,
+                'monto_total' => $validatedData['Amount'],
+                'monto_pagado' => $validatedData['Amount'],
                 'metodo_pago' => 'tarjeta_credito',
                 'referencia_banco' => $bncResponse['Reference'] ?? null,
-                'transaction_id' => $bncResponse['TransactionIdentifier'] ?? $validatedData['identificador'],
+                'transaction_id' => $bncResponse['TransactionIdentifier'] ?? $validatedData['TransactionIdentifier'],
                 'estado' => 'completado',
                 'fecha_venta' => now(),
                 'fecha_pago' => now(),
-                'terminal' => $validatedData['identificador'],
+                'terminal' => $validatedData['TransactionIdentifier'],
                 'descripcion' => $validatedData['descripcion'] ?? 'Pago con tarjeta procesado',
-                'codigo_autorizacion' => $bncResponse['AuthorizationCode'] ?? null,
+                'codigo_autorizacion' => $bncResponse['AuthorizationCode'] ?? $bncResponse['Code'] ?? null,
                 'respuesta_banco' => json_encode($bncResponse),
+                'numero_tarjeta' => substr($validatedData['CardNumber'], -4),
+                'nombre_titular' => $validatedData['CardHolderName'],
+                'tipo_tarjeta' => $validatedData['idCardType'],
             ]);
 
-            // 7. ✅ GUARDAR EN LA TABLA PAYOUTS (PAGO A ALIADOS)
-            $payout = Payout::create([
-                'venta_id' => $venta->id,
-                'aliado_id' => $validatedData['aliado_id'],
-                'monto_venta' => $validatedData['monto'],
-                'porcentaje_comision' => $porcentajeAliado,
-                'monto_comision' => $montoAliado,
-                'estado' => 'pendiente',
-                'fecha_generacion' => now(),
-                'fecha_pago' => null,
-                'referencia_venta' => $bncResponse['Reference'] ?? null,
-                'metodo_pago_aliado' => $aliado->metodo_pago_default ?? 'transferencia',
-                'cuenta_aliado' => $aliado->cuenta_bancaria,
-                'banco_aliado' => $aliado->banco,
-            ]);
+            // 8. Guardar payout si hay aliado
+            $payout = $this->createPayout($venta, $aliadoData, $bncResponse);
 
             DB::commit();
 
-            Log::info('Pago VPOS procesado exitosamente con registro en ventas and payouts');
+            Log::info('Pago VPOS procesado exitosamente');
             return response()->json([
+                'success' => true,
                 'message' => 'Pago con tarjeta procesado exitosamente.',
-                'data' => [
-                    'transaction_id' => $venta->transaction_id,
-                    'bnc_status' => $bncResponse['status'] ?? null,
-                    'bnc_reference' => $bncResponse['Reference'] ?? null,
-                    'amount_processed' => $validatedData['monto'],
-                    'venta_id' => $venta->id,
-                    'payout_id' => $payout->id,
-                    'porcentaje_aliado' => $porcentajeAliado,
-                    'monto_aliado' => $montoAliado
-                ]
+                'data' => $this->buildSuccessResponse($venta, $payout, $bncResponse, $validatedData, $aliadoData)
             ], 200);
         } catch (ValidationException $e) {
             DB::rollBack();
             Log::warning('Error de validación en pago VPOS', ['errors' => $e->errors()]);
-            return response()->json(['message' => 'Datos de entrada inválidos.', 'errors' => $e->errors()], 422);
+            return response()->json([
+                'success' => false,
+                'message' => 'Datos de entrada inválidos.',
+                'errors' => $e->errors()
+            ], 422);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error en pago VPOS: ' . $e->getMessage());
-            return response()->json(['message' => $e->getMessage()], 500);
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'bnc_response' => $bncResponse ?? null
+            ], 500);
         }
     }
 
     /**
-     * Procesa un pago P2P
+     * Procesa un pago P2P (Transferencia)
      */
     public function processP2PPayment(Request $request): JsonResponse
     {
@@ -295,118 +265,204 @@ class PaymentController extends Controller
 
         DB::beginTransaction();
         try {
-            // 1. ✅ Validar los datos de entrada
-            $validatedData = $request->validate([
-                'banco' => 'required|integer',
-                'telefono' => 'required|string|regex:/^[0-9]{10,15}$/',
-                'cedula' => 'required|string|min:6|max:20',
-                'beneficiario' => 'required|string|max:255',
-                'monto' => 'required|numeric|min:0.01',
-                'descripcion' => 'required|string|max:255',
-                'email' => 'nullable|email|max:255',
-                // Campos adicionales
-                'cliente_id' => 'required|integer|exists:clientes,id',
-                'sucursal_id' => 'required|integer|exists:sucursales,id',
-                'aliado_id' => 'required|integer|exists:aliados,id',
+            // 1. Validar campos esenciales
+            $bankValidatedData = $request->validate([
+                'Amount' => 'required|numeric|min:0.01',
+                'BeneficiaryBankCode' => 'required|integer',
+                'BeneficiaryCellPhone' => 'required|string|regex:/^[0-9]{10,15}$/',
+                'BeneficiaryID' => 'required|string|min:6|max:20',
+                'BeneficiaryName' => 'required|string|max:255',
+                'Description' => 'required|string|max:255',
+                'OperationRef' => 'required|string|max:100',
             ]);
 
-            // 2. ✅ Obtener porcentaje del aliado
-            $aliado = Ally::find($validatedData['aliado_id']);
-            if (!$aliado) {
-                throw new \Exception('Aliado no encontrado');
-            }
+            // 2. Campos adicionales opcionales
+            $systemValidatedData = $request->validate([
+                'BeneficiaryEmail' => 'nullable|email|max:255',
+                'ChildClientID' => 'nullable|string|max:50',
+                'BranchID' => 'nullable|string|max:50',
+                'cliente_id' => 'nullable|integer|exists:clientes,id',
+                'sucursal_id' => 'nullable|integer|exists:sucursales,id',
+                'aliado_id' => 'nullable|integer|exists:aliados,id',
+            ]);
 
-            $porcentajeAliado = $aliado->porcentaje_comision;
-            $montoAliado = ($validatedData['monto'] * $porcentajeAliado) / 100;
+            $validatedData = array_merge($bankValidatedData, $systemValidatedData);
 
-            // 3. ✅ Preparar datos para el BNC
+            // 3. Preparar datos para BNC
             $bncP2pData = [
-                'banco' => intval($validatedData['banco']),
-                'telefono' => $validatedData['telefono'],
-                'cedula' => $validatedData['cedula'],
-                'beneficiario' => $validatedData['beneficiario'],
-                'monto' => floatval($validatedData['monto']),
-                'descripcion' => $validatedData['descripcion'],
-                'email' => $validatedData['email'] ?? null,
+                'Amount' => (float)$validatedData['Amount'],
+                'BeneficiaryBankCode' => (int)$validatedData['BeneficiaryBankCode'],
+                'BeneficiaryCellPhone' => $validatedData['BeneficiaryCellPhone'],
+                'BeneficiaryID' => $validatedData['BeneficiaryID'],
+                'BeneficiaryName' => $validatedData['BeneficiaryName'],
+                'Description' => $validatedData['Description'],
+                'OperationRef' => $validatedData['OperationRef'],
+                'BeneficiaryEmail' => $validatedData['BeneficiaryEmail'] ?? '',
+                'ChildClientID' => $validatedData['ChildClientID'] ?? '',
+                'BranchID' => $validatedData['BranchID'] ?? ''
             ];
 
             Log::debug('Datos preparados para BNC P2P', ['bncP2pData' => $bncP2pData]);
 
-            // 4. Delegar la llamada al servicio BNC
+            // 4. Ejecutar pago P2P
             $bncResponse = $this->bncApiService->initiateP2PPayment($bncP2pData);
 
-            // 5. Validar la respuesta del BNC
-            if (is_null($bncResponse) || !isset($bncResponse['Status']) || $bncResponse['Status'] !== 'OK') {
-                $errorMessage = $bncResponse['Message'] ?? 'Fallo al procesar el pago P2P con la pasarela de pagos.';
-                Log::error('Fallo al procesar pago P2P con BNC.', [
-                    'bnc_response' => $bncResponse,
-                    'error_message' => $errorMessage
-                ]);
+            // 5. ✅ CORRECCIÓN: Validar respuesta del BNC
+            if (!$this->isBncResponseSuccessful($bncResponse)) {
+                $errorMessage = $bncResponse['Message'] ?? $bncResponse['message'] ?? 'Fallo al procesar el pago P2P.';
+                Log::error('Fallo al procesar pago P2P', ['bnc_response' => $bncResponse]);
                 throw new \Exception($errorMessage);
             }
 
-            // 6. ✅ GUARDAR EN LA TABLA VENTAS
+            // 6. Procesar aliado y comisiones
+            $aliadoData = $this->processAliadoData($validatedData);
+
+            // 7. Guardar venta
             $venta = Sale::create([
-                'cliente_id' => $validatedData['cliente_id'],
-                'sucursal_id' => $validatedData['sucursal_id'],
-                'aliado_id' => $validatedData['aliado_id'],
-                'monto_total' => $validatedData['monto'],
-                'monto_pagado' => $validatedData['monto'],
+                'cliente_id' => $validatedData['cliente_id'] ?? null,
+                'sucursal_id' => $validatedData['sucursal_id'] ?? null,
+                'aliado_id' => $validatedData['aliado_id'] ?? null,
+                'monto_total' => $validatedData['Amount'],
+                'monto_pagado' => $validatedData['Amount'],
                 'metodo_pago' => 'p2p',
                 'referencia_banco' => $bncResponse['Reference'] ?? null,
                 'transaction_id' => $bncResponse['TransactionIdentifier'] ?? null,
                 'estado' => 'completado',
                 'fecha_venta' => now(),
                 'fecha_pago' => now(),
-                'banco_destino' => $validatedData['banco'],
-                'telefono_cliente' => $validatedData['telefono'],
-                'cedula_cliente' => $validatedData['cedula'],
-                'descripcion' => $validatedData['descripcion'],
+                'banco_destino' => $validatedData['BeneficiaryBankCode'],
+                'telefono_cliente' => $validatedData['BeneficiaryCellPhone'],
+                'cedula_cliente' => $validatedData['BeneficiaryID'],
+                'descripcion' => $validatedData['Description'],
                 'codigo_autorizacion' => $bncResponse['AuthorizationCode'] ?? null,
                 'respuesta_banco' => json_encode($bncResponse),
+                'beneficiario' => $validatedData['BeneficiaryName'],
+                'email_beneficiario' => $validatedData['BeneficiaryEmail'] ?? null,
             ]);
 
-            // 7. ✅ GUARDAR EN LA TABLA PAYOUTS (PAGO A ALIADOS)
-            $payout = Payout::create([
-                'venta_id' => $venta->id,
-                'aliado_id' => $validatedData['aliado_id'],
-                'monto_venta' => $validatedData['monto'],
-                'porcentaje_comision' => $porcentajeAliado,
-                'monto_comision' => $montoAliado,
-                'estado' => 'pendiente',
-                'fecha_generacion' => now(),
-                'fecha_pago' => null,
-                'referencia_venta' => $bncResponse['Reference'] ?? null,
-                'metodo_pago_aliado' => $aliado->metodo_pago_default ?? 'transferencia',
-                'cuenta_aliado' => $aliado->cuenta_bancaria,
-                'banco_aliado' => $aliado->banco,
-            ]);
+            // 8. Guardar payout si hay aliado
+            $payout = $this->createPayout($venta, $aliadoData, $bncResponse);
 
             DB::commit();
 
-            Log::info('Pago P2P procesado exitosamente con registro en ventas and payouts');
+            Log::info('Pago P2P procesado exitosamente');
             return response()->json([
+                'success' => true,
                 'message' => 'Pago P2P procesado exitosamente.',
-                'data' => [
-                    'transaction_id' => $bncResponse['TransactionIdentifier'] ?? null,
-                    'bnc_status' => $bncResponse['Status'] ?? null,
-                    'bnc_reference' => $bncResponse['Reference'] ?? null,
-                    'amount_processed' => $validatedData['monto'],
-                    'venta_id' => $venta->id,
-                    'payout_id' => $payout->id,
-                    'porcentaje_aliado' => $porcentajeAliado,
-                    'monto_aliado' => $montoAliado
-                ]
+                'data' => $this->buildSuccessResponse($venta, $payout, $bncResponse, $validatedData, $aliadoData)
             ], 200);
         } catch (ValidationException $e) {
             DB::rollBack();
             Log::warning('Error de validación en pago P2P', ['errors' => $e->errors()]);
-            return response()->json(['message' => 'Datos de entrada inválidos.', 'errors' => $e->errors()], 422);
+            return response()->json([
+                'success' => false,
+                'message' => 'Datos de entrada inválidos.',
+                'errors' => $e->errors()
+            ], 422);
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error en pago P2P: ' . $e->getMessage());
-            return response()->json(['message' => $e->getMessage()], 500);
+            return response()->json([
+                'success' => false,
+                'message' => $e->getMessage(),
+                'bnc_response' => $bncResponse ?? null
+            ], 500);
         }
+    }
+
+    /**
+     * ==================== MÉTODOS AUXILIARES OPTIMIZADOS ====================
+     */
+
+    /**
+     * Valida si la respuesta del BNC es exitosa
+     */
+    private function isBncResponseSuccessful(?array $bncResponse): bool
+    {
+        if (is_null($bncResponse)) {
+            return false;
+        }
+
+        $status = $bncResponse['Status'] ?? $bncResponse['status'] ?? null;
+        $reference = $bncResponse['Reference'] ?? $bncResponse['reference'] ?? null;
+
+        return $status === 'OK' && !empty($reference);
+    }
+
+    /**
+     * Procesa datos del aliado y calcula comisiones
+     */
+    private function processAliadoData(array $validatedData): array
+    {
+        $aliadoId = $validatedData['aliado_id'] ?? null;
+        $porcentajeAliado = 0;
+        $montoAliado = 0;
+        $aliado = null;
+
+        if ($aliadoId) {
+            $aliado = Ally::find($aliadoId);
+            if ($aliado) {
+                $porcentajeAliado = $aliado->porcentaje_comision;
+                $montoAliado = ($validatedData['Amount'] * $porcentajeAliado) / 100;
+            }
+        }
+
+        return [
+            'aliado_id' => $aliadoId,
+            'aliado' => $aliado,
+            'porcentaje_comision' => $porcentajeAliado,
+            'monto_comision' => $montoAliado
+        ];
+    }
+
+    /**
+     * Crea un registro de payout si hay aliado
+     */
+    private function createPayout(Sale $venta, array $aliadoData, array $bncResponse): ?Payout
+    {
+        if (!$aliadoData['aliado_id'] || !$aliadoData['aliado']) {
+            return null;
+        }
+
+        return Payout::create([
+            'venta_id' => $venta->id,
+            'aliado_id' => $aliadoData['aliado_id'],
+            'monto_venta' => $venta->monto_total,
+            'porcentaje_comision' => $aliadoData['porcentaje_comision'],
+            'monto_comision' => $aliadoData['monto_comision'],
+            'estado' => 'pendiente',
+            'fecha_generacion' => now(),
+            'fecha_pago' => null,
+            'referencia_venta' => $bncResponse['Reference'] ?? null,
+            'metodo_pago_aliado' => $aliadoData['aliado']->metodo_pago_default ?? 'transferencia',
+            'cuenta_aliado' => $aliadoData['aliado']->cuenta_bancaria,
+            'banco_aliado' => $aliadoData['aliado']->banco,
+        ]);
+    }
+
+    /**
+     * Construye respuesta de éxito estandarizada
+     */
+    private function buildSuccessResponse(Sale $venta, ?Payout $payout, array $bncResponse, array $validatedData, array $aliadoData): array
+    {
+        $clienteId = $validatedData['cliente_id'] ?? null;
+        $sucursalId = $validatedData['sucursal_id'] ?? null;
+        $aliadoId = $validatedData['aliado_id'] ?? null;
+
+        return [
+            'transaction_id' => $venta->transaction_id,
+            'bnc_status' => $bncResponse['Status'] ?? $bncResponse['status'] ?? null,
+            'bnc_reference' => $bncResponse['Reference'] ?? $bncResponse['reference'] ?? null,
+            'amount_processed' => $validatedData['Amount'],
+            'venta_id' => $venta->id,
+            'payout_id' => $payout?->id,
+            'porcentaje_aliado' => $aliadoData['porcentaje_comision'],
+            'monto_aliado' => $aliadoData['monto_comision'],
+            'fecha_venta' => $venta->fecha_venta->format('Y-m-d H:i:s'),
+            'registro_completo' => !is_null($clienteId) && !is_null($sucursalId) && !is_null($aliadoId),
+            'operation_ref' => $validatedData['OperationRef'] ?? null,
+            'authorization_code' => $bncResponse['AuthorizationCode'] ?? $bncResponse['Code'] ?? null
+        ];
     }
 
     /**
