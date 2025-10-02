@@ -10,7 +10,6 @@ use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\Api\BankController;
 use App\Http\Controllers\Admin\PayoutController;
-use App\Http\Controllers\Api\BncController;
 use App\Services\BncApiService;
 use Illuminate\Support\Facades\Http;
 
@@ -85,20 +84,20 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [AuthController::class, 'user']);
 });
 
-// Rutas para el controlador de Payment
-Route::prefix('payments')->group(function () {
-    // Pagos principales
-    Route::post('/c2p', [PaymentController::class, 'initiateC2PPayment']);
-    Route::post('/card', [PaymentController::class, 'processCardPayment']);
-    Route::post('/p2p', [PaymentController::class, 'processP2PPayment']);
+Route::prefix('pagos')->group(function () {
+    Route::post('c2p', [PaymentController::class, 'initiateC2PPayment']);
+    Route::post('tarjeta', [PaymentController::class, 'processCardPayment']);
+    Route::post('p2p', [PaymentController::class, 'processP2PPayment']);
     
-    // Gestión de pagos a proveedores
+    // Rutas de payouts
     Route::prefix('payouts')->group(function () {
-        Route::post('/generar-archivo', [PaymentController::class, 'generarArchivoPagosBNC']);
-        Route::get('/descargar/{archivo}', [PaymentController::class, 'descargarArchivoBNC']);
-        Route::post('/confirmar', [PaymentController::class, 'confirmarPagosProcesados']);
-        Route::get('/pendientes', [PaymentController::class, 'obtenerPagosPendientes']);
-        Route::get('/filtro', [PaymentController::class, 'obtenerPagosPorFiltro']);
+        Route::get('pendientes', [PaymentController::class, 'obtenerPagosPendientes']);
+        Route::get('filtro', [PaymentController::class, 'obtenerPagosPorFiltro']);
+        Route::get('estadisticas', [PaymentController::class, 'obtenerEstadisticasPayouts']);
+        Route::post('generar-archivo-bnc', [PaymentController::class, 'generarArchivoPagosBNC']);
+        Route::post('confirmar', [PaymentController::class, 'confirmarPagosProcesados']);
+        Route::get('descargar-archivo-bnc/{archivo}', [PaymentController::class, 'descargarArchivoBNC']);
+        Route::post('revertir/{payoutId}', [PaymentController::class, 'revertirPago']);
     });
 });
 
@@ -117,7 +116,7 @@ Route::prefix('webhooks')->group(function () {
 // --- Ruta para obtener la lista de Bancos (BankController) ---
 Route::prefix('banks')->group(function () {
     Route::post('/List', [BankController::class, 'index']);
-    Route::get('/Services/BCVRates', [BankController::class, 'getBcvRates']);
+    Route::get('/daily-dollar-rate', [BankController::class, 'getDailyDollarRate']);
 });
 
 // Rutas protegidas que requieren autenticación con token

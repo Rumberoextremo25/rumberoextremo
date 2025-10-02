@@ -156,7 +156,7 @@ class BncApiService
     {
         return $this->executeTransaction('P2P', $data, [
             'Amount', 'BeneficiaryBankCode', 'BeneficiaryCellPhone', 'BeneficiaryID',
-            'BeneficiaryName', 'Description', 'OperationRef'
+            'BeneficiaryName', 'Description'
         ], function($data) {
             return [
                 "Amount" => (float)$data['Amount'],
@@ -166,7 +166,6 @@ class BncApiService
                 "BeneficiaryID" => $data['BeneficiaryID'],
                 "BeneficiaryName" => $data['BeneficiaryName'],
                 "Description" => $data['Description'],
-                "OperationRef" => $data['OperationRef'],
                 "ChildClientID" => $data['ChildClientID'] ?? "",
                 "BranchID" => $data['BranchID'] ?? ""
             ];
