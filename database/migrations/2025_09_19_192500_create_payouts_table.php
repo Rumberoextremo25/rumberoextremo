@@ -11,9 +11,9 @@ return new class extends Migration
         Schema::create('payouts', function (Blueprint $table) {
             $table->id();
 
-            // Foreign keys - HACER NULLABLE Y CON DEFAULTS
-            $table->unsignedBigInteger('sale_id')->nullable()->default(0);
-            $table->unsignedBigInteger('ally_id')->nullable()->default(0);
+            // Foreign keys - CORREGIR: Quitar default(0) y usar constrained
+            $table->foreignId('sale_id')->nullable()->constrained('sales')->onDelete('cascade');
+            $table->foreignId('ally_id')->nullable()->constrained('allies')->onDelete('cascade');
 
             // Amount fields - Pago al aliado - AGREGAR DEFAULTS
             $table->decimal('sale_amount', 12, 2)->default(0);
