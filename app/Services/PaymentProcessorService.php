@@ -210,17 +210,26 @@ class PaymentProcessorService
     {
         Log::debug("Validando respuesta BNC para: {$paymentType}", ['response' => $bncResponse]);
 
-        // Validaciones específicas por tipo de pago
+        // Validaciones específicas por tipo de pago - MÁS FLEXIBLES
         $validations = [
             'c2p' => function ($response) {
-                return isset($response['Status']) && $response['Status'] === 'OK' &&
-                    isset($response['Reference']) && !empty($response['Reference']);
+                // Para C2P: Status OK O tiene Reference (algunas respuestas pueden no tener Status)
+                $hasStatusOK = isset($response['Status']) && $response['Status'] === 'OK';
+                $hasReference = isset($response['Reference']) && !empty($response['Reference']);
+                $hasAuthCode = isset($response['AuthorizationCode']) && !empty($response['AuthorizationCode']);
+
+                // C2P es exitoso si: (Status OK Y Reference) O (Reference Y AuthCode) O solo Reference
+                return ($hasStatusOK && $hasReference) ||
+                    ($hasReference && $hasAuthCode) ||
+                    $hasReference; // Solo con Reference ya es válido para C2P
             },
             'card' => function ($response) {
+                // Para VPOS: TransactionIdentifier + Reference
                 return isset($response['TransactionIdentifier']) && !empty($response['TransactionIdentifier']) &&
                     isset($response['Reference']) && !empty($response['Reference']);
             },
             'p2p' => function ($response) {
+                // Para P2P: Reference + AuthorizationCode
                 return isset($response['Reference']) && !empty($response['Reference']) &&
                     isset($response['AuthorizationCode']) && !empty($response['AuthorizationCode']);
             }
@@ -230,39 +239,59 @@ class PaymentProcessorService
         if ($paymentType && isset($validations[$paymentType])) {
             $isValid = $validations[$paymentType]($bncResponse);
             if ($isValid) {
-                Log::info("Validación {$paymentType} exitosa");
+                Log::info("Validación {$paymentType} exitosa", [
+                    'criteria_met' => 'validacion_especifica',
+                    'response_keys' => array_keys($bncResponse)
+                ]);
                 return true;
+            } else {
+                Log::warning("Validación específica {$paymentType} fallida", [
+                    'response' => $bncResponse,
+                    'expected_c2p' => 'Status: OK + Reference O Reference + AuthCode O solo Reference'
+                ]);
             }
         }
 
-        // Validación genérica para cualquier tipo
+        // Validación genérica MEJORADA para cualquier tipo
         $genericValidations = [
-            // Tiene Reference + algún código de autorización
-            isset($bncResponse['Reference']) && !empty($bncResponse['Reference']) &&
-                (isset($bncResponse['AuthorizationCode']) || isset($bncResponse['TransactionIdentifier'])),
+            // 1. Tiene Reference (campo más importante)
+            'has_reference' => isset($bncResponse['Reference']) && !empty($bncResponse['Reference']),
 
-            // Tiene Status OK + Reference
-            isset($bncResponse['Status']) && $bncResponse['Status'] === 'OK' &&
+            // 2. Tiene Status OK + algún identificador
+            'has_status_ok' => isset($bncResponse['Status']) && $bncResponse['Status'] === 'OK' &&
+                (isset($bncResponse['Reference']) || isset($bncResponse['TransactionIdentifier'])),
+
+            // 3. Tiene TransactionIdentifier + Reference (VPOS)
+            'has_transaction_id' => isset($bncResponse['TransactionIdentifier']) && !empty($bncResponse['TransactionIdentifier']) &&
                 isset($bncResponse['Reference']) && !empty($bncResponse['Reference']),
 
-            // Tiene success true
-            isset($bncResponse['success']) && $bncResponse['success'] === true,
+            // 4. Tiene AuthorizationCode + Reference (P2P/C2P)
+            'has_auth_code' => isset($bncResponse['AuthorizationCode']) && !empty($bncResponse['AuthorizationCode']) &&
+                isset($bncResponse['Reference']) && !empty($bncResponse['Reference']),
 
-            // Tiene TransactionIdentifier + Reference (VPOS)
-            isset($bncResponse['TransactionIdentifier']) && !empty($bncResponse['TransactionIdentifier']) &&
+            // 5. Tiene success true
+            'has_success_true' => isset($bncResponse['success']) && $bncResponse['success'] === true,
+
+            // 6. Para C2P: Solo Reference puede ser suficiente
+            'c2p_reference_only' => $paymentType === 'c2p' &&
                 isset($bncResponse['Reference']) && !empty($bncResponse['Reference'])
         ];
 
-        foreach ($genericValidations as $validation) {
+        foreach ($genericValidations as $validationName => $validation) {
             if ($validation) {
-                Log::info('Validación genérica exitosa', ['payment_type' => $paymentType]);
+                Log::info('Validación genérica exitosa', [
+                    'payment_type' => $paymentType,
+                    'validation_criteria' => $validationName,
+                    'response_keys' => array_keys($bncResponse)
+                ]);
                 return true;
             }
         }
 
         Log::warning('Validación BNC fallida', [
             'payment_type' => $paymentType,
-            'response' => $bncResponse
+            'response' => $bncResponse,
+            'available_keys' => array_keys($bncResponse)
         ]);
 
         return false;
