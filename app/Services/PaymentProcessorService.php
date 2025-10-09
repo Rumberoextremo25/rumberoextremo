@@ -148,12 +148,29 @@ class PaymentProcessorService
      */
     private function executeBncPayment(string $paymentType, array $bncData): array
     {
-        return match ($paymentType) {
-            'c2p' => $this->bncApiService->initiateC2PPayment($bncData),
-            'card' => $this->bncApiService->processCardPayment($bncData),
-            'p2p' => $this->bncApiService->initiateP2PPayment($bncData),
-            default => throw new \Exception("Tipo de pago no soportado: {$paymentType}")
-        };
+        try {
+            Log::debug("Ejecutando pago BNC: {$paymentType}", [
+                'bnc_data_keys' => array_keys($bncData)
+            ]);
+
+            $response = match ($paymentType) {
+                'c2p' => $this->bncApiService->initiateC2PPayment($bncData),
+                'card' => $this->bncApiService->processCardPayment($bncData),
+                'p2p' => $this->bncApiService->initiateP2PPayment($bncData),
+                default => throw new \Exception("Tipo de pago no soportado: {$paymentType}")
+            };
+
+            Log::debug("Respuesta BNC ejecutada", [
+                'payment_type' => $paymentType,
+                'response_type' => gettype($response),
+                'response_keys' => is_array($response) ? array_keys($response) : 'NOT_ARRAY'
+            ]);
+
+            return $response;
+        } catch (\Exception $e) {
+            Log::error("Error ejecutando pago BNC {$paymentType}: " . $e->getMessage());
+            throw $e;
+        }
     }
 
     /**
