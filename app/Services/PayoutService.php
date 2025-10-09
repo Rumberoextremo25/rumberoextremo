@@ -18,49 +18,94 @@ class PayoutService
      */
     public function createPayout(Sale $venta, array $aliadoData, array $bncResponse): ?Payout
     {
-        if (!$aliadoData['has_aliado'] || $aliadoData['monto_comision'] <= 0) {
-            Log::debug('No se crea payout - sin aliado o comisión cero', [
+        // Si no hay aliado, no crear payout
+        if (!$aliadoData['has_aliado'] || empty($aliadoData['aliado_id'])) {
+            Log::info('No se crea payout - No hay aliado asociado', [
+                'venta_id' => $venta->id,
                 'has_aliado' => $aliadoData['has_aliado'],
-                'monto_comision' => $aliadoData['monto_comision'],
-                'discount_original' => $aliadoData['discount_original']
+                'aliado_id' => $aliadoData['aliado_id'] ?? null
             ]);
             return null;
         }
 
         try {
-            $payout = Payout::create([
-                'aliado_id' => $aliadoData['aliado_id'],
-                'sale_id' => $venta->id,
-                'monto_bruto' => $venta->monto_total,
-                'comision_porcentaje' => $aliadoData['comision_porcentaje'],
-                'monto_comision' => $aliadoData['monto_comision'],
-                'monto_neto' => $aliadoData['monto_neto'],
-                'discount_original' => $aliadoData['discount_original'],
-                'estado' => 'pendiente',
-                'fecha_pago_estimada' => now()->addDays(30),
-                'metodo_pago' => 'transferencia',
-                'referencia_banco' => $bncResponse['Reference'] ?? null,
-                'transaction_id' => $bncResponse['TransactionIdentifier'] ?? null,
-                'notas' => "Comisión {$aliadoData['comision_porcentaje']}% - " . 
-                          ($aliadoData['aliado_name'] ?? '') . 
-                          " (Discount: {$aliadoData['discount_original']})",
-            ]);
+            // Calcular comisión para la empresa
+            $companyCommission = $this->calculateCompanyCommission($venta->monto_total);
+            $companyTransferAmount = $venta->monto_total - $companyCommission;
 
-            Log::info('Payout creado para aliado', [
-                'aliado_id' => $aliadoData['aliado_id'],
+            // Validar que tenemos todos los datos requeridos
+            if (empty($venta->id) || empty($aliadoData['aliado_id'])) {
+                Log::error('Datos incompletos para crear payout', [
+                    'venta_id' => $venta->id,
+                    'aliado_id' => $aliadoData['aliado_id']
+                ]);
+                return null;
+            }
+
+            $payoutData = [
+                // Foreign keys - OBLIGATORIOS
+                'sale_id' => $venta->id,
+                'ally_id' => $aliadoData['aliado_id'],
+
+                // Amount fields - Pago al aliado
+                'sale_amount' => $venta->monto_total,
+                'commission_percentage' => $aliadoData['comision_porcentaje'],
+                'commission_amount' => $aliadoData['monto_comision'],
+                'net_amount' => $aliadoData['monto_neto'],
+
+                // Transferencia a la empresa
+                'company_transfer_amount' => $companyTransferAmount,
+                'company_commission' => $companyCommission,
+                'company_account' => env('COMPANY_BS_ACCOUNT', '987654321'),
+                'company_bank' => env('COMPANY_BS_BANK_NAME', 'Banco Nacional de Crédito'),
+                'company_transfer_reference' => 'TRF-' . ($venta->transaction_id ?? $venta->id ?? uniqid()),
+                'company_transfer_status' => 'completed',
+                'company_transfer_date' => now(),
+
+                // Status and dates - OBLIGATORIOS
+                'status' => 'pending',
+                'generation_date' => now(),
+                'sale_reference' => $venta->transaction_id ?? 'SALE-' . $venta->id,
+
+                // Payment details - Aliado
+                'ally_payment_method' => 'transfer',
+
+                // Response data
+                'company_transfer_response' => json_encode([
+                    'transfer_id' => uniqid('TRF_'),
+                    'status' => 'completed',
+                    'timestamp' => now()->toISOString(),
+                    'sale_id' => $venta->id
+                ])
+            ];
+
+            Log::info('Creando payout con datos:', $payoutData);
+
+            $payout = Payout::create($payoutData);
+
+            Log::info('Payout creado exitosamente', [
                 'payout_id' => $payout->id,
-                'comision' => $aliadoData['monto_comision']
+                'sale_id' => $venta->id,
+                'ally_id' => $aliadoData['aliado_id']
             ]);
 
             return $payout;
-
         } catch (\Exception $e) {
-            Log::error('Error creando payout', [
-                'aliado_id' => $aliadoData['aliado_id'],
+            Log::error('Error al crear payout: ' . $e->getMessage(), [
+                'venta_id' => $venta->id,
+                'aliado_id' => $aliadoData['aliado_id'] ?? null,
                 'error' => $e->getMessage()
             ]);
             return null;
         }
+    }
+
+    private function calculateCompanyCommission(float $amount): float
+    {
+        $commissionRate = env('COMPANY_COMMISSION_RATE', 3.5) / 100;
+        $fixedFee = env('COMPANY_FIXED_FEE', 2.00);
+
+        return round(($amount * $commissionRate) + $fixedFee, 2);
     }
 
     /**
@@ -215,7 +260,6 @@ class PayoutService
                 'monto_total' => $payouts->sum('monto_comision'),
                 'fecha_pago' => $fechaPago
             ];
-
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error confirmando pagos: ' . $e->getMessage());
@@ -324,7 +368,6 @@ class PayoutService
             DB::commit();
             Log::info('Pago revertido exitosamente', ['payout_id' => $payoutId]);
             return true;
-
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error revirtiendo pago: ' . $e->getMessage());

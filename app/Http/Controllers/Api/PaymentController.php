@@ -44,10 +44,12 @@ class PaymentController extends Controller
                 'DebtorCellPhone' => $validatedData['DebtorCellPhone'],
                 'DebtorID' => $validatedData['DebtorID'],
                 'Amount' => (float)$validatedData['Amount'],
+                'Currency' => 'BS', // Siempre Bolívares
                 'Token' => $validatedData['Token'],
                 'Terminal' => $validatedData['Terminal'],
                 'ChildClientID' => $validatedData['ChildClientID'] ?? '',
-                'BranchID' => $validatedData['BranchID'] ?? ''
+                'BranchID' => $validatedData['BranchID'] ?? '',
+                'PaymentMethod' => 'c2p',
             ];
         });
     }
@@ -74,6 +76,7 @@ class PaymentController extends Controller
             return [
                 'TransactionIdentifier' => $validatedData['TransactionIdentifier'],
                 'Amount' => (float)$validatedData['Amount'],
+                'Currency' => 'BS', // Siempre Bolívares
                 'idCardType' => (int)$validatedData['idCardType'],
                 'CardNumber' => $validatedData['CardNumber'],
                 'dtExpiration' => (int)$validatedData['dtExpiration'],
@@ -85,7 +88,8 @@ class PaymentController extends Controller
                 'AffiliationNumber' => (int)$validatedData['AffiliationNumber'],
                 'OperationRef' => $validatedData['OperationRef'],
                 'ChildClientID' => $validatedData['ChildClientID'] ?? '',
-                'BranchID' => $validatedData['BranchID'] ?? ''
+                'BranchID' => $validatedData['BranchID'] ?? '',
+                'PaymentMethod' => 'card',
             ];
         });
     }
@@ -102,15 +106,19 @@ class PaymentController extends Controller
             'BeneficiaryID' => 'required|string|min:6|max:20',
             'BeneficiaryName' => 'required|string|max:255|regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/',
             'Description' => 'required|string|max:255',
+            'OperationRef' => 'required|string|max:100',
         ], function ($validatedData) {
             return [
                 'Amount' => round((float)$validatedData['Amount'], 2),
+                'Currency' => 'BS', // Siempre Bolívares
                 'BeneficiaryBankCode' => (int)$validatedData['BeneficiaryBankCode'],
                 'BeneficiaryCellPhone' => preg_replace('/[^0-9]/', '', $validatedData['BeneficiaryCellPhone']),
                 'BeneficiaryID' => $validatedData['BeneficiaryID'],
                 'BeneficiaryName' => $this->sanitizeName($validatedData['BeneficiaryName']),
                 'Description' => substr($validatedData['Description'], 0, 255),
+                'OperationRef' => $validatedData['OperationRef'],
                 'BeneficiaryEmail' => $validatedData['BeneficiaryEmail'] ?? '',
+                'PaymentMethod' => 'p2p',
             ];
         });
     }
