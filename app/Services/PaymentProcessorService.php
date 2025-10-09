@@ -26,7 +26,7 @@ class PaymentProcessorService
     }
 
     /**
-     * Procesa cualquier tipo de pago de forma genérica
+     * Procesa cualquier tipo de pago de forma simplificada
      */
     public function processPayment(
         Request $request,
@@ -34,86 +34,68 @@ class PaymentProcessorService
         array $bankValidationRules,
         callable $prepareBncData
     ): JsonResponse {
-        Log::info("Solicitud recibida para procesar pago {$paymentType}.", [
-            'request_data' => $request->all(),
-            'payment_type' => $paymentType
+        Log::info("Solicitud recibida para procesar pago {$paymentType}", [
+            'payment_type' => $paymentType,
+            'aliado_id' => $request->aliado_id
         ]);
 
         DB::beginTransaction();
         try {
-            // 1. Validar campos esenciales específicos del banco
+            // 1. Validar campos esenciales del banco
             $bankValidatedData = $request->validate($bankValidationRules);
 
-            // 2. Campos adicionales opcionales comunes
+            // 2. Validar aliado_id si existe
             $systemValidatedData = $request->validate([
-                'ChildClientID' => 'nullable|string|max:50',
-                'BranchID' => 'nullable|string|max:50',
-                'cliente_id' => 'nullable|integer|exists:clientes,id',
-                'sucursal_id' => 'nullable|integer|exists:sucursales,id',
                 'aliado_id' => 'nullable|integer|exists:aliados,id',
                 'descripcion' => 'nullable|string|max:255',
             ]);
 
             $validatedData = array_merge($bankValidatedData, $systemValidatedData);
 
-            // 3. Preparar datos para BNC usando el callback
+            // 3. Preparar datos para BNC
             $bncData = $prepareBncData($validatedData);
+            $bncData['Currency'] = 'BS'; // Moneda por defecto
 
-            // 3.1. Agregar moneda BS por defecto
-            $bncData['Currency'] = 'BS';
+            Log::debug("Datos para BNC", ['bnc_data' => $bncData]);
 
-            Log::debug("Datos preparados para BNC {$paymentType}", [
-                'bnc_data' => $bncData,
-                'payment_type' => $paymentType
-            ]);
-
-            // 4. Ejecutar pago según el tipo
+            // 4. Ejecutar pago en BNC
             $bncResponse = $this->executeBncPayment($paymentType, $bncData);
 
             // 5. Validar respuesta del BNC
             if (!$this->isBncResponseSuccessful($bncResponse)) {
-                $errorMessage = $bncResponse['Message'] ?? $bncResponse['message'] ?? "Fallo al procesar el pago {$paymentType}.";
-                Log::error("Fallo al procesar pago {$paymentType}", [
-                    'bnc_response' => $bncResponse,
-                    'payment_type' => $paymentType
-                ]);
+                $errorMessage = $bncResponse['Message'] ?? "Fallo al procesar el pago {$paymentType}.";
+                Log::error("Fallo BNC", ['response' => $bncResponse]);
                 throw new \Exception($errorMessage);
             }
 
-            // 6. Procesar aliado y comisiones
+            // 6. Procesar datos del aliado (simplificado)
             $aliadoData = $this->processAliadoData($validatedData);
 
-            // 7. Guardar venta
+            // 7. Guardar venta básica
             $venta = $this->createSale($paymentType, $validatedData, $bncResponse, $aliadoData);
 
-            // 8. Procesar transferencia automática a la cuenta de la empresa
-            $transferResult = $this->processCompanyTransfer($venta, $bncData, $bncResponse);
-
-            // 9. Guardar payout si hay aliado
-            $payout = $this->payoutService->createPayout($venta, $aliadoData, $bncResponse);
-
-            // 10. Registrar la transferencia a la empresa en la base de datos
-            $companyPayout = $this->recordCompanyPayout($venta, $transferResult);
+            // 8. Guardar payout si hay aliado
+            $payout = null;
+            if ($aliadoData['has_aliado']) {
+                $payout = $this->payoutService->createPayout($venta, $aliadoData, $bncResponse);
+            }
 
             DB::commit();
 
-            Log::info("Pago {$paymentType} procesado exitosamente", [
+            Log::info("Pago {$paymentType} exitoso", [
                 'venta_id' => $venta->id,
-                'payment_type' => $paymentType,
-                'transfer_completed' => $transferResult['success']
+                'aliado_id' => $aliadoData['aliado_id'],
+                'payout_id' => $payout?->id
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => "Pago {$paymentType} procesado exitosamente.",
-                'data' => $this->buildSuccessResponse($venta, $payout, $bncResponse, $validatedData, $aliadoData, $companyPayout)
+                'data' => $this->buildSuccessResponse($venta, $payout, $bncResponse, $aliadoData)
             ], 200);
         } catch (ValidationException $e) {
             DB::rollBack();
-            Log::warning("Error de validación en pago {$paymentType}", [
-                'errors' => $e->errors(),
-                'payment_type' => $paymentType
-            ]);
+            Log::warning("Error validación", ['errors' => $e->errors()]);
             return response()->json([
                 'success' => false,
                 'message' => 'Datos de entrada inválidos.',
@@ -121,19 +103,12 @@ class PaymentProcessorService
             ], 422);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error("Error en pago {$paymentType}: " . $e->getMessage(), [
-                'payment_type' => $paymentType,
-                'file' => $e->getFile(),
-                'line' => $e->getLine()
-            ]);
-
-            $userMessage = $this->getUserFriendlyErrorMessage($e, $paymentType);
+            Log::error("Error en pago: " . $e->getMessage());
 
             return response()->json([
                 'success' => false,
-                'message' => $userMessage,
+                'message' => 'Error al procesar el pago. Por favor, intente nuevamente.',
                 'error_details' => config('app.debug') ? $e->getMessage() : null,
-                'bnc_response' => $bncResponse ?? null
             ], 500);
         }
     }
@@ -152,7 +127,7 @@ class PaymentProcessorService
     }
 
     /**
-     * Procesa datos del aliado y calcula comisiones
+     * Procesa datos del aliado (versión simplificada)
      */
     private function processAliadoData(array $validatedData): array
     {
@@ -162,8 +137,7 @@ class PaymentProcessorService
             'aliado_name' => null,
             'comision_porcentaje' => 0,
             'monto_comision' => 0,
-            'monto_neto' => $validatedData['Amount'],
-            'discount_original' => null
+            'monto_neto' => $validatedData['Amount']
         ];
 
         if (!empty($validatedData['aliado_id'])) {
@@ -173,9 +147,11 @@ class PaymentProcessorService
                 $aliadoData['has_aliado'] = true;
                 $aliadoData['aliado_id'] = $aliado->id;
                 $aliadoData['aliado_name'] = $aliado->company_name ?? $aliado->user->name ?? 'Aliado';
-                $aliadoData['discount_original'] = $aliado->discount;
-                $aliadoData['comision_porcentaje'] = $this->extractPercentageFromDiscount($aliado->discount);
-                $aliadoData = $this->calculateCommissionsFromDiscount($aliadoData, $validatedData['Amount']);
+
+                // Calcular comisión básica (10% por defecto para desarrollo)
+                $aliadoData['comision_porcentaje'] = 10.0;
+                $aliadoData['monto_comision'] = round($validatedData['Amount'] * 0.10, 2);
+                $aliadoData['monto_neto'] = round($validatedData['Amount'] * 0.90, 2);
             }
         }
 
@@ -183,58 +159,11 @@ class PaymentProcessorService
     }
 
     /**
-     * Extrae el porcentaje numérico del campo discount
-     */
-    private function extractPercentageFromDiscount(?string $discount): float
-    {
-        if (empty($discount)) {
-            return 0.0;
-        }
-
-        if (preg_match('/(\d+(?:\.\d+)?)\s*%/i', $discount, $matches)) {
-            return (float) $matches[1];
-        }
-
-        if (is_numeric($discount)) {
-            return (float) $discount;
-        }
-
-        if (preg_match('/(\d+(?:\.\d+)?)\s*(?:porciento|percent|pct?)/i', $discount, $matches)) {
-            return (float) $matches[1];
-        }
-
-        Log::warning('No se pudo extraer porcentaje del discount', ['discount' => $discount]);
-        return 0.0;
-    }
-
-    /**
-     * Calcula las comisiones usando el porcentaje extraído del campo discount
-     */
-    private function calculateCommissionsFromDiscount(array $aliadoData, float $amount): array
-    {
-        $comisionPorcentaje = $aliadoData['comision_porcentaje'];
-
-        if ($comisionPorcentaje <= 0) {
-            $aliadoData['monto_comision'] = 0;
-            $aliadoData['monto_neto'] = $amount;
-            return $aliadoData;
-        }
-
-        $montoComision = $amount * ($comisionPorcentaje / 100);
-        $aliadoData['monto_comision'] = round($montoComision, 2);
-        $aliadoData['monto_neto'] = round($amount - $montoComision, 2);
-
-        return $aliadoData;
-    }
-
-    /**
-     * Crea la venta según el tipo de pago
+     * Crea la venta básica
      */
     private function createSale(string $paymentType, array $validatedData, array $bncResponse, array $aliadoData): Sale
     {
         $baseData = [
-            'cliente_id' => $validatedData['cliente_id'] ?? null,
-            'sucursal_id' => $validatedData['sucursal_id'] ?? null,
             'aliado_id' => $validatedData['aliado_id'] ?? null,
             'monto_total' => $validatedData['Amount'],
             'monto_pagado' => $validatedData['Amount'],
@@ -244,206 +173,121 @@ class PaymentProcessorService
             'fecha_venta' => now(),
             'fecha_pago' => now(),
             'descripcion' => $validatedData['descripcion'] ?? "Pago {$paymentType} procesado",
-            'codigo_autorizacion' => $bncResponse['AuthorizationCode'] ?? $bncResponse['Code'] ?? null,
+            'codigo_autorizacion' => $bncResponse['AuthorizationCode'] ?? null,
             'respuesta_banco' => json_encode($bncResponse),
-            'currency' => 'BS', // Siempre Bolívares
+            'currency' => 'BS',
         ];
 
+        // Agregar datos específicos del tipo de pago
         $specificData = match ($paymentType) {
             'c2p' => [
                 'metodo_pago' => 'pago_movil',
-                'terminal' => $validatedData['Terminal'],
                 'banco_destino' => $validatedData['DebtorBankCode'],
                 'telefono_cliente' => $validatedData['DebtorCellPhone'],
                 'cedula_cliente' => $validatedData['DebtorID'],
             ],
             'card' => [
                 'metodo_pago' => 'tarjeta_credito',
-                'terminal' => $validatedData['TransactionIdentifier'],
                 'numero_tarjeta' => substr($validatedData['CardNumber'], -4),
                 'nombre_titular' => $validatedData['CardHolderName'],
-                'tipo_tarjeta' => $validatedData['idCardType'],
             ],
             'p2p' => [
                 'metodo_pago' => 'transferencia_p2p',
                 'banco_destino' => $validatedData['BeneficiaryBankCode'],
                 'telefono_beneficiario' => $validatedData['BeneficiaryCellPhone'],
                 'cedula_beneficiario' => $validatedData['BeneficiaryID'],
-                'nombre_beneficiario' => $validatedData['BeneficiaryName'],
             ],
-            default => []
+            default => ['metodo_pago' => $paymentType]
         };
 
         return Sale::create(array_merge($baseData, $specificData));
     }
 
     /**
-     * Procesa la transferencia automática a la cuenta de la empresa
+     * Valida si la respuesta del BNC fue exitosa con detección de tipo de pago
      */
-    private function processCompanyTransfer($venta, $bncData, $bncResponse)
+    private function isBncResponseSuccessful(array $bncResponse, string $paymentType = null): bool
     {
-        try {
-            $companyAccount = $this->getCompanyAccount();
-            $netAmount = $this->calculateNetAmount($bncData['Amount']);
+        Log::debug("Validando respuesta BNC para: {$paymentType}", ['response' => $bncResponse]);
 
-            // Aquí implementarías la lógica real de transferencia a tu gateway de pagos
-            $transferResult = $this->executeCompanyTransfer([
-                'from_account' => 'payment_gateway',
-                'to_account' => $companyAccount['account_number'],
-                'bank_code' => $companyAccount['bank_code'],
-                'amount' => $netAmount,
-                'currency' => 'BS',
-                'reference' => 'TRF-' . ($bncData['OperationRef'] ?? $venta->transaction_id ?? uniqid()),
-                'sale_id' => $venta->id,
-                'original_amount' => $bncData['Amount'],
-                'commission' => $bncData['Amount'] - $netAmount
-            ]);
-
-            return [
-                'success' => true,
-                'transfer_data' => $transferResult,
-                'company_account' => $companyAccount,
-                'net_amount' => $netAmount
-            ];
-        } catch (\Exception $e) {
-            Log::error('Error en transferencia a empresa: ' . $e->getMessage(), [
-                'venta_id' => $venta->id,
-                'amount' => $bncData['Amount'] ?? 0
-            ]);
-
-            return [
-                'success' => false,
-                'error' => $e->getMessage(),
-                'company_account' => $this->getCompanyAccount(),
-                'net_amount' => $this->calculateNetAmount($bncData['Amount'])
-            ];
-        }
-    }
-
-    /**
-     * Ejecuta la transferencia real a la cuenta de la empresa
-     */
-    private function executeCompanyTransfer(array $transferData): array
-    {
-        // Implementar aquí la lógica real de transferencia
-        // Esto podría ser una llamada a una API de tu banco o gateway de pagos
-
-        Log::info("Ejecutando transferencia a empresa", [
-            'to_account' => $transferData['to_account'],
-            'amount' => $transferData['amount'],
-            'reference' => $transferData['reference']
-        ]);
-
-        // Simulación de transferencia exitosa
-        return [
-            'transfer_id' => uniqid('TRF_'),
-            'status' => 'completed',
-            'amount' => $transferData['amount'],
-            'reference' => $transferData['reference'],
-            'timestamp' => now()->toISOString()
+        // Validaciones específicas por tipo de pago
+        $validations = [
+            'c2p' => function ($response) {
+                return isset($response['Status']) && $response['Status'] === 'OK' &&
+                    isset($response['Reference']) && !empty($response['Reference']);
+            },
+            'card' => function ($response) {
+                return isset($response['TransactionIdentifier']) && !empty($response['TransactionIdentifier']) &&
+                    isset($response['Reference']) && !empty($response['Reference']);
+            },
+            'p2p' => function ($response) {
+                return isset($response['Reference']) && !empty($response['Reference']) &&
+                    isset($response['AuthorizationCode']) && !empty($response['AuthorizationCode']);
+            }
         ];
-    }
 
-    /**
-     * Obtiene la cuenta de la empresa en Bolívares
-     */
-    private function getCompanyAccount(): array
-    {
-        return [
-            'account_number' => env('COMPANY_BS_ACCOUNT', '987654321'),
-            'bank_code' => env('COMPANY_BS_BANK_CODE', '0105'),
-            'bank_name' => env('COMPANY_BS_BANK_NAME', 'Banco Nacional de Crédito')
+        // Si conocemos el tipo de pago, usar validación específica
+        if ($paymentType && isset($validations[$paymentType])) {
+            $isValid = $validations[$paymentType]($bncResponse);
+            if ($isValid) {
+                Log::info("Validación {$paymentType} exitosa");
+                return true;
+            }
+        }
+
+        // Validación genérica para cualquier tipo
+        $genericValidations = [
+            // Tiene Reference + algún código de autorización
+            isset($bncResponse['Reference']) && !empty($bncResponse['Reference']) &&
+                (isset($bncResponse['AuthorizationCode']) || isset($bncResponse['TransactionIdentifier'])),
+
+            // Tiene Status OK + Reference
+            isset($bncResponse['Status']) && $bncResponse['Status'] === 'OK' &&
+                isset($bncResponse['Reference']) && !empty($bncResponse['Reference']),
+
+            // Tiene success true
+            isset($bncResponse['success']) && $bncResponse['success'] === true,
+
+            // Tiene TransactionIdentifier + Reference (VPOS)
+            isset($bncResponse['TransactionIdentifier']) && !empty($bncResponse['TransactionIdentifier']) &&
+                isset($bncResponse['Reference']) && !empty($bncResponse['Reference'])
         ];
-    }
 
-    /**
-     * Calcula el monto neto después de comisiones
-     */
-    private function calculateNetAmount(float $grossAmount): float
-    {
-        $commissionRate = 0.035; // 3.5% de comisión
-        $fixedFee = 2.00; // Bs 2.00 fee fijo
+        foreach ($genericValidations as $validation) {
+            if ($validation) {
+                Log::info('Validación genérica exitosa', ['payment_type' => $paymentType]);
+                return true;
+            }
+        }
 
-        $commission = ($grossAmount * $commissionRate) + $fixedFee;
-        return round($grossAmount - $commission, 2);
-    }
-
-    /**
-     * Registra el payout de la empresa en la base de datos
-     */
-    private function recordCompanyPayout(Sale $venta, array $transferResult): Payout
-    {
-        return Payout::create([
-            'venta_id' => $venta->id,
-            'transfer_amount' => $transferResult['net_amount'] ?? 0,
-            'original_amount' => $venta->monto_total,
-            'commission' => $venta->monto_total - ($transferResult['net_amount'] ?? 0),
-            'company_account' => $transferResult['company_account']['account_number'],
-            'company_bank' => $transferResult['company_account']['bank_name'],
-            'transfer_reference' => $transferResult['transfer_data']['reference'] ?? 'TRF-' . $venta->transaction_id,
-            'transfer_status' => $transferResult['success'] ? 'completed' : 'failed',
-            'transfer_response' => json_encode($transferResult),
-            'transferred_at' => $transferResult['success'] ? now() : null
+        Log::warning('Validación BNC fallida', [
+            'payment_type' => $paymentType,
+            'response' => $bncResponse
         ]);
-    }
-
-    /**
-     * Valida si la respuesta del BNC fue exitosa
-     */
-    private function isBncResponseSuccessful(array $bncResponse): bool
-    {
-        if (!is_array($bncResponse)) {
-            return false;
-        }
-
-        if (isset($bncResponse['Status']) && $bncResponse['Status'] === 'OK') {
-            return true;
-        }
-
-        if (isset($bncResponse['status']) && $bncResponse['status'] === 'OK') {
-            return true;
-        }
-
-        if (isset($bncResponse['success']) && $bncResponse['success'] === true) {
-            return true;
-        }
-
-        if (isset($bncResponse['AuthorizationCode']) && !empty($bncResponse['AuthorizationCode'])) {
-            return true;
-        }
-
-        if (isset($bncResponse['Reference']) && !empty($bncResponse['Reference'])) {
-            return true;
-        }
 
         return false;
     }
 
     /**
-     * Construye respuesta de éxito estandarizada
+     * Construye respuesta de éxito simplificada
      */
-    private function buildSuccessResponse(Sale $venta, ?Payout $payout, array $bncResponse, array $validatedData, array $aliadoData, Payout $companyPayout): array
+    private function buildSuccessResponse(Sale $venta, ?Payout $payout, array $bncResponse, array $aliadoData): array
     {
         $response = [
             'venta' => [
                 'id' => $venta->id,
                 'monto_total' => $venta->monto_total,
-                'currency' => 'BS',
-                'transaction_id' => $venta->transaction_id,
                 'referencia_banco' => $venta->referencia_banco,
+                'transaction_id' => $venta->transaction_id,
                 'metodo_pago' => $venta->metodo_pago,
                 'estado' => $venta->estado,
-                'fecha_venta' => $venta->fecha_venta ? $venta->fecha_venta->format('Y-m-d H:i:s') : now()->format('Y-m-d H:i:s'), // CORRECCIÓN AQUÍ
+                // CORRECCIÓN: Usar now() si fecha_venta es null
+                'fecha_venta' => $venta->fecha_venta ? $venta->fecha_venta->format('Y-m-d H:i:s') : now()->format('Y-m-d H:i:s'),
+                'fecha_pago' => $venta->fecha_pago ? $venta->fecha_pago->format('Y-m-d H:i:s') : now()->format('Y-m-d H:i:s'),
             ],
-            'bnc_response' => $bncResponse,
-            'transfer_to_company' => [
-                'completed' => $companyPayout->transfer_status === 'completed',
-                'amount' => $companyPayout->transfer_amount,
-                'commission' => $companyPayout->commission,
-                'company_account' => $companyPayout->company_account,
-                'company_bank' => $companyPayout->company_bank,
-                'reference' => $companyPayout->transfer_reference,
-                'transfer_status' => $companyPayout->transfer_status
+            'bnc_response' => [
+                'Reference' => $bncResponse['Reference'] ?? null,
+                'Status' => $bncResponse['Status'] ?? null,
             ]
         ];
 
@@ -451,43 +295,14 @@ class PaymentProcessorService
         if ($aliadoData['has_aliado']) {
             $response['aliado'] = [
                 'aliado_id' => $aliadoData['aliado_id'],
-                'aliado_name' => $aliadoData['aliado_name'] ?? '',
-                'discount_original' => $aliadoData['discount_original'],
+                'aliado_name' => $aliadoData['aliado_name'],
                 'comision_porcentaje' => $aliadoData['comision_porcentaje'],
                 'monto_comision' => $aliadoData['monto_comision'],
                 'monto_neto' => $aliadoData['monto_neto'],
                 'payout_id' => $payout?->id,
-                'estado_payout' => $payout?->estado
             ];
         }
 
-        // Agregar datos de cliente si existen
-        if (!empty($validatedData['cliente_id'])) {
-            $response['cliente_id'] = $validatedData['cliente_id'];
-        }
-
         return $response;
-    }
-
-    /**
-     * Obtiene mensaje de error amigable para el usuario
-     */
-    private function getUserFriendlyErrorMessage(\Exception $e, string $paymentType): string
-    {
-        $baseMessage = 'Error al procesar el pago. ';
-
-        if (str_contains($e->getMessage(), '409')) {
-            return $baseMessage . 'El sistema bancario reportó un conflicto. Por favor, intente nuevamente.';
-        }
-
-        if (str_contains($e->getMessage(), 'timeout')) {
-            return $baseMessage . 'El tiempo de espera se agotó. Por favor, intente nuevamente.';
-        }
-
-        if (str_contains($e->getMessage(), 'validation')) {
-            return $baseMessage . 'Por favor, verifique los datos e intente nuevamente.';
-        }
-
-        return $baseMessage . 'Por favor, intente nuevamente.';
     }
 }
