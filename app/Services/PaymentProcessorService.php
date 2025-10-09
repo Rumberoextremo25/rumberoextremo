@@ -34,58 +34,80 @@ class PaymentProcessorService
         array $bankValidationRules,
         callable $prepareBncData
     ): JsonResponse {
-        Log::info("Solicitud recibida para procesar pago {$paymentType}", [
-            'payment_type' => $paymentType,
-            'aliado_id' => $request->aliado_id
+        Log::info("=== INICIANDO PROCESAMIENTO PAGO {$paymentType} ===", [
+            'request_data' => $request->all(),
+            'payment_type' => $paymentType
         ]);
 
         DB::beginTransaction();
         try {
             // 1. Validar campos esenciales del banco
+            Log::debug("Validando campos bancarios para {$paymentType}");
             $bankValidatedData = $request->validate($bankValidationRules);
+            Log::debug("Validación bancaria exitosa", $bankValidatedData);
 
             // 2. Validar aliado_id si existe
             $systemValidatedData = $request->validate([
                 'aliado_id' => 'nullable|integer|exists:aliados,id',
                 'descripcion' => 'nullable|string|max:255',
             ]);
+            Log::debug("Validación sistema exitosa", $systemValidatedData);
 
             $validatedData = array_merge($bankValidatedData, $systemValidatedData);
 
             // 3. Preparar datos para BNC
+            Log::debug("Preparando datos BNC para {$paymentType}");
             $bncData = $prepareBncData($validatedData);
-            $bncData['Currency'] = 'BS'; // Moneda por defecto
-
-            Log::debug("Datos para BNC", ['bnc_data' => $bncData]);
+            $bncData['Currency'] = 'BS';
+            Log::debug("Datos BNC preparados", $bncData);
 
             // 4. Ejecutar pago en BNC
+            Log::info("Ejecutando pago {$paymentType} en BNC");
             $bncResponse = $this->executeBncPayment($paymentType, $bncData);
+            Log::info("Respuesta BNC recibida", [
+                'payment_type' => $paymentType,
+                'bnc_response' => $bncResponse
+            ]);
 
-            // 5. Validar respuesta del BNC
-            if (!$this->isBncResponseSuccessful($bncResponse)) {
-                $errorMessage = $bncResponse['Message'] ?? "Fallo al procesar el pago {$paymentType}.";
-                Log::error("Fallo BNC", ['response' => $bncResponse]);
+            // 5. Validar respuesta del BNC - CON MÁS DETALLE
+            Log::debug("Validando respuesta BNC para {$paymentType}");
+            if (!$this->isBncResponseSuccessful($bncResponse, $paymentType)) {
+                $errorMessage = $bncResponse['Message'] ?? $bncResponse['message'] ?? "Fallo al procesar el pago {$paymentType}.";
+                Log::error("VALIDACIÓN BNC FALLIDA para {$paymentType}", [
+                    'bnc_response' => $bncResponse,
+                    'payment_type' => $paymentType,
+                    'error_message' => $errorMessage
+                ]);
                 throw new \Exception($errorMessage);
             }
+            Log::info("Validación BNC exitosa para {$paymentType}");
 
-            // 6. Procesar datos del aliado (simplificado)
+            // 6. Procesar datos del aliado
+            Log::debug("Procesando datos del aliado");
             $aliadoData = $this->processAliadoData($validatedData);
+            Log::debug("Datos aliado procesados", $aliadoData);
 
-            // 7. Guardar venta básica
+            // 7. Guardar venta
+            Log::debug("Creando registro de venta");
             $venta = $this->createSale($paymentType, $validatedData, $bncResponse, $aliadoData);
+            Log::info("Venta creada exitosamente", ['venta_id' => $venta->id]);
 
             // 8. Guardar payout si hay aliado
             $payout = null;
             if ($aliadoData['has_aliado']) {
+                Log::debug("Creando payout para aliado", ['aliado_id' => $aliadoData['aliado_id']]);
                 $payout = $this->payoutService->createPayout($venta, $aliadoData, $bncResponse);
+                Log::info("Payout creado exitosamente", ['payout_id' => $payout?->id]);
+            } else {
+                Log::debug("No hay aliado, no se crea payout");
             }
 
             DB::commit();
 
-            Log::info("Pago {$paymentType} exitoso", [
+            Log::info("=== PAGO {$paymentType} PROCESADO EXITOSAMENTE ===", [
                 'venta_id' => $venta->id,
-                'aliado_id' => $aliadoData['aliado_id'],
-                'payout_id' => $payout?->id
+                'payout_id' => $payout?->id,
+                'aliado_id' => $aliadoData['aliado_id']
             ]);
 
             return response()->json([
@@ -95,7 +117,10 @@ class PaymentProcessorService
             ], 200);
         } catch (ValidationException $e) {
             DB::rollBack();
-            Log::warning("Error validación", ['errors' => $e->errors()]);
+            Log::error("ERROR DE VALIDACIÓN en {$paymentType}", [
+                'errors' => $e->errors(),
+                'request_data' => $request->all()
+            ]);
             return response()->json([
                 'success' => false,
                 'message' => 'Datos de entrada inválidos.',
@@ -103,7 +128,12 @@ class PaymentProcessorService
             ], 422);
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error("Error en pago: " . $e->getMessage());
+            Log::error("ERROR GENERAL en pago {$paymentType}: " . $e->getMessage(), [
+                'payment_type' => $paymentType,
+                'file' => $e->getFile(),
+                'line' => $e->getLine(),
+                'trace' => $e->getTraceAsString() // ← ESTO ES IMPORTANTE
+            ]);
 
             return response()->json([
                 'success' => false,
