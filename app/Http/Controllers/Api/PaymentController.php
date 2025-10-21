@@ -95,32 +95,27 @@ class PaymentController extends Controller
     }
 
     /**
-     * Procesa un pago P2P (Transferencia)
+     * Valida si un pago P2P ya fue realizado
      */
-    public function processP2PPayment(Request $request): JsonResponse
+    public function validateP2PPayment(Request $request): JsonResponse
     {
-        return $this->paymentProcessor->processPayment($request, 'p2p', [
+        $validated = $request->validate([
+            'ClientID' => 'required|string|min:6|max:20',
+            'Reference' => 'required|string|max:100',
             'Amount' => 'required|numeric|min:0.01|max:999999.99',
-            'BeneficiaryBankCode' => 'required|integer|min:1',
-            'BeneficiaryCellPhone' => 'required|string|regex:/^[0-9]{10,15}$/',
-            'BeneficiaryID' => 'required|string|min:6|max:20',
-            'BeneficiaryName' => 'required|string|max:255|regex:/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/',
-            'Description' => 'required|string|max:255',
-            'OperationRef' => 'required|string|max:100',
-        ], function ($validatedData) {
-            return [
-                'Amount' => round((float)$validatedData['Amount'], 2),
-                'Currency' => 'BS', // Siempre Bolívares
-                'BeneficiaryBankCode' => (int)$validatedData['BeneficiaryBankCode'],
-                'BeneficiaryCellPhone' => preg_replace('/[^0-9]/', '', $validatedData['BeneficiaryCellPhone']),
-                'BeneficiaryID' => $validatedData['BeneficiaryID'],
-                'BeneficiaryName' => $this->sanitizeName($validatedData['BeneficiaryName']),
-                'Description' => substr($validatedData['Description'], 0, 255),
-                'OperationRef' => $validatedData['OperationRef'],
-                'BeneficiaryEmail' => $validatedData['BeneficiaryEmail'] ?? '',
-                'PaymentMethod' => 'p2p',
-            ];
-        });
+            'DateMovement' => 'required|date|date_format:Y-m-d',
+            'AccountNumber' => 'nullable|string|max:50',
+            'ChildClientID' => 'nullable|string|max:50',
+            'BranchID' => 'nullable|string|max:50',
+        ]);
+
+        $result = $this->bncApiService->validateP2PPayment($validated);
+
+        return response()->json([
+            'success' => true,
+            'payment_exists' => $result['MovementExists'] ?? false,
+            'payment_details' => $result['MovementExists'] ? $result : null
+        ]);
     }
 
     /**

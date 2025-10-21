@@ -87,7 +87,7 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::prefix('pagos')->group(function () {
     Route::post('c2p', [PaymentController::class, 'initiateC2PPayment']);
     Route::post('tarjeta', [PaymentController::class, 'processCardPayment']);
-    Route::post('p2p', [PaymentController::class, 'processP2PPayment']);
+    Route::post('p2p', [PaymentController::class, 'validateP2PPayment']);
     
     // Rutas de payouts
     Route::prefix('payouts')->group(function () {

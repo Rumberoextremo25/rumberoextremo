@@ -15,7 +15,7 @@ class BncApiService
     private string $merchantId;
     private string $c2pApiUrl;
     private string $vposApiUrl;
-    private string $p2pApiUrl;
+    private string $validationApiUrl;
     private string $banksApiUrl;
     private string $ratesApiUrl;
     protected DataCypher $dataCypher;
@@ -28,7 +28,7 @@ class BncApiService
         $this->merchantId = env('BNC_MERCHANT_ID');
         $this->c2pApiUrl = env('BNC_C2P_API_URL');
         $this->vposApiUrl = env('BNC_VPOS_API_URL');
-        $this->p2pApiUrl = env('BNC_P2P_API_URL');
+        $this->validationApiUrl = env('BNC_P2P_API_URL');
         $this->banksApiUrl = env('BNC_BANKS_API_URL');
         $this->ratesApiUrl = env('BNC_RATES_API_URL');
 
@@ -69,14 +69,13 @@ class BncApiService
                 }
 
                 $responseData = json_decode($response->body(), true);
-                
+
                 if (!isset($responseData['value'])) {
                     throw new Exception('Estructura de respuesta inválida');
                 }
 
                 Log::info('BNC Session Token obtenido exitosamente');
                 return $responseData['value'];
-
             } catch (Exception $e) {
                 Log::error('Error al obtener token BNC: ' . $e->getMessage());
                 return null;
@@ -89,7 +88,7 @@ class BncApiService
         try {
             $wk = $this->dataCypher->decryptWithKey($encryptedToken, $this->masterKey);
             $wkArray = json_decode($wk, true);
-            
+
             $workingKey = $wkArray['WorkingKey'] ?? null;
             if (!$workingKey) {
                 throw new Exception('WorkingKey no encontrado en la respuesta');
@@ -98,7 +97,6 @@ class BncApiService
             $this->setWorkingKey($workingKey);
             Log::info('WorkingKey procesado exitosamente');
             return $workingKey;
-
         } catch (Exception $e) {
             Log::error('Error en processSessionToken: ' . $e->getMessage());
             return null;
@@ -112,8 +110,13 @@ class BncApiService
     public function initiateC2PPayment(array $data): ?array
     {
         return $this->executeTransaction('C2P', $data, [
-            'DebtorBankCode', 'DebtorCellPhone', 'DebtorID', 'Amount', 'Token', 'Terminal'
-        ], function($data) {
+            'DebtorBankCode',
+            'DebtorCellPhone',
+            'DebtorID',
+            'Amount',
+            'Token',
+            'Terminal'
+        ], function ($data) {
             return [
                 "DebtorBankCode" => (int)$data['DebtorBankCode'],
                 "DebtorCellPhone" => $data['DebtorCellPhone'],
@@ -130,9 +133,19 @@ class BncApiService
     public function processCardPayment(array $data): ?array
     {
         return $this->executeTransaction('VPOS', $data, [
-            'TransactionIdentifier', 'Amount', 'idCardType', 'CardNumber', 'dtExpiration',
-            'CardHolderName', 'AccountType', 'CVV', 'CardPIN', 'CardHolderID', 'AffiliationNumber', 'OperationRef'
-        ], function($data) {
+            'TransactionIdentifier',
+            'Amount',
+            'idCardType',
+            'CardNumber',
+            'dtExpiration',
+            'CardHolderName',
+            'AccountType',
+            'CVV',
+            'CardPIN',
+            'CardHolderID',
+            'AffiliationNumber',
+            'OperationRef'
+        ], function ($data) {
             return [
                 "TransactionIdentifier" => $data['TransactionIdentifier'],
                 "Amount" => (float)$data['Amount'],
@@ -152,24 +165,24 @@ class BncApiService
         }, $this->vposApiUrl);
     }
 
-    public function initiateP2PPayment(array $data): ?array
+    public function validateP2PPayment(array $data): ?array
     {
-        return $this->executeTransaction('P2P', $data, [
-            'Amount', 'BeneficiaryBankCode', 'BeneficiaryCellPhone', 'BeneficiaryID',
-            'BeneficiaryName', 'Description'
-        ], function($data) {
+        return $this->executeTransaction('P2P_VALIDATION', $data, [
+            'ClientID',
+            'Reference',
+            'Amount',
+            'DateMovement'
+        ], function ($data) {
             return [
+                "ClientID" => $data['ClientID'],
+                "AccountNumber" => $data['AccountNumber'] ?? "",
+                "Reference" => $data['Reference'],
                 "Amount" => (float)$data['Amount'],
-                "BeneficiaryBankCode" => (int)$data['BeneficiaryBankCode'],
-                "BeneficiaryCellPhone" => $data['BeneficiaryCellPhone'],
-                "BeneficiaryEmail" => $data['BeneficiaryEmail'] ?? "",
-                "BeneficiaryID" => $data['BeneficiaryID'],
-                "BeneficiaryName" => $data['BeneficiaryName'],
-                "Description" => $data['Description'],
+                "DateMovement" => $data['DateMovement'],
                 "ChildClientID" => $data['ChildClientID'] ?? "",
                 "BranchID" => $data['BranchID'] ?? ""
             ];
-        }, $this->p2pApiUrl);
+        }, $this->validationApiUrl); // Usar URL de validación
     }
 
     public function getBanksFromBnc(): ?array
@@ -201,7 +214,7 @@ class BncApiService
     {
         try {
             $this->validateRequiredFields($data, $requiredFields, $operation);
-            
+
             $workingKey = $this->ensureWorkingKey();
             if (!$workingKey) {
                 throw new Exception("WorkingKey no disponible para $operation");
@@ -209,7 +222,7 @@ class BncApiService
 
             $transactionData = $dataMapper($data);
             $jsonData = json_encode($transactionData);
-            
+
             if ($jsonData === false) {
                 throw new Exception("Error al codificar JSON para $operation");
             }
@@ -217,7 +230,6 @@ class BncApiService
             Log::info("Iniciando $operation", [$operation => $transactionData]);
 
             return $this->sendEncryptedRequest($url, $jsonData, $workingKey, $operation);
-
         } catch (Exception $e) {
             Log::error("Error en $operation: " . $e->getMessage());
             return [
@@ -250,7 +262,6 @@ class BncApiService
             }
 
             return $response;
-
         } catch (Exception $e) {
             Log::error("Error en $operation: " . $e->getMessage());
             throw new Exception("No se pudo completar la operación $operation: " . $e->getMessage());
@@ -280,7 +291,7 @@ class BncApiService
         }
 
         $responseData = json_decode($response->body(), true);
-        
+
         if (isset($responseData['value']) && isset($responseData['validation'])) {
             $processed = $this->processEncryptedResponse($responseData, $workingKey);
             return $processed['decrypted_response'] ?? $responseData;
@@ -293,7 +304,7 @@ class BncApiService
     {
         try {
             $decryptedValue = $this->dataCypher->decryptWithKey($encryptedResponse['value'], $workingKey);
-            
+
             if (!$decryptedValue) {
                 return null;
             }
@@ -305,12 +316,11 @@ class BncApiService
             }
 
             $responseData = json_decode($decryptedValue, true);
-            
+
             return [
                 'success' => true,
                 'decrypted_response' => $responseData
             ];
-
         } catch (Exception $e) {
             Log::error('Error procesando respuesta encriptada: ' . $e->getMessage());
             return null;
@@ -380,7 +390,7 @@ class BncApiService
     {
         try {
             $this->clearWorkingKey();
-            
+
             $encryptedToken = $this->getSessionToken();
             if (!$encryptedToken) {
                 throw new Exception('Fallo en getSessionToken()');
@@ -397,7 +407,6 @@ class BncApiService
                 'working_key_length' => strlen($workingKey),
                 'working_key_cached' => $this->hasWorkingKey()
             ];
-
         } catch (Exception $e) {
             return ['success' => false, 'error' => $e->getMessage()];
         }
