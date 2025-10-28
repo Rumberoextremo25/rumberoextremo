@@ -3,7 +3,6 @@
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\SalesController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\BannerController;
@@ -12,7 +11,7 @@ use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\AllyController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Admin\ReportController;
-use App\Http\Controllers\Admin\PayoutController;
+use App\Http\Controllers\PayoutController;
 
 //RUTAS DE LAS VISTAS DE LA LANDING UBICADAS EN EL CONTROLADOR DE PAGE
 Route::get('/', [PageController::class, 'index'])->name('welcome');
@@ -107,15 +106,47 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 });
 
 // Rutas de administración para payouts
+// Rutas de administración para payouts
 Route::prefix('admin')->name('admin.')->group(function () {
-    // Rutas de payouts
+    // Página principal de payouts
     Route::get('/payouts', [PayoutController::class, 'index'])->name('payouts.index');
+    
+    // Payouts pendientes
     Route::get('/payouts/pending', [PayoutController::class, 'pending'])->name('payouts.pending');
-    Route::get('/payouts/create', [PayoutController::class, 'create'])->name('payouts.create');
-    Route::post('/payouts', [PayoutController::class, 'store'])->name('payouts.store');
-    Route::get('/payouts/{payout}', [PayoutController::class, 'show'])->name('payouts.show');
+    
+    // Generar archivo BNC
     Route::post('/payouts/generate-bnc', [PayoutController::class, 'generateBncFile'])->name('payouts.generate_bnc');
+    
+    // Confirmar pagos
     Route::post('/payouts/confirm', [PayoutController::class, 'confirmPayouts'])->name('payouts.confirm');
+    
+    // Descargar archivo BNC
+    Route::get('/payouts/download-bnc/{archivo}', [PayoutController::class, 'downloadBncFile'])->name('payouts.download_bnc');
+    
+    // Revertir pago
+    Route::post('/payouts/revert/{payoutId}', [PayoutController::class, 'revertPayout'])->name('payouts.revert');
+    
+    // Eliminar archivo
+    Route::delete('/payouts/files/{archivo}', [PayoutController::class, 'deleteFile'])->name('payouts.delete_file');
+    
+    // Rutas AJAX para datos
+    Route::get('/payouts/stats', [PayoutController::class, 'getStats'])->name('payouts.stats');
+    Route::get('/payouts/files', [PayoutController::class, 'getFiles'])->name('payouts.files');
+});
+
+// O si prefieres resource routes con rutas adicionales:
+Route::prefix('admin')->name('admin.')->group(function () {
+    Route::resource('payouts', PayoutController::class)->only([
+        'index', 'show', 'create', 'store'
+    ]);
+    
+    // Rutas adicionales para payouts
+    Route::get('payouts/pending', [PayoutController::class, 'pending'])->name('payouts.pending');
+    Route::post('payouts/generate-bnc', [PayoutController::class, 'generateBncFile'])->name('payouts.generate_bnc');
+    Route::post('payouts/confirm', [PayoutController::class, 'confirmPayouts'])->name('payouts.confirm');
+    Route::get('payouts/download-bnc/{archivo}', [PayoutController::class, 'downloadBncFile'])->name('payouts.download_bnc');
+    Route::post('payouts/revert/{payoutId}', [PayoutController::class, 'revertPayout'])->name('payouts.revert');
+    Route::get('payouts/stats', [PayoutController::class, 'getStats'])->name('payouts.stats');
 });
 
 require __DIR__ . '/auth.php';

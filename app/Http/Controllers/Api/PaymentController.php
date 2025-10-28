@@ -131,14 +131,14 @@ class PaymentController extends Controller
             $validated = $request->validate([
                 'fecha_inicio' => 'required|date',
                 'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
-                'tipo_cuenta' => 'required|in:corriente,ahorro',
-                'concepto' => 'nullable|string|max:100',
+                'concepto' => 'nullable|string|max:60', // Ahora máximo 60 caracteres
+                // 'tipo_cuenta' ya no es necesario si viene del .env
             ]);
 
             $result = $this->payoutService->generarArchivoPagosBNC(
                 $validated['fecha_inicio'],
                 $validated['fecha_fin'],
-                $validated['tipo_cuenta'],
+                'corriente', // O puedes obtenerlo de otra configuración
                 $validated['concepto']
             );
 

@@ -10,127 +10,84 @@ class Payout extends Model
 {
     use HasFactory;
 
-    protected $table = 'payouts';
-
     protected $fillable = [
         'sale_id',
         'ally_id',
         'sale_amount',
         'commission_percentage',
         'commission_amount',
+        'net_amount',
+        'ally_discount',
+        'amount_after_discount',
+        'company_transfer_amount',
+        'company_commission',
+        'company_account',
+        'company_bank',
+        'company_transfer_reference',
+        'company_transfer_status',
+        'company_transfer_date',
+        'company_transfer_response',
         'status',
         'generation_date',
         'payment_date',
+        'confirmed_at',
+        'reverted_at',
         'sale_reference',
         'payment_reference',
         'ally_payment_method',
-        'ally_account_number',
-        'ally_bank',
-        'payment_proof',
-        'notes'
+        'payment_proof_path',
+        'batch_reference',
+        'batch_processed_at',
+        'reversion_reason'
     ];
 
     protected $casts = [
-        'generation_date' => 'datetime',
-        'payment_date' => 'datetime',
         'sale_amount' => 'decimal:2',
         'commission_percentage' => 'decimal:2',
         'commission_amount' => 'decimal:2',
+        'net_amount' => 'decimal:2',
+        'ally_discount' => 'decimal:2',
+        'amount_after_discount' => 'decimal:2',
+        'company_transfer_amount' => 'decimal:2',
+        'company_commission' => 'decimal:2',
+        'company_transfer_date' => 'datetime',
+        'generation_date' => 'datetime',
+        'payment_date' => 'datetime',
+        'confirmed_at' => 'datetime',
+        'reverted_at' => 'datetime',
+        'batch_processed_at' => 'datetime',
+        'company_transfer_response' => 'array'
     ];
 
-    // Possible statuses
-    const STATUS_PENDING = 'pending';
-    const STATUS_PROCESSING = 'processing';
-    const STATUS_PAID = 'paid';
-    const STATUS_ERROR = 'error';
-
-    /**
-     * Relationship with sale
-     */
+    // Relaciones
     public function sale(): BelongsTo
     {
         return $this->belongsTo(Sale::class);
     }
 
-    /**
-     * Relationship with ally
-     */
     public function ally(): BelongsTo
     {
         return $this->belongsTo(Ally::class);
     }
 
-    /**
-     * Scope for pending payouts
-     */
+    // Scopes
     public function scopePending($query)
     {
-        return $query->where('status', self::STATUS_PENDING);
+        return $query->where('status', 'pending');
     }
 
-    /**
-     * Scope for processing payouts
-     */
     public function scopeProcessing($query)
     {
-        return $query->where('status', self::STATUS_PROCESSING);
+        return $query->where('status', 'processing');
     }
 
-    /**
-     * Scope for paid payouts
-     */
-    public function scopePaid($query)
+    public function scopeCompleted($query)
     {
-        return $query->where('status', self::STATUS_PAID);
+        return $query->where('status', 'completed');
     }
 
-    /**
-     * Scope for payouts between dates
-     */
-    public function scopeBetweenDates($query, $startDate, $endDate)
+    public function scopeReverted($query)
     {
-        return $query->whereBetween('generation_date', [$startDate, $endDate]);
-    }
-
-    /**
-     * Mark as pending
-     */
-    public function markAsPending(): void
-    {
-        $this->update(['status' => self::STATUS_PENDING]);
-    }
-
-    /**
-     * Mark as processing
-     */
-    public function markAsProcessing(): void
-    {
-        $this->update(['status' => self::STATUS_PROCESSING]);
-    }
-
-    /**
-     * Mark as paid
-     */
-    public function markAsPaid($paymentReference, $paymentDate): void
-    {
-        $this->update([
-            'status' => self::STATUS_PAID,
-            'payment_reference' => $paymentReference,
-            'payment_date' => $paymentDate
-        ]);
-    }
-
-    /**
-     * Get status in readable format
-     */
-    public function getStatusTextAttribute(): string
-    {
-        return match($this->status) {
-            self::STATUS_PENDING => 'Pending',
-            self::STATUS_PROCESSING => 'Processing',
-            self::STATUS_PAID => 'Paid',
-            self::STATUS_ERROR => 'Error',
-            default => 'Unknown'
-        };
+        return $query->where('status', 'reverted');
     }
 }

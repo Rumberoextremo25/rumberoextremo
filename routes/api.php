@@ -9,8 +9,6 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\Api\BankController;
-use App\Http\Controllers\Admin\PayoutController;
-use App\Services\BncApiService;
 use Illuminate\Support\Facades\Http;
 
 /*
@@ -46,33 +44,6 @@ Route::get('home-data', [HomeController::class, 'index']);
 
 Route::get('/test-route', function () {
     return 'Test successful!';
-});
-
-// Rutas de administración para payouts
-Route::prefix('admin')->name('admin.')->group(function () {
-    // Página principal de payouts
-    Route::get('/payouts', [PayoutController::class, 'index'])->name('payouts.index');
-    
-    // Generar archivo BNC
-    Route::post('/payouts/generate-bnc', [PayoutController::class, 'generateBncFile'])->name('payouts.generate_bnc');
-    
-    // Confirmar pagos
-    Route::post('/payouts/confirm', [PayoutController::class, 'confirmPayouts'])->name('payouts.confirm');
-    
-    // ✅ AGREGAR ESTA RUTA SI LA NECESITAS
-    Route::get('/payouts/pending', [PayoutController::class, 'pending'])->name('payouts.pending');
-});
-
-// O si prefieres resource routes:
-Route::prefix('admin')->name('admin.')->group(function () {
-    Route::resource('payouts', PayoutController::class)->only([
-        'index', 'create', 'store', 'show'
-    ]);
-    
-    // Rutas adicionales para payouts
-    Route::post('payouts/generate-bnc', [PayoutController::class, 'generateBncFile'])->name('payouts.generate_bnc');
-    Route::post('payouts/confirm', [PayoutController::class, 'confirmPayouts'])->name('payouts.confirm');
-    Route::get('payouts/pending', [PayoutController::class, 'pending'])->name('payouts.pending');
 });
 
 // Rutas públicas (no requieren autenticación)
@@ -146,7 +117,7 @@ Route::get('/debug-bnc', function () {
 
 Route::get('/test-bnc-connection', function () {
     try {
-        $url = 'https://servicios.bncenlinea.com:16500/api/Auth/LogOn';
+        $url = 'https://servicios.bncenlinea.com:16000/api/Auth/LogOn';
 
         // Test de conectividad básica
         $response = Http::timeout(10)->get($url);
