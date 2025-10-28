@@ -1,4 +1,5 @@
 <?php
+// app/Models/Payout.php
 
 namespace App\Models;
 
@@ -89,5 +90,21 @@ class Payout extends Model
     public function scopeReverted($query)
     {
         return $query->where('status', 'reverted');
+    }
+
+    // Métodos de utilidad
+    public function isPending(): bool
+    {
+        return $this->status === 'pending';
+    }
+
+    public function isCompleted(): bool
+    {
+        return $this->status === 'completed';
+    }
+
+    public function canBeReverted(): bool
+    {
+        return $this->isCompleted();
     }
 }
