@@ -29,6 +29,7 @@ class AllyController extends Controller
                     'category_name' => $ally->category?->name,
                     'sub_category_name' => $ally->subcategory?->name,
                     'description' => $ally->description, // Campo de descripción agregado
+                    'address' => $ally->address,
                     'discount' => $ally->discount,
                     'contact_phone' => $ally->contact_phone,
                     'website_url' => $ally->website_url,
