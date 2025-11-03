@@ -1,18 +1,16 @@
 @extends('layouts.admin')
 
-{{-- Define el título de la página en la toolbar --}}
 @section('page_title_toolbar', 'Gestión de Promociones')
 
-{{-- Agrega los estilos CSS específicos de esta vista --}}
 @push('styles')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/admin/promotion.css') }}">
 @endpush
 
-{{-- Contenido principal de la página --}}
 @section('content')
-    <div class="promotions-management-container p-6 md:p-10 max-w-7xl mx-auto">
-        <div class="bg-white p-6 md:p-10 rounded-3xl shadow-lg">
+    <div class="promotions-management-container">
+        <div class="bg-white">
             <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
                 <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4 md:mb-0">
                     <span class="text-gray-900">Gestión de</span>
@@ -25,61 +23,63 @@
 
             {{-- Mensaje de éxito o error --}}
             @if (session('success'))
-                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-6 flex items-center gap-2" role="alert">
+                <div class="alert alert-success">
                     <i class="fas fa-check-circle"></i>
                     <span>{{ session('success') }}</span>
-                    <button type="button" class="ml-auto text-green-700" onclick="this.parentElement.style.display='none';">&times;</button>
+                    <button type="button" class="ml-auto" onclick="this.parentElement.style.display='none';">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
             @endif
 
             @if (session('error'))
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6 flex items-center gap-2" role="alert">
+                <div class="alert alert-danger">
                     <i class="fas fa-exclamation-circle"></i>
                     <span>{{ session('error') }}</span>
-                    <button type="button" class="ml-auto text-red-700" onclick="this.parentElement.style.display='none';">&times;</button>
+                    <button type="button" class="ml-auto" onclick="this.parentElement.style.display='none';">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
             @endif
 
             <div class="promotions-table-container">
                 @if ($promotions->isEmpty())
-                    <p class="no-records-message flex flex-col items-center justify-center p-16">
-                        <i class="fas fa-tags text-5xl mb-4" style="color: #e5e7eb;"></i>
-                        <br>
-                        No hay promociones para mostrar.
-                        <br>
-                        <a href="{{ route('admin.promotions.create') }}" class="add-btn mt-4">
+                    <div class="no-records-message">
+                        <i class="fas fa-tags"></i>
+                        <p>No hay promociones para mostrar.</p>
+                        <a href="{{ route('admin.promotions.create') }}" class="add-btn">
                             <i class="fas fa-plus"></i> Añadir la primera Promoción
                         </a>
-                    </p>
+                    </div>
                 @else
-                    <table class="promotions-table w-full">
+                    <table class="promotions-table">
                         <thead>
                             <tr>
-                                <th class="py-4">ID</th>
-                                <th class="py-4">Título</th>
-                                <th class="py-4">Imagen</th>
-                                <th class="py-4">Descuento</th>
-                                <th class="py-4">Precio</th>
-                                <th class="py-4">Expira</th>
-                                <th class="py-4 text-center">Acciones</th>
+                                <th>ID</th>
+                                <th>Título</th>
+                                <th>Imagen</th>
+                                <th>Descuento</th>
+                                <th>Precio</th>
+                                <th>Expira</th>
+                                <th class="text-center">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($promotions as $promotion)
-                                <tr class="hover:bg-gray-50">
-                                    <td class="py-4 font-medium text-gray-900" data-label="ID">{{ $promotion->id }}</td>
-                                    <td class="py-4" data-label="Título">{{ $promotion->title }}</td>
-                                    <td class="py-4" data-label="Imagen">
+                                <tr>
+                                    <td data-label="ID">{{ $promotion->id }}</td>
+                                    <td data-label="Título">{{ $promotion->title }}</td>
+                                    <td data-label="Imagen">
                                         @if($promotion->image_url)
                                             <img src="{{ $promotion->image_url }}" alt="{{ $promotion->title }}" class="promotion-image">
                                         @else
-                                            <span style="color: #9ca3af;">No imagen</span>
+                                            <span class="no-image-text">No imagen</span>
                                         @endif
                                     </td>
-                                    <td class="py-4" data-label="Descuento">{{ $promotion->discount }}%</td>
-                                    <td class="py-4" data-label="Precio">${{ number_format((float)($promotion->price ?? 0), 2) }}</td>
-                                    <td class="py-4" data-label="Expira">{{ $promotion->expires_at ? $promotion->expires_at->format('Y-m-d') : 'N/A' }}</td>
-                                    <td class="py-4 text-center">
+                                    <td data-label="Descuento">{{ $promotion->discount }}</td>
+                                    <td data-label="Precio">{{ number_format((float)($promotion->price ?? 0), 2) }}</td>
+                                    <td data-label="Expira">{{ $promotion->expires_at ? $promotion->expires_at->format('Y-m-d') : 'N/A' }}</td>
+                                    <td class="text-center">
                                         <div class="flex items-center justify-center gap-2">
                                             <a href="{{ route('admin.promotions.edit', $promotion->id) }}" class="btn-icon edit-btn" title="Editar">
                                                 <i class="fas fa-edit"></i>
@@ -120,7 +120,6 @@
     </div>
 @endsection
 
-{{-- Agrega los scripts específicos para la vista --}}
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -139,20 +138,22 @@
                 const promotionTitle = this.dataset.promotionTitle;
                 promotionTitleDisplay.textContent = promotionTitle;
                 modal.classList.remove('hidden');
-                modal.style.display = 'flex'; // Asegura que el overlay se muestre correctamente
+                modal.style.display = 'flex';
             });
         });
 
         // Close modal handlers
-        closeBtn.addEventListener('click', () => {
+        function closeModal() {
             modal.style.display = 'none';
-        });
-        cancelBtn.addEventListener('click', () => {
-            modal.style.display = 'none';
-        });
+            formToDelete = null;
+        }
+
+        closeBtn.addEventListener('click', closeModal);
+        cancelBtn.addEventListener('click', closeModal);
+        
         modal.addEventListener('click', (e) => {
             if (e.target === modal) {
-                modal.style.display = 'none';
+                closeModal();
             }
         });
 
@@ -162,6 +163,24 @@
                 formToDelete.submit();
             }
         });
+
+        // Efectos hover mejorados
+        document.querySelectorAll('.add-btn, .btn-icon').forEach(button => {
+            button.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-2px)';
+            });
+
+            button.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+
+        // Cerrar alertas automáticamente después de 5 segundos
+        setTimeout(() => {
+            document.querySelectorAll('.alert').forEach(alert => {
+                alert.style.display = 'none';
+            });
+        }, 5000);
     });
 </script>
 @endpush

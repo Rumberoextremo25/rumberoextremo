@@ -4,41 +4,67 @@ body {
 }
 
 .admin-sidebar {
-    width: 220px;
-    height: calc(80vh - 3rem); /* Adjusted to make scroll possible */
-    background-color: #1f1f3a;
+    width: 260px; /* Un poco más ancha para mejor legibilidad */
+    height: calc(80vh - 3rem);
+    background: linear-gradient(180deg, #1f1f3a 0%, #2a2a4a 100%); /* Gradiente sutil */
     padding: 1.5rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); /* Sombra más pronunciada */
     border-radius: 20px;
-    margin-top: 100px; /* Adjusted to be consistent */
+    margin-top: 100px;
     position: fixed;
     top: 1.5rem;
     left: 1.5rem;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    transition: width 0.3s ease, transform 0.3s ease;
+    transition: all 0.3s ease;
     z-index: 999;
+    border: 1px solid rgba(255, 255, 255, 0.1); /* Borde sutil */
 }
 
+/* Header de la sidebar mejorado */
+.sidebar-header {
+    text-align: center;
+    padding: 1.5rem 0 2.5rem 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    margin-bottom: 1rem;
+}
+
+.sidebar-logo {
+    max-width: 70%;
+    height: auto;
+    filter: brightness(0) invert(1); /* Logo blanco */
+    transition: transform 0.3s ease;
+}
+
+.sidebar-logo:hover {
+    transform: scale(1.05);
+}
+
+/* Navegación mejorada */
 .sidebar-nav {
     flex-grow: 1;
     overflow-y: auto;
-    padding-right: 15px;
+    padding-right: 10px;
 }
 
-/* Make the scrollbar transparent */
+/* Scrollbar personalizado */
 .sidebar-nav::-webkit-scrollbar {
-    width: 8px;
-    background-color: transparent;
+    width: 6px;
 }
 
 .sidebar-nav::-webkit-scrollbar-track {
-    background-color: transparent;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
 }
 
 .sidebar-nav::-webkit-scrollbar-thumb {
-    background-color: transparent;
+    background: rgba(166, 1, 179, 0.5);
+    border-radius: 10px;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
+    background: rgba(166, 1, 179, 0.8);
 }
 
 .sidebar-nav ul {
@@ -47,70 +73,86 @@ body {
     margin: 0;
 }
 
-.sidebar-header {
-    text-align: center;
-    padding-top: 1rem;
-    padding-bottom: 2rem;
-}
-
-.sidebar-logo {
-    max-width: 60%;
-    height: auto;
-}
-
 .sidebar-nav-item {
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.4rem;
+    position: relative;
 }
 
+/* Enlaces mejorados */
 .sidebar-nav-link,
 .sidebar-logout-link {
     display: flex;
     align-items: center;
     gap: 1.25rem;
-    padding: 1.25rem 1.5rem;
+    padding: 1rem 1.25rem;
     color: #e0e0e0;
     text-decoration: none;
-    border-radius: 10px;
-    transition: background-color 0.2s, color 0.2s;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.sidebar-nav-link::before,
+.sidebar-logout-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s ease;
+}
+
+.sidebar-nav-link:hover::before,
+.sidebar-logout-link:hover::before {
+    left: 100%;
 }
 
 .sidebar-nav-link:hover,
 .sidebar-logout-link:hover {
-    background-color: #3004E1;
+    background: linear-gradient(135deg, #3004E1 0%, #4a08ff 100%);
     color: #ffffff;
+    transform: translateX(5px);
+    box-shadow: 0 4px 12px rgba(48, 4, 225, 0.3);
 }
 
 .sidebar-nav-link.active {
-    background-color: #A601B3;
+    background: linear-gradient(135deg, #A601B3 0%, #c004d4 100%);
     color: #ffffff;
     font-weight: 600;
+    box-shadow: 0 4px 12px rgba(166, 1, 179, 0.4);
+    transform: translateX(5px);
 }
 
-/* ------------------ Solution Added Below ------------------ */
-
+/* Íconos mejorados */
 .sidebar-nav-link i,
 .sidebar-logout-link i,
-.sidebar-nav-link img { /* Add the 'img' selector here */
-    font-size: 1.5rem;
-    width: 25px;
-    height: auto; /* Ensures aspect ratio is maintained */
+.sidebar-nav-link img {
+    font-size: 1.4rem;
+    width: 24px;
+    height: 24px;
     text-align: center;
-    color: #A601b3;
+    color: #A601B3;
+    transition: all 0.3s ease;
+    flex-shrink: 0;
 }
 
 .sidebar-nav-link:hover i,
 .sidebar-logout-link:hover i,
-.sidebar-nav-link:hover img { /* Add the 'img' selector here */
+.sidebar-nav-link:hover img {
     color: #ffffff;
+    transform: scale(1.1);
 }
 
 .sidebar-nav-link.active i,
-.sidebar-nav-link.active img { /* Add the 'img' selector here */
+.sidebar-nav-link.active img {
     color: #ffffff;
+    transform: scale(1.1);
 }
 
-/* You might need to add this for your image to be colored by CSS */
-/* If the image is a solid color and not a vector graphic, this won't work */
+/* Filtros para imágenes */
 .sidebar-nav-link img {
     filter: brightness(0) saturate(100%) invert(43%) sepia(90%) saturate(1900%) hue-rotate(264deg) brightness(83%) contrast(100%);
 }
@@ -120,34 +162,137 @@ body {
     filter: brightness(0) saturate(100%) invert(100%) sepia(1%) saturate(7499%) hue-rotate(274deg) brightness(119%) contrast(100%);
 }
 
-/* ------------------ End of Solution ------------------ */
-
-
+/* Texto de enlaces */
 .sidebar-link-text {
-    font-size: 1.1rem;
-    letter-spacing: 0.5px;
+    font-size: 1rem;
+    letter-spacing: 0.3px;
+    font-weight: 500;
+    transition: all 0.3s ease;
 }
 
+/* Sección de logout mejorada */
 .logout-container {
     margin-top: auto;
+    padding-top: 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-/* --- Responsive styles --- */
+.sidebar-logout-link {
+    background: rgba(220, 53, 69, 0.1);
+    border: 1px solid rgba(220, 53, 69, 0.2);
+}
 
+.sidebar-logout-link:hover {
+    background: linear-gradient(135deg, #dc3545 0%, #e74c3c 100%);
+    border-color: transparent;
+}
+
+.sidebar-logout-link i {
+    color: #dc3545;
+}
+
+.sidebar-logout-link:hover i {
+    color: #ffffff;
+}
+
+/* Badge para notificaciones */
+.sidebar-badge {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #e74c3c;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.7rem;
+    font-weight: bold;
+}
+
+/* Tooltip para sidebar colapsada */
+.sidebar-tooltip {
+    position: absolute;
+    left: calc(100% + 10px);
+    top: 50%;
+    transform: translateY(-50%);
+    background: #2a2a4a;
+    color: white;
+    padding: 0.5rem 0.75rem;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar-tooltip::before {
+    content: '';
+    position: absolute;
+    left: -5px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-right: 5px solid #2a2a4a;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+}
+
+.sidebar-nav-link:hover .sidebar-tooltip {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Botón toggle mejorado */
 .menu-toggle {
     display: none;
     position: fixed;
     top: 1.5rem;
     left: 1.5rem;
-    background-color: #A601b3;
+    background: linear-gradient(135deg, #A601B3 0%, #c004d4 100%);
     color: #fff;
     border: none;
     padding: 0.75rem 1rem;
-    border-radius: 10px;
+    border-radius: 12px;
     z-index: 1001;
     cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(166, 1, 179, 0.3);
 }
 
+.menu-toggle:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(166, 1, 179, 0.4);
+}
+
+/* Estados para sidebar colapsada */
+.admin-sidebar.collapsed {
+    width: 80px;
+}
+
+.admin-sidebar.collapsed .sidebar-link-text,
+.admin-sidebar.collapsed .sidebar-header {
+    opacity: 0;
+    visibility: hidden;
+}
+
+.admin-sidebar.collapsed .sidebar-nav-link,
+.admin-sidebar.collapsed .sidebar-logout-link {
+    justify-content: center;
+    padding: 1rem;
+}
+
+.admin-sidebar.collapsed .sidebar-nav-link:hover .sidebar-tooltip {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* Responsive mejorado */
 @media (max-width: 768px) {
     .admin-sidebar {
         height: 100vh;
@@ -160,14 +305,14 @@ body {
     }
 
     .admin-sidebar.open {
-        width: 250px;
+        width: 280px;
         transform: translateX(0);
         padding: 1.5rem;
     }
 
     .sidebar-link-text {
         opacity: 0;
-        transition: opacity 0.3s ease;
+        transition: opacity 0.3s ease 0.2s;
     }
 
     .admin-sidebar.open .sidebar-link-text {
@@ -178,3 +323,26 @@ body {
         display: block;
     }
 }
+
+/* Animación de entrada para items */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.sidebar-nav-item {
+    animation: slideIn 0.3s ease forwards;
+}
+
+.sidebar-nav-item:nth-child(1) { animation-delay: 0.1s; }
+.sidebar-nav-item:nth-child(2) { animation-delay: 0.15s; }
+.sidebar-nav-item:nth-child(3) { animation-delay: 0.2s; }
+.sidebar-nav-item:nth-child(4) { animation-delay: 0.25s; }
+.sidebar-nav-item:nth-child(5) { animation-delay: 0.3s; }
+.sidebar-nav-item:nth-child(6) { animation-delay: 0.35s; }

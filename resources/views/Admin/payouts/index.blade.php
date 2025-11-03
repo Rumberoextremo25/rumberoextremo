@@ -1,196 +1,24 @@
 @extends('layouts.admin')
 
-{{-- Define el título de la página en la toolbar --}}
 @section('page_title_toolbar', 'Pagos Pendientes a Aliados')
 
-{{-- Agrega los estilos CSS específicos de esta vista --}}
 @push('styles')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-    {{-- Incluir SweetAlert2 --}}
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <style>
-        .hidden {
-            display: none !important;
-        }
-        .modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-        .modal-content {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            width: 90%;
-            max-width: 500px;
-        }
-        .badge-warning {
-            background-color: #ffc107;
-            color: #000;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        .badge-info {
-            background-color: #17a2b8;
-            color: #fff;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        .badge-success {
-            background-color: #28a745;
-            color: #fff;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        .badge-danger {
-            background-color: #dc3545;
-            color: #fff;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        .no-payouts-message {
-            text-align: center;
-            padding: 40px;
-            color: #6c757d;
-            font-size: 18px;
-        }
-        .no-payouts-message .icon {
-            font-size: 48px;
-            margin-bottom: 16px;
-            color: #8a2be2;
-        }
-        .table-actions {
-            display: flex;
-            gap: 16px;
-            margin-bottom: 20px;
-            flex-wrap: wrap;
-        }
-        .action-form {
-            background: #f8f9fa;
-            padding: 16px;
-            border-radius: 8px;
-            border: 1px solid #e9ecef;
-        }
-        .form-group {
-            margin-bottom: 12px;
-        }
-        .form-group label {
-            display: block;
-            margin-bottom: 4px;
-            font-weight: 600;
-            color: #495057;
-        }
-        .form-control {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #ced4da;
-            border-radius: 4px;
-            font-size: 14px;
-        }
-        .action-button {
-            background: #8a2be2;
-            color: white;
-            border: none;
-            padding: 10px 16px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-size: 14px;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            transition: background 0.3s;
-        }
-        .action-button:hover {
-            background: #7b1fa2;
-        }
-        .payouts-table {
-            width: 100%;
-            border-collapse: collapse;
-            background: white;
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-        .payouts-table th {
-            background: #f8f9fa;
-            padding: 12px;
-            text-align: left;
-            font-weight: 600;
-            color: #495057;
-            border-bottom: 1px solid #e9ecef;
-        }
-        .payouts-table td {
-            padding: 12px;
-            border-bottom: 1px solid #e9ecef;
-            vertical-align: middle;
-        }
-        .payouts-table tr:hover {
-            background: #f8f9fa;
-        }
-        .text-success {
-            color: #28a745;
-        }
-        .text-danger {
-            color: #dc3545;
-        }
-        .stats-card {
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-            margin-bottom: 20px;
-        }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 16px;
-        }
-        .stat-item {
-            text-align: center;
-            padding: 16px;
-            background: #f8f9fa;
-            border-radius: 6px;
-        }
-        .stat-value {
-            font-size: 24px;
-            font-weight: 700;
-            color: #8a2be2;
-        }
-        .stat-label {
-            font-size: 14px;
-            color: #6c757d;
-            margin-top: 4px;
-        }
-    </style>
+    {{-- Tu archivo CSS personalizado --}}
+    <link rel="stylesheet" href="{{ asset('css/admin/payout.css') }}">
 @endpush
 
-{{-- Contenido principal de la página --}}
 @section('content')
     <div class="main-content">
         <h2 class="page-title text-gray-900">
             <span class="text-gray-900">Pagos Pendientes</span>
-            <span style="color: #8a2be2;">a Aliados</span>
+            <span class="text-purple">a Aliados</span>
         </h2>
 
         {{-- Estadísticas --}}
-        @if(isset($estadisticas) && !$payouts->isEmpty())
+        @if(isset($estadisticas) && !empty($payouts))
         <div class="stats-card">
             <div class="stats-grid">
                 <div class="stat-item">
@@ -198,7 +26,7 @@
                     <div class="stat-label">Pagos Pendientes</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-value">Bs. {{ number_format(collect($payouts)->sum('montos.neto'), 2, ',', '.') }}</div>
+                    <div class="stat-value">Bs. {{ number_format($monto_total ?? 0, 2, ',', '.') }}</div>
                     <div class="stat-label">Monto Total Pendiente</div>
                 </div>
                 <div class="stat-item">
@@ -213,17 +41,17 @@
         <div class="payouts-card">
             {{-- Mensajes de sesión --}}
             @if (session('success'))
-                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-6 flex items-center gap-2" role="alert">
+                <div class="alert alert-success" role="alert">
                     <i class="fas fa-check-circle"></i>
                     <span>{{ session('success') }}</span>
-                    <button type="button" class="ml-auto text-green-700" onclick="this.parentElement.style.display='none';">&times;</button>
+                    <button type="button" class="close-alert">&times;</button>
                 </div>
             @endif
             @if (session('error'))
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6 flex items-center gap-2" role="alert">
+                <div class="alert alert-error" role="alert">
                     <i class="fas fa-exclamation-circle"></i>
                     <span>{{ session('error') }}</span>
-                    <button type="button" class="ml-auto text-red-700" onclick="this.parentElement.style.display='none';">&times;</button>
+                    <button type="button" class="close-alert">&times;</button>
                 </div>
             @endif
 
@@ -345,7 +173,7 @@
                 <div class="stats-card mt-4">
                     <div class="stats-grid">
                         <div class="stat-item">
-                            <div class="stat-value">Bs. {{ number_format(collect($payouts)->sum('montos.neto'), 2, ',', '.') }}</div>
+                            <div class="stat-value">Bs. {{ number_format($monto_total ?? 0, 2, ',', '.') }}</div>
                             <div class="stat-label">Total a Pagar</div>
                         </div>
                         <div class="stat-item">
@@ -538,6 +366,13 @@
             });
 
             this.submit();
+        });
+
+        // Cerrar alertas
+        document.querySelectorAll('.close-alert').forEach(button => {
+            button.addEventListener('click', function() {
+                this.parentElement.style.display = 'none';
+            });
         });
     });
 </script>

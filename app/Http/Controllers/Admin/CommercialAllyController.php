@@ -14,7 +14,7 @@ class CommercialAllyController extends Controller
      */
     public function index()
     {
-        $allies = CommercialAlly::all();
+        $allies = CommercialAlly::paginate(10); // Muestra 10 aliados por página
         return view('Admin.commercial_allies.index', compact('allies'));
     }
 
@@ -100,7 +100,7 @@ class CommercialAllyController extends Controller
 
             // Guardar el nuevo logo
             $newStoragePath = Storage::disk('public')->put('logos', $request->file('logo'));
-            
+
             // MODIFICACIÓN CLAVE AQUÍ: Generar la URL absoluta para guardar en la base de datos
             $logoPathToSave = asset('storage/' . $newStoragePath);
         }

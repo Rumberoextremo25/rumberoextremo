@@ -2,11 +2,17 @@
 
 @section('title', 'Editar Aliado Comercial')
 
+@push('styles')
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/admin/commercial-edit-form.css') }}">
+@endpush
+
 @section('content')
 
     <div class="card-container">
         <div class="card-header">
-            <h2 class="card-title">Editar Aliado Comercial: <span style="color: #8a3ffc;">{{ $commercialAlly->name }}</span></h2>
+            <h2 class="card-title">Editar Aliado Comercial: <span>{{ $commercialAlly->name }}</span></h2>
             <a href="{{ route('admin.commercial-allies.index') }}" class="back-link">
                 <i class="fas fa-arrow-left"></i> Volver al Listado
             </a>
@@ -50,7 +56,7 @@
                 {{-- Logo --}}
                 <div class="form-group full-width">
                     <label for="logo">Logo (dejar en blanco para mantener el actual):</label>
-                    <input type="file" name="logo" id="logo">
+                    <input type="file" name="logo" id="logo" accept="image/*">
                     @error('logo')
                         <span class="error-message"><i class="fas fa-exclamation-circle"></i> {{ $message }}</span>
                     @enderror
@@ -114,6 +120,30 @@
                         currentPreview.style.display = 'none';
                     }
                 }
+            });
+
+            // Mejora: Validación en tiempo real
+            document.addEventListener('DOMContentLoaded', function() {
+                const ratingInput = document.getElementById('rating');
+                if (ratingInput) {
+                    ratingInput.addEventListener('input', function() {
+                        const value = parseFloat(this.value);
+                        if (value < 0) this.value = 0;
+                        if (value > 5) this.value = 5;
+                    });
+                }
+
+                // Efectos hover en botones
+                const buttons = document.querySelectorAll('.back-link, .submit-btn');
+                buttons.forEach(button => {
+                    button.addEventListener('mouseenter', function() {
+                        this.style.transform = 'translateY(-2px)';
+                    });
+
+                    button.addEventListener('mouseleave', function() {
+                        this.style.transform = 'translateY(0)';
+                    });
+                });
             });
         </script>
     @endpush

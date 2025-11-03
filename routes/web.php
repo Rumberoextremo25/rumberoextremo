@@ -62,17 +62,20 @@ Route::get('/admin/aliados', [AllyController::class, 'index'])->name('aliados.in
 Route::get('/admin/aliados/create', [AllyController::class, 'aliadosCreate'])->name('aliados.create');
 Route::post('/admin/aliados', [AllyController::class, 'storeAlly'])->name('aliados.store');
 Route::get('/admin/aliados/{ally}/edit', [AllyController::class, 'alliesEdit'])->name('aliado.edit');
+Route::get('/aliados/{id}', [AllyController::class, 'show'])->name('aliados.show');
 Route::put('/admin/aliados/{ally}', [AllyController::class, 'updateAlly'])->name('aliados.update');
 Route::delete('/admin/aliados/{ally}', [AllyController::class, 'destroyAlly'])->name('aliados.destroy');
 Route::get('/get-subcategories', [AllyController::class, 'getSubcategories'])->name('get.subcategories');
 
 
 // Rutas para reportes de ventas
-Route::prefix('admin')->name('admin.')->group(function () {
-    // Reportes
-    Route::get('/reports/sales', [ReportController::class, 'sales'])->name('reports.sales');
-    Route::get('/reports/sales/data', [ReportController::class, 'salesData'])->name('reports.sales.data');
-    Route::post('/reports/sales/export', [ReportController::class, 'exportSales'])->name('reports.sales.export');
+Route::prefix('admin')->group(function () {
+    // Reportes de ventas
+    Route::get('/reports/sales', [ReportController::class, 'sales'])->name('admin.reports.sales');
+    Route::get('/reports/sales/data', [ReportController::class, 'salesData'])->name('admin.reports.sales.data');
+    Route::get('/reports/sales/export', [ReportController::class, 'exportSales'])->name('admin.reports.export');
+    Route::get('/reports/sales/preview', [ReportController::class, 'exportSalesPreview'])->name('admin.reports.preview');
+    Route::get('/reports/sales/metrics', [ReportController::class, 'dashboardMetrics'])->name('admin.reports.metrics');
 });
 
 // Rutas para el Perfil (asumiendo que es el perfil del admin logueado)
@@ -106,32 +109,38 @@ Route::middleware(['auth'])->prefix('admin')->name('admin.')->group(function () 
 });
 
 // Rutas de administración para payouts
-// Rutas de administración para payouts
-Route::prefix('admin')->name('admin.')->group(function () {
-    // Página principal de payouts
-    Route::get('/payouts', [PayoutController::class, 'index'])->name('payouts.index');
+Route::prefix('admin')->middleware(['auth', 'admin'])->group(function () {
+    // Vistas principales
+    Route::get('/payouts', [PayoutController::class, 'index'])->name('admin.payouts.index');
+    Route::get('/payouts/pendientes', [PayoutController::class, 'pendientes'])->name('admin.payouts.pendientes');
+    Route::get('/payouts/estadisticas', [PayoutController::class, 'estadisticas'])->name('admin.payouts.estadisticas');
+    Route::get('/payouts/dashboard', [PayoutController::class, 'dashboard'])->name('admin.payouts.dashboard');
     
-    // Payouts pendientes
-    Route::get('/payouts/pending', [PayoutController::class, 'pending'])->name('payouts.pending');
+    // CRUD de payouts
+    Route::get('/payouts/{payoutId}', [PayoutController::class, 'show'])->name('admin.payouts.show');
+    Route::get('/payouts/{payoutId}/edit', [PayoutController::class, 'edit'])->name('admin.payouts.edit');
+    Route::put('/payouts/{payoutId}', [PayoutController::class, 'update'])->name('admin.payouts.update');
+    Route::get('/payouts/{payoutId}/auditoria', [PayoutController::class, 'auditoria'])->name('admin.payouts.auditoria');
     
-    // Generar archivo BNC
-    Route::post('/payouts/generate-bnc', [PayoutController::class, 'generateBncFile'])->name('payouts.generate_bnc');
+    // Acciones específicas
+    Route::post('/payouts/confirmar', [PayoutController::class, 'confirmarPagos'])->name('admin.payouts.confirm');
+    Route::post('/payouts/{payoutId}/revertir', [PayoutController::class, 'revertirPago'])->name('admin.payouts.revertir');
+    Route::post('/payouts/generar-bnc', [PayoutController::class, 'generarArchivoBNC'])->name('admin.payouts.generate_bnc');
+    Route::post('/payouts/simular-confirmacion', [PayoutController::class, 'simularConfirmacion'])->name('admin.payouts.simular-confirmacion');
     
-    // Confirmar pagos
-    Route::post('/payouts/confirm', [PayoutController::class, 'confirmPayouts'])->name('payouts.confirm');
+    // Archivos
+    Route::get('/payouts/archivos', [PayoutController::class, 'listarArchivos'])->name('admin.payouts.archivos');
+    Route::delete('/payouts/archivos/{archivo}', [PayoutController::class, 'eliminarArchivo'])->name('admin.payouts.eliminar-archivo');
+    Route::get('/payouts/descargar-bnc/{archivo}', [PayoutController::class, 'descargarArchivoBNC'])->name('admin.payouts.descargar-bnc');
     
-    // Descargar archivo BNC
-    Route::get('/payouts/download-bnc/{archivo}', [PayoutController::class, 'downloadBncFile'])->name('payouts.download_bnc');
+    // Reportes y resúmenes
+    Route::get('/payouts/resumen/aliado', [PayoutController::class, 'resumenPorAliado'])->name('admin.payouts.resumen-aliado');
+    Route::get('/payouts/aliado/{aliadoId}', [PayoutController::class, 'porAliado'])->name('admin.payouts.por-aliado');
+    Route::post('/payouts/exportar-reporte', [PayoutController::class, 'exportarReporte'])->name('admin.payouts.exportar-reporte');
     
-    // Revertir pago
-    Route::post('/payouts/revert/{payoutId}', [PayoutController::class, 'revertPayout'])->name('payouts.revert');
-    
-    // Eliminar archivo
-    Route::delete('/payouts/files/{archivo}', [PayoutController::class, 'deleteFile'])->name('payouts.delete_file');
-    
-    // Rutas AJAX para datos
-    Route::get('/payouts/stats', [PayoutController::class, 'getStats'])->name('payouts.stats');
-    Route::get('/payouts/files', [PayoutController::class, 'getFiles'])->name('payouts.files');
+    // Lotes de pagos
+    Route::get('/payouts/lotes', [PayoutController::class, 'lotes'])->name('admin.payouts.lotes');
+    Route::post('/payouts/procesar-lote', [PayoutController::class, 'procesarLote'])->name('admin.payouts.procesar-lote');
 });
 
 // O si prefieres resource routes con rutas adicionales:

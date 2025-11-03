@@ -1,81 +1,108 @@
 @extends('layouts.admin')
 
-{{-- Define el título de la página en la toolbar --}}
 @section('page_title_toolbar', 'Gestión de Aliados Comerciales')
 
-{{-- Agrega los estilos CSS específicos de esta vista --}}
 @push('styles')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/admin/commercial.css') }}">
 @endpush
 
-{{-- Contenido principal de la página --}}
 @section('content')
-    <div class="allies-management-container p-6 md:p-10 max-w-7xl mx-auto">
-        <div class="bg-white p-6 md:p-10 rounded-3xl shadow-lg">
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
-                <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4 md:mb-0">
-                    <span class="text-gray-900">Gestión de</span>
-                    <span style="color: #8a2be2;">Aliados Comerciales</span>
-                </h2>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+        </div>
+    </div>
+
+    <div class="allies-container no-side-padding">
+        <div class="allies-card no-side-padding">
+            {{-- Header Modernizado --}}
+            <div class="page-header-with-actions">
+                <div class="page-header">
+                    <h1 class="page-title">
+                        <span class="accent">Gestión de Aliados Comerciales</span>
+                    </h1>
+                    <p class="page-subtitle">
+                        <i class="fas fa-handshake"></i>
+                        Administra y gestiona tus aliados comerciales
+                    </p>
+                </div>
                 <a href="{{ route('admin.commercial-allies.create') }}" class="add-ally-btn">
-                    <i class="fas fa-plus"></i> Crear Nuevo Aliado
+                    <i class="fas fa-plus"></i>
+                    Crear Nuevo Aliado
                 </a>
             </div>
 
-            {{-- Mensaje de éxito o error --}}
+            {{-- Alertas Modernizadas --}}
             @if (session('success'))
-                <div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg mb-6 flex items-center gap-2" role="alert">
+                <div class="alert alert-success">
                     <i class="fas fa-check-circle"></i>
                     <span>{{ session('success') }}</span>
-                    <button type="button" class="ml-auto text-green-700" onclick="this.parentElement.style.display='none';">&times;</button>
+                    <button type="button" class="alert-close" onclick="this.parentElement.style.display='none';">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
             @endif
 
             @if (session('error'))
-                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg mb-6 flex items-center gap-2" role="alert">
+                <div class="alert alert-danger">
                     <i class="fas fa-exclamation-circle"></i>
                     <span>{{ session('error') }}</span>
-                    <button type="button" class="ml-auto text-red-700" onclick="this.parentElement.style.display='none';">&times;</button>
+                    <button type="button" class="alert-close" onclick="this.parentElement.style.display='none';">
+                        <i class="fas fa-times"></i>
+                    </button>
                 </div>
             @endif
 
-            <div class="allies-table-container">
+            {{-- Contenido de la Tabla --}}
+            <div class="allies-table-container expand-container">
                 @if ($allies->isEmpty())
-                    <p class="no-records-message flex flex-col items-center justify-center p-16">
-                        <i class="fas fa-store-slash text-5xl mb-4" style="color: #e5e7eb;"></i>
-                        <br>
-                        No hay aliados comerciales para mostrar.
-                        <br>
-                        <a href="{{ route('admin.commercial-allies.create') }}" class="add-ally-btn mt-4">
-                            <i class="fas fa-plus"></i> Añadir el primer Aliado
+                    <div class="no-records-message">
+                        <i class="fas fa-store-slash"></i>
+                        <h3>No hay aliados comerciales registrados</h3>
+                        <p>Comienza agregando tu primer aliado comercial</p>
+                        <a href="{{ route('admin.commercial-allies.create') }}" class="add-ally-btn">
+                            <i class="fas fa-plus"></i>
+                            Añadir el Primer Aliado
                         </a>
-                    </p>
+                    </div>
                 @else
-                    <table class="allies-table w-full">
+                    <table class="allies-table">
                         <thead>
                             <tr>
-                                <th class="py-4">ID</th>
-                                <th class="py-4">Nombre</th>
-                                <th class="py-4">Logo</th>
-                                <th class="py-4">Rating</th>
-                                <th class="py-4 text-center">Acciones</th>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Logo</th>
+                                <th>Rating</th>
+                                <th>Estado</th>
+                                <th class="text-center">Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
                             @foreach ($allies as $ally)
-                                <tr class="hover:bg-gray-50">
-                                    <td class="py-4 font-medium text-gray-900" data-label="ID">{{ $ally->id }}</td>
-                                    <td class="py-4" data-label="Nombre">{{ $ally->name }}</td>
-                                    <td class="py-4" data-label="Logo">
-                                        @if($ally->logo_url)
+                                <tr>
+                                    <td class="font-medium">#{{ $ally->id }}</td>
+                                    <td>
+                                        <div class="ally-info">
+                                            <span class="ally-name">{{ $ally->name }}</span>
+                                            @if ($ally->description)
+                                                <span
+                                                    class="ally-description">{{ Str::limit($ally->description, 50) }}</span>
+                                            @endif
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if ($ally->logo_url)
                                             <img src="{{ $ally->logo_url }}" alt="{{ $ally->name }}" class="ally-logo">
                                         @else
-                                            <span style="color: #9ca3af;">No logo</span>
+                                            <div class="no-logo-placeholder">
+                                                <i class="fas fa-image"></i>
+                                            </div>
                                         @endif
                                     </td>
-                                    <td class="py-4" data-label="Rating">
-                                        <div class="star-rating flex items-center gap-1">
+                                    <td>
+                                        <div class="star-rating">
                                             @for ($i = 1; $i <= 5; $i++)
                                                 @if ($i <= $ally->rating)
                                                     <i class="fas fa-star"></i>
@@ -83,21 +110,33 @@
                                                     <i class="far fa-star"></i>
                                                 @endif
                                             @endfor
-                                            <span class="text-sm ml-1 text-gray-600">({{ number_format($ally->rating, 1) }})</span>
+                                            <span class="rating-value">({{ number_format($ally->rating, 1) }})</span>
                                         </div>
                                     </td>
-                                    <td class="py-4 text-center">
-                                        <div class="flex items-center justify-center gap-2">
-                                            <a href="{{ route('admin.commercial-allies.edit', $ally->id) }}" class="btn-icon edit-btn" title="Editar">
+                                    <td>
+                                        <span
+                                            class="status-badge {{ $ally->is_active ? 'status-active' : 'status-inactive' }}">
+                                            {{ $ally->is_active ? 'Activo' : 'Inactivo' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div class="action-buttons">
+                                            <a href="{{ route('admin.commercial-allies.edit', $ally->id) }}"
+                                                class="btn-icon edit-btn" title="Editar Aliado">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-                                            <form action="{{ route('admin.commercial-allies.destroy', $ally->id) }}" method="POST" class="delete-form" data-ally-name="{{ $ally->name }}">
+                                            <form action="{{ route('admin.commercial-allies.destroy', $ally->id) }}"
+                                                method="POST" class="delete-form" data-ally-name="{{ $ally->name }}">
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="btn-icon delete-btn" title="Eliminar">
+                                                <button type="submit" class="btn-icon delete-btn" title="Eliminar Aliado">
                                                     <i class="fas fa-trash-alt"></i>
                                                 </button>
                                             </form>
+                                            <a href="{{ route('admin.commercial-allies.show', $ally->id) }}"
+                                                class="btn-icon view-btn" title="Ver Detalles">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
                                         </div>
                                     </td>
                                 </tr>
@@ -106,69 +145,128 @@
                     </table>
                 @endif
             </div>
+
+            {{-- Paginación Segura --}}
+            @if (method_exists($allies, 'hasPages') && $allies->hasPages())
+                <div class="pagination-container expand-container">
+                    <div class="pagination-info">
+                        Mostrando {{ $allies->firstItem() }} - {{ $allies->lastItem() }} de {{ $allies->total() }}
+                        aliados
+                    </div>
+                    <div class="pagination-links">
+                        {{ $allies->links() }}
+                    </div>
+                </div>
+            @elseif ($allies->count() > 0)
+                <div class="pagination-container expand-container">
+                    <div class="pagination-info">
+                        Total de {{ $allies->count() }} aliado{{ $allies->count() !== 1 ? 's' : '' }}
+                    </div>
+                </div>
+            @endif
         </div>
     </div>
 
-    {{-- Custom Confirmation Modal --}}
-    <div id="confirmationModal" class="modal-overlay hidden">
+    {{-- Modal de Confirmación Modernizado --}}
+    <div id="confirmationModal" class="modal-overlay">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Confirmar Eliminación</h3>
-                <button type="button" class="close-modal-btn">&times;</button>
+                <h3>
+                    <i class="fas fa-exclamation-triangle"></i>
+                    Confirmar Eliminación
+                </h3>
+                <button type="button" class="close-modal-btn">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             <div class="modal-body">
-                <p>¿Estás seguro de que quieres eliminar al aliado "<strong id="allyNameToDelete"></strong>"? Esta acción es irreversible.</p>
+                <p>¿Estás seguro de que quieres eliminar al aliado "<strong id="allyNameToDelete"></strong>"?</p>
+                <p class="warning-text">Esta acción no se puede deshacer y se perderán todos los datos asociados.</p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn cancel-modal-btn">Cancelar</button>
-                <button type="button" class="btn confirm-modal-btn">Eliminar</button>
+                <button type="button" class="btn cancel-modal-btn">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </button>
+                <button type="button" class="btn confirm-modal-btn">
+                    <i class="fas fa-trash-alt"></i>
+                    Eliminar Definitivamente
+                </button>
             </div>
         </div>
     </div>
 @endsection
 
-{{-- Agrega los scripts específicos para la vista --}}
 @push('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const modal = document.getElementById('confirmationModal');
-        const closeBtn = modal.querySelector('.close-modal-btn');
-        const cancelBtn = modal.querySelector('.cancel-modal-btn');
-        const confirmBtn = modal.querySelector('.confirm-modal-btn');
-        const allyNameDisplay = document.getElementById('allyNameToDelete');
-        let formToDelete = null;
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const modal = document.getElementById('confirmationModal');
+            const closeBtn = modal.querySelector('.close-modal-btn');
+            const cancelBtn = modal.querySelector('.cancel-modal-btn');
+            const confirmBtn = modal.querySelector('.confirm-modal-btn');
+            const allyNameDisplay = document.getElementById('allyNameToDelete');
+            let formToDelete = null;
 
-        // Open modal on delete form submission
-        document.querySelectorAll('.delete-form').forEach(form => {
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                formToDelete = this;
-                const allyName = this.dataset.allyName;
-                allyNameDisplay.textContent = allyName;
-                modal.classList.remove('hidden');
-                modal.style.display = 'flex'; // Asegura que el overlay se muestre correctamente
+            // Mostrar loading
+            function showLoading(show) {
+                const loadingOverlay = document.getElementById('loadingOverlay');
+                if (loadingOverlay) {
+                    loadingOverlay.style.display = show ? 'flex' : 'none';
+                }
+            }
+
+            // Abrir modal al enviar formulario de eliminación
+            document.querySelectorAll('.delete-form').forEach(form => {
+                form.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    formToDelete = this;
+                    const allyName = this.dataset.allyName;
+                    allyNameDisplay.textContent = allyName;
+                    modal.style.display = 'flex';
+                });
             });
-        });
 
-        // Close modal handlers
-        closeBtn.addEventListener('click', () => {
-            modal.style.display = 'none';
-        });
-        cancelBtn.addEventListener('click', () => {
-            modal.style.display = 'none';
-        });
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
+            // Cerrar modal
+            function closeModal() {
                 modal.style.display = 'none';
+                formToDelete = null;
             }
-        });
 
-        // Confirm deletion and submit the form
-        confirmBtn.addEventListener('click', function() {
-            if (formToDelete) {
-                formToDelete.submit();
-            }
+            // Event listeners para cerrar modal
+            closeBtn.addEventListener('click', closeModal);
+            cancelBtn.addEventListener('click', closeModal);
+
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeModal();
+                }
+            });
+
+            // Confirmar eliminación
+            confirmBtn.addEventListener('click', function() {
+                if (formToDelete) {
+                    showLoading(true);
+                    formToDelete.submit();
+                }
+            });
+
+            // Efectos hover en botones
+            document.querySelectorAll('.add-ally-btn, .btn-icon').forEach(button => {
+                button.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-2px)';
+                });
+
+                button.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
+
+            // Cerrar alertas automáticamente después de 5 segundos
+            setTimeout(() => {
+                document.querySelectorAll('.alert').forEach(alert => {
+                    alert.style.display = 'none';
+                });
+            }, 5000);
         });
-    });
-</script>
+    </script>
 @endpush

@@ -1,184 +1,240 @@
-body {
-    background-color: #f4f7f9;
-    font-family: 'Inter', sans-serif;
-    color: #333;
+/* css/admin/settings.css */
+
+/* ===== VARIABLES Y CONFIGURACIÓN GLOBAL ===== */
+:root {
+    --primary-color: #2563eb;
+    --primary-dark: #1d4ed8;
+    --primary-light: #3b82f6;
+    --secondary-color: #64748b;
+    --accent-color: #8a2be2;
+    --accent-light: #9d4edd;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --error-color: #ef4444;
+    --background-color: #f8fafc;
+    --surface-color: #ffffff;
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --text-muted: #94a3b8;
+    --border-color: #e2e8f0;
+    --border-radius: 16px;
+    --border-radius-sm: 8px;
+    --border-radius-lg: 20px;
+    --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    --font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* ===== RESET Y ESTILOS BASE ===== */
+* {
     margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: var(--font-family);
+    background-color: var(--background-color);
+    color: var(--text-primary);
+    line-height: 1.6;
+    font-weight: 400;
+}
+
+/* ===== CONTENEDOR PRINCIPAL ===== */
+.account-settings-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    animation: fadeInUp 0.6s ease-out;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ===== TARJETA DE AJUSTES ===== */
+.settings-card {
+    background: var(--surface-color);
+    border-radius: var(--border-radius-lg);
+    box-shadow: var(--shadow-xl);
+    border: 1px solid var(--border-color);
+    overflow: hidden;
     padding: 0;
 }
 
-.account-settings-container {
-    max-width: 800px;
-    margin: 40px auto;
-    padding: 20px;
+/* ===== SECCIONES ===== */
+.password-change-section,
+.setting-item {
+    padding: 2rem;
+    border-bottom: 1px solid var(--border-color);
+    transition: var(--transition);
 }
 
-.account-settings-container h1 {
-    font-size: 28px;
-    font-weight: 700;
-    color: #4a5568;
-    margin-bottom: 24px;
-    text-align: center;
+.password-change-section:hover,
+.setting-item:hover {
+    background-color: #f8fafc;
 }
 
-.settings-card {
-    background-color: #fff;
-    border-radius: 12px;
-    padding: 32px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
-}
-
-/* Títulos de sección dentro de la tarjeta */
-.settings-card .section-heading {
-    font-size: 22px;
-    font-weight: 600;
-    color: #2d3748;
-    margin-bottom: 24px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    border-bottom: 1px solid #e2e8f0;
-    padding-bottom: 20px;
-}
-
-/* Elimina el borde inferior para el último título si es el final de la tarjeta */
-.settings-card .section-heading:last-of-type {
+.setting-item:last-of-type {
     border-bottom: none;
 }
 
-.settings-card .section-heading .fas {
-    color: #8a2be2;
+/* ===== ENCABEZADOS DE SECCIÓN ===== */
+.section-heading {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 1.5rem;
+    padding-bottom: 0.75rem;
+    border-bottom: 2px solid var(--border-color);
 }
 
-/* Contenedor del formulario de contraseña */
-.password-change-section {
-    padding-bottom: 32px;
-    border-bottom: 1px solid #e2e8f0;
-    margin-bottom: 32px;
+.section-heading i {
+    color: var(--accent-color);
+    font-size: 1.25rem;
+    width: 24px;
+    text-align: center;
 }
 
+/* ===== FORMULARIO DE CONTRASEÑA ===== */
 .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 1.5rem;
+    position: relative;
 }
 
 .form-group label {
     display: block;
-    font-size: 14px;
     font-weight: 600;
-    color: #4a5568;
-    margin-bottom: 8px;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
 }
 
 .form-control {
     width: 100%;
-    padding: 12px;
-    border: 1px solid #e2e8f0;
-    border-radius: 8px;
-    font-size: 16px;
-    color: #2d3748;
-    transition: border-color 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
-    box-sizing: border-box;
+    padding: 0.875rem 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    font-size: 1rem;
+    transition: var(--transition);
+    background: var(--surface-color);
+    font-family: var(--font-family);
 }
 
 .form-control:focus {
-    border-color: #8a2be2;
-    box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.2);
     outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
-.text-danger {
-    color: #e53e3e;
-    font-size: 12px;
-    margin-top: 4px;
-    display: block;
+.form-control:invalid:not(:focus):not(:placeholder-shown) {
+    border-color: var(--error-color);
 }
 
+.form-control:valid:not(:focus):not(:placeholder-shown) {
+    border-color: var(--success-color);
+}
+
+/* ===== BOTÓN MODERNO ===== */
 .modern-button {
-    width: 100%;
-    background-color: #8a2be2;
-    color: #fff;
-    padding: 15px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+    color: white;
+    padding: 1rem 2rem;
     border: none;
-    border-radius: 8px;
-    font-size: 16px;
+    border-radius: var(--border-radius-sm);
+    font-size: 1rem;
     font-weight: 600;
     cursor: pointer;
-    transition: background-color 0.2s ease-in-out;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 10px;
+    transition: var(--transition);
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    overflow: hidden;
+}
+
+.modern-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s;
+}
+
+.modern-button:hover::before {
+    left: 100%;
 }
 
 .modern-button:hover {
-    background-color: #7b27d4;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-xl);
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
 }
 
-/* Estilos para los mensajes de alerta (success/error) */
-.alert {
-    padding: 12px 20px;
-    margin-bottom: 20px;
-    border-radius: 8px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
+.modern-button:active {
+    transform: translateY(0);
 }
 
-.alert-success {
-    background-color: #ecfdf5;
-    color: #047857;
-    border: 1px solid #d1fae5;
+.modern-button i {
+    font-size: 1rem;
 }
 
-.alert-danger {
-    background-color: #fef2f2;
-    color: #dc2626;
-    border: 1px solid #fee2e2;
-}
-
-.alert .fas {
-    font-size: 16px;
-}
-
-/* Estilos de las opciones de ajuste (Autenticación, Notificaciones, etc.) */
+/* ===== ELEMENTOS DE CONFIGURACIÓN ===== */
 .setting-item {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
-    padding: 20px 0;
-    border-bottom: 1px solid #e2e8f0;
-}
-
-.setting-item:last-child {
-    border-bottom: none;
+    gap: 2rem;
+    padding: 1.5rem 2rem;
 }
 
 .setting-info {
-    flex-grow: 1;
+    flex: 1;
 }
 
 .setting-info h3 {
-    font-size: 18px;
+    font-size: 1.125rem;
     font-weight: 600;
-    color: #2d3748;
-    margin: 0 0 4px 0;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
 }
 
 .setting-info p {
-    font-size: 14px;
-    color: #718096;
-    margin: 0;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    line-height: 1.5;
 }
 
 .action-control {
-    margin-left: 20px;
+    display: flex;
+    align-items: center;
 }
 
-/* Estilos de los Toggle Switch */
+/* ===== INTERRUPTOR (SWITCH) MODERNO ===== */
 .switch {
     position: relative;
     display: inline-block;
-    width: 50px;
-    height: 28px;
+    width: 60px;
+    height: 34px;
 }
 
 .switch input {
@@ -194,35 +250,311 @@ body {
     left: 0;
     right: 0;
     bottom: 0;
-    background-color: #ccc;
-    -webkit-transition: .4s;
-    transition: .4s;
-    border-radius: 28px;
+    background-color: var(--border-color);
+    transition: var(--transition);
+    border-radius: 34px;
 }
 
 .slider:before {
     position: absolute;
     content: "";
-    height: 20px;
-    width: 20px;
+    height: 26px;
+    width: 26px;
     left: 4px;
     bottom: 4px;
     background-color: white;
-    -webkit-transition: .4s;
-    transition: .4s;
+    transition: var(--transition);
     border-radius: 50%;
+    box-shadow: var(--shadow-sm);
 }
 
-input:checked+.slider {
-    background-color: #8a2be2;
+input:checked + .slider {
+    background: linear-gradient(135deg, var(--accent-color), var(--accent-light));
 }
 
-input:focus+.slider {
-    box-shadow: 0 0 1px #8a2be2;
+input:checked + .slider:before {
+    transform: translateX(26px);
 }
 
-input:checked+.slider:before {
-    -webkit-transform: translateX(22px);
-    -ms-transform: translateX(22px);
-    transform: translateX(22px);
+input:focus + .slider {
+    box-shadow: 0 0 0 3px rgba(138, 43, 226, 0.1);
+}
+
+/* ===== ALERTAS ===== */
+.alert {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.5rem;
+    border-radius: var(--border-radius-sm);
+    border-left: 4px solid;
+    animation: slideInRight 0.4s ease-out;
+    margin-bottom: 1rem;
+}
+
+.alert-success {
+    background-color: #f0fdf4;
+    border-left-color: var(--success-color);
+    color: #065f46;
+}
+
+.alert-danger {
+    background-color: #fef2f2;
+    border-left-color: var(--error-color);
+    color: #991b1b;
+}
+
+.alert i {
+    font-size: 1.25rem;
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* ===== MENSAJES DE ERROR ===== */
+.text-danger {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--error-color);
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-top: 0.5rem;
+    animation: shake 0.3s ease-in-out;
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+}
+
+/* ===== INDICADORES DE FUERZA DE CONTRASEÑA ===== */
+.password-strength {
+    margin-top: 0.5rem;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--border-color);
+    overflow: hidden;
+    position: relative;
+}
+
+.password-strength::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 0%;
+    background: var(--error-color);
+    transition: var(--transition);
+}
+
+#new_password:focus ~ .password-strength::after {
+    width: 25%;
+    background: var(--error-color);
+}
+
+#new_password:valid ~ .password-strength::after {
+    width: 50%;
+    background: var(--warning-color);
+}
+
+#new_password:valid:not(:focus) ~ .password-strength::after {
+    width: 75%;
+    background: var(--success-color);
+}
+
+/* ===== MEJORAS VISUALES ===== */
+.form-group {
+    position: relative;
+}
+
+.form-group .fas {
+    position: absolute;
+    right: 1rem;
+    top: 2.75rem;
+    color: var(--text-muted);
+    transition: var(--transition);
+}
+
+.form-control:focus ~ .fas {
+    color: var(--primary-color);
+}
+
+/* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 768px) {
+    .account-settings-container {
+        margin: 1rem auto;
+        padding: 0 0.5rem;
+    }
+
+    .settings-card {
+        border-radius: var(--border-radius);
+    }
+
+    .password-change-section,
+    .setting-item {
+        padding: 1.5rem;
+    }
+
+    .section-heading {
+        font-size: 1.25rem;
+        margin-bottom: 1rem;
+    }
+
+    .setting-item {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: stretch;
+    }
+
+    .action-control {
+        justify-content: flex-start;
+    }
+
+    .modern-button {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .switch {
+        width: 50px;
+        height: 28px;
+    }
+
+    .slider:before {
+        height: 20px;
+        width: 20px;
+        left: 4px;
+        bottom: 4px;
+    }
+
+    input:checked + .slider:before {
+        transform: translateX(22px);
+    }
+}
+
+@media (max-width: 480px) {
+    .password-change-section,
+    .setting-item {
+        padding: 1rem;
+    }
+
+    .section-heading {
+        font-size: 1.125rem;
+    }
+
+    .form-control {
+        padding: 0.75rem;
+    }
+
+    .modern-button {
+        padding: 0.875rem 1.5rem;
+        font-size: 0.875rem;
+    }
+
+    .alert {
+        padding: 0.875rem 1rem;
+    }
+}
+
+/* ===== EFECTOS DE TRANSICIÓN MEJORADOS ===== */
+.password-change-section,
+.setting-item,
+.modern-button,
+.switch,
+.alert {
+    transition: var(--transition);
+}
+
+/* ===== ESTADOS DE FOCUS PARA ACCESIBILIDAD ===== */
+.modern-button:focus,
+.form-control:focus,
+.switch input:focus + .slider {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* ===== UTILIDADES ADICIONALES ===== */
+.mt-0 {
+    margin-top: 0;
+}
+
+.mb-4 {
+    margin-bottom: 1rem;
+}
+
+/* ===== MEJORAS DE VISUALIZACIÓN DE CONTRASEÑA ===== */
+.password-toggle {
+    position: absolute;
+    right: 1rem;
+    top: 2.75rem;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: 4px;
+    transition: var(--transition);
+}
+
+.password-toggle:hover {
+    color: var(--primary-color);
+    background: rgba(0, 0, 0, 0.05);
+}
+
+/* ===== INDICADOR DE CONTRASEÑA COINCIDENTE ===== */
+.password-match {
+    display: none;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.password-match.valid {
+    color: var(--success-color);
+    display: flex;
+}
+
+.password-match.invalid {
+    color: var(--error-color);
+    display: flex;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+/* ===== LOADING STATE ===== */
+.modern-button.loading {
+    position: relative;
+    color: transparent;
+}
+
+.modern-button.loading::after {
+    content: '';
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    border: 2px solid transparent;
+    border-top: 2px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }

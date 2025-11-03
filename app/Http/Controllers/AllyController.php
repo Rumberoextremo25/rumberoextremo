@@ -23,9 +23,11 @@ class AllyController extends Controller
      */
     public function index()
     {
-        // Eager load relationships for displaying category, subcategory, business type names
-        $allies = Ally::with('category', 'subCategory', 'businessType', 'user')->get();
-        // Asegúrate de que la vista exista en resources/views/Admin/aliado/aliado.blade.php
+        // Cambiar get() por paginate() para tener paginación
+        $allies = Ally::with('category', 'subCategory', 'businessType', 'user')
+                     ->orderBy('created_at', 'desc')
+                     ->paginate(10); // 10 items por página
+        
         return view('Admin.aliado.aliado', compact('allies'));
     }
 
@@ -39,6 +41,46 @@ class AllyController extends Controller
 
         // Asegúrate de que la vista exista en resources/views/Admin/aliado/create.blade.php
         return view('Admin.aliado.create'); // No need to compact anything specific for text inputs
+    }
+
+    public function show($id)
+    {
+        // Validar que el ID sea numérico
+        if (!is_numeric($id)) {
+            return redirect()->route('aliados.index')
+                ->with('error', 'ID de aliado inválido.');
+        }
+
+        try {
+            // Cargar el aliado con todas sus relaciones necesarias
+            $ally = Ally::with([
+                'category:id,name', 
+                'subCategory:id,name', 
+                'businessType:id,name', 
+                'user:id,name,email,created_at'
+            ])->findOrFail($id);
+
+            // Preparar datos adicionales para la vista
+            $pageData = [
+                'title' => 'Detalles: ' . $ally->company_name,
+                'breadcrumbs' => [
+                    ['name' => 'Aliados', 'url' => route('aliados.index')],
+                    ['name' => $ally->company_name, 'current' => true]
+                ]
+            ];
+
+            return view('Admin.aliado.show', compact('ally', 'pageData'));
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            Log::warning("Aliado no encontrado - ID: {$id}");
+            return redirect()->route('aliados.index')
+                ->with('error', 'El aliado solicitado no fue encontrado.');
+
+        } catch (\Exception $e) {
+            Log::error("Error en AllyController@show - ID: {$id} - Error: " . $e->getMessage());
+            return redirect()->route('aliados.index')
+                ->with('error', 'Ocurrió un error inesperado al cargar los detalles del aliado.');
+        }
     }
 
     /**
