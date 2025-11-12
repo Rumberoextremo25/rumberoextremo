@@ -3,10 +3,7 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
-use Illuminate\Mail\Mailables\Content;
-use Illuminate\Mail\Mailables\Envelope;
 use Illuminate\Queue\SerializesModels;
 
 class NewsletterConfirmationMail extends Mailable
@@ -24,39 +21,29 @@ class NewsletterConfirmationMail extends Mailable
     }
 
     /**
-     * Get the message envelope.
+     * Get the message content and subject definition.
+     * Este método antiguo (build) maneja todo.
      */
-    public function envelope(): Envelope
-    {
-        return new Envelope(
-            subject: '¡Gracias por suscribirte al Newsletter de Rumbero Extremo!',
-        );
-    }
-
-    /**
-     * Get the message content definition.
-     */
-    public function content(): Content
-    {
-        return new Content(
-            markdown: 'emails.newsletter_confirmation', // Usaremos esta vista Markdown
-        );
-    }
-
-    // Agrega este método para especificar el CSS
     public function build()
     {
-        return $this->markdown('emails.newsletter-welcome')
-                    ->withCss(resource_path('css/emails.css')); // Ruta a tu archivo CSS
+        return $this->subject('¡Gracias por suscribirte al Newsletter de Rumbero Extremo!')
+                    // 1. Usamos 'markdown' para compilar el código @component
+                    // 2. Apuntamos a la vista que contiene tu código de Newsletter
+                    ->markdown('emails.newsletter_confirmation') 
+                    // 3. Agregamos el CSS (opcional, si el CSS es necesario)
+                    ->withCss(resource_path('css/emails.css'));
     }
 
     /**
      * Get the attachments for the message.
-     *
-     * @return array<int, \Illuminate\Mail\Mailables\Attachment>
+     * (Mantenemos attachments para compatibilidad)
      */
     public function attachments(): array
     {
         return [];
     }
 }
+
+// IMPORTANTE: Asegúrate de eliminar o comentar los métodos 
+// public function envelope(): Envelope
+// public function content(): Content

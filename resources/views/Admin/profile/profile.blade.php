@@ -29,7 +29,15 @@
                 <div class="profile-info">
                     <h2>{{ Auth::user()->name ?? 'Juan Pérez' }}</h2>
                     <p class="role">{{ Auth::user()->role ?? 'Administrador de plataforma' }}</p>
-                    <p class="company">{{ Auth::user()->company ?? 'Rumbero Extremo S.A.' }}</p>
+                    <p class="company">
+                        @if(Auth::user()->role === 'aliado')
+                            {{ Auth::user()->company ?? 'Empresa no especificada' }}
+                        @elseif(Auth::user()->role === 'admin')
+                            Administrador de Plataforma
+                        @else
+                            Soy Rumbero
+                        @endif
+                    </p>
                 </div>
                 <a href="{{ route('profile.edit') }}" class="edit-profile-button">
                     <i class="fas fa-edit"></i> Editar Perfil
@@ -41,21 +49,51 @@
             <div class="details-grid">
                 <div class="detail-item">
                     <span class="detail-label">Tipo de usuario:</span>
-                    <span class="detail-value">{{ Auth::user()->user_type ?? 'Usuario principal' }}</span>
+                    <span class="detail-value">
+                        @if(Auth::user()->role === 'aliado')
+                            Aliado Comercial
+                        @elseif(Auth::user()->role === 'admin')
+                            Administrador
+                        @else
+                            Rumbero
+                        @endif
+                    </span>
                 </div>
                 <div class="detail-item">
                     <span class="detail-label">Nombre completo:</span>
                     <span class="detail-value">{{ Auth::user()->full_name ?? (Auth::user()->name ?? 'Juan Pérez') }}</span>
                 </div>
-                <div class="detail-item">
-                    <span class="detail-label">Cédula/RIF:</span>
-                    <span class="detail-value">{{ Auth::user()->identification ?? 'V 12.345.678' }}</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">Fecha de nacimiento:</span>
-                    <span
-                        class="detail-value">{{ Auth::user()->dob ? \Carbon\Carbon::parse(Auth::user()->dob)->format('d/m/Y') : '15/05/1990' }}</span>
-                </div>
+                
+                {{-- Mostrar información específica según el rol --}}
+                @if(Auth::user()->role === 'aliado')
+                    <div class="detail-item">
+                        <span class="detail-label">Empresa:</span>
+                        <span class="detail-value">{{ Auth::user()->company ?? 'Empresa no especificada' }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">RIF:</span>
+                        <span class="detail-value">{{ Auth::user()->identification ?? 'No especificado' }}</span>
+                    </div>
+                @else
+                    <div class="detail-item">
+                        <span class="detail-label">
+                            @if(Auth::user()->role === 'admin')
+                                Documento de Identificación:
+                            @else
+                                Cédula:
+                            @endif
+                        </span>
+                        <span class="detail-value">{{ Auth::user()->identification ?? 'No especificada' }}</span>
+                    </div>
+                    @if(Auth::user()->role !== 'admin')
+                        <div class="detail-item">
+                            <span class="detail-label">Fecha de nacimiento:</span>
+                            <span class="detail-value">
+                                {{ Auth::user()->dob ? \Carbon\Carbon::parse(Auth::user()->dob)->format('d/m/Y') : 'No especificada' }}
+                            </span>
+                        </div>
+                    @endif
+                @endif
             </div>
 
             {{-- Sección de Información de Contacto --}}

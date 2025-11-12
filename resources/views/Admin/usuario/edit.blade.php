@@ -20,6 +20,12 @@
                     <i class="fas fa-user-edit"></i>
                 </div>
                 <h2>Editar Usuario: <span class="user-id-text">ID #{{ $user->id }}</span></h2>
+                <p class="current-role">Rol actual: <strong>{{ $user->role ?? 'comun' }}</strong></p>
+                <p class="current-status">Estado actual: 
+                    <strong class="status-{{ $user->status ?? 'activo' }}">
+                        {{ ucfirst($user->status ?? 'activo') }}
+                    </strong>
+                </p>
             </div>
 
             <hr class="section-divider">
@@ -31,15 +37,15 @@
 
                 <div class="form-grid">
                     <div class="form-group">
-                        <label for="firstName">Nombre:</label>
-                        <input type="text" id="firstName" name="firstName" placeholder="Ej: Juan" value="{{ old('firstName', $user->firstname) }}" required>
-                        @error('firstName') <div class="text-danger">{{ $message }}</div> @enderror
+                        <label for="firstname">Nombre:</label>
+                        <input type="text" id="firstname" name="firstname" placeholder="Ej: Juan" value="{{ old('firstname', $user->firstname) }}" required>
+                        @error('firstname') <div class="text-danger">{{ $message }}</div> @enderror
                     </div>
                     
                     <div class="form-group">
-                        <label for="lastName">Apellido:</label>
-                        <input type="text" id="lastName" name="lastName" placeholder="Ej: Pérez" value="{{ old('lastName', $user->lastname) }}" required>
-                        @error('lastName') <div class="text-danger">{{ $message }}</div> @enderror
+                        <label for="lastname">Apellido:</label>
+                        <input type="text" id="lastname" name="lastname" placeholder="Ej: Pérez" value="{{ old('lastname', $user->lastname) }}" required>
+                        @error('lastname') <div class="text-danger">{{ $message }}</div> @enderror
                     </div>
 
                     <div class="form-group">
@@ -50,7 +56,7 @@
 
                     <div class="form-group">
                         <label for="password">Nueva Contraseña (Opcional):</label>
-                        <input type="password" id="password" name="password" placeholder="Mínimo 6 caracteres" minlength="6">
+                        <input type="password" id="password" name="password" placeholder="Mínimo 8 caracteres" minlength="8">
                         @error('password') <div class="text-danger">{{ $message }}</div> @enderror
                     </div>
 
@@ -59,22 +65,31 @@
                         <input type="password" id="password_confirmation" name="password_confirmation" placeholder="Repite la nueva contraseña">
                     </div>
 
+                    {{-- Campo user_type modificado para incluir todos los roles --}}
                     <div class="form-group">
-                        <label for="userType">Tipo de Usuario:</label>
-                        <select id="userType" name="userType" required>
+                        <label for="user_type">Tipo de Usuario:</label>
+                        <select id="user_type" name="user_type" required>
                             <option value="">Seleccione un tipo</option>
-                            <option value="aliado" {{ old('userType', $user->user_type) == 'aliado' ? 'selected' : '' }}>Aliado</option>
-                            <option value="usuario rumbero" {{ old('userType', $user->user_type) == 'usuario rumbero' ? 'selected' : '' }}>Usuario Rumbero</option>
+                            @if(Auth::user()->role === 'admin')
+                                <option value="admin" {{ old('user_type', $user->role) == 'admin' ? 'selected' : '' }}>Administrador</option>
+                            @endif
+                            <option value="aliado" {{ old('user_type', $user->role) == 'aliado' ? 'selected' : '' }}>Aliado</option>
+                            <option value="afiliado" {{ old('user_type', $user->role) == 'afiliado' ? 'selected' : '' }}>Afiliado</option>
+                            <option value="comun" {{ old('user_type', $user->role) == 'comun' || old('user_type', $user->role) == null ? 'selected' : '' }}>Usuario Común</option>
                         </select>
-                        @error('userType') <div class="text-danger">{{ $message }}</div> @enderror
+                        @error('user_type') <div class="text-danger">{{ $message }}</div> @enderror
+                        @if(Auth::user()->role === 'admin')
+                            <small class="text-muted">Puedes cambiar el rol del usuario entre Administrador, Aliado, Afiliado o Usuario Común</small>
+                        @endif
                     </div>
 
                     <div class="form-group">
-                        <label for="phone">Teléfono (Opcional):</label>
-                        <input type="tel" id="phone" name="phone" placeholder="Ej: +58 412 1234567" value="{{ old('phone', $user->phone1) }}">
-                        @error('phone') <div class="text-danger">{{ $message }}</div> @enderror
+                        <label for="phone1">Teléfono (Opcional):</label>
+                        <input type="tel" id="phone1" name="phone1" placeholder="Ej: +58 412 1234567" value="{{ old('phone1', $user->phone1) }}">
+                        @error('phone1') <div class="text-danger">{{ $message }}</div> @enderror
                     </div>
 
+                    {{-- Campo Estado con información sobre la funcionalidad --}}
                     <div class="form-group">
                         <label for="status">Estado:</label>
                         <select id="status" name="status" required>
@@ -83,11 +98,15 @@
                             <option value="pendiente" {{ old('status', $user->status) == 'pendiente' ? 'selected' : '' }}>Pendiente</option>
                         </select>
                         @error('status') <div class="text-danger">{{ $message }}</div> @enderror
+                        <small class="text-muted">
+                            <i class="fas fa-info-circle"></i> 
+                            Los usuarios inactivos no podrán ingresar al portal sin importar su rol
+                        </small>
                     </div>
 
                     <div class="form-group">
                         <label for="registrationDate">Fecha de Registro:</label>
-                        <input type="date" id="registrationDate" name="registrationDate" value="{{ old('registrationDate', \Carbon\Carbon::parse($user->registrationDate)->format('Y-m-d')) }}" required>
+                        <input type="date" id="registrationDate" name="registrationDate" value="{{ old('registrationDate', \Carbon\Carbon::parse($user->registration_date)->format('Y-m-d')) }}" required>
                         @error('registrationDate') <div class="text-danger">{{ $message }}</div> @enderror
                     </div>
                     
@@ -110,4 +129,38 @@
             </form>
         </div>
     </div>
+
+    <style>
+        .current-role, .current-status {
+            margin-top: 5px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .text-muted {
+            color: #6c757d !important;
+            font-size: 12px;
+            margin-top: 5px;
+            display: block;
+        }
+        
+        .status-activo {
+            color: #28a745;
+            font-weight: bold;
+        }
+        
+        .status-inactivo {
+            color: #dc3545;
+            font-weight: bold;
+        }
+        
+        .status-pendiente {
+            color: #ffc107;
+            font-weight: bold;
+        }
+        
+        .fa-info-circle {
+            color: #17a2b8;
+        }
+    </style>
 @endsection

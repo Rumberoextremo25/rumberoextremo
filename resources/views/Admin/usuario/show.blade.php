@@ -10,6 +10,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/admin/user-details.css') }}">
 @endpush
 
 @section('content')
@@ -23,8 +24,18 @@
             </div>
             <div class="profile-info">
                 <h1>{{ $user->firstname }} {{ $user->lastname }}</h1>
-                <p class="user-role">{{ $user->user_type }}</p>
                 <p class="user-email">{{ $user->email }}</p>
+                <span class="badge badge-role-{{ strtolower($user->role ?? 'user') }} user-role-badge">
+                    @if($user->role === 'admin')
+                        Administrador
+                    @elseif($user->role === 'aliado')
+                        Aliado
+                    @elseif($user->role === 'afiliado')
+                        Afiliado
+                    @else
+                        Usuario
+                    @endif
+                </span>
             </div>
         </div>
         
@@ -40,11 +51,27 @@
                 </div>
                 <div class="info-group">
                     <span class="info-label">Tipo de Usuario:</span>
-                    <span class="info-value">{{ $user->user_type }}</span>
+                    <span class="info-value">
+                        <span class="badge badge-role-{{ strtolower($user->role ?? 'user') }}">
+                            @if($user->role === 'admin')
+                                Administrador
+                            @elseif($user->role === 'aliado')
+                                Aliado
+                            @elseif($user->role === 'afiliado')
+                                Afiliado
+                            @else
+                                Usuario
+                            @endif
+                        </span>
+                    </span>
                 </div>
                 <div class="info-group">
                     <span class="info-label">Estado:</span>
-                    <span class="info-value">{{ $user->status }}</span>
+                    <span class="info-value">
+                        <span class="badge badge-status-{{ strtolower($user->status ?? 'activo') }}">
+                            {{ ucfirst($user->status ?? 'activo') }}
+                        </span>
+                    </span>
                 </div>
                 <div class="info-group">
                     <span class="info-label">Teléfono:</span>
@@ -52,7 +79,7 @@
                 </div>
                 <div class="info-group">
                     <span class="info-label">Fecha de Registro:</span>
-                    <span class="info-value">{{ \Carbon\Carbon::parse($user->registrationDate)->format('d/m/Y H:i') }}</span>
+                    <span class="info-value">{{ \Carbon\Carbon::parse($user->registration_date ?? $user->registrationDate)->format('d/m/Y H:i') }}</span>
                 </div>
                 <div class="info-group">
                     <span class="info-label">Última Actualización:</span>

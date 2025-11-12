@@ -13,6 +13,7 @@ class Kernel extends HttpKernel
         // \App\Http\Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
         \App\Http\Middleware\LogHttpRequests::class,
+        \App\Http\Middleware\CheckUserStatus::class,
     ];
 
     protected $routeMiddleware = [
@@ -24,5 +25,6 @@ class Kernel extends HttpKernel
         // 'password.confirm' => \App\Http\Middleware\EnsurePasswordIsConfirmed::class,
         // 'signed' => \App\Http\Middleware\ValidateSignature::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
+        \App\Http\Middleware\CheckUserStatus::class,
     ];
 }

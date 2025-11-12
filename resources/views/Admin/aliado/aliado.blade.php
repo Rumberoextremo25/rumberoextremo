@@ -266,6 +266,24 @@
                 searchInput.focus();
             });
         }
+
+        // Contador de resultados filtrados
+        function updateResultsCount() {
+            const visibleRows = Array.from(tableRows).filter(row => 
+                row.style.display !== 'none' && !row.classList.contains('empty-state')
+            ).length;
+            
+            const statBadge = document.querySelector('.stat-badge');
+            if (statBadge && searchInput.value.trim()) {
+                statBadge.innerHTML = `<i class="fas fa-users"></i> Mostrando: ${visibleRows} de {{ $allies->count() }} aliados`;
+            } else if (statBadge) {
+                statBadge.innerHTML = `<i class="fas fa-users"></i> Total: {{ $allies->count() }} aliados`;
+            }
+        }
+
+        if (searchInput) {
+            searchInput.addEventListener('input', updateResultsCount);
+        }
     });
 </script>
 @endpush

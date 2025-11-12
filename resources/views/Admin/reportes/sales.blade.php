@@ -12,271 +12,528 @@
     <div class="loading-overlay" id="loadingOverlay">
         <div class="loading-spinner">
             <i class="fas fa-spinner fa-spin"></i>
+            <span>Generando reporte...</span>
         </div>
     </div>
 
     <div class="reports-container">
-        <div class="reports-card">
-            {{-- Header Modernizado --}}
-            <div class="page-header">
+        {{-- Header Moderno --}}
+        <div class="reports-header-modern">
+            <div class="header-content">
+                <div class="breadcrumb">
+                    <a href="{{ route('dashboard') }}" class="breadcrumb-link">
+                        <i class="fas fa-home"></i>
+                        Dashboard
+                    </a>
+                    <span class="breadcrumb-separator">/</span>
+                    <span class="breadcrumb-current">Reportes de Ventas</span>
+                </div>
                 <h1 class="page-title">
-                    <span class="accent">Análisis de Ventas</span>
+                    <span class="title-text">Análisis de</span>
+                    <span class="title-accent">Ventas</span>
                 </h1>
                 <p class="page-subtitle">
                     <i class="fas fa-chart-line"></i>
                     Dashboard completo de métricas y tendencias de ventas
                 </p>
             </div>
-
-            {{-- Información del Rol de Usuario --}}
-            <div class="user-context-badge">
-                @if ($userRole === 'admin' || $userRole === 'administrador')
-                    <div class="badge-role badge-admin">
-                        <i class="fas fa-crown"></i> Vista Administrador - Todas las ventas del sistema
-                    </div>
-                @elseif($allyId && $metrics['current_ally_info'])
-                    <div class="badge-role badge-ally">
-                        <i class="fas fa-handshake"></i> Vista Aliado - {{ $metrics['current_ally_info']->company_name }}
-                    </div>
-                    <div class="ally-info">
-                        <h4><i class="fas fa-building"></i> Información del Aliado</h4>
-                        <p><strong>Empresa:</strong> {{ $metrics['current_ally_info']->company_name }}</p>
-                        <p><strong>Contacto:</strong> {{ $metrics['current_ally_info']->contact_person_name }}</p>
-                        <p><strong>RIF:</strong> {{ $metrics['current_ally_info']->company_rif }}</p>
-                        <p><strong>Estado:</strong>
-                            <span class="status-{{ $metrics['current_ally_info']->status }}">
-                                {{ $metrics['current_ally_info']->status === 'active' ? 'Activo' : 'Inactivo' }}
-                            </span>
-                        </p>
-                    </div>
-                @elseif($allyId)
-                    <div class="badge-role badge-ally">
-                        <i class="fas fa-handshake"></i> Vista Aliado
-                    </div>
-                @else
-                    <div class="badge-role badge-user">
-                        <i class="fas fa-user"></i> Vista Usuario
-                    </div>
-                @endif
+            <div class="header-actions">
+                <div class="real-time-indicator">
+                    <i class="fas fa-sync-alt"></i>
+                    Actualizado: {{ now()->format('d/m/Y H:i') }}
+                </div>
+                <div class="exchange-rate-badge">
+                    <i class="fas fa-dollar-sign"></i>
+                    Tasa Bs. {{ number_format($exchangeRateVes, 2) }} / USD
+                </div>
             </div>
+        </div>
 
-            {{-- Filtros y Acciones --}}
-            <div class="section-title">
-                <i class="fas fa-sliders-h"></i>
-                Filtros y Configuración
+        {{-- Información del Contexto del Usuario --}}
+        <div class="user-context-section">
+            @if ($userRole === 'admin' || $userRole === 'administrador')
+                <div class="context-card admin">
+                    <div class="context-icon">
+                        <i class="fas fa-crown"></i>
+                    </div>
+                    <div class="context-content">
+                        <h3 class="context-title">Vista Administrador</h3>
+                        <p class="context-description">Acceso completo a todas las ventas del sistema</p>
+                    </div>
+                </div>
+            @elseif($allyId && ($metrics['current_ally_info'] ?? null))
+                <div class="context-card ally">
+                    <div class="context-icon">
+                        <i class="fas fa-handshake"></i>
+                    </div>
+                    <div class="context-content">
+                        <h3 class="context-title">{{ $metrics['current_ally_info']->company_name }}</h3>
+                        <p class="context-description">Panel de control de ventas del aliado</p>
+                        <div class="ally-details">
+                            <div class="detail-item">
+                                <i class="fas fa-user-tie"></i>
+                                <span>{{ $metrics['current_ally_info']->contact_person_name }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-id-card"></i>
+                                <span>{{ $metrics['current_ally_info']->company_rif }}</span>
+                            </div>
+                            <div class="detail-item">
+                                <i class="fas fa-tag"></i>
+                                <span class="status-badge status-{{ $metrics['current_ally_info']->status }}">
+                                    {{ ucfirst($metrics['current_ally_info']->status) }}
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            @else
+                <div class="context-card user">
+                    <div class="context-icon">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="context-content">
+                        <h3 class="context-title">Vista Usuario</h3>
+                        <p class="context-description">Reporte de ventas personales</p>
+                    </div>
+                </div>
+            @endif
+        </div>
+
+        {{-- Panel de Filtros Avanzados --}}
+        <div class="filters-panel-modern">
+            <div class="panel-header">
+                <h3 class="panel-title">
+                    <i class="fas fa-sliders-h"></i>
+                    Filtros y Configuración
+                </h3>
+                <button class="panel-toggle" id="filtersToggle">
+                    <i class="fas fa-chevron-down"></i>
+                </button>
             </div>
+            
+            <div class="filters-content" id="filtersContent">
+                <div class="filters-grid">
+                    {{-- Filtro de Fechas --}}
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <i class="fas fa-calendar-alt"></i>
+                            Rango de Fechas
+                        </label>
+                        <div class="date-range-picker">
+                            <div class="date-input-group">
+                                <input type="date" id="startDate" class="form-control" value="{{ $startDate->format('Y-m-d') }}">
+                                <span class="date-separator">hasta</span>
+                                <input type="date" id="endDate" class="form-control" value="{{ $endDate->format('Y-m-d') }}">
+                            </div>
+                        </div>
+                    </div>
 
-            <div class="reports-actions-grid">
-                <div class="form-group">
-                    <label for="startDate">
-                        <i class="fas fa-calendar-alt"></i>
-                        Fecha Inicial
-                    </label>
-                    <input type="date" id="startDate" class="form-control" value="{{ $startDate->format('Y-m-d') }}">
+                    {{-- Filtro de Tipo de Reporte --}}
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <i class="fas fa-chart-bar"></i>
+                            Periodo de Análisis
+                        </label>
+                        <select id="reportType" class="form-select">
+                            <option value="monthly" {{ $reportType == 'monthly' ? 'selected' : '' }}>Vista Mensual</option>
+                            <option value="weekly" {{ $reportType == 'weekly' ? 'selected' : '' }}>Vista Semanal</option>
+                            <option value="daily" {{ $reportType == 'daily' ? 'selected' : '' }}>Vista Diaria</option>
+                        </select>
+                    </div>
                 </div>
 
-                <div class="form-group">
-                    <label for="endDate">
-                        <i class="fas fa-calendar-alt"></i>
-                        Fecha Final
-                    </label>
-                    <input type="date" id="endDate" class="form-control" value="{{ $endDate->format('Y-m-d') }}">
-                </div>
-
-                <div class="form-group">
-                    <label for="reportType">
-                        <i class="fas fa-chart-bar"></i>
-                        Periodo de Análisis
-                    </label>
-                    <select id="reportType" class="form-select">
-                        <option value="monthly" {{ $reportType == 'monthly' ? 'selected' : '' }}>Vista Mensual</option>
-                        <option value="weekly" {{ $reportType == 'weekly' ? 'selected' : '' }}>Vista Semanal</option>
-                        <option value="daily" {{ $reportType == 'daily' ? 'selected' : '' }}>Vista Diaria</option>
-                    </select>
-                </div>
-
-                <!-- Fila de botones -->
-                <div class="buttons-row">
-                    <div class="form-group">
-                        <button class="modern-button" id="applyFilterButton">
+                {{-- Acciones Rápidas --}}
+                <div class="filter-actions">
+                    <div class="quick-actions">
+                        <button class="action-btn quick-filter" data-days="7">
+                            <i class="fas fa-calendar-week"></i>
+                            Últimos 7 días
+                        </button>
+                        <button class="action-btn quick-filter" data-days="30">
+                            <i class="fas fa-calendar"></i>
+                            Últimos 30 días
+                        </button>
+                        <button class="action-btn quick-filter today" data-days="0">
+                            <i class="fas fa-calendar-day"></i>
+                            Hoy
+                        </button>
+                    </div>
+                    
+                    <div class="main-actions">
+                        <button class="modern-button secondary" id="resetFiltersButton">
+                            <i class="fas fa-redo"></i>
+                            Reiniciar
+                        </button>
+                        <button class="modern-button primary" id="applyFilterButton">
                             <i class="fas fa-filter"></i>
                             Aplicar Filtros
                         </button>
                     </div>
-                    <div class="form-group">
-                        <button class="modern-button today-report" id="viewTodayReportButton">
-                            <i class="fas fa-calendar-day"></i>
-                            Ver Hoy
-                        </button>
+                </div>
+            </div>
+        </div>
+
+        {{-- Métricas Principales en Tiempo Real --}}
+        <div class="metrics-section">
+            <h2 class="section-title">
+                <i class="fas fa-chart-bar"></i>
+                Métricas Principales
+            </h2>
+            
+            <div class="metrics-grid-main">
+                {{-- Ventas Totales --}}
+                <div class="metric-card primary">
+                    <div class="metric-icon">
+                        <i class="fas fa-dollar-sign"></i>
+                    </div>
+                    <div class="metric-content">
+                        <div class="metric-value">${{ number_format($stats['total_sales'] ?? 0, 2) }}</div>
+                        <div class="metric-label">Ventas Totales USD</div>
+                        <div class="metric-subtext">
+                            Bs. {{ number_format($stats['total_sales_ves'] ?? 0, 2) }}
+                        </div>
+                        <div class="metric-trend {{ ($stats['growth'] ?? 0) >= 0 ? 'positive' : 'negative' }}">
+                            <i class="fas fa-arrow-{{ ($stats['growth'] ?? 0) >= 0 ? 'up' : 'down' }}"></i>
+                            {{ number_format(abs($stats['growth'] ?? 0), 1) }}%
+                        </div>
                     </div>
                 </div>
 
-                <!-- Resto de botones -->
-                <div class="form-group">
-                    <button class="modern-button download-pdf" id="downloadPdfButton">
-                        <i class="fas fa-file-pdf"></i>
-                        Exportar PDF
+                {{-- Total Órdenes --}}
+                <div class="metric-card success">
+                    <div class="metric-icon">
+                        <i class="fas fa-shopping-cart"></i>
+                    </div>
+                    <div class="metric-content">
+                        <div class="metric-value">{{ number_format($stats['total_orders'] ?? 0) }}</div>
+                        <div class="metric-label">Total Órdenes</div>
+                        <div class="metric-subtext">
+                            @if(($stats['average_order_value'] ?? 0) > 0)
+                                ${{ number_format($stats['average_order_value'], 2) }} USD
+                                <br>
+                                Bs. {{ number_format($stats['average_order_value_ves'] ?? 0, 2) }}
+                            @else
+                                Sin datos
+                            @endif
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Clientes Únicos --}}
+                <div class="metric-card warning">
+                    <div class="metric-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="metric-content">
+                        <div class="metric-value">{{ number_format($stats['unique_clients'] ?? 0) }}</div>
+                        <div class="metric-label">Clientes Únicos</div>
+                        <div class="metric-subtext">
+                            {{ $stats['repeat_customers'] ?? 0 }} clientes recurrentes
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Tasa de Cambio --}}
+                <div class="metric-card info">
+                    <div class="metric-icon">
+                        <i class="fas fa-exchange-alt"></i>
+                    </div>
+                    <div class="metric-content">
+                        <div class="metric-value">{{ number_format($exchangeRateVes, 2) }}</div>
+                        <div class="metric-label">Tasa BNC</div>
+                        <div class="metric-subtext">Bs. por USD</div>
+                        <div class="rate-source">
+                            <i class="fas fa-database"></i>
+                            Fuente: Banco Central
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        {{-- Gráfico Principal Interactivo --}}
+        <div class="chart-section">
+            <div class="chart-header">
+                <h2 class="section-title">
+                    <i class="fas fa-chart-line"></i>
+                    Tendencias de Ventas
+                </h2>
+                <div class="chart-actions">
+                    <button class="chart-action-btn" id="toggleChartType">
+                        <i class="fas fa-exchange-alt"></i>
+                        Cambiar Vista
+                    </button>
+                    <button class="chart-action-btn" id="downloadChart">
+                        <i class="fas fa-download"></i>
+                        Descargar
                     </button>
                 </div>
             </div>
-        </div>
-
-        {{-- Métricas Principales --}}
-        <div class="section-title">
-            <i class="fas fa-chart-bar"></i>
-            Métricas Principales
-        </div>
-
-        <div class="stats-grid-main">
-            <div class="stat-card-main">
-                <div class="stat-icon-main">
-                    <i class="fas fa-dollar-sign"></i>
-                </div>
-                <div class="stat-content">
-                    <div class="stat-value-main">${{ number_format($stats['total_sales'], 2) }}</div>
-                    <div class="stat-label-main">Ventas Totales</div>
-                </div>
+            
+            <div class="chart-container-modern">
+                <canvas id="salesChart"></canvas>
             </div>
-            <div class="stat-card-main">
-                <div class="stat-icon-main">
-                    <i class="fas fa-shopping-cart"></i>
+            
+            <div class="chart-legend">
+                <div class="legend-item">
+                    <div class="legend-color" style="background: linear-gradient(135deg, #8a2be2, #4a00e0);"></div>
+                    <span class="legend-text">Ventas (USD)</span>
                 </div>
-                <div class="stat-content">
-                    <div class="stat-value-main">{{ number_format($stats['total_orders']) }}</div>
-                    <div class="stat-label-main">Total Órdenes</div>
-                </div>
-            </div>
-            <div class="stat-card-main">
-                <div class="stat-icon-main">
-                    <i class="fas fa-chart-line"></i>
-                </div>
-                <div class="stat-content">
-                    <div class="stat-value-main">{{ number_format($stats['growth'], 1) }}%</div>
-                    <div class="stat-label-main">Crecimiento</div>
-                </div>
-            </div>
-            <div class="stat-card-main">
-                <div class="stat-icon-main">
-                    <i class="fas fa-users"></i>
-                </div>
-                <div class="stat-content">
-                    <div class="stat-value-main">{{ number_format($stats['unique_clients']) }}</div>
-                    <div class="stat-label-main">Clientes Únicos</div>
+                <div class="legend-item">
+                    <div class="legend-color" style="background: linear-gradient(135deg, #00b894, #00a085);"></div>
+                    <span class="legend-text">Ventas (Bs.)</span>
                 </div>
             </div>
         </div>
 
-        {{-- Gráfico Principal --}}
-        <div class="section-title">
-            <i class="fas fa-chart-line"></i>
-            Tendencias de Ventas
-        </div>
+        {{-- Métricas Detalladas --}}
+        <div class="detailed-metrics-section">
+            <h2 class="section-title">
+                <i class="fas fa-info-circle"></i>
+                Análisis Detallado
+            </h2>
+            
+            <div class="detailed-metrics-grid">
+                {{-- Métodos de Pago --}}
+                <div class="detailed-metric-card">
+                    <h3 class="metric-card-title">
+                        <i class="fas fa-credit-card"></i>
+                        Métodos de Pago
+                    </h3>
+                    <div class="payment-methods-list">
+                        @forelse (($stats['payment_methods'] ?? []) as $payment)
+                            <div class="payment-method-item">
+                                <div class="payment-info">
+                                    <span class="payment-name">{{ ucfirst($payment->payment_method) }}</span>
+                                    <span class="payment-percentage">
+                                        @php
+                                            $percentage = ($stats['total_orders'] ?? 0) > 0 ? 
+                                                round(($payment->count / $stats['total_orders']) * 100, 1) : 0;
+                                        @endphp
+                                        {{ $percentage }}%
+                                    </span>
+                                </div>
+                                <div class="payment-bar">
+                                    <div class="payment-progress" style="width: {{ $percentage }}%"></div>
+                                </div>
+                                <span class="payment-count">{{ $payment->count }} órdenes</span>
+                            </div>
+                        @empty
+                            <div class="no-data-message">
+                                <i class="fas fa-receipt"></i>
+                                No hay datos de pagos
+                            </div>
+                        @endforelse
+                    </div>
+                </div>
 
-        <div class="chart-container">
-            <canvas id="salesChart"></canvas>
-        </div>
-
-        {{-- Métricas Adicionales --}}
-        <div class="section-title">
-            <i class="fas fa-info-circle"></i>
-            Información Adicional
-        </div>
-
-        <div class="stats-grid">
-            <div class="stat-card">
-                <h4 class="stat-title">
-                    <i class="fas fa-credit-card"></i>
-                    Métodos de Pago
-                </h4>
-                <div class="payment-methods-list">
-                    @foreach ($stats['payment_methods'] as $payment)
-                        <div class="payment-method">
-                            <span class="payment-name">{{ ucfirst($payment->payment_method) }}</span>
-                            <span class="payment-count">{{ $payment->count }} órdenes</span>
+                {{-- Resumen del Reporte --}}
+                <div class="detailed-metric-card">
+                    <h3 class="metric-card-title">
+                        <i class="fas fa-chart-pie"></i>
+                        Resumen del Reporte
+                    </h3>
+                    <div class="report-summary">
+                        <div class="summary-item">
+                            <i class="fas fa-eye"></i>
+                            <div class="summary-content">
+                                <span class="summary-label">Tipo de Vista</span>
+                                <span class="summary-value view-type">{{ ucfirst($reportType) }}</span>
+                            </div>
                         </div>
-                    @endforeach
+                        <div class="summary-item">
+                            <i class="fas fa-calendar"></i>
+                            <div class="summary-content">
+                                <span class="summary-label">Período</span>
+                                <span class="summary-value date-range">
+                                    {{ $startDate->format('d M Y') }} - {{ $endDate->format('d M Y') }}
+                                </span>
+                            </div>
+                        </div>
+                        @if (($metrics['best_day'] ?? null))
+                        <div class="summary-item highlight">
+                            <i class="fas fa-trophy"></i>
+                            <div class="summary-content">
+                                <span class="summary-label">Mejor Día</span>
+                                <span class="summary-value">
+                                    {{ \Carbon\Carbon::parse($metrics['best_day']->date)->format('d/m/Y') }}
+                                    <br>
+                                    <small>
+                                        ${{ number_format($metrics['best_day']->daily_sales, 2) }} USD
+                                        <br>
+                                        Bs. {{ number_format($metrics['best_day_ves'] ?? 0, 2) }}
+                                    </small>
+                                </span>
+                            </div>
+                        </div>
+                        @endif
+                        @if (($metrics['largest_sale'] ?? null))
+                        <div class="summary-item highlight">
+                            <i class="fas fa-star"></i>
+                            <div class="summary-content">
+                                <span class="summary-label">Venta Más Grande</span>
+                                <span class="summary-value">
+                                    <small>
+                                        ${{ number_format($metrics['largest_sale']->total_amount, 2) }} USD
+                                        <br>
+                                        Bs. {{ number_format($metrics['largest_sale_ves'] ?? 0, 2) }}
+                                    </small>
+                                </span>
+                            </div>
+                        </div>
+                        @endif
+                        <div class="summary-item">
+                            <i class="fas fa-clock"></i>
+                            <div class="summary-content">
+                                <span class="summary-label">Días Analizados</span>
+                                <span class="summary-value">
+                                    {{ $startDate->diffInDays($endDate) + 1 }} días
+                                </span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
+        </div>
 
-            <div class="stat-card">
-                <h4 class="stat-title">
-                    <i class="fas fa-chart-pie"></i>
-                    Resumen del Reporte
-                </h4>
-                <div class="payment-methods-list">
-                    <div class="payment-method">
-                        <span class="payment-name">Tipo de Vista</span>
-                        <span class="payment-count view-type">{{ ucfirst($reportType) }}</span>
+        {{-- Información Exclusiva para Administradores --}}
+        @if (($userRole === 'admin' || $userRole === 'administrador') && ($metrics['top_ally'] ?? null))
+        <div class="admin-section">
+            <h2 class="section-title">
+                <i class="fas fa-trophy"></i>
+                Ranking de Aliados
+            </h2>
+            
+            <div class="admin-metrics-grid">
+                <div class="admin-metric-card">
+                    <h3 class="metric-card-title">
+                        <i class="fas fa-medal"></i>
+                        Aliado Destacado
+                    </h3>
+                    <div class="top-ally-info">
+                        <div class="ally-avatar">
+                            <i class="fas fa-crown"></i>
+                        </div>
+                        <div class="ally-details">
+                            <h4 class="ally-name">{{ $metrics['top_ally']->ally->company_name ?? 'N/A' }}</h4>
+                            <div class="ally-stats">
+                                <div class="ally-stat">
+                                    <span class="stat-value">${{ number_format($metrics['top_ally']->total_sales, 2) }}</span>
+                                    <span class="stat-label">Ventas USD</span>
+                                    <span class="stat-subtext">
+                                        Bs. {{ number_format($metrics['top_ally']->total_sales_ves ?? 0, 2) }}
+                                    </span>
+                                </div>
+                                <div class="ally-stat">
+                                    <span class="stat-value">{{ $metrics['top_ally']->total_orders }}</span>
+                                    <span class="stat-label">Órdenes</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="payment-method">
-                        <span class="payment-name">Período</span>
-                        <span class="payment-count date-range">
-                            {{ $startDate->format('M d') }} - {{ $endDate->format('M d, Y') }}
-                        </span>
+                </div>
+            </div>
+        </div>
+        @endif
+
+        {{-- Comparativa de Períodos --}}
+        <div class="comparison-section">
+            <h2 class="section-title">
+                <i class="fas fa-balance-scale"></i>
+                Comparativa de Períodos
+            </h2>
+            
+            <div class="comparison-grid">
+                <div class="comparison-card">
+                    <div class="comparison-period">
+                        <h4>Período Actual</h4>
+                        <div class="period-dates">
+                            {{ $startDate->format('d M Y') }} - {{ $endDate->format('d M Y') }}
+                        </div>
                     </div>
-                    <div class="payment-method">
-                        <span class="payment-name">Tasa de Cambio</span>
-                        <span class="payment-count">Bs. {{ number_format($exchangeRateVes, 2) }}</span>
-                    </div>
-                    @if ($metrics['best_day'])
-                        <div class="payment-method">
-                            <span class="payment-name">Mejor Día</span>
-                            <span class="payment-count">
-                                {{ \Carbon\Carbon::parse($metrics['best_day']->date)->format('d/m/Y') }} -
-                                ${{ number_format($metrics['best_day']->daily_sales, 2) }}
+                    <div class="comparison-stats">
+                        <div class="comparison-stat">
+                            <span class="stat-value">${{ number_format($stats['total_sales'] ?? 0, 2) }}</span>
+                            <span class="stat-label">Ventas USD</span>
+                            <span class="stat-subtext">
+                                Bs. {{ number_format($stats['total_sales_ves'] ?? 0, 2) }}
                             </span>
                         </div>
-                    @endif
+                        <div class="comparison-stat">
+                            <span class="stat-value">{{ number_format($stats['total_orders'] ?? 0) }}</span>
+                            <span class="stat-label">Órdenes</span>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
 
-        {{-- Información Específica para Admin --}}
-        @if (($userRole === 'admin' || $userRole === 'administrador') && $metrics['top_ally'])
-            <div class="section-title">
-                <i class="fas fa-trophy"></i>
-                Top Aliados
-            </div>
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <h4 class="stat-title">
-                        <i class="fas fa-medal"></i>
-                        Aliado con Más Ventas
-                    </h4>
-                    <div class="payment-methods-list">
-                        <div class="payment-method">
-                            <span class="payment-name">Empresa</span>
-                            <span class="payment-count">{{ $metrics['top_ally']->ally->company_name ?? 'N/A' }}</span>
+                <div class="comparison-card">
+                    <div class="comparison-period">
+                        <h4>Período Anterior</h4>
+                        <div class="period-dates">
+                            @php
+                                $previousDays = $endDate->diffInDays($startDate);
+                                $previousStart = $startDate->copy()->subDays($previousDays);
+                                $previousEnd = $startDate->copy()->subDay();
+                            @endphp
+                            {{ $previousStart->format('d M Y') }} - {{ $previousEnd->format('d M Y') }}
                         </div>
-                        <div class="payment-method">
-                            <span class="payment-name">Ventas Totales</span>
-                            <span class="payment-count">${{ number_format($metrics['top_ally']->total_sales, 2) }}</span>
+                    </div>
+                    <div class="comparison-stats">
+                        <div class="comparison-stat">
+                            <span class="stat-value">${{ number_format($stats['previous_sales'] ?? 0, 2) }}</span>
+                            <span class="stat-label">Ventas USD</span>
+                            <span class="stat-subtext">
+                                Bs. {{ number_format($stats['previous_sales_ves'] ?? 0, 2) }}
+                            </span>
                         </div>
-                        <div class="payment-method">
-                            <span class="payment-name">Total Órdenes</span>
-                            <span class="payment-count">{{ $metrics['top_ally']->total_orders }}</span>
+                        <div class="comparison-growth {{ ($stats['growth'] ?? 0) >= 0 ? 'positive' : 'negative' }}">
+                            <i class="fas fa-arrow-{{ ($stats['growth'] ?? 0) >= 0 ? 'up' : 'down' }}"></i>
+                            {{ number_format(abs($stats['growth'] ?? 0), 1) }}% crecimiento
                         </div>
                     </div>
                 </div>
             </div>
-        @endif
-    </div>
+        </div>
+
+        {{-- Acciones de Exportación --}}
+        <div class="export-section">
+            <h2 class="section-title">
+                <i class="fas fa-download"></i>
+                Exportar Reporte
+            </h2>
+            
+            <div class="export-actions">
+                <button class="export-btn pdf" id="downloadPdfButton">
+                    <i class="fas fa-file-pdf"></i>
+                    Exportar PDF
+                </button>
+                <button class="export-btn excel" id="downloadExcelButton">
+                    <i class="fas fa-file-excel"></i>
+                    Exportar Excel
+                </button>
+                <button class="export-btn print" onclick="window.print()">
+                    <i class="fas fa-print"></i>
+                    Imprimir
+                </button>
+            </div>
+        </div>
     </div>
 @endsection
 
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             // Datos iniciales desde PHP
-            const initialLabels = @json($chartData['labels']);
-            const initialChartData = @json($chartData['data']);
+            const initialLabels = @json($chartData['labels'] ?? []);
+            const initialChartData = @json($chartData['data'] ?? []);
             const initialReportType = "{{ $reportType }}";
-            const exchangeRateVes = {{ $exchangeRateVes }};
-            const userRole = "{{ $userRole }}";
+            const exchangeRate = {{ $exchangeRateVes }};
+
+            // Calcular datos en VES
+            const initialChartDataVes = initialChartData.map(amount => amount * exchangeRate);
 
             // Referencias a elementos del DOM
             const salesChartCanvas = document.getElementById('salesChart');
@@ -284,11 +541,18 @@
             const endDateInput = document.getElementById('endDate');
             const reportTypeSelect = document.getElementById('reportType');
             const applyFilterButton = document.getElementById('applyFilterButton');
-            const viewTodayReportButton = document.getElementById('viewTodayReportButton');
+            const resetFiltersButton = document.getElementById('resetFiltersButton');
+            const filtersToggle = document.getElementById('filtersToggle');
+            const filtersContent = document.getElementById('filtersContent');
+            const toggleChartType = document.getElementById('toggleChartType');
+            const downloadChartBtn = document.getElementById('downloadChart');
             const downloadPdfButton = document.getElementById('downloadPdfButton');
+            const downloadExcelButton = document.getElementById('downloadExcelButton');
             const loadingOverlay = document.getElementById('loadingOverlay');
 
             let salesChart;
+            let currentChartType = 'bar';
+            let showingVes = false;
 
             // Función para mostrar/ocultar loading
             function showLoading(show) {
@@ -297,30 +561,57 @@
                 }
             }
 
+            // Toggle de filtros
+            if (filtersToggle && filtersContent) {
+                filtersToggle.addEventListener('click', function() {
+                    filtersContent.classList.toggle('active');
+                    const icon = filtersToggle.querySelector('i');
+                    icon.classList.toggle('fa-chevron-down');
+                    icon.classList.toggle('fa-chevron-up');
+                });
+            }
+
             // Función para renderizar el gráfico
-            function renderChart(labels, data) {
+            function renderChart(labels, data, dataVes, type = 'bar', showVes = false) {
                 if (salesChart) {
                     salesChart.destroy();
                 }
 
                 const ctx = salesChartCanvas.getContext('2d');
-                const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-                gradient.addColorStop(0, 'rgba(138, 43, 226, 0.8)');
-                gradient.addColorStop(1, 'rgba(138, 43, 226, 0.2)');
+                const gradientUSD = ctx.createLinearGradient(0, 0, 0, 400);
+                gradientUSD.addColorStop(0, 'rgba(138, 43, 226, 0.8)');
+                gradientUSD.addColorStop(1, 'rgba(138, 43, 226, 0.2)');
 
+                const gradientVES = ctx.createLinearGradient(0, 0, 0, 400);
+                gradientVES.addColorStop(0, 'rgba(0, 184, 148, 0.8)');
+                gradientVES.addColorStop(1, 'rgba(0, 184, 148, 0.2)');
+
+                const isLineChart = type === 'line';
+                const currentData = showVes ? dataVes : data;
+                const currentLabel = showVes ? 'Ventas (Bs.)' : 'Ventas (USD)';
+                const currentGradient = showVes ? gradientVES : gradientUSD;
+                const currentBorderColor = showVes ? 'rgba(0, 184, 148, 1)' : 'rgba(138, 43, 226, 1)';
+                
                 salesChart = new Chart(salesChartCanvas, {
-                    type: 'bar',
+                    type: type,
                     data: {
                         labels: labels,
                         datasets: [{
-                            label: 'Ventas (USD)',
-                            data: data,
-                            backgroundColor: gradient,
-                            borderColor: 'rgba(138, 43, 226, 1)',
-                            borderWidth: 2,
-                            borderRadius: 8,
-                            barThickness: 35,
+                            label: currentLabel,
+                            data: currentData,
+                            backgroundColor: isLineChart ? 'transparent' : currentGradient,
+                            borderColor: currentBorderColor,
+                            borderWidth: isLineChart ? 3 : 2,
+                            borderRadius: isLineChart ? 0 : 8,
+                            barThickness: isLineChart ? 'flex' : 35,
                             borderSkipped: false,
+                            fill: isLineChart,
+                            tension: isLineChart ? 0.4 : 0,
+                            pointBackgroundColor: currentBorderColor,
+                            pointBorderColor: '#fff',
+                            pointBorderWidth: 2,
+                            pointRadius: isLineChart ? 4 : 0,
+                            pointHoverRadius: 6
                         }]
                     },
                     options: {
@@ -341,7 +632,12 @@
                                 displayColors: false,
                                 callbacks: {
                                     label: function(context) {
-                                        return `$${context.parsed.y.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                                        const value = context.parsed.y;
+                                        if (showVes) {
+                                            return `Bs. ${value.toLocaleString('es-VE', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                                        } else {
+                                            return `$${value.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
+                                        }
                                     }
                                 }
                             }
@@ -354,14 +650,17 @@
                                 },
                                 ticks: {
                                     callback: function(value) {
-                                        return '$' + value.toLocaleString('en-US', {
-                                            maximumFractionDigits: 0
-                                        });
+                                        if (showVes) {
+                                            return 'Bs. ' + value.toLocaleString('es-VE', {
+                                                maximumFractionDigits: 0
+                                            });
+                                        } else {
+                                            return '$' + value.toLocaleString('en-US', {
+                                                maximumFractionDigits: 0
+                                            });
+                                        }
                                     },
                                     color: '#6b7280'
-                                },
-                                border: {
-                                    dash: [4, 4]
                                 }
                             },
                             x: {
@@ -369,7 +668,8 @@
                                     display: false
                                 },
                                 ticks: {
-                                    color: '#6b7280'
+                                    color: '#6b7280',
+                                    maxRotation: 45
                                 }
                             }
                         },
@@ -385,54 +685,94 @@
                 });
             }
 
-            // Renderizar gráfico inicial
-            if (salesChartCanvas && initialLabels && initialChartData) {
-                renderChart(initialLabels, initialChartData);
+            // Renderizar gráfico inicial si hay datos
+            if (salesChartCanvas && initialLabels.length > 0 && initialChartData.length > 0) {
+                renderChart(initialLabels, initialChartData, initialChartDataVes, currentChartType, showingVes);
+            } else {
+                // Mostrar mensaje si no hay datos
+                salesChartCanvas.parentElement.innerHTML = `
+                    <div class="no-data-message" style="height: 400px; display: flex; align-items: center; justify-content: center;">
+                        <div style="text-align: center;">
+                            <i class="fas fa-chart-bar" style="font-size: 3rem; color: #9ca3af; margin-bottom: 1rem;"></i>
+                            <p style="color: #6b7280; font-size: 1.1rem;">No hay datos disponibles para el período seleccionado</p>
+                        </div>
+                    </div>
+                `;
             }
 
-            // Manejar filtros
-            if (applyFilterButton) {
-                applyFilterButton.addEventListener('click', function() {
-                    const startDate = startDateInput.value;
-                    const endDate = endDateInput.value;
-                    const reportType = reportTypeSelect.value;
-
-                    showLoading(true);
-
-                    // Redireccionar con los nuevos parámetros
-                    const url = new URL(window.location.href);
-                    url.searchParams.set('startDate', startDate);
-                    url.searchParams.set('endDate', endDate);
-                    url.searchParams.set('reportType', reportType);
-                    window.location.href = url.toString();
+            // Toggle tipo de gráfico
+            if (toggleChartType) {
+                toggleChartType.addEventListener('click', function() {
+                    if (initialLabels.length === 0) return;
+                    
+                    // Alternar entre USD y VES
+                    showingVes = !showingVes;
+                    currentChartType = currentChartType === 'bar' ? 'line' : 'bar';
+                    
+                    renderChart(initialLabels, initialChartData, initialChartDataVes, currentChartType, showingVes);
+                    
+                    // Actualizar texto del botón
+                    const currencyText = showingVes ? 'Mostrar USD' : 'Mostrar Bs.';
+                    this.innerHTML = `<i class="fas fa-exchange-alt"></i> ${currencyText}`;
                 });
             }
 
-            // Botón "Hoy"
-            if (viewTodayReportButton) {
-                viewTodayReportButton.addEventListener('click', function() {
-                    const today = new Date().toISOString().split('T')[0];
-                    if (startDateInput) startDateInput.value = today;
-                    if (endDateInput) endDateInput.value = today;
-                    if (reportTypeSelect) reportTypeSelect.value = 'daily';
-                    if (applyFilterButton) applyFilterButton.click();
+            // Descargar gráfico como imagen
+            if (downloadChartBtn) {
+                downloadChartBtn.addEventListener('click', function() {
+                    if (initialLabels.length === 0) {
+                        alert('No hay datos para descargar');
+                        return;
+                    }
+                    
+                    const currencySuffix = showingVes ? 'ves' : 'usd';
+                    const link = document.createElement('a');
+                    link.download = `grafico-ventas-${currencySuffix}-${new Date().toISOString().split('T')[0]}.png`;
+                    link.href = salesChartCanvas.toDataURL();
+                    link.click();
                 });
             }
 
-            // Descargar PDF
-            if (downloadPdfButton) {
-                downloadPdfButton.addEventListener('click', function() {
-                    downloadPdfReport();
-                });
-            }
+            // El resto del código JavaScript permanece igual...
+            // (Filtros rápidos, aplicar filtros, reiniciar filtros, exportar, etc.)
 
-            function downloadPdfReport() {
-                // Obtener los parámetros actuales del filtro
+            // Filtros rápidos
+            document.querySelectorAll('.quick-filter').forEach(button => {
+                button.addEventListener('click', function() {
+                    const days = parseInt(this.getAttribute('data-days'));
+                    const endDate = new Date();
+                    const startDate = new Date();
+                    
+                    if (days === 0) {
+                        // Hoy
+                        startDate.setDate(endDate.getDate());
+                    } else {
+                        startDate.setDate(endDate.getDate() - days);
+                    }
+                    
+                    startDateInput.value = startDate.toISOString().split('T')[0];
+                    endDateInput.value = endDate.toISOString().split('T')[0];
+                    
+                    if (days === 0) {
+                        reportTypeSelect.value = 'daily';
+                    } else if (days <= 7) {
+                        reportTypeSelect.value = 'daily';
+                    } else if (days <= 30) {
+                        reportTypeSelect.value = 'weekly';
+                    } else {
+                        reportTypeSelect.value = 'monthly';
+                    }
+                    
+                    applyFilters();
+                });
+            });
+
+            // Aplicar filtros
+            function applyFilters() {
                 const startDate = startDateInput.value;
                 const endDate = endDateInput.value;
                 const reportType = reportTypeSelect.value;
 
-                // Validar fechas
                 if (!startDate || !endDate) {
                     alert('Por favor, selecciona ambas fechas');
                     return;
@@ -443,29 +783,77 @@
                     return;
                 }
 
-                // Mostrar loading
                 showLoading(true);
 
-                // Crear URL con parámetros para el endpoint de PDF
-                const url = new URL('{{ route('admin.reports.export') }}', window.location.origin);
+                // Construir URL con parámetros
+                const url = new URL(window.location.href);
+                url.searchParams.set('startDate', startDate);
+                url.searchParams.set('endDate', endDate);
+                url.searchParams.set('reportType', reportType);
+
+                window.location.href = url.toString();
+            }
+
+            if (applyFilterButton) {
+                applyFilterButton.addEventListener('click', applyFilters);
+            }
+
+            // Reiniciar filtros
+            if (resetFiltersButton) {
+                resetFiltersButton.addEventListener('click', function() {
+                    const today = new Date().toISOString().split('T')[0];
+                    const thirtyDaysAgo = new Date();
+                    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+                    
+                    startDateInput.value = thirtyDaysAgo.toISOString().split('T')[0];
+                    endDateInput.value = today;
+                    reportTypeSelect.value = 'monthly';
+                    
+                    applyFilters();
+                });
+            }
+
+            // Exportar PDF
+            if (downloadPdfButton) {
+                downloadPdfButton.addEventListener('click', function() {
+                    downloadReport('pdf');
+                });
+            }
+
+            // Exportar Excel
+            if (downloadExcelButton) {
+                downloadExcelButton.addEventListener('click', function() {
+                    downloadReport('excel');
+                });
+            }
+
+            function downloadReport(format) {
+                const startDate = startDateInput.value;
+                const endDate = endDateInput.value;
+                const reportType = reportTypeSelect.value;
+
+                if (!startDate || !endDate) {
+                    alert('Por favor, selecciona ambas fechas');
+                    return;
+                }
+
+                showLoading(true);
+
+                const url = new URL(`{{ route('admin.reports.export') }}`, window.location.origin);
                 url.searchParams.append('startDate', startDate);
                 url.searchParams.append('endDate', endDate);
                 url.searchParams.append('reportType', reportType);
+                url.searchParams.append('format', format);
 
-                console.log('Generando PDF con URL:', url.toString());
-
-                // Crear un enlace temporal para la descarga
                 const downloadLink = document.createElement('a');
                 downloadLink.href = url.toString();
                 downloadLink.target = '_blank';
                 downloadLink.style.display = 'none';
 
-                // Agregar al DOM y hacer click
                 document.body.appendChild(downloadLink);
                 downloadLink.click();
                 document.body.removeChild(downloadLink);
 
-                // Ocultar loading después de un breve delay
                 setTimeout(() => {
                     showLoading(false);
                 }, 2000);
@@ -486,8 +874,8 @@
                 });
             }
 
-            // Efectos visuales adicionales para botones
-            document.querySelectorAll('.modern-button').forEach(button => {
+            // Efectos visuales para botones
+            document.querySelectorAll('.modern-button, .action-btn, .export-btn, .chart-action-btn').forEach(button => {
                 button.addEventListener('mouseenter', function() {
                     this.style.transform = 'translateY(-2px)';
                 });
