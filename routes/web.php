@@ -158,4 +158,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
     Route::get('payouts/stats', [PayoutController::class, 'getStats'])->name('payouts.stats');
 });
 
+Route::prefix('admin')->group(function () {
+    Route::post('/toggle-two-factor', [AdminController::class, 'toggleTwoFactor'])->name('admin.toggleTwoFactor');
+    Route::post('/verify-two-factor', [AdminController::class, 'verifyTwoFactor'])->name('admin.verifyTwoFactor');
+    Route::post('/generate-backup-codes', [AdminController::class, 'generateNewBackupCodes'])->name('admin.generateBackupCodes');
+    Route::post('/update-notifications', [AdminController::class, 'updateNotificationPreferences'])->name('admin.updateNotifications');
+    Route::post('/update-dark-mode', [AdminController::class, 'updateDarkMode'])->name('admin.updateDarkMode');
+});
+
 require __DIR__ . '/auth.php';

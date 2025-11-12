@@ -4,8 +4,6 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-use function Laravel\Prompts\table;
-
 return new class extends Migration
 {
     /**
@@ -26,6 +24,10 @@ return new class extends Migration
             $table->text('two_factor_secret')->nullable();
             $table->text('two_factor_recovery_codes')->nullable();
             $table->boolean('two_factor_enabled')->default(false);
+
+            // --- Campos de Preferencias de Usuario ---
+            $table->boolean('notifications_enabled')->default(true);
+            $table->boolean('dark_mode_enabled')->default(false);
 
             // --- Información del Perfil ---
             $table->string('role')->default('comun');

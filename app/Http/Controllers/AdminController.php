@@ -2,23 +2,26 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ActivityLog;
-use App\Models\Sale;
-use App\Models\User;
-use App\Models\Order;
-use App\Models\Ally;
-use Carbon\Carbon;
-use Illuminate\Validation\ValidationException;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
+use Illuminate\Validation\ValidationException;
+use App\Models\User;
+use App\Models\Ally;
+use App\Models\Sale;
+use App\Models\ActivityLog;
 use App\Models\PageVisit;
+use Carbon\Carbon;
+use PragmaRX\Google2FA\Google2FA;
 
 class AdminController extends Controller
 {
+    protected $google2fa;
+
     public function __construct()
     {
-        //$this->middleware('auth'); // Puedes aplicar el middleware a todo el controlador
+        $this->google2fa = new Google2FA();
     }
 
     public function index()
@@ -26,21 +29,210 @@ class AdminController extends Controller
         $user = Auth::user();
         $role = $user->user_type;
 
-        $totalUsers = User::count();
-        $totalAllies = Ally::count();
-        $totalSales = Sale::sum('total_amount');
+        // Datos del dashboard
+        $dashboardData = $this->getDashboardData($user, $role);
+        $latestActivities = $this->getLatestActivities($user, $role);
 
-        // Obtener el número total de visitas desde tu tabla 'page_visits'
-        $pageViews = PageVisit::sum('visits_count');
+        return view('dashboard', array_merge($dashboardData, ['latestActivities' => $latestActivities]));
+    }
 
-        // Lógica para obtener las últimas actividades según el rol del usuario
+    public function settings()
+    {
+        $user = Auth::user();
+        
+        // Generar secreto para 2FA si no existe
+        if (!$user->two_factor_secret) {
+            $user->two_factor_secret = $this->google2fa->generateSecretKey();
+            $user->save();
+        }
+
+        // Generar QR Code
+        $qrCodeSvg = $this->generateQRCodeSvg($user);
+
+        return view('Admin.settings', compact('user', 'qrCodeSvg'));
+    }
+
+    public function changePassword(Request $request)
+    {
+        $user = Auth::user();
+
+        $validator = Validator::make($request->all(), [
+            'current_password' => [
+                'required',
+                'string',
+                function ($attribute, $value, $fail) use ($user) {
+                    if (!Hash::check($value, $user->password)) {
+                        $fail('La contraseña actual es incorrecta.');
+                    }
+                }
+            ],
+            'new_password' => 'required|string|min:8|confirmed|different:current_password',
+        ], [
+            'current_password.required' => 'Debes ingresar tu contraseña actual.',
+            'new_password.required' => 'Debes ingresar una nueva contraseña.',
+            'new_password.min' => 'La nueva contraseña debe tener al menos :min caracteres.',
+            'new_password.confirmed' => 'La confirmación de la nueva contraseña no coincide.',
+            'new_password.different' => 'La nueva contraseña no puede ser igual a la actual.',
+        ]);
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput();
+        }
+
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        return back()->with('success', '¡Tu contraseña ha sido cambiada exitosamente!');
+    }
+
+    /**
+     * Activar/Desactivar autenticación en dos pasos
+     */
+    public function toggleTwoFactor(Request $request)
+    {
+        $user = Auth::user();
+
+        $request->validate([
+            'enabled' => 'required|boolean',
+            'verification_code' => $request->enabled ? 'required|string' : 'nullable'
+        ]);
+
+        if ($request->enabled) {
+            // Verificar el código antes de activar
+            if (!$this->verifyTwoFactorCode($user, $request->verification_code)) {
+                return $this->jsonError('El código de verificación es inválido.');
+            }
+
+            $user->two_factor_enabled = true;
+            $user->save();
+
+            $backupCodes = $this->generateBackupCodes($user);
+
+            return $this->jsonSuccess(
+                'Autenticación en dos pasos activada correctamente.',
+                ['backup_codes' => $backupCodes]
+            );
+        } else {
+            $user->two_factor_enabled = false;
+            $user->save();
+
+            return $this->jsonSuccess('Autenticación en dos pasos desactivada correctamente.');
+        }
+    }
+
+    /**
+     * Verificar código de autenticación en dos pasos
+     */
+    public function verifyTwoFactor(Request $request)
+    {
+        $request->validate([
+            'verification_code' => 'required|string'
+        ]);
+
+        $user = Auth::user();
+        $valid = $this->verifyTwoFactorCode($user, $request->verification_code);
+
+        if ($valid) {
+            return $this->jsonSuccess('Código verificado correctamente.');
+        } else {
+            return $this->jsonError('El código de verificación es inválido.');
+        }
+    }
+
+    /**
+     * Generar nuevos códigos de respaldo
+     */
+    public function generateNewBackupCodes(Request $request)
+    {
+        $user = Auth::user();
+
+        if (!$user->two_factor_enabled) {
+            return $this->jsonError('La autenticación en dos pasos no está activada.');
+        }
+
+        $backupCodes = $this->generateBackupCodes($user);
+
+        return $this->jsonSuccess(
+            'Nuevos códigos de respaldo generados correctamente.',
+            ['backup_codes' => $backupCodes]
+        );
+    }
+
+    /**
+     * Actualizar preferencias de notificaciones
+     */
+    public function updateNotificationPreferences(Request $request)
+    {
+        $request->validate([
+            'notifications_enabled' => 'required|boolean'
+        ]);
+
+        Auth::user()->update([
+            'notifications_enabled' => $request->notifications_enabled
+        ]);
+
+        return $this->jsonSuccess('Preferencias de notificaciones actualizadas correctamente.');
+    }
+
+    /**
+     * Actualizar modo oscuro
+     */
+    public function updateDarkMode(Request $request)
+    {
+        $request->validate([
+            'dark_mode_enabled' => 'required|boolean'
+        ]);
+
+        Auth::user()->update([
+            'dark_mode_enabled' => $request->dark_mode_enabled
+        ]);
+
+        return $this->jsonSuccess('Preferencia de modo oscuro actualizada correctamente.');
+    }
+
+    /**
+     * ========== MÉTODOS PRIVADOS ==========
+     */
+
+    /**
+     * Obtener datos del dashboard
+     */
+    private function getDashboardData($user, $role)
+    {
+        $data = [
+            'totalUsers' => User::count(),
+            'totalAllies' => Ally::count(),
+            'totalSales' => Sale::sum('total_amount'),
+            'pageViews' => PageVisit::sum('visits_count'),
+            'todaySalesSpecific' => 0.00,
+            'customerSatisfaction' => 0,
+        ];
+
+        if ($role === 'admin') {
+            $data['todaySalesSpecific'] = Sale::whereDate('sale_date', Carbon::today())->sum('total');
+            $data['customerSatisfaction'] = 92;
+        } elseif ($role === 'aliado') {
+            $data['todaySalesSpecific'] = Sale::whereDate('sale_date', Carbon::today())
+                ->whereHas('product', fn($query) => $query->where('user_id', $user->id))
+                ->sum('total');
+            $data['customerSatisfaction'] = 88;
+        }
+
+        return $data;
+    }
+
+    /**
+     * Obtener actividades recientes
+     */
+    private function getLatestActivities($user, $role)
+    {
         $activityQuery = ActivityLog::latest()->limit(10);
 
         if ($role !== 'admin') {
             $activityQuery->where('user_id', $user->id);
         }
 
-        $latestActivities = $activityQuery->get()
+        return $activityQuery->get()
             ->map(fn($activity) => [
                 'activity' => $activity->description,
                 'user' => optional($activity->user)->name ?? 'N/A',
@@ -48,125 +240,111 @@ class AdminController extends Controller
                 'status' => ucfirst($activity->status),
                 'status_class' => $this->getStatusClass($activity->status)
             ]);
-
-        $todaySalesSpecific = 0.00;
-        $customerSatisfaction = 0;
-
-        if ($role === 'admin') {
-            $todaySalesSpecific = Sale::whereDate('sale_date', Carbon::today())->sum('total');
-            $customerSatisfaction = 92;
-        } elseif ($role === 'aliado') {
-            $todaySalesSpecific = Sale::whereDate('sale_date', Carbon::today())
-                ->whereHas('product', fn($query) => $query->where('user_id', $user->id))
-                ->sum('total');
-            $customerSatisfaction = 88;
-        }
-
-        return view('dashboard', compact(
-            'totalUsers',
-            'pageViews',
-            'totalSales',
-            'latestActivities',
-            'todaySalesSpecific',
-            'customerSatisfaction',
-            'totalAllies'
-        ));
     }
 
     /**
-     * Helper method to get status class for activities.
-     * This method would typically be defined within the controller or a trait.
+     * Generar QR Code como SVG
      */
-    private function getStatusClass(string $status): string
+    private function generateQRCodeSvg($user)
     {
-        return match ($status) {
-            'success' => 'bg-green-100 text-green-800',
-            'pending' => 'bg-yellow-100 text-yellow-800',
-            'failed' => 'bg-red-100 text-red-800',
-            default => 'bg-gray-100 text-gray-800',
-        };
-    }
-    public function reports(Request $request)
-    {
-        // Obtener fechas del request o usar valores por defecto
-        $startDate = $request->input('startDate', Carbon::now()->startOfYear()->toDateString());
-        $endDate = $request->input('endDate', Carbon::now()->endOfYear()->toDateString());
+        $companyName = config('app.name', 'TuAplicación');
+        
+        $qrCodeUrl = $this->google2fa->getQRCodeUrl(
+            $companyName,
+            $user->email,
+            $user->two_factor_secret
+        );
 
-        // Obtener datos de ventas por mes
-        $salesDataRaw = Order::selectRaw('
-                DATE_FORMAT(created_at, "%Y-%m") as month,
-                SUM(total) as total_sales
-            ')
-            ->whereBetween('created_at', [$startDate . ' 00:00:00', $endDate . ' 23:59:59'])
-            ->groupBy('month')
-            ->orderBy('month')
-            ->get();
-
-        $labels = [];
-        $data = [];
-
-        // Generar un rango de meses para asegurar que todos los meses en el rango estén en las etiquetas,
-        // incluso si no hay ventas en ellos.
-        $start = Carbon::parse($startDate)->startOfMonth();
-        $end = Carbon::parse($endDate)->endOfMonth();
-
-        while ($start->lte($end)) {
-            $monthKey = $start->format('Y-m');
-            $labels[] = $start->translatedFormat('M Y'); // Ene 2024, Feb 2024
-            $data[$monthKey] = 0; // Inicializar en 0
-            $start->addMonth();
-        }
-
-        // Llenar los datos con las ventas reales
-        foreach ($salesDataRaw as $sale) {
-            $data[$sale->month] = $sale->total_sales;
-        }
-
-        // Convertir el array asociativo a un array indexado para Chart.js
-        $chartData = array_values($data);
-
-        return view('Admin.reportes', compact('labels', 'chartData', 'startDate', 'endDate'));
+        // Usar un servicio online para generar el QR
+        $qrCodeImageUrl = "https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=" . urlencode($qrCodeUrl);
+        
+        return '<img src="' . $qrCodeImageUrl . '" alt="QR Code para 2FA" style="width: 200px; height: 200px;">';
     }
 
-    public function settings()
+    /**
+     * Verificar código 2FA
+     */
+    private function verifyTwoFactorCode($user, $code)
     {
-        $user = Auth::user();
-
-        $darkModeEnabled = $user->dark_mode_enabled ?? false;
-
-        return view('Admin.settings', compact('user', 'darkModeEnabled'));
-    }
-    public function changePassword(Request $request)
-    {
-        $user = Auth::user();
-
-        // 1. Validar las credenciales
-        try {
-            $request->validate([
-                'current_password' => ['required', 'string', function ($attribute, $value, $fail) use ($user) {
-                    if (!Hash::check($value, $user->password)) {
-                        $fail('La contraseña actual es incorrecta.');
-                    }
-                }],
-                'new_password' => ['required', 'string', 'min:8', 'confirmed', 'different:current_password'],
-            ], [
-                'current_password.required' => 'Debes ingresar tu contraseña actual.',
-                'new_password.required' => 'Debes ingresar una nueva contraseña.',
-                'new_password.min' => 'La nueva contraseña debe tener al menos :min caracteres.',
-                'new_password.confirmed' => 'La confirmación de la nueva contraseña no coincide.',
-                'new_password.different' => 'La nueva contraseña no puede ser igual a la actual.',
-            ]);
-        } catch (ValidationException $e) {
-            return back()->withErrors($e->validator->errors())->withInput();
+        // Primero verificar si es un código de respaldo
+        if ($this->verifyBackupCode($user, $code)) {
+            return true;
         }
 
-        // 2. Actualizar la contraseña
-        $user->password = Hash::make($request->input('new_password'));
+        // Luego verificar con Google Authenticator
+        return $this->google2fa->verifyKey($user->two_factor_secret, $code);
+    }
+
+    /**
+     * Verificar código de respaldo
+     */
+    private function verifyBackupCode($user, $code)
+    {
+        $backupCodes = json_decode($user->two_factor_recovery_codes ?? '[]', true);
+
+        foreach ($backupCodes as $index => $backupCode) {
+            if (hash_equals($backupCode['code'], $code) && !$backupCode['used']) {
+                // Marcar código como usado
+                $backupCodes[$index]['used'] = true;
+                $user->two_factor_recovery_codes = json_encode($backupCodes);
+                $user->save();
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Generar códigos de respaldo
+     */
+    private function generateBackupCodes($user)
+    {
+        $backupCodes = [];
+
+        for ($i = 0; $i < 8; $i++) {
+            $backupCodes[] = [
+                'code' => strtoupper(bin2hex(random_bytes(5))), // Código de 10 caracteres
+                'used' => false
+            ];
+        }
+
+        $user->two_factor_recovery_codes = json_encode($backupCodes);
         $user->save();
 
-        // 3. Opcional: Re-autenticar al usuario para invalidar sesiones antiguas
-        // Auth::guard('web')->logoutOtherDevices($request->input('new_password'));
+        return array_column($backupCodes, 'code');
+    }
 
-        return back()->with('success', '¡Tu contraseña ha sido cambiada exitosamente!');
+    /**
+     * Respuestas JSON estandarizadas
+     */
+    private function jsonSuccess($message, $data = [])
+    {
+        return response()->json(array_merge([
+            'success' => true,
+            'message' => $message
+        ], $data));
+    }
+
+    private function jsonError($message, $errors = [], $code = 422)
+    {
+        return response()->json([
+            'success' => false,
+            'message' => $message,
+            'errors' => $errors
+        ], $code);
+    }
+
+    /**
+     * Obtener clase CSS para el estado
+     */
+    private function getStatusClass($status)
+    {
+        return match ($status) {
+            'completed' => 'success',
+            'pending' => 'warning',
+            'failed' => 'danger',
+            default => 'secondary'
+        };
     }
 }
