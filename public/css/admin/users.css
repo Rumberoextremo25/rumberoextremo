@@ -25,6 +25,8 @@ body {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
     max-width: 1200px;
     margin: 40px auto;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .section-title {
@@ -51,6 +53,7 @@ body {
     align-items: center;
     gap: 15px;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
+    min-width: 0; /* Permite que se ajuste */
 }
 
 .stat-card:hover {
@@ -67,6 +70,7 @@ body {
     justify-content: center;
     font-size: 20px;
     color: white;
+    flex-shrink: 0; /* Evita que el icono se reduzca */
 }
 
 .stat-icon.total { background: #6c757d; }
@@ -77,17 +81,21 @@ body {
 .stat-info {
     display: flex;
     flex-direction: column;
+    min-width: 0; /* Permite que el texto se ajuste */
+    flex: 1; /* Ocupa el espacio disponible */
 }
 
 .stat-number {
     font-size: 24px;
     font-weight: bold;
     color: #333;
+    line-height: 1.2;
 }
 
 .stat-label {
     font-size: 14px;
     color: #666;
+    line-height: 1.3;
 }
 
 .add-button-wrapper {
@@ -107,6 +115,9 @@ body {
     align-items: center;
     gap: 8px;
     transition: background-color 0.2s ease-in-out;
+    border: none;
+    cursor: pointer;
+    white-space: nowrap;
 }
 
 .add-user-btn:hover {
@@ -123,6 +134,7 @@ body {
     background-color: #FFFFFF;
     border-radius: 12px;
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.04);
+    width: 100%;
 }
 
 .data-table {
@@ -131,6 +143,7 @@ body {
     border-spacing: 0;
     border-radius: 12px;
     overflow: hidden;
+    min-width: 800px; /* Ancho mínimo para mantener la estructura */
 }
 
 .data-table thead {
@@ -143,6 +156,7 @@ body {
     padding: 18px 24px;
     text-align: left;
     border-bottom: 1px solid var(--table-border, #d1d5db);
+    white-space: nowrap; /* Evita que el texto se rompa */
 }
 
 .data-table th {
@@ -174,6 +188,7 @@ body {
     font-weight: 600;
     text-transform: capitalize;
     display: inline-block;
+    white-space: nowrap;
 }
 
 .badge-status-activo {
@@ -213,28 +228,12 @@ body {
     color: #581c87;
 }
 
-/* Grupos de acción - Versión normal */
+/* Grupos de acción */
 .action-group {
     display: flex;
     align-items: center;
     gap: 8px;
-}
-
-/* Grupos de acción - Versión compacta (botones más pequeños) */
-.action-group.compact {
-    display: flex;
-    gap: 5px;
-    justify-content: center;
-}
-
-.action-group.compact .action-btn {
-    width: 30px;
-    height: 30px;
-    font-size: 12px;
-    padding: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    flex-wrap: nowrap; /* Evita que los botones se rompan */
 }
 
 .action-btn {
@@ -250,6 +249,8 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    min-width: 32px; /* Tamaño mínimo táctil */
+    min-height: 32px;
 }
 
 .action-btn:hover {
@@ -257,7 +258,6 @@ body {
     transform: translateY(-1px);
 }
 
-/* Opcional: Estilos para iconos específicos al pasar el mouse */
 .action-btn.view:hover { 
     color: #3b82f6; 
     background-color: #dbeafe;
@@ -285,6 +285,8 @@ body {
     z-index: 1000;
     align-items: center;
     justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
 }
 
 .modal-overlay.active {
@@ -297,13 +299,14 @@ body {
     border-radius: 12px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
     max-width: 400px;
-    width: 90%;
+    width: 100%;
     text-align: center;
 }
 
 .modal-content h3 {
     margin-bottom: 15px;
     color: var(--dark-text, #1f2937);
+    font-size: 20px;
 }
 
 .modal-content p {
@@ -316,6 +319,7 @@ body {
     display: flex;
     gap: 12px;
     justify-content: center;
+    flex-wrap: wrap;
 }
 
 .btn-cancel, .btn-confirm {
@@ -325,6 +329,8 @@ body {
     font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
+    min-width: 100px;
+    flex: 1;
 }
 
 .btn-cancel {
@@ -357,42 +363,117 @@ body {
     margin: 0;
 }
 
-/* ------------------- MEDIA QUERIES PARA LA RESPONSIVIDAD ------------------- */
-@media (max-width: 992px) {
+/* ------------------- MEDIA QUERIES MEJORADAS ------------------- */
+
+/* Tablets (768px - 1024px) */
+@media (max-width: 1024px) {
     .users-section-container {
         padding: 24px;
-        margin: 20px auto;
+        margin: 30px 20px;
+        max-width: none;
     }
     
     .user-stats-container {
         grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
     }
     
     .data-table th, .data-table td {
-        padding: 14px 18px;
+        padding: 14px 16px;
     }
     
     .stat-card {
-        padding: 15px;
+        padding: 16px;
+    }
+    
+    .stat-number {
+        font-size: 22px;
+    }
+    
+    .section-title {
+        font-size: 22px;
+    }
+}
+
+/* Tablets pequeñas (768px y menos) */
+@media (max-width: 768px) {
+    .users-section-container {
+        padding: 20px;
+        margin: 20px 15px;
+        border-radius: 10px;
+    }
+    
+    .user-stats-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    
+    .stat-card {
+        padding: 14px;
+        gap: 12px;
+    }
+    
+    .stat-icon {
+        width: 45px;
+        height: 45px;
+        font-size: 18px;
     }
     
     .stat-number {
         font-size: 20px;
     }
+    
+    .stat-label {
+        font-size: 13px;
+    }
+    
+    .add-button-wrapper {
+        justify-content: stretch;
+    }
+    
+    .add-user-btn {
+        width: 100%;
+        justify-content: center;
+        padding: 14px 20px;
+    }
+    
+    .section-title {
+        font-size: 20px;
+        text-align: center;
+        margin-bottom: 20px;
+    }
+    
+    .data-table {
+        min-width: 700px; /* Reduce ligeramente el ancho mínimo */
+    }
+    
+    .data-table th, .data-table td {
+        padding: 12px 14px;
+        font-size: 14px;
+    }
+    
+    .badge {
+        padding: 3px 10px;
+        font-size: 11px;
+    }
 }
 
+/* Móviles grandes (576px y menos) */
 @media (max-width: 576px) {
     .users-section-container {
         padding: 16px;
-        margin: 10px auto;
+        margin: 15px 10px;
+        border-radius: 8px;
     }
     
     .user-stats-container {
         grid-template-columns: 1fr;
+        gap: 8px;
     }
     
     .stat-card {
         padding: 12px;
+        gap: 10px;
     }
     
     .stat-icon {
@@ -405,62 +486,169 @@ body {
         font-size: 18px;
     }
     
-    .add-button-wrapper {
-        justify-content: center;
-    }
-    
-    .add-user-btn {
-        width: 100%;
-        justify-content: center;
-    }
-    
-    .data-table thead {
-        display: none;
-    }
-    
-    .data-table, .data-table tbody, .data-table tr, .data-table td {
-        display: block;
-        width: 100%;
-    }
-    
-    .data-table tr {
-        margin-bottom: 16px;
-        border: 1px solid var(--table-border, #d1d5db);
-        border-radius: 12px;
-        overflow: hidden;
-    }
-    
-    .data-table td {
-        text-align: right;
-        padding: 12px 20px;
-        border-bottom: 1px solid #f3f4f6;
-        position: relative;
-    }
-    
-    .data-table td:last-child {
-        border-bottom: none;
-    }
-    
-    .data-table td::before {
-        content: attr(data-label);
-        position: absolute;
-        left: 20px;
-        font-weight: 600;
-        text-transform: capitalize;
-        color: var(--dark-text, #1f2937);
+    .stat-label {
         font-size: 12px;
     }
     
-    .action-group.compact {
-        justify-content: flex-end;
+    .section-title {
+        font-size: 18px;
+        margin-bottom: 16px;
+    }
+    
+    .data-table {
+        min-width: 650px; /* Mantiene la estructura pero más compacta */
+    }
+    
+    .data-table th, .data-table td {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+    
+    .action-group {
+        gap: 6px;
+    }
+    
+    .action-btn {
+        padding: 6px;
+        font-size: 13px;
+        min-width: 28px;
+        min-height: 28px;
     }
     
     .modal-content {
-        padding: 20px;
-        margin: 20px;
+        padding: 24px 20px;
+        margin: 10px;
+    }
+    
+    .modal-content h3 {
+        font-size: 18px;
     }
     
     .modal-buttons {
         flex-direction: column;
+        gap: 10px;
     }
+    
+    .btn-cancel, .btn-confirm {
+        padding: 12px 20px;
+        min-width: auto;
+    }
+}
+
+/* Móviles pequeños (360px y menos) */
+@media (max-width: 360px) {
+    .users-section-container {
+        padding: 12px;
+        margin: 10px 8px;
+    }
+    
+    .stat-card {
+        padding: 10px;
+        flex-direction: column;
+        text-align: center;
+        gap: 8px;
+    }
+    
+    .stat-info {
+        align-items: center;
+    }
+    
+    .stat-icon {
+        width: 35px;
+        height: 35px;
+        font-size: 14px;
+    }
+    
+    .stat-number {
+        font-size: 16px;
+    }
+    
+    .stat-label {
+        font-size: 11px;
+    }
+    
+    .add-user-btn {
+        padding: 12px 16px;
+        font-size: 14px;
+    }
+    
+    .section-title {
+        font-size: 16px;
+    }
+    
+    .data-table {
+        min-width: 600px; /* Más compacto para pantallas muy pequeñas */
+    }
+    
+    .data-table th, .data-table td {
+        padding: 8px 10px;
+        font-size: 12px;
+    }
+    
+    .badge {
+        padding: 2px 8px;
+        font-size: 10px;
+    }
+    
+    .action-btn {
+        padding: 4px;
+        font-size: 12px;
+    }
+}
+
+/* Pantallas grandes (más de 1200px) */
+@media (min-width: 1200px) {
+    .users-section-container {
+        margin: 40px auto;
+        max-width: 1200px;
+    }
+    
+    .user-stats-container {
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+    }
+    
+    .stat-card {
+        padding: 24px;
+    }
+}
+
+/* Mejoras de accesibilidad */
+@media (prefers-reduced-motion: reduce) {
+    .stat-card,
+    .action-btn,
+    .add-user-btn {
+        transition: none;
+    }
+    
+    .stat-card:hover,
+    .action-btn:hover {
+        transform: none;
+    }
+}
+
+/* Mejorar legibilidad en móviles */
+@media (max-width: 768px) {
+    body {
+        font-size: 14px;
+    }
+}
+
+/* Scroll suave para tablas en móviles */
+.table-wrapper {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+}
+
+.table-wrapper::-webkit-scrollbar {
+    height: 6px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.table-wrapper::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
 }
