@@ -24,12 +24,14 @@ body {
 .admin-sidebar {
    /* El ancho del sidebar se define aquí y es clave para el layout. */
    width: 80px;
-   height: 80vh;
+   height: 100vh;
    background-color: #1A123C;
    flex-shrink: 0;
    position: fixed;
    left: 0;
    top: 0;
+   transition: all 0.3s ease;
+   z-index: 1000;
 }
 
 .sidebar-header {
@@ -42,7 +44,9 @@ body {
     height: auto;
     margin-bottom: 15px;
     margin-top: 23px;
-    margin-left: 30px; /* Adjust this value to move it left. Use a positive value to move it right. */
+    margin-left: 30px;
+    max-width: 100%;
+    transition: all 0.3s ease;
 }
 
 /* =========================================================================
@@ -52,12 +56,14 @@ body {
 .main-content {
    /* El "margin-left" debe coincidir con el "width" del sidebar
        para evitar que el contenido se superponga. */
-   margin-left: 30px;
+   margin-left: 80px;
    flex-grow: 1;
    display: flex;
    flex-direction: column;
    /* Elimino el padding del main-content para que el page-content lo maneje */
    padding: 0;
+   transition: margin-left 0.3s ease;
+   width: calc(100% - 80px);
 }
 
 /* =========================================================================
@@ -71,8 +77,26 @@ body {
    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
    display: flex;
    align-items: center;
-   justify-content: flex-end;
+   justify-content: space-between;
    padding: 0 1rem;
+   position: sticky;
+   top: 0;
+   z-index: 999;
+}
+
+.toolbar-left {
+   display: flex;
+   align-items: center;
+}
+
+.menu-toggle {
+   display: none;
+   background: none;
+   border: none;
+   font-size: 1.5rem;
+   cursor: pointer;
+   color: #1A123C;
+   margin-right: 1rem;
 }
 
 /* =========================================================================
@@ -84,4 +108,132 @@ body {
    padding: 2.5rem;
    flex-grow: 1;
    /* Permite que el contenido ocupe todo el espacio vertical disponible */
+}
+
+/* =========================================================================
+   Media Queries para Responsive Design
+   ========================================================================= */
+
+/* Tablets (768px - 1024px) */
+@media (max-width: 1024px) {
+   .admin-sidebar {
+      width: 70px;
+      transform: translateX(0);
+   }
+   
+   .main-content {
+      margin-left: 70px;
+      width: calc(100% - 70px);
+   }
+   
+   .logo-image {
+      width: 180px;
+      margin-left: 20px;
+   }
+   
+   .page-content {
+      padding: 2rem;
+   }
+}
+
+/* Tablets pequeñas y móviles grandes (576px - 768px) */
+@media (max-width: 768px) {
+   .admin-sidebar {
+      width: 250px;
+      transform: translateX(-100%);
+   }
+   
+   .admin-sidebar.active {
+      transform: translateX(0);
+   }
+   
+   .main-content {
+      margin-left: 0;
+      width: 100%;
+   }
+   
+   .main-content.sidebar-active {
+      margin-left: 0;
+   }
+   
+   .menu-toggle {
+      display: block;
+   }
+   
+   .page-content {
+      padding: 1.5rem;
+   }
+   
+   .logo-image {
+      width: 200px;
+      margin-left: 25px;
+   }
+}
+
+/* Móviles (hasta 576px) */
+@media (max-width: 576px) {
+   .admin-sidebar {
+      width: 100%;
+   }
+   
+   .logo-image {
+      width: 180px;
+      margin-left: 0;
+      text-align: center;
+   }
+   
+   .page-content {
+      padding: 1rem;
+   }
+   
+   .admin-toolbar {
+      height: 50px;
+      padding: 0 0.75rem;
+   }
+}
+
+/* Pantallas muy pequeñas (hasta 360px) */
+@media (max-width: 360px) {
+   .page-content {
+      padding: 0.75rem;
+   }
+   
+   .admin-toolbar {
+      padding: 0 0.5rem;
+   }
+}
+
+/* Pantallas grandes (más de 1200px) */
+@media (min-width: 1200px) {
+   .admin-sidebar {
+      width: 90px;
+   }
+   
+   .main-content {
+      margin-left: 90px;
+      width: calc(100% - 90px);
+   }
+   
+   .page-content {
+      padding: 3rem;
+   }
+}
+
+/* Mejoras de accesibilidad y usabilidad */
+@media (hover: hover) {
+   .menu-toggle:hover {
+      opacity: 0.7;
+   }
+}
+
+/* Prevenir zoom en inputs en iOS */
+@media (max-width: 768px) {
+   input, select, textarea {
+      font-size: 16px;
+   }
+}
+
+/* Mejorar scroll en dispositivos táctiles */
+.admin-sidebar {
+   -webkit-overflow-scrolling: touch;
 }
