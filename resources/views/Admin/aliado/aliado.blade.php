@@ -9,6 +9,133 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/admin/aliados.css') }}">
+    <style>
+        /* Estilos para la paginación moderna */
+        .pagination-modern {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            border: 1px solid #e9ecef;
+        }
+
+        .pagination-info {
+            color: #6c757d;
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+
+        .pagination-links {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .pagination-links .pagination {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            gap: 0.25rem;
+        }
+
+        .pagination-links .page-item {
+            margin: 0;
+        }
+
+        .pagination-links .page-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 44px;
+            height: 44px;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #e9ecef;
+            border-radius: 10px;
+            color: #495057;
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            background-color: #fff;
+            font-weight: 500;
+            font-size: 0.9rem;
+        }
+
+        .pagination-links .page-link:hover {
+            background-color: #f8f9fa;
+            border-color: #007bff;
+            color: #007bff;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 8px rgba(0,123,255,0.15);
+        }
+
+        .pagination-links .page-item.active .page-link {
+            background: linear(135deg, #007bff, #0056b3);
+            border-color: #007bff;
+            color: white;
+            box-shadow: 0 4px 12px rgba(0,123,255,0.3);
+        }
+
+        .pagination-links .page-item.disabled .page-link {
+            color: #adb5bd;
+            pointer-events: none;
+            background-color: #f8f9fa;
+            border-color: #e9ecef;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .pagination-links .page-link:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(0,123,255,0.25);
+        }
+
+        /* Iconos en botones de paginación */
+        .pagination-links .page-link i {
+            font-size: 0.8rem;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .pagination-modern {
+                flex-direction: column;
+                gap: 1rem;
+                text-align: center;
+            }
+            
+            .pagination-links {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .pagination-links .pagination {
+                flex-wrap: wrap;
+            }
+            
+            .pagination-links .page-link {
+                min-width: 40px;
+                height: 40px;
+                padding: 0.4rem 0.6rem;
+                font-size: 0.85rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .pagination-links .page-link {
+                min-width: 36px;
+                height: 36px;
+                padding: 0.3rem 0.5rem;
+                font-size: 0.8rem;
+            }
+            
+            .pagination-info {
+                font-size: 0.85rem;
+            }
+        }
+    </style>
 @endpush
 
 @section('content')
@@ -76,7 +203,7 @@
                 <div class="table-stats">
                     <span class="stat-badge">
                         <i class="fas fa-users"></i>
-                        Total: {{ $allies->count() }} aliados
+                        Total: {{ $allies->total() }} aliados
                     </span>
                 </div>
             </div>
@@ -191,14 +318,88 @@
             </div>
         </div>
 
-        {{-- Paginación --}}
+        {{-- Paginación Mejorada --}}
         @if($allies->hasPages())
             <div class="pagination-modern">
                 <div class="pagination-info">
-                    Mostrando {{ $allies->firstItem() }} - {{ $allies->lastItem() }} de {{ $allies->total() }} aliados
+                    Mostrando {{ $allies->firstItem() ?? 0 }} - {{ $allies->lastItem() ?? 0 }} de {{ $allies->total() }} aliados
                 </div>
+                
                 <div class="pagination-links">
-                    {{ $allies->links() }}
+                    <ul class="pagination">
+                        {{-- Enlace Anterior --}}
+                        @if ($allies->onFirstPage())
+                            <li class="page-item disabled">
+                                <span class="page-link">
+                                    <i class="fas fa-chevron-left"></i>
+                                </span>
+                            </li>
+                        @else
+                            <li class="page-item">
+                                <a class="page-link" href="{{ $allies->previousPageUrl() }}" rel="prev">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+                        @endif
+
+                        {{-- Enlaces de Páginas --}}
+                        @php
+                            $current = $allies->currentPage();
+                            $last = $allies->lastPage();
+                            $start = max(1, $current - 2);
+                            $end = min($last, $current + 2);
+                        @endphp
+
+                        {{-- Primera página --}}
+                        @if ($start > 1)
+                            <li class="page-item">
+                                <a class="page-link" href="{{ $allies->url(1) }}">1</a>
+                            </li>
+                            @if ($start > 2)
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                            @endif
+                        @endif
+
+                        {{-- Rango de páginas --}}
+                        @for ($i = $start; $i <= $end; $i++)
+                            <li class="page-item {{ $i == $current ? 'active' : '' }}">
+                                @if ($i == $current)
+                                    <span class="page-link">{{ $i }}</span>
+                                @else
+                                    <a class="page-link" href="{{ $allies->url($i) }}">{{ $i }}</a>
+                                @endif
+                            </li>
+                        @endfor
+
+                        {{-- Última página --}}
+                        @if ($end < $last)
+                            @if ($end < $last - 1)
+                                <li class="page-item disabled">
+                                    <span class="page-link">...</span>
+                                </li>
+                            @endif
+                            <li class="page-item">
+                                <a class="page-link" href="{{ $allies->url($last) }}">{{ $last }}</a>
+                            </li>
+                        @endif
+
+                        {{-- Enlace Siguiente --}}
+                        @if ($allies->hasMorePages())
+                            <li class="page-item">
+                                <a class="page-link" href="{{ $allies->nextPageUrl() }}" rel="next">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        @else
+                            <li class="page-item disabled">
+                                <span class="page-link">
+                                    <i class="fas fa-chevron-right"></i>
+                                </span>
+                            </li>
+                        @endif
+                    </ul>
                 </div>
             </div>
         @endif
@@ -208,7 +409,7 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Búsqueda en tiempo real
+        // Búsqueda en tiempo real (solo para los datos visibles en la página actual)
         const searchInput = document.getElementById('searchInput');
         const tableRows = document.querySelectorAll('.modern-data-table tbody tr');
         
@@ -226,6 +427,8 @@
                         row.style.display = 'none';
                     }
                 });
+                
+                updateResultsCount();
             });
         }
 
@@ -239,10 +442,12 @@
         }, 5000);
 
         // Efectos hover en botones
-        document.querySelectorAll('.action-btn, .modern-primary-btn').forEach(btn => {
+        document.querySelectorAll('.action-btn, .modern-primary-btn, .page-link').forEach(btn => {
             if (btn) {
                 btn.addEventListener('mouseenter', function() {
-                    this.style.transform = 'translateY(-2px)';
+                    if (!this.classList.contains('disabled') && !this.classList.contains('active')) {
+                        this.style.transform = 'translateY(-2px)';
+                    }
                 });
                 
                 btn.addEventListener('mouseleave', function() {
@@ -267,7 +472,7 @@
             });
         }
 
-        // Contador de resultados filtrados
+        // Contador de resultados filtrados (solo para la página actual)
         function updateResultsCount() {
             const visibleRows = Array.from(tableRows).filter(row => 
                 row.style.display !== 'none' && !row.classList.contains('empty-state')
@@ -275,15 +480,18 @@
             
             const statBadge = document.querySelector('.stat-badge');
             if (statBadge && searchInput.value.trim()) {
-                statBadge.innerHTML = `<i class="fas fa-users"></i> Mostrando: ${visibleRows} de {{ $allies->count() }} aliados`;
+                statBadge.innerHTML = `<i class="fas fa-users"></i> Mostrando: ${visibleRows} de {{ $allies->count() }} aliados en esta página`;
             } else if (statBadge) {
-                statBadge.innerHTML = `<i class="fas fa-users"></i> Total: {{ $allies->count() }} aliados`;
+                statBadge.innerHTML = `<i class="fas fa-users"></i> Total: {{ $allies->total() }} aliados`;
             }
         }
 
         if (searchInput) {
             searchInput.addEventListener('input', updateResultsCount);
         }
+
+        // Inicializar contador
+        updateResultsCount();
     });
 </script>
 @endpush

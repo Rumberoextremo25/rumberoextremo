@@ -7,6 +7,89 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/admin/users.css') }}">
+    <style>
+        /* Estilos adicionales para la paginación */
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin-top: 2rem;
+            padding: 1rem;
+            gap: 1rem;
+        }
+
+        .pagination-info {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+
+        .pagination {
+            display: flex;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            gap: 0.5rem;
+        }
+
+        .pagination .page-item {
+            margin: 0;
+        }
+
+        .pagination .page-link {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 40px;
+            height: 40px;
+            padding: 0.5rem 0.75rem;
+            border: 1px solid #dee2e6;
+            border-radius: 0.375rem;
+            color: #0d6efd;
+            text-decoration: none;
+            transition: all 0.2s ease-in-out;
+            background-color: white;
+        }
+
+        .pagination .page-link:hover {
+            background-color: #e9ecef;
+            border-color: #dee2e6;
+        }
+
+        .pagination .page-item.active .page-link {
+            background-color: #0d6efd;
+            border-color: #0d6efd;
+            color: white;
+        }
+
+        .pagination .page-item.disabled .page-link {
+            color: #6c757d;
+            pointer-events: none;
+            background-color: #f8f9fa;
+        }
+
+        .pagination .page-link:focus {
+            box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+        }
+
+        @media (max-width: 768px) {
+            .pagination-container {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            
+            .pagination {
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .pagination .page-link {
+                min-width: 35px;
+                height: 35px;
+                padding: 0.4rem 0.6rem;
+                font-size: 0.875rem;
+            }
+        }
+    </style>
 @endsection
 
 @section('content')
@@ -29,7 +112,7 @@
                     <i class="fas fa-users"></i>
                 </div>
                 <div class="stat-info">
-                    <span class="stat-number">{{ $users->count() }}</span>
+                    <span class="stat-number">{{ $totalUsersCount ?? $users->total() }}</span>
                     <span class="stat-label">Total Usuarios</span>
                 </div>
             </div>
@@ -38,7 +121,7 @@
                     <i class="fas fa-user-check"></i>
                 </div>
                 <div class="stat-info">
-                    <span class="stat-number">{{ $users->where('status', 'activo')->count() }}</span>
+                    <span class="stat-number">{{ $activeUsersCount ?? $users->where('status', 'activo')->count() }}</span>
                     <span class="stat-label">Activos</span>
                 </div>
             </div>
@@ -47,7 +130,7 @@
                     <i class="fas fa-user-slash"></i>
                 </div>
                 <div class="stat-info">
-                    <span class="stat-number">{{ $users->where('status', 'inactivo')->count() }}</span>
+                    <span class="stat-number">{{ $inactiveUsersCount ?? $users->where('status', 'inactivo')->count() }}</span>
                     <span class="stat-label">Inactivos</span>
                 </div>
             </div>
@@ -56,7 +139,7 @@
                     <i class="fas fa-user-clock"></i>
                 </div>
                 <div class="stat-info">
-                    <span class="stat-number">{{ $users->where('status', 'pendiente')->count() }}</span>
+                    <span class="stat-number">{{ $pendingUsersCount ?? $users->where('status', 'pendiente')->count() }}</span>
                     <span class="stat-label">Pendientes</span>
                 </div>
             </div>
@@ -91,7 +174,6 @@
                         @foreach ($users as $user)
                             <tr>
                                 <td data-label="ID" class="user-id">{{ $user->id }}</td>
-                                {{-- CORRECCIÓN: Cambiar $user->name por $user->firstname . ' ' . $user->lastname --}}
                                 <td data-label="Nombre">{{ $user->firstname }} {{ $user->lastname }}</td>
                                 <td data-label="Email">{{ $user->email }}</td>
                                 <td data-label="Tipo">
@@ -143,6 +225,62 @@
                         @endforeach
                     </tbody>
                 </table>
+            </div>
+
+            {{-- PAGINACIÓN --}}
+            <div class="pagination-container">
+                {{-- Información de la paginación --}}
+                <div class="pagination-info">
+                    Mostrando {{ $users->firstItem() ?? 0 }} - {{ $users->lastItem() ?? 0 }} de {{ $users->total() }} usuarios
+                </div>
+
+                {{-- Links de paginación --}}
+                @if ($users->hasPages())
+                    <ul class="pagination">
+                        {{-- Enlace anterior --}}
+                        @if ($users->onFirstPage())
+                            <li class="page-item disabled">
+                                <span class="page-link">
+                                    <i class="fas fa-chevron-left"></i>
+                                </span>
+                            </li>
+                        @else
+                            <li class="page-item">
+                                <a class="page-link" href="{{ $users->previousPageUrl() }}" rel="prev">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            </li>
+                        @endif
+
+                        {{-- Enlaces de páginas --}}
+                        @foreach ($users->getUrlRange(1, $users->lastPage()) as $page => $url)
+                            @if ($page == $users->currentPage())
+                                <li class="page-item active">
+                                    <span class="page-link">{{ $page }}</span>
+                                </li>
+                            @else
+                                <li class="page-item">
+                                    <a class="page-link" href="{{ $url }}">{{ $page }}</a>
+                                </li>
+                            @endif
+                        @endforeach
+
+                        {{-- Enlace siguiente --}}
+                        @if ($users->hasMorePages())
+                            <li class="page-item">
+                                <a class="page-link" href="{{ $users->nextPageUrl() }}" rel="next">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            </li>
+                        @else
+                            <li class="page-item disabled">
+                                <span class="page-link">
+                                    <i class="fas fa-chevron-right"></i>
+                                </span>
+                            </li>
+                        @endif
+                    </ul>
+                @endif
             </div>
         @endif
     </div>
