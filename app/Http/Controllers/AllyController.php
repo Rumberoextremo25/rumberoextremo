@@ -26,7 +26,7 @@ class AllyController extends Controller
         // Cambiar get() por paginate() para tener paginación
         $allies = Ally::with('category', 'subCategory', 'businessType', 'user')
                      ->orderBy('created_at', 'desc')
-                     ->paginate(10); // 10 items por página
+                     ->paginate(5); // 5 items por página
         
         return view('Admin.aliado.aliado', compact('allies'));
     }

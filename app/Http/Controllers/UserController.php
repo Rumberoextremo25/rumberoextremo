@@ -15,7 +15,7 @@ class UserController extends Controller
     public function usersIndex()
     {
         $users = User::all();
-        $users = User::paginate(10); // 10 usuarios por página
+        $users = User::paginate(5); // 5 usuarios por página
         // Asegúrate de que la vista exista en resources/views/Admin/usuario/users.blade.php
         return view('Admin.usuario.users', compact('users'));
     }
