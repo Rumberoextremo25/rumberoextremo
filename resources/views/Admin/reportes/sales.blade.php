@@ -141,6 +141,42 @@
                             <option value="daily" {{ $reportType == 'daily' ? 'selected' : '' }}>Vista Diaria</option>
                         </select>
                     </div>
+
+                    {{-- Filtro por Aliado (Solo para administradores) --}}
+                    @if ($userRole === 'admin' || $userRole === 'administrador')
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <i class="fas fa-handshake"></i>
+                            Filtrar por Aliado
+                        </label>
+                        <select id="allyFilter" class="form-select">
+                            <option value="">Todos los Aliados</option>
+                            @foreach($allies ?? [] as $ally)
+                                <option value="{{ $ally->id }}" 
+                                    {{ ($selectedAllyId ?? '') == $ally->id ? 'selected' : '' }}>
+                                    {{ $ally->company_name }} - {{ $ally->contact_person_name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @endif
+
+                    {{-- Filtro por Zona --}}
+                    <div class="filter-group">
+                        <label class="filter-label">
+                            <i class="fas fa-map-marker-alt"></i>
+                            Filtrar por Zona
+                        </label>
+                        <select id="zoneFilter" class="form-select">
+                            <option value="">Todas las Zonas</option>
+                            @foreach($zones ?? [] as $zone)
+                                <option value="{{ $zone->id }}" 
+                                    {{ ($selectedZoneId ?? '') == $zone->id ? 'selected' : '' }}>
+                                    {{ $zone->name }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
 
                 {{-- Acciones Rápidas --}}
@@ -252,6 +288,36 @@
             </div>
         </div>
 
+        {{-- Información de Filtros Aplicados --}}
+        @if(($selectedAllyName ?? null) || ($selectedZoneName ?? null))
+        <div class="applied-filters-section">
+            <h3 class="section-subtitle">
+                <i class="fas fa-filter"></i>
+                Filtros Aplicados
+            </h3>
+            <div class="applied-filters">
+                @if($selectedAllyName ?? null)
+                <div class="applied-filter-tag">
+                    <span class="filter-tag-label">Aliado:</span>
+                    <span class="filter-tag-value">{{ $selectedAllyName }}</span>
+                    <button class="filter-tag-remove" data-filter="ally">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                @endif
+                @if($selectedZoneName ?? null)
+                <div class="applied-filter-tag">
+                    <span class="filter-tag-label">Zona:</span>
+                    <span class="filter-tag-value">{{ $selectedZoneName }}</span>
+                    <button class="filter-tag-remove" data-filter="zone">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                @endif
+            </div>
+        </div>
+        @endif
+
         {{-- Gráfico Principal Interactivo --}}
         <div class="chart-section">
             <div class="chart-header">
@@ -351,6 +417,24 @@
                                 </span>
                             </div>
                         </div>
+                        @if(($selectedAllyName ?? null))
+                        <div class="summary-item">
+                            <i class="fas fa-handshake"></i>
+                            <div class="summary-content">
+                                <span class="summary-label">Aliado</span>
+                                <span class="summary-value">{{ $selectedAllyName }}</span>
+                            </div>
+                        </div>
+                        @endif
+                        @if(($selectedZoneName ?? null))
+                        <div class="summary-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <div class="summary-content">
+                                <span class="summary-label">Zona</span>
+                                <span class="summary-value">{{ $selectedZoneName }}</span>
+                            </div>
+                        </div>
+                        @endif
                         @if (($metrics['best_day'] ?? null))
                         <div class="summary-item highlight">
                             <i class="fas fa-trophy"></i>
@@ -540,6 +624,8 @@
             const startDateInput = document.getElementById('startDate');
             const endDateInput = document.getElementById('endDate');
             const reportTypeSelect = document.getElementById('reportType');
+            const allyFilter = document.getElementById('allyFilter');
+            const zoneFilter = document.getElementById('zoneFilter');
             const applyFilterButton = document.getElementById('applyFilterButton');
             const resetFiltersButton = document.getElementById('resetFiltersButton');
             const filtersToggle = document.getElementById('filtersToggle');
@@ -733,9 +819,6 @@
                 });
             }
 
-            // El resto del código JavaScript permanece igual...
-            // (Filtros rápidos, aplicar filtros, reiniciar filtros, exportar, etc.)
-
             // Filtros rápidos
             document.querySelectorAll('.quick-filter').forEach(button => {
                 button.addEventListener('click', function() {
@@ -772,6 +855,8 @@
                 const startDate = startDateInput.value;
                 const endDate = endDateInput.value;
                 const reportType = reportTypeSelect.value;
+                const allyId = allyFilter ? allyFilter.value : '';
+                const zoneId = zoneFilter ? zoneFilter.value : '';
 
                 if (!startDate || !endDate) {
                     alert('Por favor, selecciona ambas fechas');
@@ -790,6 +875,18 @@
                 url.searchParams.set('startDate', startDate);
                 url.searchParams.set('endDate', endDate);
                 url.searchParams.set('reportType', reportType);
+                
+                if (allyId) {
+                    url.searchParams.set('ally_id', allyId);
+                } else {
+                    url.searchParams.delete('ally_id');
+                }
+                
+                if (zoneId) {
+                    url.searchParams.set('zone_id', zoneId);
+                } else {
+                    url.searchParams.delete('zone_id');
+                }
 
                 window.location.href = url.toString();
             }
@@ -809,9 +906,27 @@
                     endDateInput.value = today;
                     reportTypeSelect.value = 'monthly';
                     
+                    if (allyFilter) allyFilter.value = '';
+                    if (zoneFilter) zoneFilter.value = '';
+                    
                     applyFilters();
                 });
             }
+
+            // Remover filtros aplicados
+            document.querySelectorAll('.filter-tag-remove').forEach(button => {
+                button.addEventListener('click', function() {
+                    const filterType = this.getAttribute('data-filter');
+                    
+                    if (filterType === 'ally' && allyFilter) {
+                        allyFilter.value = '';
+                    } else if (filterType === 'zone' && zoneFilter) {
+                        zoneFilter.value = '';
+                    }
+                    
+                    applyFilters();
+                });
+            });
 
             // Exportar PDF
             if (downloadPdfButton) {
@@ -831,6 +946,8 @@
                 const startDate = startDateInput.value;
                 const endDate = endDateInput.value;
                 const reportType = reportTypeSelect.value;
+                const allyId = allyFilter ? allyFilter.value : '';
+                const zoneId = zoneFilter ? zoneFilter.value : '';
 
                 if (!startDate || !endDate) {
                     alert('Por favor, selecciona ambas fechas');
@@ -843,6 +960,8 @@
                 url.searchParams.append('startDate', startDate);
                 url.searchParams.append('endDate', endDate);
                 url.searchParams.append('reportType', reportType);
+                if (allyId) url.searchParams.append('ally_id', allyId);
+                if (zoneId) url.searchParams.append('zone_id', zoneId);
                 url.searchParams.append('format', format);
 
                 const downloadLink = document.createElement('a');

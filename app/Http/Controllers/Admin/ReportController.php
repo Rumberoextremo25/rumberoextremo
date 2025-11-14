@@ -84,6 +84,25 @@ class ReportController extends Controller
     }
 
     /**
+     * Obtiene las zonas únicas de los aliados desde company_address
+     */
+    private function getZonesFromAllies()
+    {
+        return Ally::whereNotNull('company_address')
+            ->where('company_address', '!=', '')
+            ->select('company_address as zone')
+            ->distinct()
+            ->orderBy('company_address')
+            ->get()
+            ->map(function ($item) {
+                return (object) [
+                    'id' => $item->zone,
+                    'name' => $item->zone
+                ];
+            });
+    }
+
+    /**
      * Muestra el dashboard de reportes de ventas
      */
     public function sales(Request $request)
@@ -91,6 +110,8 @@ class ReportController extends Controller
         $startDate = $request->input('startDate', now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->input('endDate', now()->format('Y-m-d'));
         $reportType = $request->input('reportType', 'monthly');
+        $selectedAllyId = $request->input('ally_id');
+        $selectedZone = $request->input('zone_id');
 
         $startDate = Carbon::parse($startDate)->startOfDay();
         $endDate = Carbon::parse($endDate)->endOfDay();
@@ -104,9 +125,17 @@ class ReportController extends Controller
         $allyId = $this->getUserAllyId($user);
 
         $exchangeRateVes = $this->getExchangeRate();
-        $chartData = $this->getChartData($startDate, $endDate, $reportType, $userRole, $allyId);
-        $stats = $this->getSalesStats($startDate, $endDate, $userRole, $allyId, $exchangeRateVes);
-        $metrics = $this->getAdditionalMetrics($startDate, $endDate, $userRole, $allyId, $exchangeRateVes);
+        $chartData = $this->getChartData($startDate, $endDate, $reportType, $userRole, $allyId, $selectedAllyId, $selectedZone);
+        $stats = $this->getSalesStats($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone);
+        $metrics = $this->getAdditionalMetrics($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone);
+
+        // Obtener datos para los filtros
+        $allies = $this->isAdmin($userRole) ? Ally::orderBy('company_name')->get() : collect();
+        $zones = $this->getZonesFromAllies();
+
+        // Obtener nombres para mostrar en los filtros aplicados
+        $selectedAllyName = $selectedAllyId ? Ally::find($selectedAllyId)->company_name ?? null : null;
+        $selectedZoneName = $selectedZone;
 
         return view('Admin.reportes.sales', compact(
             'startDate',
@@ -117,21 +146,26 @@ class ReportController extends Controller
             'exchangeRateVes',
             'metrics',
             'userRole',
-            'allyId'
+            'allyId',
+            'allies',
+            'zones',
+            'selectedAllyId',
+            'selectedZone',
+            'selectedAllyName',
+            'selectedZoneName'
         ));
     }
 
     /**
      * Obtiene datos para el gráfico según el tipo de reporte
      */
-    private function getChartData($startDate, $endDate, $reportType, $userRole = null, $allyId = null)
+    private function getChartData($startDate, $endDate, $reportType, $userRole = null, $allyId = null, $selectedAllyId = null, $selectedZone = null)
     {
         $query = Sale::whereBetween('sale_date', [$startDate, $endDate])
             ->where('status', 'completed');
 
-        if (!$this->isAdmin($userRole) && $allyId) {
-            $query->where('ally_id', $allyId);
-        }
+        // Aplicar filtros
+        $query = $this->applyFilters($query, $userRole, $allyId, $selectedAllyId, $selectedZone);
 
         switch ($reportType) {
             case 'daily':
@@ -142,6 +176,30 @@ class ReportController extends Controller
             default:
                 return $this->getMonthlyData($query, $startDate, $endDate);
         }
+    }
+
+    /**
+     * Aplica filtros a las consultas
+     */
+    private function applyFilters($query, $userRole, $allyId, $selectedAllyId = null, $selectedZone = null)
+    {
+        // Si es aliado, solo puede ver sus propias ventas
+        if (!$this->isAdmin($userRole) && $allyId) {
+            $query->where('ally_id', $allyId);
+        }
+        // Si es admin y seleccionó un aliado específico
+        elseif ($this->isAdmin($userRole) && $selectedAllyId) {
+            $query->where('ally_id', $selectedAllyId);
+        }
+
+        // Aplicar filtro por zona si está seleccionado
+        if ($selectedZone) {
+            $query->whereHas('ally', function ($q) use ($selectedZone) {
+                $q->where('company_address', $selectedZone);
+            });
+        }
+
+        return $query;
     }
 
     /**
@@ -264,14 +322,13 @@ class ReportController extends Controller
     /**
      * Obtiene estadísticas generales de ventas con conversión a VES
      */
-    private function getSalesStats($startDate, $endDate, $userRole = null, $allyId = null, $exchangeRate = null)
+    private function getSalesStats($startDate, $endDate, $userRole = null, $allyId = null, $exchangeRate = null, $selectedAllyId = null, $selectedZone = null)
     {
         $query = Sale::whereBetween('sale_date', [$startDate, $endDate])
             ->where('status', 'completed');
 
-        if (!$this->isAdmin($userRole) && $allyId) {
-            $query->where('ally_id', $allyId);
-        }
+        // Aplicar filtros
+        $query = $this->applyFilters($query, $userRole, $allyId, $selectedAllyId, $selectedZone);
 
         $totalSales = $query->sum('total_amount');
         $totalSalesVes = $exchangeRate ? $totalSales * $exchangeRate : null;
@@ -283,9 +340,8 @@ class ReportController extends Controller
         $paymentMethodsQuery = Sale::whereBetween('sale_date', [$startDate, $endDate])
             ->where('status', 'completed');
 
-        if (!$this->isAdmin($userRole) && $allyId) {
-            $paymentMethodsQuery->where('ally_id', $allyId);
-        }
+        // Aplicar filtros a la consulta de métodos de pago
+        $paymentMethodsQuery = $this->applyFilters($paymentMethodsQuery, $userRole, $allyId, $selectedAllyId, $selectedZone);
 
         $paymentMethods = $paymentMethodsQuery
             ->select('payment_method', DB::raw('COUNT(*) as count'))
@@ -300,9 +356,8 @@ class ReportController extends Controller
         $previousSalesQuery = Sale::whereBetween('sale_date', [$previousStartDate, $previousEndDate])
             ->where('status', 'completed');
 
-        if (!$this->isAdmin($userRole) && $allyId) {
-            $previousSalesQuery->where('ally_id', $allyId);
-        }
+        // Aplicar filtros a la consulta del período anterior
+        $previousSalesQuery = $this->applyFilters($previousSalesQuery, $userRole, $allyId, $selectedAllyId, $selectedZone);
 
         $previousSales = $previousSalesQuery->sum('total_amount');
         $previousSalesVes = $exchangeRate ? $previousSales * $exchangeRate : null;
@@ -328,15 +383,20 @@ class ReportController extends Controller
     /**
      * Obtiene métricas adicionales adaptadas a tu estructura
      */
-    private function getAdditionalMetrics($startDate, $endDate, $userRole = null, $allyId = null, $exchangeRate = null)
+    private function getAdditionalMetrics($startDate, $endDate, $userRole = null, $allyId = null, $exchangeRate = null, $selectedAllyId = null, $selectedZone = null)
     {
         $isAdmin = $this->isAdmin($userRole);
 
         $topAlly = null;
         if ($isAdmin) {
-            $topAlly = Sale::with('ally')
+            $topAllyQuery = Sale::with('ally')
                 ->whereBetween('sale_date', [$startDate, $endDate])
-                ->where('status', 'completed')
+                ->where('status', 'completed');
+
+            // Aplicar filtros
+            $topAllyQuery = $this->applyFilters($topAllyQuery, $userRole, $allyId, $selectedAllyId, $selectedZone);
+
+            $topAlly = $topAllyQuery
                 ->select('ally_id', DB::raw('SUM(total_amount) as total_sales'), DB::raw('COUNT(*) as total_orders'))
                 ->groupBy('ally_id')
                 ->orderByDesc('total_sales')
@@ -351,9 +411,8 @@ class ReportController extends Controller
             ->whereBetween('sale_date', [$startDate, $endDate])
             ->where('status', 'completed');
 
-        if (!$isAdmin && $allyId) {
-            $branchQuery->where('ally_id', $allyId);
-        }
+        // Aplicar filtros
+        $branchQuery = $this->applyFilters($branchQuery, $userRole, $allyId, $selectedAllyId, $selectedZone);
 
         $topBranch = $branchQuery
             ->select('branch_id', DB::raw('SUM(total_amount) as total_sales'), DB::raw('COUNT(*) as total_orders'))
@@ -369,9 +428,8 @@ class ReportController extends Controller
             ->whereBetween('sale_date', [$startDate, $endDate])
             ->where('status', 'completed');
 
-        if (!$isAdmin && $allyId) {
-            $largestSaleQuery->where('ally_id', $allyId);
-        }
+        // Aplicar filtros
+        $largestSaleQuery = $this->applyFilters($largestSaleQuery, $userRole, $allyId, $selectedAllyId, $selectedZone);
 
         $largestSale = $largestSaleQuery->orderByDesc('total_amount')->first();
         $largestSaleVes = $exchangeRate && $largestSale ? $largestSale->total_amount * $exchangeRate : null;
@@ -379,9 +437,8 @@ class ReportController extends Controller
         $bestDayQuery = Sale::whereBetween('sale_date', [$startDate, $endDate])
             ->where('status', 'completed');
 
-        if (!$isAdmin && $allyId) {
-            $bestDayQuery->where('ally_id', $allyId);
-        }
+        // Aplicar filtros
+        $bestDayQuery = $this->applyFilters($bestDayQuery, $userRole, $allyId, $selectedAllyId, $selectedZone);
 
         $bestDay = $bestDayQuery
             ->select(
@@ -398,9 +455,8 @@ class ReportController extends Controller
         $paymentMethodQuery = Sale::whereBetween('sale_date', [$startDate, $endDate])
             ->where('status', 'completed');
 
-        if (!$isAdmin && $allyId) {
-            $paymentMethodQuery->where('ally_id', $allyId);
-        }
+        // Aplicar filtros
+        $paymentMethodQuery = $this->applyFilters($paymentMethodQuery, $userRole, $allyId, $selectedAllyId, $selectedZone);
 
         $topPaymentMethod = $paymentMethodQuery
             ->select('payment_method', DB::raw('COUNT(*) as count'))
@@ -435,6 +491,8 @@ class ReportController extends Controller
         $startDate = $request->input('startDate', now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->input('endDate', now()->format('Y-m-d'));
         $reportType = $request->input('reportType', 'monthly');
+        $selectedAllyId = $request->input('ally_id');
+        $selectedZone = $request->input('zone_id');
 
         $startDate = Carbon::parse($startDate)->startOfDay();
         $endDate = Carbon::parse($endDate)->endOfDay();
@@ -444,8 +502,8 @@ class ReportController extends Controller
         $allyId = $this->getUserAllyId($user);
 
         $exchangeRateVes = $this->getExchangeRate();
-        $chartData = $this->getChartData($startDate, $endDate, $reportType, $userRole, $allyId);
-        $stats = $this->getSalesStats($startDate, $endDate, $userRole, $allyId, $exchangeRateVes);
+        $chartData = $this->getChartData($startDate, $endDate, $reportType, $userRole, $allyId, $selectedAllyId, $selectedZone);
+        $stats = $this->getSalesStats($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone);
 
         return response()->json([
             'success' => true,
@@ -474,6 +532,8 @@ class ReportController extends Controller
             $startDate = $request->input('startDate', now()->startOfMonth()->format('Y-m-d'));
             $endDate = $request->input('endDate', now()->format('Y-m-d'));
             $reportType = $request->input('reportType', 'monthly');
+            $selectedAllyId = $request->input('ally_id');
+            $selectedZone = $request->input('zone_id');
 
             $startDate = Carbon::parse($startDate)->startOfDay();
             $endDate = Carbon::parse($endDate)->endOfDay();
@@ -487,10 +547,10 @@ class ReportController extends Controller
             $allyId = $this->getUserAllyId($user);
 
             $exchangeRateVes = $this->getExchangeRate();
-            $chartData = $this->getChartData($startDate, $endDate, $reportType, $userRole, $allyId);
-            $stats = $this->getSalesStats($startDate, $endDate, $userRole, $allyId, $exchangeRateVes);
-            $metrics = $this->getAdditionalMetrics($startDate, $endDate, $userRole, $allyId, $exchangeRateVes);
-            $dailySales = $this->getDailySalesForPdf($startDate, $endDate, $userRole, $allyId, $exchangeRateVes);
+            $chartData = $this->getChartData($startDate, $endDate, $reportType, $userRole, $allyId, $selectedAllyId, $selectedZone);
+            $stats = $this->getSalesStats($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone);
+            $metrics = $this->getAdditionalMetrics($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone);
+            $dailySales = $this->getDailySalesForPdf($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone);
 
             $pdf = app('dompdf.wrapper');
             $pdf->setPaper('A4', 'landscape');
@@ -505,7 +565,9 @@ class ReportController extends Controller
                 'metrics',
                 'dailySales',
                 'userRole',
-                'allyId'
+                'allyId',
+                'selectedAllyId',
+                'selectedZone'
             ));
 
             if ($this->isAdmin($userRole)) {
@@ -530,6 +592,8 @@ class ReportController extends Controller
         $startDate = $request->input('startDate', now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->input('endDate', now()->format('Y-m-d'));
         $reportType = $request->input('reportType', 'monthly');
+        $selectedAllyId = $request->input('ally_id');
+        $selectedZone = $request->input('zone_id');
 
         $startDate = Carbon::parse($startDate)->startOfDay();
         $endDate = Carbon::parse($endDate)->endOfDay();
@@ -539,10 +603,10 @@ class ReportController extends Controller
         $allyId = $this->getUserAllyId($user);
 
         $exchangeRateVes = $this->getExchangeRate();
-        $chartData = $this->getChartData($startDate, $endDate, $reportType, $userRole, $allyId);
-        $stats = $this->getSalesStats($startDate, $endDate, $userRole, $allyId, $exchangeRateVes);
-        $metrics = $this->getAdditionalMetrics($startDate, $endDate, $userRole, $allyId, $exchangeRateVes);
-        $dailySales = $this->getDailySalesForPdf($startDate, $endDate, $userRole, $allyId, $exchangeRateVes);
+        $chartData = $this->getChartData($startDate, $endDate, $reportType, $userRole, $allyId, $selectedAllyId, $selectedZone);
+        $stats = $this->getSalesStats($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone);
+        $metrics = $this->getAdditionalMetrics($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone);
+        $dailySales = $this->getDailySalesForPdf($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone);
 
         $pdf = app('dompdf.wrapper');
         $pdf->loadView('Admin.reportes.pdf.sales-pdf', compact(
@@ -555,7 +619,9 @@ class ReportController extends Controller
             'metrics',
             'dailySales',
             'userRole',
-            'allyId'
+            'allyId',
+            'selectedAllyId',
+            'selectedZone'
         ));
 
         return $pdf->stream();
@@ -564,14 +630,13 @@ class ReportController extends Controller
     /**
      * Obtiene datos diarios para el PDF
      */
-    private function getDailySalesForPdf($startDate, $endDate, $userRole = null, $allyId = null, $exchangeRate = null)
+    private function getDailySalesForPdf($startDate, $endDate, $userRole = null, $allyId = null, $exchangeRate = null, $selectedAllyId = null, $selectedZone = null)
     {
         $query = Sale::whereBetween('sale_date', [$startDate, $endDate])
             ->where('status', 'completed');
 
-        if (!$this->isAdmin($userRole) && $allyId) {
-            $query->where('ally_id', $allyId);
-        }
+        // Aplicar filtros
+        $query = $this->applyFilters($query, $userRole, $allyId, $selectedAllyId, $selectedZone);
 
         return $query
             ->select(
@@ -601,6 +666,8 @@ class ReportController extends Controller
     public function recentSales(Request $request)
     {
         $limit = $request->input('limit', 10);
+        $selectedAllyId = $request->input('ally_id');
+        $selectedZone = $request->input('zone_id');
 
         $user = auth()->user();
         $userRole = $user->role;
@@ -611,9 +678,8 @@ class ReportController extends Controller
             ->orderBy('sale_date', 'desc')
             ->limit($limit);
 
-        if (!$this->isAdmin($userRole) && $allyId) {
-            $query->where('ally_id', $allyId);
-        }
+        // Aplicar filtros
+        $query = $this->applyFilters($query, $userRole, $allyId, $selectedAllyId, $selectedZone);
 
         $exchangeRate = $this->getExchangeRate();
 
@@ -648,16 +714,15 @@ class ReportController extends Controller
         $yesterday = $today->copy()->subDay();
         $thisMonth = $today->copy()->startOfMonth();
         $lastMonth = $thisMonth->copy()->subMonth();
+        $selectedAllyId = $request->input('ally_id');
+        $selectedZone = $request->input('zone_id');
 
         $user = auth()->user();
         $userRole = $user->role;
         $allyId = $this->getUserAllyId($user);
 
-        $applyFilters = function($query) use ($userRole, $allyId) {
-            if (!$this->isAdmin($userRole) && $allyId) {
-                $query->where('ally_id', $allyId);
-            }
-            return $query;
+        $applyFilters = function($query) use ($userRole, $allyId, $selectedAllyId, $selectedZone) {
+            return $this->applyFilters($query, $userRole, $allyId, $selectedAllyId, $selectedZone);
         };
 
         $exchangeRate = $this->getExchangeRate();
