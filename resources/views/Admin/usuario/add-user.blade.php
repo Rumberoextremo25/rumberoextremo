@@ -3,13 +3,13 @@
 @section('page_title_toolbar', 'Añadir Nuevo Usuario')
 
 @push('styles')
-    {{-- Dependencias de CSS para la nueva vista, adaptadas al diseño de perfil --}}
+    {{-- Tus estilos actuales se mantienen igual --}}
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        /* Estilos para la validación de contraseña */
+        /* Tus estilos CSS actuales se mantienen igual */
         .password-validation {
             margin-top: 0.5rem;
         }
@@ -128,18 +128,20 @@
 
             {{-- El action del formulario apunta a la ruta para almacenar nuevos usuarios --}}
             <form id="addUserForm" action="{{ route('users.store') }}" method="POST">
-                @csrf {{-- Protección CSRF obligatoria en Laravel --}}
+                @csrf
                 <div class="form-grid">
+                    {{-- CAMBIO: firstName -> firstname --}}
                     <div class="form-group">
-                        <label for="firstName">Nombre:</label>
-                        <input type="text" id="firstName" name="firstName" placeholder="Ej: Juan" value="{{ old('firstName') }}" required>
-                        @error('firstName') <div class="text-danger">{{ $message }}</div> @enderror
+                        <label for="firstname">Nombre:</label>
+                        <input type="text" id="firstname" name="firstname" placeholder="Ej: Juan" value="{{ old('firstname') }}" required>
+                        @error('firstname') <div class="text-danger">{{ $message }}</div> @enderror
                     </div>
 
+                    {{-- CAMBIO: lastName -> lastname --}}
                     <div class="form-group">
-                        <label for="lastName">Apellido:</label>
-                        <input type="text" id="lastName" name="lastName" placeholder="Ej: Pérez" value="{{ old('lastName') }}" required>
-                        @error('lastName') <div class="text-danger">{{ $message }}</div> @enderror
+                        <label for="lastname">Apellido:</label>
+                        <input type="text" id="lastname" name="lastname" placeholder="Ej: Pérez" value="{{ old('lastname') }}" required>
+                        @error('lastname') <div class="text-danger">{{ $message }}</div> @enderror
                     </div>
 
                     <div class="form-group">
@@ -150,15 +152,17 @@
 
                     <div class="form-group password-group">
                         <label for="password">Contraseña:</label>
-                        <input type="password" id="password" name="password" placeholder="Mínimo 6 caracteres" required minlength="6">
+                        {{-- CAMBIO: minlength="6" -> minlength="8" --}}
+                        <input type="password" id="password" name="password" placeholder="Mínimo 8 caracteres" required minlength="8">
                         <div class="password-validation">
                             <div class="password-strength-meter">
                                 <div class="password-strength-fill" id="passwordStrengthFill"></div>
                             </div>
                             <ul class="validation-list" id="passwordValidationList">
+                                {{-- CAMBIO: 6 caracteres -> 8 caracteres --}}
                                 <li class="validation-item pending" id="validationLength">
                                     <i class="fas fa-circle"></i>
-                                    <span>Mínimo 6 caracteres</span>
+                                    <span>Mínimo 8 caracteres</span>
                                 </li>
                                 <li class="validation-item pending" id="validationUppercase">
                                     <i class="fas fa-circle"></i>
@@ -202,10 +206,11 @@
                         @error('user_type') <div class="text-danger">{{ $message }}</div> @enderror
                     </div>
 
+                    {{-- CAMBIO: phone -> phone1 --}}
                     <div class="form-group">
-                        <label for="phone">Teléfono (Opcional):</label>
-                        <input type="tel" id="phone" name="phone" placeholder="Ej: +58 412 1234567" value="{{ old('phone') }}">
-                        @error('phone') <div class="text-danger">{{ $message }}</div> @enderror
+                        <label for="phone1">Teléfono (Opcional):</label>
+                        <input type="tel" id="phone1" name="phone1" placeholder="Ej: +58 412 1234567" value="{{ old('phone1') }}">
+                        @error('phone1') <div class="text-danger">{{ $message }}</div> @enderror
                     </div>
 
                     <div class="form-group">
@@ -272,10 +277,10 @@
             special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/
         };
 
-        // Función para validar la contraseña
+        // Función para validar la contraseña - CAMBIO: 6 -> 8
         function validatePassword(password) {
             const validations = {
-                length: password.length >= 6,
+                length: password.length >= 8, // Cambiado de 6 a 8
                 uppercase: patterns.uppercase.test(password),
                 lowercase: patterns.lowercase.test(password),
                 number: patterns.number.test(password),

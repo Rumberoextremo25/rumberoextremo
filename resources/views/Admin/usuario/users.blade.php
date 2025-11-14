@@ -13,6 +13,15 @@
     <div class="users-section-container">
         <h2 class="section-title">Todos los usuarios</h2>
 
+        {{-- Mostrar mensaje de éxito --}}
+        @if(session('success'))
+            <div class="alert alert-success alert-dismissible fade show" role="alert">
+                <i class="fas fa-check-circle me-2"></i>
+                <strong>¡Éxito!</strong> {{ session('success') }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        @endif
+
         {{-- Estadísticas de usuarios --}}
         <div class="user-stats-container">
             <div class="stat-card">
@@ -82,7 +91,8 @@
                         @foreach ($users as $user)
                             <tr>
                                 <td data-label="ID" class="user-id">{{ $user->id }}</td>
-                                <td data-label="Nombre">{{ $user->name }}</td>
+                                {{-- CORRECCIÓN: Cambiar $user->name por $user->firstname . ' ' . $user->lastname --}}
+                                <td data-label="Nombre">{{ $user->firstname }} {{ $user->lastname }}</td>
                                 <td data-label="Email">{{ $user->email }}</td>
                                 <td data-label="Tipo">
                                     <span class="badge badge-type-{{ strtolower($user->role) }}">
@@ -92,8 +102,10 @@
                                             Aliado
                                         @elseif($user->role === 'afiliado')
                                             Afiliado
+                                        @elseif($user->role === 'comun')
+                                            Común
                                         @else
-                                            Usuario
+                                            {{ $user->role }}
                                         @endif
                                     </span>
                                 </td>
@@ -103,7 +115,13 @@
                                     </span>
                                 </td>
                                 <td data-label="Teléfono">{{ $user->phone1 ?? 'N/A' }}</td>
-                                <td data-label="Registro">{{ \Carbon\Carbon::parse($user->registration_date)->format('d/m/Y') }}</td>
+                                <td data-label="Registro">
+                                    @if($user->registration_date)
+                                        {{ \Carbon\Carbon::parse($user->registration_date)->format('d/m/Y') }}
+                                    @else
+                                        N/A
+                                    @endif
+                                </td>
                                 <td data-label="Acciones">
                                     <div class="action-group compact">
                                         <a href="{{ route('users.show', $user->id) }}" class="action-btn view" title="Ver Detalles">
@@ -187,6 +205,17 @@
                 modal.classList.remove('active');
                 formToSubmit = null;
             }
+        });
+
+        // Auto-ocultar alertas después de 5 segundos
+        const alerts = document.querySelectorAll('.alert');
+        alerts.forEach(alert => {
+            setTimeout(() => {
+                alert.style.opacity = '0';
+                setTimeout(() => {
+                    alert.style.display = 'none';
+                }, 300);
+            }, 5000);
         });
     });
 </script>
