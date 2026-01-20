@@ -502,19 +502,31 @@
                     </div>
                 </div>
 
-                {{-- Sección de Imagen --}}
+                {{-- Sección de Multimedia --}}
                 <div class="form-section" data-section="media">
                     <div class="section-header">
                         <h3 class="section-title">
                             <i class="fas fa-image"></i>
-                            Imagen del Aliado
+                            Multimedia del Aliado
                         </h3>
                         <p class="section-description">
-                            Logo o imagen representativa del aliado comercial
+                            Imágenes representativas del aliado comercial
                         </p>
                     </div>
+                    
+                    {{-- Logo del Aliado --}}
                     <div class="form-grid">
                         <div class="form-group full-width">
+                            <div class="section-subheader">
+                                <h4 class="section-subtitle">
+                                    <i class="fas fa-camera"></i>
+                                    Logo o Imagen Principal
+                                </h4>
+                                <p class="section-subdescription">
+                                    Imagen principal que identifica al aliado
+                                </p>
+                            </div>
+                            
                             <div class="image-upload-container">
                                 @if ($ally->image_url)
                                     <div class="current-image-section">
@@ -566,6 +578,136 @@
                             </div>
                         </div>
                     </div>
+                    
+                    {{-- Galería de Productos/Menús --}}
+                    <div class="form-grid">
+                        <div class="form-group full-width">
+                            <div class="section-subheader">
+                                <h4 class="section-subtitle">
+                                    <i class="fas fa-images"></i>
+                                    Galería de Productos o Menús
+                                </h4>
+                                <p class="section-subdescription">
+                                    Sube hasta 5 imágenes de productos destacados o menús específicos
+                                </p>
+                            </div>
+                            
+                            <div class="gallery-upload-container">
+                                <div class="gallery-upload-section" id="galleryUploadSection">
+                                    {{-- Imágenes existentes --}}
+                                    @if($ally->product_images && count($ally->product_images) > 0)
+                                        <div class="existing-images-section">
+                                            <h5 class="existing-images-title">
+                                                <i class="fas fa-history"></i>
+                                                Imágenes existentes
+                                            </h5>
+                                            <div class="existing-images-grid" id="existingImagesGrid">
+                                                @foreach($ally->product_images as $index => $image)
+                                                    <div class="gallery-item existing" data-id="{{ $index }}">
+                                                        <img src="{{ Storage::url($image) }}" 
+                                                             alt="Producto {{ $index + 1 }}" 
+                                                             class="gallery-item-image">
+                                                        <div class="gallery-item-actions">
+                                                            <button type="button" class="gallery-action-btn move" title="Arrastrar para reordenar">
+                                                                <i class="fas fa-arrows-alt"></i>
+                                                            </button>
+                                                            <button type="button" class="gallery-action-btn delete" 
+                                                                    onclick="removeExistingImage({{ $index }})" 
+                                                                    title="Eliminar imagen">
+                                                                <i class="fas fa-trash"></i>
+                                                            </button>
+                                                        </div>
+                                                        <div class="gallery-item-info">
+                                                            <div class="gallery-item-title">Imagen {{ $index + 1 }}</div>
+                                                            <div class="gallery-item-size">Existente</div>
+                                                        </div>
+                                                        <input type="hidden" name="existing_images[]" value="{{ $image }}">
+                                                        <input type="hidden" name="existing_images_order[]" value="{{ $index }}">
+                                                    </div>
+                                                @endforeach
+                                            </div>
+                                        </div>
+                                    @endif
+                                    
+                                    {{-- Contenedor de la galería para nuevas imágenes --}}
+                                    <div class="gallery-grid" id="galleryGrid">
+                                        {{-- Los elementos de la galería se agregarán aquí dinámicamente --}}
+                                    </div>
+                                    
+                                    {{-- Input oculto para múltiples archivos --}}
+                                    <input type="file" 
+                                           id="product_images" 
+                                           name="product_images[]" 
+                                           class="gallery-file-input"
+                                           accept="image/*"
+                                           multiple
+                                           style="display: none;">
+                                    
+                                    {{-- Controles de la galería --}}
+                                    <div class="gallery-upload-controls">
+                                        <button type="button" class="gallery-add-btn" id="addGalleryImages">
+                                            <i class="fas fa-plus-circle"></i>
+                                            Agregar Nuevas Imágenes
+                                        </button>
+                                        
+                                        <div class="gallery-counter">
+                                            <span id="selectedCount">0</span>/5 imágenes en total
+                                        </div>
+                                    </div>
+                                    
+                                    {{-- Información de la galería --}}
+                                    <div class="gallery-info">
+                                        <div class="gallery-help-text">
+                                            <i class="fas fa-info-circle"></i>
+                                            <div>
+                                                <strong>Recomendaciones para las imágenes:</strong>
+                                                <ul class="gallery-tips">
+                                                    <li>Sube imágenes de alta calidad de tus productos o menús destacados</li>
+                                                    <li>Tamaño recomendado: 800x600 píxeles</li>
+                                                    <li>Formatos aceptados: JPEG, PNG, JPG</li>
+                                                    <li>Tamaño máximo por imagen: 2MB</li>
+                                                    <li>Puedes reordenar las imágenes arrastrándolas</li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    {{-- Previsualización de la galería --}}
+                                    <div class="gallery-preview-container">
+                                        <h5 class="gallery-preview-title">
+                                            <i class="fas fa-eye"></i>
+                                            Vista Previa de la Galería
+                                        </h5>
+                                        <div class="gallery-preview" id="galleryPreview">
+                                            @if($ally->product_images && count($ally->product_images) > 0)
+                                                @foreach($ally->product_images as $index => $image)
+                                                    <div class="gallery-preview-item">
+                                                        <img src="{{ Storage::url($image) }}" alt="Previsualización {{ $index + 1 }}">
+                                                        <div class="gallery-preview-item-overlay">
+                                                            {{ $index + 1 }}
+                                                        </div>
+                                                    </div>
+                                                @endforeach
+                                            @else
+                                                <div class="empty-gallery">
+                                                    <i class="fas fa-images"></i>
+                                                    <p>No hay imágenes seleccionadas</p>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    
+                                    {{-- Errores --}}
+                                    @error('product_images')
+                                        <span class="error-message">{{ $message }}</span>
+                                    @enderror
+                                    @error('product_images.*')
+                                        <span class="error-message">{{ $message }}</span>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 {{-- Acciones del Formulario --}}
@@ -601,6 +743,32 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
+        // Variables globales para la galería
+        window.existingGalleryItems = [];
+        window.newGalleryItems = [];
+        const maxFiles = 5;
+
+        // Cargar imágenes existentes
+        function loadExistingImages() {
+            const existingImages = document.querySelectorAll('.existing-images-grid .gallery-item');
+            window.existingGalleryItems = Array.from(existingImages).map(item => {
+                const img = item.querySelector('img');
+                const orderInput = item.querySelector('input[name="existing_images_order[]"]');
+                const valueInput = item.querySelector('input[name="existing_images[]"]');
+                
+                return {
+                    id: item.dataset.id,
+                    type: 'existing',
+                    preview: img.src,
+                    name: img.alt,
+                    order: orderInput ? parseInt(orderInput.value) : 0,
+                    value: valueInput ? valueInput.value : ''
+                };
+            });
+            
+            updateGalleryCounter();
+        }
+
         // Navegación por pasos del formulario
         const formSections = document.querySelectorAll('.form-section');
         const progressSteps = document.querySelectorAll('.progress-step');
@@ -725,7 +893,7 @@
             updateCategoryPreview();
         }
 
-        // Upload de imagen con drag & drop
+        // Upload de imagen principal con drag & drop
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('image_url');
         const uploadPreview = document.getElementById('uploadPreview');
@@ -799,6 +967,268 @@
             }
         }
 
+        // Galería de productos
+        function initGallery() {
+            const galleryGrid = document.getElementById('galleryGrid');
+            const galleryFileInput = document.getElementById('product_images');
+            const addGalleryBtn = document.getElementById('addGalleryImages');
+            const galleryCounter = document.getElementById('selectedCount');
+            const galleryPreview = document.getElementById('galleryPreview');
+            const galleryUploadSection = document.getElementById('galleryUploadSection');
+            
+            // Cargar imágenes existentes primero
+            loadExistingImages();
+
+            // Click en botón para agregar imágenes
+            if (addGalleryBtn && galleryFileInput) {
+                addGalleryBtn.addEventListener('click', () => {
+                    const totalImages = window.existingGalleryItems.length + window.newGalleryItems.length;
+                    if (totalImages >= maxFiles) {
+                        showAlert('Solo puedes tener un máximo de ' + maxFiles + ' imágenes en total.', 'error');
+                        return;
+                    }
+                    galleryFileInput.click();
+                });
+            }
+
+            // Configurar drag and drop para la sección de galería
+            if (galleryUploadSection) {
+                ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+                    galleryUploadSection.addEventListener(eventName, preventGalleryDefaults, false);
+                });
+
+                ['dragenter', 'dragover'].forEach(eventName => {
+                    galleryUploadSection.addEventListener(eventName, highlightGallery, false);
+                });
+
+                ['dragleave', 'drop'].forEach(eventName => {
+                    galleryUploadSection.addEventListener(eventName, unhighlightGallery, false);
+                });
+
+                galleryUploadSection.addEventListener('drop', handleGalleryDrop, false);
+            }
+
+            function preventGalleryDefaults(e) {
+                e.preventDefault();
+                e.stopPropagation();
+            }
+
+            function highlightGallery() {
+                if (galleryUploadSection) {
+                    galleryUploadSection.classList.add('drag-over');
+                }
+            }
+
+            function unhighlightGallery() {
+                if (galleryUploadSection) {
+                    galleryUploadSection.classList.remove('drag-over');
+                }
+            }
+
+            function handleGalleryDrop(e) {
+                const files = e.dataTransfer.files;
+                const totalImages = window.existingGalleryItems.length + window.newGalleryItems.length + files.length;
+                if (totalImages > maxFiles) {
+                    showAlert('Solo puedes agregar ' + (maxFiles - (window.existingGalleryItems.length + window.newGalleryItems.length)) + ' imágenes más.', 'error');
+                    return;
+                }
+                handleGalleryFiles(files);
+            }
+
+            // Manejar selección de archivos
+            if (galleryFileInput) {
+                galleryFileInput.addEventListener('change', function(e) {
+                    const totalImages = window.existingGalleryItems.length + window.newGalleryItems.length + e.target.files.length;
+                    if (totalImages > maxFiles) {
+                        showAlert('Solo puedes agregar ' + (maxFiles - (window.existingGalleryItems.length + window.newGalleryItems.length)) + ' imágenes más.', 'error');
+                        this.value = '';
+                        return;
+                    }
+                    handleGalleryFiles(e.target.files);
+                    // Reset input
+                    this.value = '';
+                });
+            }
+
+            function handleGalleryFiles(files) {
+                const fileArray = Array.from(files);
+                
+                fileArray.forEach((file, index) => {
+                    if (!file.type.startsWith('image/')) {
+                        showAlert('El archivo "' + file.name + '" no es una imagen válida.', 'error');
+                        return;
+                    }
+
+                    if (file.size > 2 * 1024 * 1024) {
+                        showAlert('La imagen "' + file.name + '" excede el tamaño máximo de 2MB.', 'error');
+                        return;
+                    }
+
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const galleryItem = {
+                            id: 'new_' + Date.now() + index,
+                            type: 'new',
+                            file: file,
+                            preview: e.target.result,
+                            name: file.name,
+                            size: formatFileSize(file.size),
+                            order: window.newGalleryItems.length + window.existingGalleryItems.length
+                        };
+
+                        window.newGalleryItems.push(galleryItem);
+                        updateGallery();
+                    };
+                    reader.readAsDataURL(file);
+                });
+            }
+
+            function updateGallery() {
+                updateGalleryCounter();
+                updateGalleryDisplay();
+                updateGalleryPreview();
+            }
+
+            function updateGalleryCounter() {
+                if (galleryCounter) {
+                    const total = window.existingGalleryItems.length + window.newGalleryItems.length;
+                    galleryCounter.textContent = total;
+                    
+                    // Deshabilitar botón si se alcanzó el límite
+                    if (addGalleryBtn) {
+                        addGalleryBtn.disabled = total >= maxFiles;
+                    }
+                }
+            }
+
+            function updateGalleryDisplay() {
+                if (!galleryGrid) return;
+
+                galleryGrid.innerHTML = '';
+                
+                // Mostrar solo nuevas imágenes en el grid de subida
+                window.newGalleryItems.forEach((item, index) => {
+                    const galleryItem = createGalleryItem(item, index, 'new');
+                    galleryGrid.appendChild(galleryItem);
+                });
+
+                // Hacer los elementos arrastrables
+                makeGalleryItemsDraggable();
+            }
+
+            function createGalleryItem(item, index, type) {
+                const div = document.createElement('div');
+                div.className = 'gallery-item ' + type;
+                div.dataset.id = item.id;
+                div.draggable = true;
+
+                div.innerHTML = `
+                    <img src="${item.preview}" alt="${item.name}" class="gallery-item-image">
+                    <div class="gallery-item-actions">
+                        <button type="button" class="gallery-action-btn move" title="Arrastrar para reordenar">
+                            <i class="fas fa-arrows-alt"></i>
+                        </button>
+                        <button type="button" class="gallery-action-btn delete" onclick="removeGalleryItem('${item.id}', '${type}')" title="Eliminar imagen">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    <div class="gallery-item-info">
+                        <div class="gallery-item-title">Imagen nueva ${index + 1}</div>
+                        <div class="gallery-item-size">${item.size}</div>
+                    </div>
+                `;
+
+                return div;
+            }
+
+            function updateGalleryPreview() {
+                if (!galleryPreview) return;
+
+                const allItems = [...window.existingGalleryItems, ...window.newGalleryItems];
+                
+                if (allItems.length === 0) {
+                    galleryPreview.innerHTML = `
+                        <div class="empty-gallery">
+                            <i class="fas fa-images"></i>
+                            <p>No hay imágenes seleccionadas</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                galleryPreview.innerHTML = '';
+                allItems.forEach((item, index) => {
+                    const previewItem = document.createElement('div');
+                    previewItem.className = 'gallery-preview-item';
+                    previewItem.innerHTML = `
+                        <img src="${item.preview}" alt="Previsualización ${index + 1}">
+                        <div class="gallery-preview-item-overlay">
+                            ${index + 1}
+                        </div>
+                    `;
+                    galleryPreview.appendChild(previewItem);
+                });
+            }
+
+            function makeGalleryItemsDraggable() {
+                const items = document.querySelectorAll('.gallery-item:not(.existing)');
+                let draggedItem = null;
+
+                items.forEach(item => {
+                    // Drag start
+                    item.addEventListener('dragstart', function(e) {
+                        draggedItem = this;
+                        setTimeout(() => {
+                            this.classList.add('dragging');
+                        }, 0);
+                    });
+
+                    // Drag end
+                    item.addEventListener('dragend', function() {
+                        this.classList.remove('dragging');
+                        draggedItem = null;
+                        items.forEach(item => item.classList.remove('drag-over'));
+                    });
+
+                    // Drag over
+                    item.addEventListener('dragover', function(e) {
+                        e.preventDefault();
+                        if (draggedItem !== this) {
+                            this.classList.add('drag-over');
+                        }
+                    });
+
+                    // Drag leave
+                    item.addEventListener('dragleave', function() {
+                        this.classList.remove('drag-over');
+                    });
+
+                    // Drop
+                    item.addEventListener('drop', function(e) {
+                        e.preventDefault();
+                        this.classList.remove('drag-over');
+                        
+                        if (draggedItem !== this) {
+                            const draggedId = draggedItem.dataset.id;
+                            const targetId = this.dataset.id;
+                            
+                            // Reordenar array de nuevas imágenes
+                            const draggedIndex = window.newGalleryItems.findIndex(item => item.id === draggedId);
+                            const targetIndex = window.newGalleryItems.findIndex(item => item.id === targetId);
+                            
+                            if (draggedIndex !== -1 && targetIndex !== -1) {
+                                const [draggedElement] = window.newGalleryItems.splice(draggedIndex, 1);
+                                window.newGalleryItems.splice(targetIndex, 0, draggedElement);
+                                
+                                updateGalleryDisplay();
+                                updateGalleryPreview();
+                            }
+                        }
+                    });
+                });
+            }
+        }
+
         // Cerrar alertas automáticamente
         setTimeout(() => {
             document.querySelectorAll('.modern-alert').forEach(alert => {
@@ -851,6 +1281,9 @@
 
         // Inicializar navegación
         updateNavigation();
+        
+        // Inicializar galería
+        initGallery();
     });
 
     // Funciones globales
@@ -875,6 +1308,159 @@
     function closeImageModal() {
         document.getElementById('imageModal').classList.remove('active');
         document.body.style.overflow = 'auto';
+    }
+
+    // Función para eliminar una imagen existente
+    function removeExistingImage(index) {
+        if (confirm('¿Estás seguro de que deseas eliminar esta imagen?')) {
+            // Remover del array de imágenes existentes
+            window.existingGalleryItems = window.existingGalleryItems.filter(item => item.id !== index.toString());
+            
+            // Actualizar contador y vista
+            updateGalleryCounter();
+            updateGalleryPreview();
+            
+            // Ocultar el elemento en la interfaz
+            const itemElement = document.querySelector(`.gallery-item.existing[data-id="${index}"]`);
+            if (itemElement) {
+                itemElement.style.display = 'none';
+                
+                // Agregar input hidden para marcar como eliminado
+                const deleteInput = document.createElement('input');
+                deleteInput.type = 'hidden';
+                deleteInput.name = 'deleted_images[]';
+                deleteInput.value = index;
+                itemElement.appendChild(deleteInput);
+            }
+        }
+    }
+
+    // Función para eliminar un item de la galería (nueva imagen)
+    function removeGalleryItem(itemId, type) {
+        if (confirm('¿Estás seguro de que deseas eliminar esta imagen?')) {
+            if (type === 'new') {
+                // Remover del array de nuevas imágenes
+                window.newGalleryItems = window.newGalleryItems.filter(item => item.id !== itemId);
+                
+                // Actualizar galería
+                const galleryGrid = document.getElementById('galleryGrid');
+                const galleryCounter = document.getElementById('selectedCount');
+                
+                if (galleryGrid) galleryGrid.innerHTML = '';
+                
+                // Recrear items
+                window.newGalleryItems.forEach((item, index) => {
+                    const galleryItem = document.createElement('div');
+                    galleryItem.className = 'gallery-item new';
+                    galleryItem.dataset.id = item.id;
+                    galleryItem.draggable = true;
+
+                    galleryItem.innerHTML = `
+                        <img src="${item.preview}" alt="${item.name}" class="gallery-item-image">
+                        <div class="gallery-item-actions">
+                            <button type="button" class="gallery-action-btn move" title="Arrastrar para reordenar">
+                                <i class="fas fa-arrows-alt"></i>
+                            </button>
+                            <button type="button" class="gallery-action-btn delete" onclick="removeGalleryItem('${item.id}', 'new')" title="Eliminar imagen">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                        <div class="gallery-item-info">
+                            <div class="gallery-item-title">Imagen nueva ${index + 1}</div>
+                            <div class="gallery-item-size">${item.size}</div>
+                        </div>
+                    `;
+                    
+                    if (galleryGrid) galleryGrid.appendChild(galleryItem);
+                });
+            }
+            
+            // Actualizar contador y vista previa
+            updateGalleryCounter();
+            updateGalleryPreview();
+        }
+    }
+
+    // Función para actualizar el contador de imágenes
+    function updateGalleryCounter() {
+        const galleryCounter = document.getElementById('selectedCount');
+        if (galleryCounter) {
+            const total = (window.existingGalleryItems ? window.existingGalleryItems.length : 0) + 
+                         (window.newGalleryItems ? window.newGalleryItems.length : 0);
+            galleryCounter.textContent = total;
+            
+            const addGalleryBtn = document.getElementById('addGalleryImages');
+            if (addGalleryBtn) {
+                addGalleryBtn.disabled = total >= 5;
+            }
+        }
+    }
+
+    // Función para actualizar la vista previa de la galería
+    function updateGalleryPreview() {
+        const galleryPreview = document.getElementById('galleryPreview');
+        if (!galleryPreview) return;
+
+        const allItems = [
+            ...(window.existingGalleryItems || []),
+            ...(window.newGalleryItems || [])
+        ];
+        
+        if (allItems.length === 0) {
+            galleryPreview.innerHTML = `
+                <div class="empty-gallery">
+                    <i class="fas fa-images"></i>
+                    <p>No hay imágenes seleccionadas</p>
+                </div>
+            `;
+            return;
+        }
+
+        galleryPreview.innerHTML = '';
+        allItems.forEach((item, index) => {
+            const previewItem = document.createElement('div');
+            previewItem.className = 'gallery-preview-item';
+            previewItem.innerHTML = `
+                <img src="${item.preview}" alt="Previsualización ${index + 1}">
+                <div class="gallery-preview-item-overlay">
+                    ${index + 1}
+                </div>
+            `;
+            galleryPreview.appendChild(previewItem);
+        });
+    }
+
+    // Función para formatear tamaño de archivo
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+
+    // Función para mostrar alertas
+    function showAlert(message, type = 'error') {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `modern-alert ${type}`;
+        alertDiv.innerHTML = `
+            <div class="alert-content">
+                <i class="fas fa-${type === 'error' ? 'exclamation-triangle' : 'check-circle'}"></i>
+                <div>${message}</div>
+            </div>
+            <button class="alert-close" onclick="this.parentElement.remove()">
+                <i class="fas fa-times"></i>
+            </button>
+        `;
+        
+        document.querySelector('.aliado-edit-container').insertBefore(alertDiv, document.querySelector('.edit-card-modern'));
+        
+        // Auto-remover después de 5 segundos
+        setTimeout(() => {
+            if (alertDiv.parentElement) {
+                alertDiv.remove();
+            }
+        }, 5000);
     }
 
     // Cerrar modal con ESC

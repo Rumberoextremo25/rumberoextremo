@@ -60,6 +60,11 @@ class AllyController extends Controller
                 'user:id,name,email,created_at'
             ])->findOrFail($id);
 
+            // Decodificar las imágenes de productos para la vista
+            if ($ally->product_images) {
+                $ally->product_images = json_decode($ally->product_images, true);
+            }
+
             // Preparar datos adicionales para la vista
             $pageData = [
                 'title' => 'Detalles: ' . $ally->company_name,
@@ -100,6 +105,11 @@ class AllyController extends Controller
             'company_rif'       => 'nullable|string|max:255|unique:allies,company_rif',
             'description'       => 'nullable|string|max:1000', // Nuevo campo de descripción
             'image_url'         => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Nuevo campo de imagen
+            
+            // NUEVO: Galería de productos
+            'product_images'    => 'nullable|array|max:5',
+            'product_images.*'  => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+            
             'category_name'     => 'required|string|max:255',
             'sub_category_name' => 'nullable|string|max:255',
             'business_type_name' => 'required|string|max:255',
@@ -131,6 +141,13 @@ class AllyController extends Controller
             'image_url.image'           => 'El archivo debe ser una imagen.',
             'image_url.mimes'           => 'La imagen debe ser de tipo: jpeg, png, jpg, gif, svg.',
             'image_url.max'             => 'La imagen no puede pesar más de 2MB.',
+            
+            // NUEVOS MENSAJES PARA LA GALERÍA
+            'product_images.max'           => 'Solo puedes subir un máximo de 5 imágenes.',
+            'product_images.*.image'       => 'Todos los archivos deben ser imágenes válidas.',
+            'product_images.*.mimes'       => 'Las imágenes deben ser de tipo: jpeg, png, jpg, gif.',
+            'product_images.*.max'         => 'Cada imagen no puede pesar más de 2MB.',
+            
             'category_name.required'    => 'La categoría de negocio es obligatoria.',
             'business_type_name.required' => 'El tipo de negocio es obligatorio.',
 
@@ -187,7 +204,7 @@ class AllyController extends Controller
                 throw new \Exception('El rol "ally" no está configurado en el sistema.');
             }
 
-            // 7. Manejar la subida de la imagen
+            // 7. Manejar la subida de la imagen principal
             $imagePath = null;
             if ($request->hasFile('image_url')) {
                 // Guarda la imagen en el directorio 'public/allies' y obtiene la ruta.
@@ -195,13 +212,23 @@ class AllyController extends Controller
                 $imagePath = $request->file('image_url')->store('allies', 'public');
             }
 
-            // 8. Crear el registro del aliado y asociarlo al usuario y a las categorías/tipos
+            // 8. Manejar la subida de la galería de productos - NUEVO
+            $productImagesPaths = [];
+            if ($request->hasFile('product_images')) {
+                foreach ($request->file('product_images') as $image) {
+                    $path = $image->store('allies/products', 'public');
+                    $productImagesPaths[] = $path;
+                }
+            }
+
+            // 9. Crear el registro del aliado y asociarlo al usuario y a las categorías/tipos
             $ally = Ally::create([
                 'user_id'           => $user->id,
                 'company_name'      => $validatedData['company_name'],
                 'company_rif'       => $validatedData['company_rif'],
                 'description'       => $validatedData['description'] ?? null, // Asigna el valor o null
                 'image_url'         => $imagePath, // Asigna la ruta de la imagen o null
+                'product_images'    => !empty($productImagesPaths) ? json_encode($productImagesPaths) : null, // NUEVO
                 'category_id'       => $category->id,
                 'sub_category_id'   => $subCategory ? $subCategory->id : null,
                 'business_type_id'  => $businessType->id,
@@ -240,6 +267,11 @@ class AllyController extends Controller
      */
     public function alliesEdit(Ally $ally) // Laravel's Route Model Binding
     {
+        // Decodificar las imágenes de productos para la vista de edición
+        if ($ally->product_images) {
+            $ally->product_images = json_decode($ally->product_images, true);
+        }
+
         return view('Admin.aliado.edit', compact('ally'));
     }
 
@@ -254,6 +286,12 @@ class AllyController extends Controller
             'company_rif'       => 'nullable|string|max:255|unique:allies,company_rif,' . $ally->id,
             'description'       => 'nullable|string|max:1000',
             'image_url'         => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            // NUEVO: Galería de productos
+            'product_images'    => 'nullable|array|max:5',
+            'product_images.*'  => 'image|mimes:jpeg,png,jpg,gif|max:2048',
+            'existing_images'   => 'nullable|array',
+            'deleted_images'    => 'nullable|array',
+            
             'category_name'     => 'required|string|max:255', // Ahora es un nombre, no un ID
             'sub_category_name' => 'nullable|string|max:255', // Ahora es un nombre, no un ID
             'business_type_name' => 'required|string|max:255', // Ahora es un nombre, no un ID
@@ -277,6 +315,13 @@ class AllyController extends Controller
             'image_url.image'           => 'El archivo debe ser una imagen.',
             'image_url.mimes'           => 'La imagen debe ser de tipo: jpeg, png, jpg, gif, svg.',
             'image_url.max'             => 'La imagen no puede pesar más de 2MB.',
+            
+            // NUEVOS MENSAJES PARA LA GALERÍA
+            'product_images.max'           => 'Solo puedes subir un máximo de 5 imágenes.',
+            'product_images.*.image'       => 'Todos los archivos deben ser imágenes válidas.',
+            'product_images.*.mimes'       => 'Las imágenes deben ser de tipo: jpeg, png, jpg, gif.',
+            'product_images.*.max'         => 'Cada imagen no puede pesar más de 2MB.',
+            
             'category_name.required'    => 'La categoría de negocio es obligatoria.',
             'business_type_name.required' => 'El tipo de negocio es obligatorio.',
             'registered_at.required'    => 'La fecha de registro es obligatoria.',
@@ -311,7 +356,7 @@ class AllyController extends Controller
                 ['slug' => Str::slug($validatedData['business_type_name'])]
             );
 
-            // 5. Manejar la subida de la nueva imagen
+            // 5. Manejar la subida de la nueva imagen principal
             $imagePath = $ally->image_url; // Mantener la imagen existente por defecto
             if ($request->hasFile('image_url')) {
                 // Eliminar la imagen anterior si existe
@@ -322,12 +367,50 @@ class AllyController extends Controller
                 $imagePath = $request->file('image_url')->store('allies', 'public');
             }
 
-            // 6. Preparar los datos para la actualización del aliado
+            // 6. Manejar la galería de productos - NUEVO
+            $currentImages = $ally->product_images ? json_decode($ally->product_images, true) : [];
+            
+            // 6.1. Eliminar imágenes marcadas para borrar
+            if ($request->has('deleted_images')) {
+                foreach ($request->deleted_images as $deletedIndex) {
+                    if (isset($currentImages[$deletedIndex])) {
+                        // Eliminar el archivo del storage
+                        Storage::disk('public')->delete($currentImages[$deletedIndex]);
+                        // Remover del array
+                        unset($currentImages[$deletedIndex]);
+                    }
+                }
+                // Reindexar el array después de eliminar elementos
+                $currentImages = array_values($currentImages);
+            }
+
+            // 6.2. Agregar nuevas imágenes
+            $newImagesPaths = [];
+            if ($request->hasFile('product_images')) {
+                foreach ($request->file('product_images') as $image) {
+                    $path = $image->store('allies/products', 'public');
+                    $newImagesPaths[] = $path;
+                }
+            }
+
+            // 6.3. Combinar imágenes existentes (que no fueron eliminadas) con nuevas
+            $allImages = array_merge($currentImages, $newImagesPaths);
+            
+            // 6.4. Limitar a máximo 5 imágenes
+            if (count($allImages) > 5) {
+                throw new \Exception('No puedes tener más de 5 imágenes en la galería.');
+            }
+
+            // 6.5. Codificar a JSON para almacenar en la base de datos
+            $productImagesJson = !empty($allImages) ? json_encode($allImages) : null;
+
+            // 7. Preparar los datos para la actualización del aliado
             $ally->update([
                 'company_name'      => $validatedData['company_name'],
                 'company_rif'       => $validatedData['company_rif'],
                 'description'       => $validatedData['description'] ?? null,
                 'image_url'         => $imagePath,
+                'product_images'    => $productImagesJson, // NUEVO
                 'category_id'       => $category->id,
                 'sub_category_id'   => $subCategory ? $subCategory->id : null,
                 'business_type_id'  => $businessType->id,
@@ -365,12 +448,25 @@ class AllyController extends Controller
      */
     public function destroyAlly(Ally $ally)
     {
-        // ¡Importante! Si el user_id está en onDelete('cascade') en la migración de allies,
-        // al eliminar el aliado, el usuario asociado también será eliminado automáticamente.
-        // Si no quieres esto, deberías cambiar el onDelete o desvincular el usuario primero.
         try {
+            // Eliminar la imagen principal si existe
+            if ($ally->image_url) {
+                Storage::disk('public')->delete($ally->image_url);
+            }
+            
+            // Eliminar las imágenes de productos si existen - NUEVO
+            if ($ally->product_images) {
+                $productImages = json_decode($ally->product_images, true);
+                if (is_array($productImages)) {
+                    foreach ($productImages as $imagePath) {
+                        Storage::disk('public')->delete($imagePath);
+                    }
+                }
+            }
+            
             $ally->delete();
             return redirect()->route('aliados.index')->with('success', 'Aliado eliminado exitosamente.');
+            
         } catch (\Exception $e) {
             Log::error('Error al eliminar aliado: ' . $e->getMessage());
             return redirect()->route('aliados.index')->with('error', 'Hubo un error al eliminar el aliado.');

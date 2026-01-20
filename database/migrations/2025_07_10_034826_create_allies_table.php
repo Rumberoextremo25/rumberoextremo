@@ -27,6 +27,9 @@ return new class extends Migration
             $table->text('description')->nullable(); // Nuevo campo para la descripción del aliado
             $table->string('image_url')->nullable(); // Nuevo campo para la URL de la imagen del aliado
 
+            // NUEVO CAMPO: Galería de imágenes de productos/menús
+            $table->json('product_images')->nullable()->after('image_url'); // Array de rutas de imágenes de productos
+
             // --- Nuevas Claves Foráneas para Categorización ---
             // Estas reemplazan el campo 'service_category' para una categorización más granular.
             $table->foreignId('category_id')
