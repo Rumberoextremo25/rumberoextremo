@@ -82,7 +82,7 @@
 
     {{-- Sección de copyright --}}
     <div class="footer-bottom">
-        <p>&copy; {{ date('Y') }} Rumbero Extremo App. Todos los derechos reservados.</p>
+        <p>&copy; {{ date('Y') }} Rumbero Extremo. Todos los derechos reservados.</p>
         <p>Hecho con ❤️ en Venezuela.</p>
     </div>
 </footer>

@@ -7,7 +7,6 @@ use App\Http\Controllers\Api\AllyController;
 use App\Http\Controllers\Api\HomeController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PaymentController;
-use App\Http\Controllers\WebhookController;
 use App\Http\Controllers\Api\BankController;
 use Illuminate\Support\Facades\Http;
 
@@ -70,18 +69,6 @@ Route::prefix('pagos')->group(function () {
         Route::get('descargar-archivo-bnc/{archivo}', [PaymentController::class, 'descargarArchivoBNC']);
         Route::post('revertir/{payoutId}', [PaymentController::class, 'revertirPago']);
     });
-});
-
-// --- Rutas para los Webhooks (WebhookController) ---
-Route::prefix('webhooks')->group(function () {
-    // Webhook para notificaciones de pagos C2P
-    Route::post('/bnc/c2p', [WebhookController::class, 'handleC2PWebhook']);
-
-    // Webhook para notificaciones de pagos con tarjeta (VPOS)
-    Route::post('/bnc/card', [WebhookController::class, 'handleCardWebhook']);
-
-    // Webhook para notificaciones de pagos P2P
-    Route::post('/bnc/p2p', [WebhookController::class, 'handleP2PWebhook']);
 });
 
 // --- Ruta para obtener la lista de Bancos (BankController) ---
