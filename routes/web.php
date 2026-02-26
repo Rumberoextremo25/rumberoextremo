@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\CommercialAllyController;
 use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\AllyController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\RumberoAIController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\PayoutController;
 
@@ -32,8 +33,10 @@ Route::post('/contact', [PageController::class, 'storeContactMessage'])->name('c
 // Ruta para el Newsletter
 Route::post('/newsletter/subscribe', [PageController::class, 'subscribeToNewsletter'])->name('newsletter.subscribe');
 
-
-
+// Ruta para Chatbot RumberoAI
+Route::get('/rumberoai/chat', function() {
+    return redirect('/')->with('open_chat', true);
+})->name('rumberoai.chat');
 
 // RUTAS PARA EL APARTADO DEL ADMIN
 Route::middleware(['auth', 'verified'])->group(function () {
@@ -164,6 +167,12 @@ Route::prefix('admin')->group(function () {
     Route::post('/generate-backup-codes', [AdminController::class, 'generateNewBackupCodes'])->name('admin.generateBackupCodes');
     Route::post('/update-notifications', [AdminController::class, 'updateNotificationPreferences'])->name('admin.updateNotifications');
     Route::post('/update-dark-mode', [AdminController::class, 'updateDarkMode'])->name('admin.updateDarkMode');
+});
+
+
+// RUTA PRUEBA CHAT
+Route::get('/test-chat', function() {
+    return view('test-chat');
 });
 
 require __DIR__ . '/auth.php';

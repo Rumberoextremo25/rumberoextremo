@@ -30,7 +30,7 @@
             </ul>
         </div>
 
-        {{-- Sección 3: Conéctate (nueva sección visual) --}}
+        {{-- Sección 3: Conéctate (con el botón de RumberoAI MEJORADO) --}}
         <div class="footer-section footer-connect">
             <div class="connect-icon-container">
                 {{-- Ícono SVG para la sección "Conéctate" --}}
@@ -45,6 +45,7 @@
             </div>
             <h3>Conécta con Rumbero Extremo</h3>
             <p>Mantente al tanto de nuestras últimas noticias y avances.</p>
+
             {{-- Íconos de redes sociales para la sección de "Conéctate" --}}
             <div class="social-icons-connect">
                 <a href="https://facebook.com/rumberoextremo" target="_blank" aria-label="Facebook" class="facebook">
@@ -67,7 +68,6 @@
                         value="{{ old('email') }}">
                     <button type="submit" class="subscribe-button">Suscribir</button>
                 </div>
-                {{-- Manejo de errores y éxito (mantengo los estilos en línea ya que el código original los tiene así) --}}
                 @error('email')
                     <span class="error-message"
                         style="color: #ffcccc; font-size: 0.85em; display: block; margin-top: 8px;">{{ $message }}</span>

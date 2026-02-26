@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\HomeController;
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\BankController;
+use App\Http\Controllers\RumberoAIController;
 use Illuminate\Support\Facades\Http;
 
 /*
@@ -181,4 +182,17 @@ Route::get('/test/legacy-compatibility', function () {
             'timestamp' => now()->toISOString()
         ], 500);
     }
+});
+
+// Rutas públicas (sin autenticación)
+Route::get('/categorias', [RumberoAIController::class, 'getCategorias']);
+Route::post('/ia/chat', [RumberoAIController::class, 'chat']);
+
+// Rutas protegidas con Sanctum
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/ia/activar-descuento', [RumberoAIController::class, 'activarDescuento']);
+    Route::get('/ia/promociones', [RumberoAIController::class, 'promocionesActivas']);
+    Route::get('/ia/historial', [RumberoAIController::class, 'historial']);
+    Route::get('/ia/mis-descuentos', [RumberoAIController::class, 'misDescuentos']);
+    Route::post('/ia/usar-descuento/{codigo}', [RumberoAIController::class, 'usarDescuento']);
 });
