@@ -1,4 +1,4 @@
-/* ========== FORMULARIO DE EDICIÓN DE ALIADOS ========== */
+/* ========== FORMULARIO DE EDICION DE ALIADOS ========== */
 /* archivo: resources/css/admin/commercial-ally-edit.css */
 
 /* ========== ESTILOS GENERALES ========== */
@@ -10,7 +10,7 @@
 
 body {
     font-family: 'Plus Jakarta Sans', sans-serif;
-    background: #f8fafc;
+    background: #ffffff;
     color: #1e293b;
 }
 
@@ -105,7 +105,7 @@ body {
     align-items: center;
     gap: 0.3rem;
     color: #64748b;
-    background: #f8fafc;
+    background: #ffffff;
     padding: 0.5rem 1rem;
     border-radius: 50px;
     border: 1px solid #e2e8f0;
@@ -116,7 +116,7 @@ body {
     font-weight: 600;
 }
 
-/* ========== TARJETAS DE ESTADÍSTICAS ========== */
+/* ========== TARJETAS DE ESTADISTICAS ========== */
 .stats-grid {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
@@ -175,11 +175,12 @@ body {
 .stat-icon {
     width: 50px;
     height: 50px;
-    background: #f8fafc;
+    background: #ffffff;
     border-radius: 14px;
     display: flex;
     align-items: center;
     justify-content: center;
+    border: 1px solid #e9eef2;
 }
 
 .stat-icon i {
@@ -322,7 +323,7 @@ body {
     border: 1px solid #e2e8f0;
     border-radius: 12px;
     font-size: 0.95rem;
-    background: #f8fafc;
+    background: #ffffff;
     transition: all 0.2s ease;
     font-family: 'Plus Jakarta Sans', sans-serif;
 }
@@ -331,7 +332,6 @@ body {
     outline: none;
     border-color: #A601B3;
     box-shadow: 0 0 0 3px rgba(166, 1, 179, 0.1);
-    background: #ffffff;
 }
 
 .form-control::placeholder {
@@ -357,7 +357,7 @@ textarea.form-control {
     border: 1px solid #e2e8f0;
     border-radius: 12px;
     font-size: 0.95rem;
-    background: #f8fafc;
+    background: #ffffff;
     cursor: pointer;
 }
 
@@ -383,11 +383,11 @@ textarea.form-control {
     box-shadow: 0 4px 10px rgba(166, 1, 179, 0.2);
 }
 
-/* ========== PREVISUALIZACIÓN DE LOGO ========== */
+/* ========== PREVISUALIZACION DE LOGO ========== */
 .logo-preview-container {
     margin-top: 1rem;
     padding: 1.5rem;
-    background: #f8fafc;
+    background: #ffffff;
     border-radius: 16px;
     border: 2px dashed #e2e8f0;
 }
@@ -521,9 +521,10 @@ textarea.form-control {
     gap: 2rem;
     margin-bottom: 2rem;
     padding: 1rem;
-    background: #f8fafc;
+    background: #ffffff;
     border-radius: 16px;
     justify-content: center;
+    border: 1px solid #e2e8f0;
 }
 
 .progress-step {
@@ -804,98 +805,5 @@ textarea.form-control {
 
     .form-group label {
         flex-wrap: wrap;
-    }
-}
-
-/* ========== DARK MODE SOPORTE ========== */
-@media (prefers-color-scheme: dark) {
-    .allies-wrapper {
-        background: #0f172a;
-    }
-
-    .allies-header-bar,
-    .table-container,
-    .stat-card {
-        background: #1e293b;
-        border-color: #334155;
-    }
-
-    .title-main,
-    .stat-value,
-    .form-group label {
-        color: #f1f5f9;
-    }
-
-    .page-subtitle,
-    .stat-label,
-    .user-greeting,
-    .field-hint {
-        color: #94a3b8;
-    }
-
-    .user-greeting {
-        background: #334155;
-        border-color: #475569;
-    }
-
-    .form-control,
-    .form-control-file {
-        background: #334155;
-        border-color: #475569;
-        color: #f1f5f9;
-    }
-
-    .form-control:focus {
-        background: #1e293b;
-    }
-
-    .form-control::placeholder {
-        color: #64748b;
-    }
-
-    .logo-preview-container,
-    .form-progress,
-    .stat-icon {
-        background: #334155;
-        border-color: #475569;
-    }
-
-    .stat-icon i {
-        color: #A601B3;
-    }
-
-    .logo-preview {
-        border-color: #1e293b;
-    }
-
-    .btn-secondary {
-        background: #334155;
-        border-color: #475569;
-        color: #e2e8f0;
-    }
-
-    .btn-secondary:hover {
-        background: #475569;
-        color: #ffffff;
-    }
-
-    .required-badge {
-        background: #475569;
-        color: #e2e8f0;
-    }
-
-    .tooltip-icon {
-        background: #475569;
-        color: #e2e8f0;
-    }
-
-    .progress-step:not(:last-child)::after {
-        background: #475569;
-    }
-
-    .step-indicator {
-        background: #1e293b;
-        border-color: #475569;
-        color: #e2e8f0;
     }
 }

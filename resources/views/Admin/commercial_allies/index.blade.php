@@ -1,10 +1,11 @@
 @extends('layouts.admin')
 
-@section('page_title_toolbar', 'Gestión de Aliados Comerciales')
+@section('page_title_toolbar', 'Gestion de Aliados Comerciales')
 
 @push('styles')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/admin/commercial.css') }}">
 @endpush
 
@@ -22,7 +23,7 @@
         <div class="allies-header-bar">
             <div class="header-content">
                 <div class="page-title">
-                    <span class="title-main">Gestión de</span>
+                    <span class="title-main">Gestion de</span>
                     <span class="title-accent">Aliados Comerciales</span>
                 </div>
                 <div class="page-subtitle">
@@ -41,14 +42,20 @@
             </div>
         </div>
 
-        {{-- Tarjetas de Estadísticas --}}
+        {{-- Tarjetas de Estadisticas --}}
         <div class="stats-grid">
+            @php
+                $totalAllies = $allies->total();
+                $activeCount = $allies->where('is_active', true)->count();
+                $inactiveCount = $allies->where('is_active', false)->count();
+                $avgRating = number_format($allies->avg('rating') ?? 0, 1);
+            @endphp
             <div class="stat-card" data-color="purple">
                 <div class="stat-icon">
                     <i class="fas fa-handshake"></i>
                 </div>
                 <div class="stat-content">
-                    <span class="stat-value">{{ $totalAllies ?? $allies->total() }}</span>
+                    <span class="stat-value">{{ $totalAllies }}</span>
                     <span class="stat-label">Total Aliados</span>
                 </div>
             </div>
@@ -57,8 +64,8 @@
                     <i class="fas fa-check-circle"></i>
                 </div>
                 <div class="stat-content">
-                    <span class="stat-value">{{ $activeAllies ?? $allies->where('is_active', true)->count() }}</span>
-                    <span class="stat-label">Aliados Activos</span>
+                    <span class="stat-value">{{ $activeCount }}</span>
+                    <span class="stat-label">Aliados Activados</span>
                 </div>
             </div>
             <div class="stat-card" data-color="orange">
@@ -66,7 +73,7 @@
                     <i class="fas fa-star"></i>
                 </div>
                 <div class="stat-content">
-                    <span class="stat-value">{{ $avgRating ?? number_format($allies->avg('rating'), 1) }}</span>
+                    <span class="stat-value">{{ $avgRating }}</span>
                     <span class="stat-label">Rating Promedio</span>
                 </div>
             </div>
@@ -75,8 +82,8 @@
                     <i class="fas fa-clock"></i>
                 </div>
                 <div class="stat-content">
-                    <span class="stat-value">{{ $pendingAllies ?? $allies->where('is_active', false)->count() }}</span>
-                    <span class="stat-label">Pendientes</span>
+                    <span class="stat-value">{{ $inactiveCount }}</span>
+                    <span class="stat-label">Inactivos</span>
                 </div>
             </div>
         </div>
@@ -112,7 +119,7 @@
                 <div class="filter-dropdown">
                     <select class="filter-select" id="statusFilter">
                         <option value="">Todos los estados</option>
-                        <option value="activo">Activos</option>
+                        <option value="activo">Activados</option>
                         <option value="inactivo">Inactivos</option>
                     </select>
                     <i class="fas fa-chevron-down"></i>
@@ -166,10 +173,10 @@
                                             <div class="ally-details">
                                                 <span class="ally-name">{{ $ally->name }}</span>
                                                 @if($ally->category)
-                                                <span class="ally-category">
-                                                    <i class="fas fa-tag"></i>
-                                                    {{ $ally->category }}
-                                                </span>
+                                                    <span class="ally-category">
+                                                        <i class="fas fa-tag"></i>
+                                                        {{ $ally->category }}
+                                                    </span>
                                                 @endif
                                             </div>
                                         </div>
@@ -177,8 +184,8 @@
                                     <td>
                                         @if ($ally->logo_url)
                                             <div class="logo-wrapper">
-                                                <img src="{{ $ally->logo_url }}" alt="{{ $ally->name }}"
-                                                    class="ally-logo-modern" loading="lazy">
+                                                <img src="{{ asset('storage/' . $ally->logo_url) }}"
+                                                    alt="{{ $ally->name }}" class="ally-logo-modern" loading="lazy">
                                             </div>
                                         @else
                                             <div class="logo-placeholder">
@@ -189,10 +196,10 @@
                                     <td>
                                         <div class="ally-contact">
                                             @if($ally->email)
-                                            <span><i class="fas fa-envelope"></i> {{ $ally->email }}</span>
+                                                <span><i class="fas fa-envelope"></i> {{ $ally->email }}</span>
                                             @endif
                                             @if($ally->phone)
-                                            <span><i class="fas fa-phone"></i> {{ $ally->phone }}</span>
+                                                <span><i class="fas fa-phone"></i> {{ $ally->phone }}</span>
                                             @endif
                                         </div>
                                     </td>
@@ -226,14 +233,21 @@
                                         @endphp
                                         <span class="badge {{ $typeClass }}">
                                             <i class="fas {{ $typeIcon }}"></i>
-                                            {{ ucfirst($ally->type ?? 'Básico') }}
+                                            {{ ucfirst($ally->type ?? 'Basico') }}
                                         </span>
                                     </td>
                                     <td>
-                                        <span class="badge badge-status-{{ $ally->is_active ? 'activo' : 'inactivo' }}">
-                                            <i class="fas fa-circle"></i>
-                                            {{ $ally->is_active ? 'Activo' : 'Inactivo' }}
-                                        </span>
+                                        @if($ally->is_active)
+                                            <span class="badge badge-status-activo">
+                                                <i class="fas fa-check-circle"></i>
+                                                Activado
+                                            </span>
+                                        @else
+                                            <span class="badge badge-status-inactivo">
+                                                <i class="fas fa-times-circle"></i>
+                                                Inactivo
+                                            </span>
+                                        @endif
                                     </td>
                                     <td>
                                         <div class="date-info">
@@ -270,8 +284,8 @@
                     </table>
                 </div>
 
-                {{-- Paginación --}}
-                @if (method_exists($allies, 'hasPages') && $allies->hasPages())
+                {{-- Paginacion --}}
+                @if ($allies->hasPages())
                     <div class="pagination-wrapper">
                         <div class="pagination-info">
                             <i class="fas fa-store"></i>
@@ -285,32 +299,22 @@
                             {{ $allies->onEachSide(1)->links('pagination::bootstrap-4') }}
                         </div>
                     </div>
-                @elseif ($allies->count() > 0)
-                    <div class="pagination-wrapper">
-                        <div class="pagination-info">
-                            <i class="fas fa-store"></i>
-                            <span>
-                                Total de <strong>{{ $allies->count() }}</strong>
-                                aliado{{ $allies->count() !== 1 ? 's' : '' }}
-                            </span>
-                        </div>
-                    </div>
                 @endif
             @endif
         </div>
     </div>
 
-    {{-- Modal de Confirmación --}}
+    {{-- Modal de Confirmacion --}}
     <div id="deleteModal" class="modal-modern">
         <div class="modal-card">
             <div class="modal-icon">
                 <i class="fas fa-exclamation-triangle"></i>
             </div>
-            <h3 class="modal-title">Confirmar Eliminación</h3>
+            <h3 class="modal-title">Confirmar Eliminacion</h3>
             <div class="modal-body">
-                <p>¿Estás seguro de que quieres eliminar al aliado</p>
+                <p>¿Estas seguro de que quieres eliminar al aliado</p>
                 <p class="modal-highlight" id="modalAllyName"></p>
-                <p class="modal-warning">Esta acción no se puede deshacer y se perderán todos los datos asociados.</p>
+                <p class="modal-warning">Esta accion no se puede deshacer y se perderan todos los datos asociados.</p>
             </div>
             <div class="modal-actions">
                 <button type="button" class="btn-secondary" onclick="closeDeleteModal()">
@@ -359,7 +363,7 @@
             }, 5000);
         });
 
-        // Modal de eliminación
+        // Modal de eliminacion
         window.openDeleteModal = function(id, name) {
             currentDeleteId = id;
             document.getElementById('modalAllyName').textContent = name;
@@ -393,72 +397,9 @@
             }
         });
 
-        // Animación de entrada para las filas
+        // Animacion de entrada para las filas
         document.querySelectorAll('tbody tr').forEach((row, index) => {
             row.style.animation = `fadeInUp 0.3s ease forwards ${index * 0.05}s`;
         });
-
-        // Búsqueda en tiempo real (opcional - requeriría backend o JavaScript adicional)
-        document.getElementById('searchInput')?.addEventListener('keyup', function(e) {
-            // Implementar lógica de búsqueda si es necesario
-        });
-
-        // Filtro por estado (opcional - requeriría backend o JavaScript adicional)
-        document.getElementById('statusFilter')?.addEventListener('change', function(e) {
-            // Implementar lógica de filtro si es necesario
-        });
-
-        // Tooltips personalizados
-        document.querySelectorAll('.action-btn').forEach(btn => {
-            btn.addEventListener('mouseenter', function() {
-                const tooltip = this.getAttribute('title');
-                if (tooltip) {
-                    this.setAttribute('data-tooltip', tooltip);
-                    this.removeAttribute('title');
-                }
-            });
-        });
     </script>
-
-    <style>
-        @keyframes slideOut {
-            from {
-                transform: translateX(0);
-                opacity: 1;
-            }
-            to {
-                transform: translateX(100%);
-                opacity: 0;
-            }
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .delete-form {
-            display: inline;
-        }
-
-        .text-center {
-            text-align: center;
-        }
-
-        .badge i {
-            margin-right: 4px;
-        }
-
-        .action-btn.view i,
-        .action-btn.edit i,
-        .action-btn.delete i {
-            font-size: 1rem;
-        }
-    </style>
 @endpush

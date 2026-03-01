@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\CommercialAlly; // Asegúrate de que este namespace es correcto
+use App\Models\CommercialAlly;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage; // Importa la fachada Storage
+use Illuminate\Support\Facades\Storage;
 
 class CommercialAllyController extends Controller
 {
@@ -14,7 +14,7 @@ class CommercialAllyController extends Controller
      */
     public function index()
     {
-        $allies = CommercialAlly::paginate(10); // Muestra 10 aliados por página
+        $allies = CommercialAlly::paginate(10);
         return view('Admin.commercial_allies.index', compact('allies'));
     }
 
@@ -37,21 +37,21 @@ class CommercialAllyController extends Controller
             'rating' => 'nullable|numeric|min:0|max:5',
             'description' => 'nullable|string',
             'website_url' => 'nullable|url',
+            'is_active' => 'sometimes|boolean',
         ]);
 
         $logoPath = null;
         if ($request->hasFile('logo')) {
-            $storagePath = Storage::disk('public')->put('logos', $request->file('logo'));
-            // MODIFICACIÓN CLAVE AQUÍ: Generar la URL absoluta usando asset()
-            $logoPath = asset('storage/' . $storagePath);
+            $logoPath = $request->file('logo')->store('logos', 'public');
         }
 
         CommercialAlly::create([
             'name' => $request->name,
-            'logo_url' => $logoPath, // Ahora $logoPath ya es la URL absoluta o null
+            'logo_url' => $logoPath,
             'rating' => $request->rating ?? 0.0,
             'description' => $request->description,
             'website_url' => $request->website_url,
+            'is_active' => $request->has('is_active') ? true : false,
         ]);
 
         return redirect()->route('admin.commercial-allies.index')->with('success', 'Aliado comercial creado exitosamente.');
@@ -84,33 +84,25 @@ class CommercialAllyController extends Controller
             'rating' => 'nullable|numeric|min:0|max:5',
             'description' => 'nullable|string',
             'website_url' => 'nullable|url',
+            'is_active' => 'sometimes|boolean',
         ]);
 
-        $logoPathToSave = $commercialAlly->logo_url; // Mantener la URL existente por defecto
+        $logoPathToSave = $commercialAlly->logo_url;
 
         if ($request->hasFile('logo')) {
-            // Eliminar el logo anterior si existe
             if ($commercialAlly->logo_url) {
-                // Hay que convertir la URL absoluta a una ruta relativa para Storage::disk('public')->delete
-                $relativePathToDelete = str_replace(asset('storage/'), '', $commercialAlly->logo_url);
-                if (Storage::disk('public')->exists($relativePathToDelete)) {
-                    Storage::disk('public')->delete($relativePathToDelete);
-                }
+                Storage::disk('public')->delete($commercialAlly->logo_url);
             }
-
-            // Guardar el nuevo logo
-            $newStoragePath = Storage::disk('public')->put('logos', $request->file('logo'));
-
-            // MODIFICACIÓN CLAVE AQUÍ: Generar la URL absoluta para guardar en la base de datos
-            $logoPathToSave = asset('storage/' . $newStoragePath);
+            $logoPathToSave = $request->file('logo')->store('logos', 'public');
         }
 
         $commercialAlly->update([
             'name' => $request->name,
-            'logo_url' => $logoPathToSave, // Ahora $logoPathToSave ya es la URL absoluta
+            'logo_url' => $logoPathToSave,
             'rating' => $request->rating,
             'description' => $request->description,
             'website_url' => $request->website_url,
+            'is_active' => $request->has('is_active') ? true : false,
         ]);
 
         return redirect()->route('admin.commercial-allies.index')->with('success', 'Aliado comercial actualizado exitosamente.');
@@ -121,12 +113,8 @@ class CommercialAllyController extends Controller
      */
     public function destroy(CommercialAlly $commercialAlly)
     {
-        // Para eliminar, también necesitamos convertir la URL absoluta a una ruta relativa
         if ($commercialAlly->logo_url) {
-            $relativePathToDelete = str_replace(asset('storage/'), '', $commercialAlly->logo_url);
-            if (Storage::disk('public')->exists($relativePathToDelete)) {
-                Storage::disk('public')->delete($relativePathToDelete);
-            }
+            Storage::disk('public')->delete($commercialAlly->logo_url);
         }
         $commercialAlly->delete();
         return redirect()->route('admin.commercial-allies.index')->with('success', 'Aliado comercial eliminado exitosamente.');

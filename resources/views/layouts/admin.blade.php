@@ -34,11 +34,11 @@
 
     <link rel="stylesheet" href="{{ asset('css/admin/profile-update.css') }}">
     <link rel="stylesheet" href="{{ asset('css/admin/aliados-form.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/admin/banner-form.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/banner-create.css') }}">
     <link rel="stylesheet" href="{{ asset('css/admin/banner-edit.css') }}">
     <link rel="stylesheet" href="{{ asset('css/admin/commercial.css') }}">
     <link rel="stylesheet" href="{{ asset('css/admin/commercial-form.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/admin/commercial-edit-form.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/admin/commercial-ally-edit.css') }}">
     <link rel="stylesheet" href="{{ asset('css/admin/promotion-create.css') }}">
     <link rel="stylesheet" href="{{ asset('css/admin/promotion-edit.css') }}">
 
