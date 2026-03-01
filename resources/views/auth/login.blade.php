@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="login-wrapper">
-    @vite(['resources/css/login.css'])
+    @vite(['public/css/login.css'])
     
     {{-- Elementos decorativos de fondo --}}
     <div class="bg-particles"></div>
