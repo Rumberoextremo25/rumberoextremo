@@ -1,280 +1,485 @@
-/* login.css */
-body {
-    font-family: 'Poppins', sans-serif;
+/* login.css - Solo para el formulario de inicio de sesión */
+* {
     margin: 0;
     padding: 0;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: #0a0a1a;
     min-height: 100vh;
-    background-color: #0d0d1a;
-    color: #333333;
-    overflow: hidden;
-    position: relative;
-}
-
-/* Fondo de la página de login con gradiente animado */
-.login-container {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background-size: cover;
-    background-position: center;
     display: flex;
-    justify-content: center;
     align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+/* Wrapper principal */
+.login-wrapper {
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    position: relative;
     z-index: 1;
-    /* Gradiente animado como overlay */
-    background-image: linear-gradient(135deg, rgba(26, 26, 46, 0.8) 0%, rgba(51, 0, 78, 0.8) 50%, rgba(26, 26, 46, 0.8) 100%);
-    animation: backgroundMove 20s infinite alternate;
 }
 
-@keyframes backgroundMove {
-    from {
-        background-position: 0% 0%;
-    }
-
-    to {
-        background-position: 100% 100%;
-    }
-}
-
-/* Overlay oscuro con desenfoque */
-.login-container::before {
-    content: '';
-    position: absolute;
+/* Elementos decorativos de fondo */
+.bg-particles {
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
-    backdrop-filter: blur(5px);
-    z-index: 2;
+    background-image: 
+        radial-gradient(circle at 20% 30%, rgba(166, 1, 179, 0.15) 0%, transparent 30%),
+        radial-gradient(circle at 80% 70%, rgba(48, 4, 225, 0.15) 0%, transparent 30%),
+        linear-gradient(135deg, #0a0a1a 0%, #1a1030 100%);
+    z-index: 0;
 }
 
-.login-card {
-    position: relative;
-    z-index: 3;
-    background: rgba(255, 255, 255, 0.95);
-    padding: 30px 40px;
-    border-radius: 25px;
-    box-shadow: 0 0 10px rgba(155, 81, 224, 0.6), 0 0 20px rgba(155, 81, 224, 0.4);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
+.bg-glow {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     width: 100%;
-    max-width: 550px;
-    text-align: center;
-    animation: fadeIn 0.8s ease-out;
-    transform-style: preserve-3d;
-    transition: transform 0.3s ease;
+    height: 100%;
+    background: radial-gradient(circle, rgba(166, 1, 179, 0.1) 0%, transparent 70%);
+    filter: blur(80px);
+    z-index: 0;
 }
 
-.login-card:hover {
-    transform: perspective(1000px) rotateY(2deg);
+/* Tarjeta de login moderna */
+.login-card-modern {
+    position: relative;
+    z-index: 2;
+    width: 100%;
+    max-width: 460px;
+    background: rgba(18, 18, 30, 0.8);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 32px;
+    padding: 40px 35px;
+    box-shadow: 
+        0 25px 50px -12px rgba(0, 0, 0, 0.5),
+        0 0 0 1px rgba(166, 1, 179, 0.2),
+        0 0 30px rgba(166, 1, 179, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    animation: cardAppear 0.5s ease-out;
 }
 
-@keyframes fadeIn {
+@keyframes cardAppear {
     from {
         opacity: 0;
-        transform: translateY(-30px);
+        transform: translateY(20px);
     }
-
     to {
         opacity: 1;
         transform: translateY(0);
     }
 }
 
-.login-header {
+/* Header de la tarjeta */
+.login-header-modern {
+    text-align: center;
+    margin-bottom: 35px;
+}
+
+.logo-container {
+    margin-bottom: 20px;
+}
+
+.login-logo-modern {
+    max-width: 140px;
+    height: auto;
+    filter: drop-shadow(0 0 20px rgba(166, 1, 179, 0.5));
+}
+
+.login-title {
+    margin-bottom: 8px;
+}
+
+.title-extremo {
+    display: block;
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, #A601B3, #3004E1);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    line-height: 1.2;
+}
+
+.title-welcome {
+    display: block;
+    font-size: 1.3rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+    margin-top: 5px;
+}
+
+.login-subtitle {
+    color: rgba(255, 255, 255, 0.5);
+    font-size: 0.95rem;
+}
+
+/* Alertas */
+.alert-modern {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 15px 20px;
+    border-radius: 16px;
+    margin-bottom: 25px;
+    font-size: 0.95rem;
+    background: rgba(166, 1, 179, 0.1);
+    border: 1px solid rgba(166, 1, 179, 0.3);
+    color: #e0b0ff;
+}
+
+.alert-success {
+    background: rgba(72, 187, 120, 0.1);
+    border-color: rgba(72, 187, 120, 0.3);
+    color: #9ae6b4;
+}
+
+.alert-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+}
+
+/* Grupos de formulario */
+.form-group-modern {
     margin-bottom: 25px;
 }
 
-.login-logo {
-    max-width: 160px;
-    margin-bottom: 15px;
-    filter: drop-shadow(0 0 10px rgba(155, 81, 224, 0.6), 0 0 20px rgba(155, 81, 224, 0.4));
+.form-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.95rem;
+    font-weight: 500;
 }
 
-.login-header h2 {
-    font-size: 2.2em;
-    color: #333333;
-    margin: 0;
-    font-weight: 700;
+.label-icon {
+    width: 18px;
+    height: 18px;
+    color: #A601B3;
 }
 
-.alert {
-    background-color: #d4edda;
-    color: #155724;
-    padding: 12px 20px;
-    border-radius: 8px;
-    margin-bottom: 20px;
-    border: 1px solid #c3e6cb;
-    font-size: 0.9em;
-}
-
-.form-group {
-    margin-bottom: 20px;
-    text-align: left;
+/* Input wrapper con efecto */
+.input-wrapper-modern {
     position: relative;
 }
 
-.form-group label {
-    display: block;
-    margin-bottom: 6px;
-    font-weight: 600;
-    color: #333333;
-    font-size: 1.1em;
-}
-
-.form-control {
-    width: calc(100% - 24px);
-    padding: 15px 12px;
-    border: 1px solid #cccccc;
-    border-radius: 12px;
-    font-size: 1em;
-    background-color: #ffffff;
-    color: #333333;
+.form-input-modern {
+    width: 100%;
+    padding: 16px 18px;
+    background: rgba(10, 10, 20, 0.6);
+    border: 2px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+    font-size: 1rem;
+    color: white;
     transition: all 0.3s ease;
+    position: relative;
+    z-index: 1;
 }
 
-.form-control::placeholder {
-    color: #999;
-}
-
-.form-control:focus {
-    border-color: #9B51E0;
-    box-shadow: 0 0 0 3px rgba(155, 81, 224, 0.3);
+.form-input-modern:focus {
     outline: none;
+    border-color: transparent;
 }
 
-.form-control.is-invalid {
-    border-color: #e74c3c;
+.input-border {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    border-radius: 18px;
+    border: 2px solid transparent;
+    background: linear-gradient(135deg, #A601B3, #3004E1) border-box;
+    -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
+    -webkit-mask-composite: xor;
+    mask-composite: exclude;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
-.invalid-feedback {
-    color: #e74c3c;
-    font-size: 0.85em;
-    margin-top: 5px;
-    display: block;
+.form-input-modern:focus + .input-border {
+    opacity: 1;
 }
 
-.form-options {
+/* Placeholder */
+.form-input-modern::placeholder {
+    color: rgba(255, 255, 255, 0.3);
+    font-weight: 300;
+}
+
+/* Toggle de contraseña */
+.password-toggle-modern {
+    position: absolute;
+    right: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.4);
+    cursor: pointer;
+    padding: 5px;
+    z-index: 2;
+    transition: all 0.2s ease;
+}
+
+.password-toggle-modern:hover {
+    color: #A601B3;
+}
+
+.password-toggle-modern.active {
+    transform: translateY(-50%) scale(0.95);
+}
+
+.eye-icon {
+    width: 20px;
+    height: 20px;
+}
+
+/* Mensajes de error */
+.error-message {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 8px;
+    color: #fc8181;
+    font-size: 0.85rem;
+}
+
+.error-icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+}
+
+.is-invalid {
+    border-color: #fc8181 !important;
+}
+
+/* Opciones del formulario */
+.form-options-modern {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 25px;
-    font-size: 0.95em;
+    margin: 20px 0 25px;
 }
 
-.remember-me {
+/* Checkbox personalizado */
+.checkbox-modern {
     display: flex;
     align-items: center;
-    color: #333333;
+    gap: 10px;
     cursor: pointer;
     user-select: none;
 }
 
-.remember-me input[type="checkbox"] {
-    margin-right: 8px;
-    accent-color: #A601B3;
-    width: 18px;
-    height: 18px;
+.checkbox-input {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
 }
 
-.forgot-password-link {
-    color: #3004E1;
-    text-decoration: none;
-    transition: color 0.3s ease, text-shadow 0.3s ease;
+.checkbox-custom {
+    width: 20px;
+    height: 20px;
+    background: rgba(10, 10, 20, 0.6);
+    border: 2px solid rgba(166, 1, 179, 0.4);
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    position: relative;
 }
 
-.forgot-password-link:hover {
-    color: #A601B3;
-    text-decoration: underline;
-    text-shadow: 0 0 5px rgba(155, 81, 224, 0.5);
+.checkbox-input:checked + .checkbox-custom {
+    background: linear-gradient(135deg, #A601B3, #3004E1);
+    border-color: transparent;
 }
 
-.btn-primary {
-    background-image: #3004E1;
+.checkbox-input:checked + .checkbox-custom::after {
+    content: '✓';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     color: white;
-    padding: 15px 25px;
+    font-size: 14px;
+}
+
+.checkbox-input:focus + .checkbox-custom {
+    box-shadow: 0 0 0 3px rgba(166, 1, 179, 0.3);
+}
+
+.checkbox-label {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.95rem;
+}
+
+/* Link de olvidé contraseña */
+.forgot-link-modern {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    color: #A601B3;
+    text-decoration: none;
+    font-size: 0.95rem;
+    transition: all 0.2s ease;
+}
+
+.forgot-link-modern:hover {
+    color: #3004E1;
+    gap: 8px;
+}
+
+.link-arrow {
+    width: 16px;
+    height: 16px;
+}
+
+/* Botón de login */
+.btn-login-modern {
+    width: 100%;
+    padding: 18px 25px;
+    background: linear-gradient(135deg, #A601B3, #3004E1);
     border: none;
-    border-radius: 12px;
-    font-size: 1.15em;
-    font-weight: 700;
+    border-radius: 50px;
+    color: white;
+    font-size: 1.1rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
     cursor: pointer;
     transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 10px 20px -5px rgba(166, 1, 179, 0.4);
+}
+
+.btn-login-modern::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
     width: 100%;
-    box-shadow: 0 0 10px #A601B3;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s ease;
 }
 
-.btn-primary:hover {
-    background-image: #3004E1;
-    transform: scale(1.02);
-    box-shadow: 0 0 15px #A601B3;
+.btn-login-modern:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 30px -5px rgba(166, 1, 179, 0.6);
 }
 
-.login-footer {
+.btn-login-modern:hover::before {
+    left: 100%;
+}
+
+.btn-login-modern:active {
+    transform: translateY(0);
+}
+
+.btn-icon {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.3s ease;
+}
+
+.btn-login-modern:hover .btn-icon {
+    transform: translateX(5px);
+}
+
+/* Link de registro */
+.register-link-modern {
+    text-align: center;
     margin-top: 25px;
-    font-size: 0.95em;
-    color: #333333;
+    padding-top: 20px;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.login-footer a {
-    color: #3004E1;
+.register-link-modern p {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.95rem;
+}
+
+.register-link-modern a {
+    color: #A601B3;
     text-decoration: none;
     font-weight: 600;
-    transition: color 0.3s ease, text-shadow 0.3s ease;
+    transition: all 0.2s ease;
+    position: relative;
 }
 
-.login-footer a:hover {
+.register-link-modern a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 0;
+    height: 1px;
+    background: linear-gradient(135deg, #A601B3, #3004E1);
+    transition: width 0.3s ease;
+}
+
+.register-link-modern a:hover {
     color: #3004E1;
-    text-decoration: underline;
-    text-shadow: 0 0 5px rgba(155, 81, 224, 0.5);
 }
 
-/* Media Queries para responsividad */
-@media (max-width: 768px) {
-    .login-card {
-        margin: 20px;
-        padding: 25px;
-        max-width: 90%;
-        width: 100%; /* Asegura que la tarjeta ocupe el ancho disponible */
-    }
+.register-link-modern a:hover::after {
+    width: 100%;
+}
 
-    .login-header h2 {
-        font-size: 1.8em;
+/* Responsive */
+@media (max-width: 480px) {
+    .login-card-modern {
+        padding: 30px 20px;
     }
-
-    .form-options {
+    
+    .title-extremo {
+        font-size: 2rem;
+    }
+    
+    .title-welcome {
+        font-size: 1.1rem;
+    }
+    
+    .form-options-modern {
         flex-direction: column;
         gap: 15px;
+        align-items: flex-start;
     }
-
-    .form-control {
-        width: 100%; /* Ajusta el ancho de los campos al 100% */
-        padding: 12px 10px;
+    
+    .btn-login-modern {
+        padding: 16px 20px;
+        font-size: 1rem;
     }
 }
 
-@media (max-width: 480px) {
-    .login-card {
-        margin: 15px;
-        padding: 20px;
-        max-width: 95%;
+@media (max-width: 360px) {
+    .login-card-modern {
+        padding: 25px 15px;
     }
-
-    .login-header h2 {
-        font-size: 1.6em;
-    }
-
-    .login-logo {
-        max-width: 130px;
-    }
-
-    .btn-primary {
-        padding: 12px 20px;
-        font-size: 1em;
+    
+    .login-logo-modern {
+        max-width: 120px;
     }
 }

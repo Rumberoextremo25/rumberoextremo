@@ -84,7 +84,7 @@ class UserController extends Controller
         $user->save();
 
         // Redirect to the users index page, using a named route
-        return redirect()->route('users')->with('success', 'Usuario creado exitosamente.');
+        return redirect()->route('admin.users.store')->with('success', 'Usuario creado exitosamente.');
     }
 
     /**
@@ -167,7 +167,7 @@ class UserController extends Controller
         $user->save();
 
         // Redirect to the users index page, using a named route
-        return redirect()->route('users')->with('success', 'Usuario actualizado exitosamente.');
+        return redirect()->route('admin.users.update')->with('success', 'Usuario actualizado exitosamente.');
     }
 
     /**
@@ -176,7 +176,8 @@ class UserController extends Controller
     public function destroy(User $user)
     {
         $user->delete();
-        // Redirect to the users index page, using a named route
-        return redirect()->route('users')->with('success', 'Usuario eliminado exitosamente.');
+
+        // CORREGIDO: Redirigir al índice (no necesita parámetros)
+        return redirect()->route('admin.users.index')->with('success', 'Usuario eliminado exitosamente.');
     }
 }

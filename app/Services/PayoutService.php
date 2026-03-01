@@ -78,7 +78,6 @@ class PayoutService
             ]);
 
             return $payout;
-
         } catch (\Exception $e) {
             Log::error('Error al crear payout: ' . $e->getMessage(), [
                 'venta_id' => $venta->id,
@@ -151,7 +150,6 @@ class PayoutService
                 'message' => 'Archivo de pagos generado exitosamente',
                 'data' => $resultadoArchivo
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error en procesarYGenerarArchivoPagos: ' . $e->getMessage());
@@ -159,6 +157,20 @@ class PayoutService
                 'success' => false,
                 'message' => $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Obtiene un payout completo con todas sus relaciones
+     */
+    public function obtenerPayoutCompleto(int $payoutId): Payout
+    {
+        try {
+            $payout = Payout::with(['ally', 'sale'])->findOrFail($payoutId);
+            return $payout;
+        } catch (\Exception $e) {
+            Log::error('Error obteniendo payout completo: ' . $e->getMessage());
+            throw new \Exception('Payout no encontrado');
         }
     }
 
@@ -204,7 +216,7 @@ class PayoutService
             ->where('status', 'pending')
             ->orderBy('created_at', 'asc')
             ->get()
-            ->map(function($payout) {
+            ->map(function ($payout) {
                 return [
                     'id' => $payout->id,
                     'aliado' => [
@@ -270,13 +282,13 @@ class PayoutService
     public function obtenerEstadisticasCompletas(): array
     {
         $estadisticasBasicas = $this->obtenerEstadisticasPayouts();
-        
+
         // Estadísticas por aliado
         $estadisticasAliados = Payout::with('ally')
             ->select('ally_id', DB::raw('COUNT(*) as total_payouts'), DB::raw('SUM(net_amount) as total_monto'))
             ->groupBy('ally_id')
             ->get()
-            ->map(function($item) {
+            ->map(function ($item) {
                 return [
                     'aliado_id' => $item->ally_id,
                     'aliado_nombre' => $item->ally->name ?? 'N/A',
@@ -292,11 +304,11 @@ class PayoutService
 
         // Estadísticas mensuales
         $estadisticasMensuales = Payout::select(
-                DB::raw('YEAR(created_at) as year'),
-                DB::raw('MONTH(created_at) as month'),
-                DB::raw('COUNT(*) as total_payouts'),
-                DB::raw('SUM(net_amount) as total_monto')
-            )
+            DB::raw('YEAR(created_at) as year'),
+            DB::raw('MONTH(created_at) as month'),
+            DB::raw('COUNT(*) as total_payouts'),
+            DB::raw('SUM(net_amount) as total_monto')
+        )
             ->groupBy('year', 'month')
             ->orderBy('year', 'desc')
             ->orderBy('month', 'desc')
@@ -343,7 +355,6 @@ class PayoutService
                 'monto_total' => $payouts->sum('net_amount'),
                 'referencia_pago' => 'DEV-PAY-' . uniqid()
             ];
-
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error simulando confirmación: ' . $e->getMessage());
@@ -371,12 +382,12 @@ class PayoutService
 
             // Generar contenido del archivo BNC
             $contenidoArchivo = $this->formatearArchivoBNC($payouts, $tipoCuenta, $concepto);
-            
+
             // Guardar archivo con nombre más descriptivo
             $timestamp = date('Ymd_His');
             $nombreArchivo = "pagos_bnc_{$timestamp}_{$payouts->count()}registros.txt";
             $rutaArchivo = storage_path('app/pagos_bnc/' . $nombreArchivo);
-            
+
             File::ensureDirectoryExists(dirname($rutaArchivo));
             File::put($rutaArchivo, $contenidoArchivo);
 
@@ -403,7 +414,6 @@ class PayoutService
                 'tipo_cuenta' => $tipoCuenta,
                 'concepto' => $concepto
             ];
-
         } catch (\Exception $e) {
             Log::error('Error generando archivo BNC: ' . $e->getMessage());
             throw $e;
@@ -418,56 +428,58 @@ class PayoutService
         $contenido = "";
         $fechaPago = now()->format('d/m/Y');
         $montoTotal = 0;
-        
+
         // Obtener cuenta de débito directamente desde .env
         $cuentaDebitar = $this->obtenerCuentaDebito();
-        
+
         foreach ($payouts as $payout) {
             $aliado = $payout->ally;
             $montoTotal += $payout->net_amount;
-            
+
             // I. FECHA DE PAGO (DD/MM/AAAA)
             $fechaPago = $fechaPago;
-            
+
             // II. CUENTA A DEBITAR (20 dígitos exactos desde .env)
             $cuentaDebitar = $cuentaDebitar;
-            
+
             // III. CUENTA BENEFICIARIO (20 dígitos exactos)
             $cuentaBeneficiario = str_pad(
-                $aliado->bank_account_number ?? '00000000000000000000', 
-                20, '0', STR_PAD_LEFT
+                $aliado->bank_account_number ?? '00000000000000000000',
+                20,
+                '0',
+                STR_PAD_LEFT
             );
-            
+
             // IV. MONTO DEL PAGO (15 dígitos, 2 decimales con coma)
             $montoPago = $this->formatearMontoBNC($payout->net_amount);
-            
+
             // V. DESCRIPCIÓN (60 caracteres máximo)
             $descripcion = $this->truncarTexto(
-                $concepto ?? env('CONCEPTO_PAGO_DEFAULT', 'Pago comisiones'), 
+                $concepto ?? env('CONCEPTO_PAGO_DEFAULT', 'Pago comisiones'),
                 60
             );
-            
+
             // VI. ID BENEFICIARIO (10 caracteres máximo)
             $idBeneficiario = $this->formatearIdBeneficiarioBNC(
-                $aliado->document_type ?? 'V', 
+                $aliado->document_type ?? 'V',
                 $aliado->document_number ?? '00000000'
             );
-            
+
             // VII. NOMBRE BENEFICIARIO (80 caracteres máximo)
             $nombreBeneficiario = $this->truncarTexto(
-                $aliado->name ?? 'BENEFICIARIO NO DEFINIDO', 
+                $aliado->name ?? 'BENEFICIARIO NO DEFINIDO',
                 80
             );
-            
+
             // VIII. EMAIL BENEFICIARIO (100 caracteres máximo)
             $emailBeneficiario = $this->truncarTexto(
-                $aliado->email ?? 'sin-email@dominio.com', 
+                $aliado->email ?? 'sin-email@dominio.com',
                 100
             );
-            
+
             // IX. REFERENCIA DEL CLIENTE (10 dígitos máximo)
             $referenciaCliente = str_pad($payout->id, 10, '0', STR_PAD_LEFT);
-            
+
             // Formar línea según formato del banco
             $linea = implode('|', [
                 $fechaPago,
@@ -480,16 +492,16 @@ class PayoutService
                 $emailBeneficiario,
                 $referenciaCliente
             ]);
-            
+
             $contenido .= $linea . PHP_EOL;
         }
-        
+
         Log::info('Archivo BNC generado', [
             'registros' => $payouts->count(),
             'monto_total' => $montoTotal,
             'cuenta_debito' => $cuentaDebitar
         ]);
-        
+
         return $contenido;
     }
 
@@ -499,13 +511,13 @@ class PayoutService
     private function obtenerCuentaDebito(): string
     {
         $cuenta = env('CUENTA_DEBITO_BNC', '00000000000000000000');
-        
+
         // Validar que tenga 20 dígitos
         if (!preg_match('/^\d{20}$/', $cuenta)) {
             Log::error('Cuenta de débito BNC no válida en .env', ['cuenta' => $cuenta]);
             throw new \Exception('La cuenta de débito configurada no tiene 20 dígitos. Verifique CUENTA_DEBITO_BNC en .env');
         }
-        
+
         return $cuenta;
     }
 
@@ -516,10 +528,10 @@ class PayoutService
     {
         // Asegurar que tenga 2 decimales
         $montoFormateado = number_format($monto, 2, ',', '');
-        
+
         // Remover cualquier separador de miles y dejar solo números y coma decimal
         $montoLimpio = str_replace('.', '', $montoFormateado);
-        
+
         // Rellenar con ceros a la izquierda hasta 15 caracteres
         return str_pad($montoLimpio, 15, '0', STR_PAD_LEFT);
     }
@@ -530,13 +542,13 @@ class PayoutService
     private function formatearIdBeneficiarioBNC($tipoDocumento, $documento): string
     {
         $tipo = strtoupper($tipoDocumento);
-        
+
         // Limpiar documento (solo números)
         $documentoLimpio = preg_replace('/[^0-9]/', '', $documento);
-        
+
         // Combinar tipo + documento (ej: V123456789)
         $idCompleto = $tipo . $documentoLimpio;
-        
+
         // Limitar a 10 caracteres máximo
         return substr($idCompleto, 0, 10);
     }
@@ -555,16 +567,16 @@ class PayoutService
     private function validarAliadosParaPagoBNC($payouts): array
     {
         $errores = [];
-        
+
         foreach ($payouts as $payout) {
             $aliado = $payout->ally;
             $validacion = $this->validarAliadoIndividualBNC($aliado);
-            
+
             if (!$validacion['valido']) {
                 $errores[] = "Aliado {$aliado->name} (ID: {$aliado->id}): " . implode(', ', $validacion['errores']);
             }
         }
-        
+
         return $errores;
     }
 
@@ -574,14 +586,14 @@ class PayoutService
     private function validarAliadoIndividualBNC($aliado): array
     {
         $errores = [];
-        
+
         // Validar cuenta bancaria (20 dígitos)
         if (empty($aliado->bank_account_number)) {
             $errores[] = 'Cuenta bancaria es requerida';
         } elseif (!preg_match('/^\d{20}$/', $aliado->bank_account_number)) {
             $errores[] = 'Cuenta bancaria debe tener 20 dígitos exactos';
         }
-        
+
         // Validar tipo de documento
         $tiposPermitidos = ['V', 'E', 'J', 'G'];
         if (empty($aliado->document_type)) {
@@ -589,21 +601,21 @@ class PayoutService
         } elseif (!in_array(strtoupper($aliado->document_type), $tiposPermitidos)) {
             $errores[] = 'Tipo de documento debe ser V, E, J o G';
         }
-        
+
         // Validar número de documento
         if (empty($aliado->document_number)) {
             $errores[] = 'Número de documento es requerido';
         } elseif (!preg_match('/^[0-9]{6,9}$/', $aliado->document_number)) {
             $errores[] = 'Número de documento debe contener entre 6 y 9 dígitos';
         }
-        
+
         // Validar nombre
         if (empty($aliado->name)) {
             $errores[] = 'Nombre es requerido';
         } elseif (strlen($aliado->name) > 80) {
             $errores[] = 'Nombre debe tener máximo 80 caracteres';
         }
-        
+
         // Validar email
         if (empty($aliado->email)) {
             $errores[] = 'Email es requerido';
@@ -612,7 +624,7 @@ class PayoutService
         } elseif (strlen($aliado->email) > 100) {
             $errores[] = 'Email debe tener máximo 100 caracteres';
         }
-        
+
         return [
             'valido' => empty($errores),
             'errores' => $errores
@@ -640,12 +652,63 @@ class PayoutService
     }
 
     /**
+     * Obtiene la evolución mensual de pagos para un aliado específico
+     */
+    public function obtenerEvolucionMensualAliado(int $aliadoId, int $meses = 6): array
+    {
+        try {
+            $fechaInicio = now()->subMonths($meses - 1)->startOfMonth();
+            $fechaFin = now()->endOfMonth();
+
+            $pagos = Payout::where('ally_id', $aliadoId)
+                ->whereBetween('created_at', [$fechaInicio, $fechaFin])
+                ->where('status', 'completed')
+                ->select(
+                    DB::raw('YEAR(created_at) as year'),
+                    DB::raw('MONTH(created_at) as month'),
+                    DB::raw('SUM(net_amount) as total_monto'),
+                    DB::raw('COUNT(*) as total_pagos')
+                )
+                ->groupBy('year', 'month')
+                ->orderBy('year', 'asc')
+                ->orderBy('month', 'asc')
+                ->get()
+                ->keyBy(function ($item) {
+                    return $item->year . '-' . str_pad($item->month, 2, '0', STR_PAD_LEFT);
+                });
+
+            $labels = [];
+            $data = [];
+
+            for ($i = 0; $i < $meses; $i++) {
+                $fecha = now()->subMonths($meses - 1 - $i);
+                $key = $fecha->format('Y-m');
+                $mesLabel = $fecha->formatLocalized('%b');
+
+                $labels[] = $mesLabel;
+                $data[] = isset($pagos[$key]) ? (float) $pagos[$key]->total_monto : 0;
+            }
+
+            return [
+                'labels' => $labels,
+                'data' => $data
+            ];
+        } catch (\Exception $e) {
+            Log::error('Error obteniendo evolución mensual del aliado: ' . $e->getMessage());
+            return [
+                'labels' => [],
+                'data' => []
+            ];
+        }
+    }
+
+    /**
      * Descarga archivo BNC generado
      */
     public function descargarArchivoBNC($archivo): array
     {
         $rutaArchivo = storage_path('app/pagos_bnc/' . $archivo);
-        
+
         if (!File::exists($rutaArchivo)) {
             throw new \Exception('El archivo solicitado no existe');
         }
@@ -667,9 +730,9 @@ class PayoutService
     {
         $archivos = [];
         $directorio = storage_path('app/pagos_bnc/');
-        
+
         if (File::exists($directorio)) {
-            $archivos = array_map(function($archivo) {
+            $archivos = array_map(function ($archivo) {
                 return [
                     'nombre' => $archivo->getFilename(),
                     'ruta' => $archivo->getPathname(),
@@ -680,7 +743,7 @@ class PayoutService
         }
 
         // Ordenar por fecha de modificación (más reciente primero)
-        usort($archivos, function($a, $b) {
+        usort($archivos, function ($a, $b) {
             return strtotime($b['fecha_modificacion']) - strtotime($a['fecha_modificacion']);
         });
 
@@ -693,7 +756,7 @@ class PayoutService
     public function eliminarArchivoBNC($archivo): bool
     {
         $rutaArchivo = storage_path('app/pagos_bnc/' . $archivo);
-        
+
         if (!File::exists($rutaArchivo)) {
             throw new \Exception('El archivo solicitado no existe');
         }
@@ -747,7 +810,6 @@ class PayoutService
                 'fecha_pago' => $fechaPago,
                 'comprobante' => $rutaComprobante
             ];
-
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error confirmando pagos: ' . $e->getMessage());
@@ -793,12 +855,12 @@ class PayoutService
         // Búsqueda por referencia
         if ($request->has('search') && $request->search) {
             $search = $request->search;
-            $query->where(function($q) use ($search) {
+            $query->where(function ($q) use ($search) {
                 $q->where('payment_reference', 'like', "%{$search}%")
-                  ->orWhere('sale_reference', 'like', "%{$search}%")
-                  ->orWhereHas('ally', function($q) use ($search) {
-                      $q->where('name', 'like', "%{$search}%");
-                  });
+                    ->orWhere('sale_reference', 'like', "%{$search}%")
+                    ->orWhereHas('ally', function ($q) use ($search) {
+                        $q->where('name', 'like', "%{$search}%");
+                    });
             });
         }
 
@@ -835,7 +897,6 @@ class PayoutService
                 'payout_id' => $payoutId,
                 'motivo' => $motivo
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error('Error revirtiendo pago: ' . $e->getMessage());
@@ -879,7 +940,7 @@ class PayoutService
             ->select('ally_id', DB::raw('COUNT(*) as total_payouts'), DB::raw('SUM(net_amount) as total_monto'))
             ->groupBy('ally_id')
             ->get()
-            ->map(function($item) {
+            ->map(function ($item) {
                 return [
                     'aliado_id' => $item->ally_id,
                     'aliado_nombre' => $item->ally->name ?? 'N/A',
@@ -901,33 +962,35 @@ class PayoutService
     public function validarPagoIndividualBNC(array $datosPago): array
     {
         $errores = [];
-        
+
         // Validar cuenta beneficiario (20 dígitos exactos)
         if (!preg_match('/^\d{20}$/', $datosPago['cuenta_beneficiario'] ?? '')) {
             $errores[] = 'Cuenta beneficiario debe tener exactamente 20 dígitos';
         }
-        
+
         // Validar ID beneficiario (máximo 10 caracteres, formato V/E/J/G + números)
         if (!preg_match('/^[VEJG][-]?\d{1,9}$/i', $datosPago['id_beneficiario'] ?? '')) {
             $errores[] = 'ID beneficiario debe tener formato V/E/J/G seguido de números (máx 10 caracteres)';
         }
-        
+
         // Validar monto (numérico, positivo)
         if (!is_numeric($datosPago['monto'] ?? 0) || $datosPago['monto'] <= 0) {
             $errores[] = 'Monto debe ser un valor numérico positivo';
         }
-        
+
         // Validar nombre beneficiario (máximo 80 caracteres)
         if (empty($datosPago['nombre_beneficiario']) || strlen($datosPago['nombre_beneficiario']) > 80) {
             $errores[] = 'Nombre beneficiario es requerido y máximo 80 caracteres';
         }
-        
+
         // Validar email (formato válido, máximo 100 caracteres)
-        if (!filter_var($datosPago['email_beneficiario'] ?? '', FILTER_VALIDATE_EMAIL) || 
-            strlen($datosPago['email_beneficiario']) > 100) {
+        if (
+            !filter_var($datosPago['email_beneficiario'] ?? '', FILTER_VALIDATE_EMAIL) ||
+            strlen($datosPago['email_beneficiario']) > 100
+        ) {
             $errores[] = 'Email debe ser válido y tener máximo 100 caracteres';
         }
-        
+
         return [
             'valido' => empty($errores),
             'errores' => $errores

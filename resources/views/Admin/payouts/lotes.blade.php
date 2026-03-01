@@ -4,21 +4,32 @@
 
 @push('styles')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/admin/lotes.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    <link rel="stylesheet" href="{{ asset('css/admin/payout.css') }}">
 @endpush
 
 @section('content')
-    <div class="main-content">
-        <h2 class="page-title text-gray-900">
-            <span class="text-gray-900">Lotes de</span>
-            <span class="text-purple">Pagos</span>
-        </h2>
+    <div class="main-content lotes-container">
+        {{-- Header --}}
+        <div class="page-header">
+            <h1>
+                <span class="text-gray-900">Lotes de</span>
+                <span class="text-purple">Pagos</span>
+            </h1>
+            <div class="header-actions">
+                <a href="{{ route('admin.payouts.pendientes') }}" class="btn-primary">
+                    <i class="fas fa-plus-circle"></i> Nuevo Lote
+                </a>
+                <a href="{{ route('admin.payouts.archivos') }}" class="btn-secondary">
+                    <i class="fas fa-file-export"></i> Ver Archivos
+                </a>
+            </div>
+        </div>
 
         {{-- Alertas --}}
         @if (session('success'))
-            <div class="alert alert-success" role="alert">
+            <div class="alert alert-success">
                 <i class="fas fa-check-circle"></i>
                 <span>{{ session('success') }}</span>
                 <button type="button" class="close-alert">&times;</button>
@@ -26,187 +37,275 @@
         @endif
 
         @if (session('error'))
-            <div class="alert alert-error" role="alert">
+            <div class="alert alert-error">
                 <i class="fas fa-exclamation-circle"></i>
                 <span>{{ session('error') }}</span>
                 <button type="button" class="close-alert">&times;</button>
             </div>
         @endif
 
-        {{-- Estadísticas de Lotes --}}
-        <div class="stats-grid mb-6">
-            <div class="stat-item">
+        {{-- Estadísticas Rápidas --}}
+        @php
+            $totalLotes = count($lotes);
+            $lotesProcesados = collect($lotes)
+                ->filter(function ($l) {
+                    return $l['estado'] === 'procesado';
+                })
+                ->count();
+            $lotesPendientes = collect($lotes)
+                ->filter(function ($l) {
+                    return $l['estado'] === 'pendiente';
+                })
+                ->count();
+            $totalPagos = collect($lotes)->sum('cantidad_pagos');
+            $totalMonto = collect($lotes)->sum('monto_total');
+        @endphp
+
+        <div class="stats-grid">
+            <div class="stat-card">
                 <div class="stat-icon">
                     <i class="fas fa-layer-group"></i>
                 </div>
-                <div class="stat-value">{{ $lotes->total() }}</div>
-                <div class="stat-label">Total Lotes</div>
-            </div>
-
-            <div class="stat-item">
-                <div class="stat-icon">
-                    <i class="fas fa-check-circle"></i>
+                <div class="stat-content">
+                    <div class="stat-label">Total Lotes</div>
+                    <div class="stat-value">{{ $totalLotes }}</div>
+                    <div class="stat-sub">{{ $lotesProcesados }} procesados</div>
                 </div>
-                <div class="stat-value">{{ $lotes->where('estado', 'completado')->count() }}</div>
-                <div class="stat-label">Lotes Completados</div>
             </div>
-
-            <div class="stat-item">
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-money-bill-wave"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-label">Pagos Incluidos</div>
+                    <div class="stat-value">{{ number_format($totalPagos) }}</div>
+                    <div class="stat-sub">en todos los lotes</div>
+                </div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-icon">
+                    <i class="fas fa-coins"></i>
+                </div>
+                <div class="stat-content">
+                    <div class="stat-label">Monto Total</div>
+                    <div class="stat-value">Bs. {{ number_format($totalMonto, 2, ',', '.') }}</div>
+                    <div class="stat-sub">suma de lotes</div>
+                </div>
+            </div>
+            <div class="stat-card">
                 <div class="stat-icon">
                     <i class="fas fa-clock"></i>
                 </div>
-                <div class="stat-value">{{ $lotes->where('estado', 'procesando')->count() }}</div>
-                <div class="stat-label">En Proceso</div>
-            </div>
-
-            <div class="stat-item">
-                <div class="stat-icon">
-                    <i class="fas fa-exclamation-triangle"></i>
+                <div class="stat-content">
+                    <div class="stat-label">Pendientes</div>
+                    <div class="stat-value">{{ $lotesPendientes }}</div>
+                    <div class="stat-sub">por procesar</div>
                 </div>
-                <div class="stat-value">{{ $lotes->where('estado', 'fallido')->count() }}</div>
-                <div class="stat-label">Lotes Fallidos</div>
             </div>
         </div>
 
         {{-- Filtros --}}
-        <div class="stats-card mb-4">
-            <form action="{{ route('admin.payouts.lotes') }}" method="GET" class="filters-form">
-                <div class="filters-grid">
-                    <div class="form-group">
-                        <label for="estado">Estado:</label>
-                        <select name="estado" id="estado" class="form-control">
-                            <option value="">Todos los estados</option>
-                            <option value="pendiente" {{ request('estado') == 'pendiente' ? 'selected' : '' }}>Pendiente</option>
-                            <option value="procesando" {{ request('estado') == 'procesando' ? 'selected' : '' }}>Procesando</option>
-                            <option value="completado" {{ request('estado') == 'completado' ? 'selected' : '' }}>Completado</option>
-                            <option value="fallido" {{ request('estado') == 'fallido' ? 'selected' : '' }}>Fallido</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="fecha_inicio">Fecha Inicio:</label>
-                        <input type="date" name="fecha_inicio" id="fecha_inicio" class="form-control" 
-                               value="{{ request('fecha_inicio', date('Y-m-01')) }}">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="fecha_fin">Fecha Fin:</label>
-                        <input type="date" name="fecha_fin" id="fecha_fin" class="form-control" 
-                               value="{{ request('fecha_fin', date('Y-m-d')) }}">
-                    </div>
-
-                    <div class="form-group">
-                        <label>&nbsp;</label>
-                        <div class="filter-actions">
-                            <button type="submit" class="action-button">
-                                <i class="fas fa-filter"></i> Filtrar
-                            </button>
-                            <a href="{{ route('admin.payouts.lotes') }}" class="action-button secondary">
-                                <i class="fas fa-redo"></i> Limpiar
-                            </a>
-                        </div>
-                    </div>
+        <div class="filtros-section">
+            <div class="filtros-titulo">
+                <i class="fas fa-filter"></i>
+                <span>Filtrar Lotes</span>
+            </div>
+            <form action="{{ route('admin.payouts.lotes') }}" method="GET" class="filtros-grid">
+                <div class="filtro-group">
+                    <label for="estado">Estado</label>
+                    <select name="estado" id="estado" class="form-control">
+                        <option value="">Todos</option>
+                        <option value="procesado" {{ request('estado') == 'procesado' ? 'selected' : '' }}>Procesados
+                        </option>
+                        <option value="pendiente" {{ request('estado') == 'pendiente' ? 'selected' : '' }}>Pendientes
+                        </option>
+                        <option value="error" {{ request('estado') == 'error' ? 'selected' : '' }}>Con Error</option>
+                    </select>
+                </div>
+                <div class="filtro-group">
+                    <label for="fecha_desde">Fecha Desde</label>
+                    <input type="date" name="fecha_desde" id="fecha_desde" class="form-control"
+                        value="{{ request('fecha_desde', now()->subMonth()->format('Y-m-d')) }}">
+                </div>
+                <div class="filtro-group">
+                    <label for="fecha_hasta">Fecha Hasta</label>
+                    <input type="date" name="fecha_hasta" id="fecha_hasta" class="form-control"
+                        value="{{ request('fecha_hasta', now()->format('Y-m-d')) }}">
+                </div>
+                <div class="filtro-actions">
+                    <button type="submit" class="btn-filtro primary">
+                        <i class="fas fa-search"></i> Filtrar
+                    </button>
+                    <a href="{{ route('admin.payouts.lotes') }}" class="btn-filtro secondary">
+                        <i class="fas fa-times"></i> Limpiar
+                    </a>
                 </div>
             </form>
         </div>
 
-        {{-- Lista de Lotes --}}
-        <div class="stats-card">
-            <div class="card-header">
-                <h3>Lotes de Pagos</h3>
-                <div class="card-actions">
-                    <span class="text-muted">Mostrando {{ $lotes->count() }} de {{ $lotes->total() }} lotes</span>
-                </div>
-            </div>
+        {{-- Vista de Tarjetas --}}
+        <div class="lotes-grid">
+            @forelse($lotes as $lote)
+                <div class="lote-card {{ $lote['estado'] }}">
+                    <div class="lote-header">
+                        <div class="lote-titulo">
+                            <div class="lote-icon">
+                                <i class="fas fa-layer-group"></i>
+                            </div>
+                            <div>
+                                <div class="lote-nombre">{{ $lote['nombre'] }}</div>
+                                <div class="lote-fecha">{{ \Carbon\Carbon::parse($lote['fecha'])->format('d/m/Y H:i') }}
+                                </div>
+                            </div>
+                        </div>
+                        <span class="lote-badge {{ $lote['estado'] }}">
+                            {{ ucfirst($lote['estado']) }}
+                        </span>
+                    </div>
 
-            @if($lotes->isEmpty())
-                <div class="no-data-message">
-                    <i class="fas fa-layer-group"></i>
-                    <h4>No se encontraron lotes</h4>
-                    <p>No hay lotes de pagos que coincidan con los criterios de búsqueda.</p>
+                    <div class="lote-body">
+                        <div class="lote-info">
+                            <div class="lote-info-row">
+                                <span class="info-label">Pagos Incluidos</span>
+                                <span class="info-value">{{ number_format($lote['cantidad_pagos']) }}</span>
+                            </div>
+                            <div class="lote-info-row">
+                                <span class="info-label">Monto Total</span>
+                                <span class="info-value success">Bs.
+                                    {{ number_format($lote['monto_total'], 2, ',', '.') }}</span>
+                            </div>
+                            <div class="lote-info-row">
+                                <span class="info-label">Procesados</span>
+                                <span class="info-value">{{ number_format($lote['procesados'] ?? 0) }}</span>
+                            </div>
+                            <div class="lote-info-row">
+                                <span class="info-label">Con Error</span>
+                                <span class="info-value danger">{{ number_format($lote['errores'] ?? 0) }}</span>
+                            </div>
+                        </div>
+
+                        @if (($lote['procesados'] ?? 0) > 0)
+                            @php
+                                $porcentaje = ($lote['procesados'] / $lote['cantidad_pagos']) * 100;
+                            @endphp
+                            <div class="lote-progress">
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="width: {{ $porcentaje }}%"></div>
+                                </div>
+                                <div class="progress-text">{{ number_format($porcentaje, 1) }}% completado</div>
+                            </div>
+                        @endif
+                    </div>
+
+                    <div class="lote-footer">
+                        <div class="lote-info">
+                            <span class="info-label">Generado por</span>
+                            <span class="info-value">{{ $lote['generado_por'] ?? 'Sistema' }}</span>
+                        </div>
+                        <div class="lote-actions">
+                            <button class="btn-icon info" title="Ver detalles"
+                                onclick="verDetallesLote('{{ $lote['id'] }}')">
+                                <i class="fas fa-eye"></i>
+                            </button>
+
+                            @if ($lote['estado'] === 'procesado')
+                                <a href="/admin/payouts/descargar-bnc/{{ urlencode($lote['archivo']) }}"
+                                    class="btn-icon download" title="Descargar archivo">
+                                    <i class="fas fa-download"></i>
+                                </a>
+                            @endif
+
+                            @if ($lote['estado'] === 'pendiente')
+                                <button class="btn-icon process" title="Procesar lote"
+                                    onclick="procesarLote('{{ $lote['id'] }}')">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                            @endif
+
+                            <button class="btn-icon delete" title="Eliminar lote"
+                                onclick="confirmarEliminacion('{{ $lote['id'] }}', '{{ $lote['nombre'] }}')">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </div>
+                    </div>
                 </div>
-            @else
+            @empty
+                <div class="no-data-message" style="grid-column: 1/-1;">
+                    <i class="fas fa-layer-group icon"></i>
+                    <h3>No hay lotes de pagos</h3>
+                    <p>Los lotes aparecerán aquí cuando generes archivos de pagos BNC.</p>
+                </div>
+            @endforelse
+        </div>
+
+        {{-- Vista de Tabla (Alternativa) --}}
+        @if (!empty($lotes))
+            <div class="lotes-table-container">
+                <div class="table-header">
+                    <h3>
+                        <i class="fas fa-table"></i>
+                        Vista Detallada
+                    </h3>
+                    <span class="badge">{{ $totalLotes }} lotes</span>
+                </div>
+
                 <div class="table-responsive">
-                    <table class="payouts-table">
+                    <table class="lotes-table">
                         <thead>
                             <tr>
                                 <th>ID Lote</th>
-                                <th>Descripción</th>
-                                <th>Pagos Incluidos</th>
+                                <th>Nombre</th>
+                                <th>Fecha Generación</th>
+                                <th>Pagos</th>
                                 <th>Monto Total</th>
+                                <th>Procesados</th>
+                                <th>Errores</th>
                                 <th>Estado</th>
-                                <th>Fecha Creación</th>
-                                <th>Fecha Procesamiento</th>
-                                <th>Creado Por</th>
+                                <th>Generado Por</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($lotes as $lote)
+                            @foreach ($lotes as $lote)
                                 <tr>
-                                    <td>
-                                        <strong>#{{ $lote['id'] }}</strong>
+                                    <td><strong>{{ $lote['id'] }}</strong></td>
+                                    <td>{{ $lote['nombre'] }}</td>
+                                    <td>{{ \Carbon\Carbon::parse($lote['fecha'])->format('d/m/Y H:i') }}</td>
+                                    <td class="text-success">{{ number_format($lote['cantidad_pagos']) }}</td>
+                                    <td class="text-success">Bs. {{ number_format($lote['monto_total'], 2, ',', '.') }}
                                     </td>
+                                    <td>{{ number_format($lote['procesados'] ?? 0) }}</td>
+                                    <td class="text-danger">{{ number_format($lote['errores'] ?? 0) }}</td>
                                     <td>
-                                        <div class="lote-info">
-                                            <div class="lote-descripcion">{{ $lote['descripcion'] }}</div>
-                                            <div class="lote-metodo">{{ $lote['metodo_pago'] }} - {{ $lote['banco_destino'] }}</div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <span class="badge badge-info">{{ $lote['total_pagos'] }}</span>
-                                    </td>
-                                    <td class="text-success">
-                                        <strong>Bs. {{ number_format($lote['monto_total'], 2, ',', '.') }}</strong>
-                                    </td>
-                                    <td>
-                                        <span class="status-badge status-{{ $lote['estado'] }}">
-                                            {{ $lote['estado'] }}
+                                        <span class="lote-table-badge {{ $lote['estado'] }}">
+                                            {{ ucfirst($lote['estado']) }}
                                         </span>
                                     </td>
+                                    <td>{{ $lote['generado_por'] ?? 'Sistema' }}</td>
                                     <td>
-                                        {{ \Carbon\Carbon::parse($lote['fecha_creacion'])->format('d/m/Y H:i') }}
-                                    </td>
-                                    <td>
-                                        @if($lote['fecha_procesamiento'])
-                                            {{ \Carbon\Carbon::parse($lote['fecha_procesamiento'])->format('d/m/Y H:i') }}
-                                        @else
-                                            <span class="text-muted">N/A</span>
-                                        @endif
-                                    </td>
-                                    <td>
-                                        <div class="user-info">
-                                            <div class="user-name">{{ $lote['creado_por']['nombre'] }}</div>
-                                            <div class="user-email">{{ $lote['creado_por']['email'] }}</div>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        <div class="action-buttons">
-                                            <button class="btn-action btn-info" 
-                                                    title="Ver detalles"
-                                                    onclick="verDetallesLote({{ json_encode($lote) }})">
+                                        <div class="action-buttons" style="display: flex; gap: 0.25rem;">
+                                            <button class="btn-icon info"
+                                                onclick="verDetallesLote('{{ $lote['id'] }}')" title="Ver detalles">
                                                 <i class="fas fa-eye"></i>
                                             </button>
 
-                                            @if($lote['estado'] === 'pendiente')
-                                                <button class="btn-action btn-success" 
-                                                        title="Procesar lote"
-                                                        onclick="procesarLote({{ $lote['id'] }})">
+                                            @if ($lote['estado'] === 'procesado' && !empty($lote['archivo']))
+                                                <a href="/admin/payouts/descargar-bnc/{{ urlencode($lote['archivo']) }}"
+                                                    class="btn-icon download" title="Descargar archivo">
+                                                    <i class="fas fa-download"></i>
+                                                </a>
+                                            @endif
+
+                                            @if ($lote['estado'] === 'pendiente')
+                                                <button class="btn-icon process"
+                                                    onclick="procesarLote('{{ $lote['id'] }}')" title="Procesar lote">
                                                     <i class="fas fa-play"></i>
                                                 </button>
                                             @endif
 
-                                            @if($lote['estado'] === 'completado')
-                                                <button class="btn-action btn-warning" 
-                                                        title="Revertir lote"
-                                                        onclick="revertirLote({{ $lote['id'] }})">
-                                                    <i class="fas fa-undo"></i>
-                                                </button>
-                                            @endif
-
-                                            <button class="btn-action btn-danger" 
-                                                    title="Eliminar lote"
-                                                    onclick="eliminarLote({{ $lote['id'] }})">
+                                            <button class="btn-icon delete"
+                                                onclick="confirmarEliminacion('{{ $lote['id'] }}', '{{ $lote['nombre'] }}')"
+                                                title="Eliminar lote">
                                                 <i class="fas fa-trash"></i>
                                             </button>
                                         </div>
@@ -216,401 +315,221 @@
                         </tbody>
                     </table>
                 </div>
-
-                {{-- Paginación --}}
-                @if($lotes->hasPages())
-                    <div class="pagination-container">
-                        {{ $lotes->links() }}
-                    </div>
-                @endif
-            @endif
-        </div>
+            </div>
+        @endif
     </div>
 
     {{-- Modal de Detalles del Lote --}}
-    <div id="detallesLoteModal" class="modal-overlay hidden">
+    <div id="detallesModal" class="modal-overlay hidden">
         <div class="modal-content large">
             <div class="modal-header">
-                <h3>Detalles del Lote #<span id="lote-id"></span></h3>
+                <h3>
+                    <i class="fas fa-layer-group"></i>
+                    Detalles del Lote
+                </h3>
                 <button type="button" class="close-modal-btn">&times;</button>
             </div>
             <div class="modal-body">
-                <div class="lote-details-grid">
-                    <div class="detail-item">
-                        <label>Descripción:</label>
-                        <span id="lote-descripcion"></span>
-                    </div>
-                    <div class="detail-item">
-                        <label>Método de Pago:</label>
-                        <span id="lote-metodo"></span>
-                    </div>
-                    <div class="detail-item">
-                        <label>Banco Destino:</label>
-                        <span id="lote-banco"></span>
-                    </div>
-                    <div class="detail-item">
-                        <label>Total Pagos:</label>
-                        <span id="lote-total-pagos"></span>
-                    </div>
-                    <div class="detail-item">
-                        <label>Monto Total:</label>
-                        <span id="lote-monto-total" class="text-success"></span>
-                    </div>
-                    <div class="detail-item">
-                        <label>Estado:</label>
-                        <span id="lote-estado"></span>
-                    </div>
-                    <div class="detail-item">
-                        <label>Fecha Creación:</label>
-                        <span id="lote-fecha-creacion"></span>
-                    </div>
-                    <div class="detail-item">
-                        <label>Fecha Procesamiento:</label>
-                        <span id="lote-fecha-procesamiento"></span>
-                    </div>
-                    <div class="detail-item full-width">
-                        <label>Pagos Incluidos:</label>
-                        <div id="lote-pagos" class="pagos-list"></div>
-                    </div>
+                <div id="detalle-contenido">
+                    <p class="text-muted">Cargando detalles...</p>
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn cancel-modal-btn">Cerrar</button>
+                <button type="button" class="btn btn-secondary" onclick="cerrarModal()">Cerrar</button>
+                <a href="#" id="btn-descargar-lote" class="btn btn-primary" style="display: none;">
+                    <i class="fas fa-download"></i> Descargar Archivo
+                </a>
+            </div>
+        </div>
+    </div>
+
+    {{-- Modal de Confirmación de Eliminación --}}
+    <div id="confirmarModal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>
+                    <i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i>
+                    Confirmar Eliminación
+                </h3>
+                <button type="button" class="close-modal-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <p>¿Estás seguro de que deseas eliminar el lote:</p>
+                <p><strong id="eliminar-nombre-lote"></strong>?</p>
+                <p class="text-muted" style="margin-top: 1rem;">
+                    <i class="fas fa-info-circle"></i>
+                    Esta acción no se puede deshacer y eliminará todos los registros asociados.
+                </p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="cerrarModalEliminar()">Cancelar</button>
+                <form id="eliminar-form" method="POST" style="display: inline;">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-primary" style="background: #ef4444;">
+                        <i class="fas fa-trash"></i> Eliminar Lote
+                    </button>
+                </form>
             </div>
         </div>
     </div>
 @endsection
 
 @push('scripts')
-<script>
-    function verDetallesLote(lote) {
-        const modal = document.getElementById('detallesLoteModal');
-        
-        // Llenar datos del lote
-        document.getElementById('lote-id').textContent = lote.id;
-        document.getElementById('lote-descripcion').textContent = lote.descripcion;
-        document.getElementById('lote-metodo').textContent = lote.metodo_pago;
-        document.getElementById('lote-banco').textContent = lote.banco_destino;
-        document.getElementById('lote-total-pagos').textContent = lote.total_pagos;
-        document.getElementById('lote-monto-total').textContent = 'Bs. ' + lote.monto_total.toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2});
-        document.getElementById('lote-estado').innerHTML = `<span class="status-badge status-${lote.estado}">${lote.estado}</span>`;
-        document.getElementById('lote-fecha-creacion').textContent = new Date(lote.fecha_creacion).toLocaleString('es-ES');
-        document.getElementById('lote-fecha-procesamiento').textContent = lote.fecha_procesamiento ? new Date(lote.fecha_procesamiento).toLocaleString('es-ES') : 'N/A';
-        
-        // Llenar lista de pagos
-        const pagosList = document.getElementById('lote-pagos');
-        pagosList.innerHTML = '';
-        
-        if (lote.pagos && lote.pagos.length > 0) {
-            lote.pagos.forEach(pago => {
-                const pagoItem = document.createElement('div');
-                pagoItem.className = 'pago-item';
-                pagoItem.innerHTML = `
-                    <div class="pago-info">
-                        <strong>#${pago.id}</strong> - ${pago.aliado_nombre}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Cerrar alertas
+            document.querySelectorAll('.close-alert').forEach(button => {
+                button.addEventListener('click', function() {
+                    this.parentElement.style.display = 'none';
+                });
+            });
+
+            // Inicializar modales
+            const detallesModal = document.getElementById('detallesModal');
+            const confirmarModal = document.getElementById('confirmarModal');
+            const closeButtons = document.querySelectorAll('.close-modal-btn');
+
+            closeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    detallesModal.classList.add('hidden');
+                    confirmarModal.classList.add('hidden');
+                });
+            });
+
+            window.addEventListener('click', function(event) {
+                if (event.target === detallesModal) {
+                    detallesModal.classList.add('hidden');
+                }
+                if (event.target === confirmarModal) {
+                    confirmarModal.classList.add('hidden');
+                }
+            });
+        });
+
+        function verDetallesLote(loteId) {
+            const modal = document.getElementById('detallesModal');
+            const contenido = document.getElementById('detalle-contenido');
+            const btnDescargar = document.getElementById('btn-descargar-lote');
+
+            // Simular carga de detalles (esto debería ser una llamada AJAX)
+            contenido.innerHTML = `
+            <div style="text-align: center; padding: 2rem;">
+                <i class="fas fa-spinner fa-spin" style="font-size: 2rem; color: #8a2be2;"></i>
+                <p class="text-muted">Cargando detalles del lote...</p>
+            </div>
+        `;
+
+            modal.classList.remove('hidden');
+            btnDescargar.style.display = 'none';
+
+            // Simular carga (reemplazar con llamada real)
+            setTimeout(() => {
+                contenido.innerHTML = `
+                <div class="file-details-grid">
+                    <div class="detail-item full-width">
+                        <label>ID Lote</label>
+                        <span>${loteId}</span>
                     </div>
-                    <div class="pago-monto">
-                        Bs. ${pago.monto_neto.toLocaleString('es-ES', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
+                    <div class="detail-item">
+                        <label>Fecha Generación</label>
+                        <span>{{ now()->format('d/m/Y H:i:s') }}</span>
                     </div>
-                `;
-                pagosList.appendChild(pagoItem);
+                    <div class="detail-item">
+                        <label>Total Pagos</label>
+                        <span class="text-success">15 pagos</span>
+                    </div>
+                    <div class="detail-item">
+                        <label>Monto Total</label>
+                        <span class="text-success">Bs. 1.234.567,89</span>
+                    </div>
+                    <div class="detail-item full-width">
+                        <label>Pagos Incluidos</label>
+                        <div class="pagos-list">
+                            ${generarListaPagos()}
+                        </div>
+                    </div>
+                </div>
+            `;
+            }, 1000);
+        }
+
+        function generarListaPagos() {
+            const pagos = [{
+                    id: 1,
+                    aliado: 'Restaurante La Esquina',
+                    monto: 500000,
+                    estado: 'completed'
+                },
+                {
+                    id: 2,
+                    aliado: 'Tienda Deportiva El Gol',
+                    monto: 750000,
+                    estado: 'completed'
+                },
+                {
+                    id: 3,
+                    aliado: 'Spa Relajación Total',
+                    monto: 300000,
+                    estado: 'processing'
+                },
+            ];
+
+            return pagos.map(p => `
+            <div class="pago-item">
+                <div class="pago-info">
+                    <span class="pago-id">#${p.id} - ${p.aliado}</span>
+                </div>
+                <div>
+                    <span class="pago-monto">Bs. ${p.monto.toLocaleString('es-ES')}</span>
+                    <span class="pago-estado badge-${p.estado}">${p.estado}</span>
+                </div>
+            </div>
+        `).join('');
+        }
+
+        function procesarLote(loteId) {
+            Swal.fire({
+                title: 'Procesar Lote',
+                text: '¿Estás seguro de que quieres procesar este lote?',
+                icon: 'question',
+                showCancelButton: true,
+                confirmButtonColor: '#8a2be2',
+                cancelButtonColor: '#6b7280',
+                confirmButtonText: 'Procesar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    // Aquí iría la llamada para procesar el lote
+                    Swal.fire({
+                        title: 'Procesando',
+                        text: 'El lote está siendo procesado...',
+                        icon: 'success',
+                        timer: 2000,
+                        showConfirmButton: false
+                    }).then(() => {
+                        window.location.reload();
+                    });
+                }
             });
-        } else {
-            pagosList.innerHTML = '<p class="text-muted">No hay información de pagos disponible</p>';
         }
-        
-        modal.style.display = 'flex';
-    }
 
-    function procesarLote(loteId) {
-        Swal.fire({
-            title: 'Procesar Lote',
-            text: '¿Estás seguro de que quieres procesar este lote de pagos?',
-            icon: 'question',
-            showCancelButton: true,
-            confirmButtonColor: '#8a2be2',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Procesar Lote',
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Enviar formulario para procesar lote
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = "{{ route('admin.payouts.procesar-lote') }}";
-                
-                const csrfToken = document.createElement('input');
-                csrfToken.type = 'hidden';
-                csrfToken.name = '_token';
-                csrfToken.value = '{{ csrf_token() }}';
-                form.appendChild(csrfToken);
-                
-                const loteIdInput = document.createElement('input');
-                loteIdInput.type = 'hidden';
-                loteIdInput.name = 'lote_id';
-                loteIdInput.value = loteId;
-                form.appendChild(loteIdInput);
-                
-                const accionInput = document.createElement('input');
-                accionInput.type = 'hidden';
-                accionInput.name = 'accion';
-                accionInput.value = 'confirmar';
-                form.appendChild(accionInput);
-                
-                document.body.appendChild(form);
-                form.submit();
-            }
-        });
-    }
+        function confirmarEliminacion(loteId, nombreLote) {
+            const modal = document.getElementById('confirmarModal');
+            const form = document.getElementById('eliminar-form');
 
-    function revertirLote(loteId) {
-        Swal.fire({
-            title: 'Revertir Lote',
-            text: '¿Estás seguro de que quieres revertir este lote de pagos? Esta acción revertirá todos los pagos incluidos.',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: '#ffc107',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Revertir Lote',
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Enviar formulario para revertir lote
-                const form = document.createElement('form');
-                form.method = 'POST';
-                form.action = "{{ route('admin.payouts.procesar-lote') }}";
-                
-                const csrfToken = document.createElement('input');
-                csrfToken.type = 'hidden';
-                csrfToken.name = '_token';
-                csrfToken.value = '{{ csrf_token() }}';
-                form.appendChild(csrfToken);
-                
-                const loteIdInput = document.createElement('input');
-                loteIdInput.type = 'hidden';
-                loteIdInput.name = 'lote_id';
-                loteIdInput.value = loteId;
-                form.appendChild(loteIdInput);
-                
-                const accionInput = document.createElement('input');
-                accionInput.type = 'hidden';
-                accionInput.name = 'accion';
-                accionInput.value = 'revertir';
-                form.appendChild(accionInput);
-                
-                document.body.appendChild(form);
-                form.submit();
-            }
-        });
-    }
+            document.getElementById('eliminar-nombre-lote').textContent = nombreLote;
+            form.action = `/admin/payouts/lotes/${loteId}`;
 
-    function eliminarLote(loteId) {
-        Swal.fire({
-            title: 'Eliminar Lote',
-            text: '¿Estás seguro de que quieres eliminar este lote? Esta acción no se puede deshacer.',
-            icon: 'error',
-            showCancelButton: true,
-            confirmButtonColor: '#dc3545',
-            cancelButtonColor: '#6c757d',
-            confirmButtonText: 'Eliminar Lote',
-            cancelButtonText: 'Cancelar'
-        }).then((result) => {
-            if (result.isConfirmed) {
-                // Aquí iría la lógica para eliminar el lote
-                Swal.fire('Eliminado', 'El lote ha sido eliminado correctamente.', 'success');
-            }
-        });
-    }
-
-    document.addEventListener('DOMContentLoaded', function() {
-        // Cerrar modales
-        document.querySelectorAll('.close-modal-btn, .cancel-modal-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                document.getElementById('detallesLoteModal').style.display = 'none';
-            });
-        });
-
-        // Cerrar alertas
-        document.querySelectorAll('.close-alert').forEach(button => {
-            button.addEventListener('click', function() {
-                this.parentElement.style.display = 'none';
-            });
-        });
-
-        // Cerrar modal al hacer click fuera
-        window.addEventListener('click', function(event) {
-            const modal = document.getElementById('detallesLoteModal');
-            if (event.target === modal) {
-                modal.style.display = 'none';
-            }
-        });
-    });
-</script>
-
-<style>
-    .lote-info {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-    }
-
-    .lote-descripcion {
-        font-weight: 600;
-        color: var(--text-dark);
-    }
-
-    .lote-metodo {
-        font-size: 12px;
-        color: var(--text-muted);
-    }
-
-    .status-badge {
-        padding: 4px 8px;
-        border-radius: 12px;
-        font-size: 10px;
-        font-weight: 600;
-        text-transform: uppercase;
-    }
-
-    .status-pendiente {
-        background: rgba(255, 193, 7, 0.1);
-        color: var(--warning-color);
-    }
-
-    .status-procesando {
-        background: rgba(23, 162, 184, 0.1);
-        color: var(--info-color);
-    }
-
-    .status-completado {
-        background: rgba(40, 167, 69, 0.1);
-        color: var(--success-color);
-    }
-
-    .status-fallido {
-        background: rgba(220, 53, 69, 0.1);
-        color: var(--error-color);
-    }
-
-    .action-buttons {
-        display: flex;
-        gap: 4px;
-        justify-content: center;
-    }
-
-    .btn-action {
-        padding: 6px 8px;
-        border: none;
-        border-radius: 4px;
-        cursor: pointer;
-        font-size: 14px;
-        transition: all 0.3s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 32px;
-        height: 32px;
-    }
-
-    .btn-info {
-        background: var(--info-color);
-        color: white;
-    }
-
-    .btn-info:hover {
-        background: #138496;
-    }
-
-    .btn-success {
-        background: var(--success-color);
-        color: white;
-    }
-
-    .btn-success:hover {
-        background: #218838;
-    }
-
-    .btn-warning {
-        background: var(--warning-color);
-        color: #000;
-    }
-
-    .btn-warning:hover {
-        background: #e0a800;
-    }
-
-    .btn-danger {
-        background: var(--error-color);
-        color: white;
-    }
-
-    .btn-danger:hover {
-        background: #c82333;
-    }
-
-    .lote-details-grid {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 16px;
-    }
-
-    .detail-item {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-    }
-
-    .detail-item.full-width {
-        grid-column: 1 / -1;
-    }
-
-    .detail-item label {
-        font-weight: 600;
-        color: var(--text-dark);
-        font-size: 14px;
-    }
-
-    .pagos-list {
-        max-height: 200px;
-        overflow-y: auto;
-        border: 1px solid var(--border-color);
-        border-radius: 6px;
-        padding: 12px;
-    }
-
-    .pago-item {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 8px 0;
-        border-bottom: 1px solid var(--border-color);
-    }
-
-    .pago-item:last-child {
-        border-bottom: none;
-    }
-
-    .pago-info {
-        font-size: 14px;
-    }
-
-    .pago-monto {
-        font-weight: 600;
-        color: var(--success-color);
-    }
-
-    @media (max-width: 768px) {
-        .lote-details-grid {
-            grid-template-columns: 1fr;
+            modal.classList.remove('hidden');
         }
-        
-        .action-buttons {
-            flex-direction: column;
+
+        function cerrarModal() {
+            document.getElementById('detallesModal').classList.add('hidden');
         }
-        
-        .btn-action {
-            width: 100%;
+
+        function cerrarModalEliminar() {
+            document.getElementById('confirmarModal').classList.add('hidden');
         }
-    }
-</style>
+    </script>
 @endpush

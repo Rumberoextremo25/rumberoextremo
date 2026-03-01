@@ -47,7 +47,7 @@ class AllyController extends Controller
     {
         // Validar que el ID sea numérico
         if (!is_numeric($id)) {
-            return redirect()->route('aliados.index')
+            return redirect()->route('admin.aliados.index')
                 ->with('error', 'ID de aliado inválido.');
         }
 
@@ -69,7 +69,7 @@ class AllyController extends Controller
             $pageData = [
                 'title' => 'Detalles: ' . $ally->company_name,
                 'breadcrumbs' => [
-                    ['name' => 'Aliados', 'url' => route('aliados.index')],
+                    ['name' => 'Aliados', 'url' => route('admin.aliados.index')],
                     ['name' => $ally->company_name, 'current' => true]
                 ]
             ];
@@ -78,12 +78,12 @@ class AllyController extends Controller
 
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             Log::warning("Aliado no encontrado - ID: {$id}");
-            return redirect()->route('aliados.index')
+            return redirect()->route('admin.aliados.index')
                 ->with('error', 'El aliado solicitado no fue encontrado.');
 
         } catch (\Exception $e) {
             Log::error("Error en AllyController@show - ID: {$id} - Error: " . $e->getMessage());
-            return redirect()->route('aliados.index')
+            return redirect()->route('admin.aliados.index')
                 ->with('error', 'Ocurrió un error inesperado al cargar los detalles del aliado.');
         }
     }
@@ -248,7 +248,7 @@ class AllyController extends Controller
             DB::commit();
 
             // Redirigir con mensaje de éxito
-            return redirect()->route('aliados.index')->with('success', '¡Aliado y cuenta de usuario creados exitosamente!');
+            return redirect()->route('admin.aliados.index')->with('success', '¡Aliado y cuenta de usuario creados exitosamente!');
 
         } catch (\Exception $e) {
             // Si algo falla, revertir la transacción
@@ -429,7 +429,7 @@ class AllyController extends Controller
             // Si todo fue bien, confirmar la transacción
             DB::commit();
 
-            return redirect()->route('aliados.index')->with('success', '¡Aliado actualizado exitosamente!');
+            return redirect()->route('admin.aliados.index')->with('success', '¡Aliado actualizado exitosamente!');
 
         } catch (\Exception $e) {
             // Si algo falla, revertir la transacción
@@ -465,11 +465,11 @@ class AllyController extends Controller
             }
             
             $ally->delete();
-            return redirect()->route('aliados.index')->with('success', 'Aliado eliminado exitosamente.');
+            return redirect()->route('admin.aliados.index')->with('success', 'Aliado eliminado exitosamente.');
             
         } catch (\Exception $e) {
             Log::error('Error al eliminar aliado: ' . $e->getMessage());
-            return redirect()->route('aliados.index')->with('error', 'Hubo un error al eliminar el aliado.');
+            return redirect()->route('admin.aliados.index')->with('error', 'Hubo un error al eliminar el aliado.');
         }
     }
 

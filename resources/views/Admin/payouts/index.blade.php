@@ -1,379 +1,449 @@
 @extends('layouts.admin')
 
-@section('page_title_toolbar', 'Pagos Pendientes a Aliados')
+@section('page_title_toolbar', 'Gestión de Pagos a Aliados')
 
 @push('styles')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-    {{-- Tu archivo CSS personalizado --}}
-    <link rel="stylesheet" href="{{ asset('css/admin/payout.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ asset('css/admin/payouts-modern.css') }}">
 @endpush
 
 @section('content')
     <div class="main-content">
-        <h2 class="page-title text-gray-900">
-            <span class="text-gray-900">Pagos Pendientes</span>
-            <span class="text-purple">a Aliados</span>
-        </h2>
-
-        {{-- Estadísticas --}}
-        @if(isset($estadisticas) && !empty($payouts))
-        <div class="stats-card">
-            <div class="stats-grid">
-                <div class="stat-item">
-                    <div class="stat-value">{{ $estadisticas['total_pendiente'] ?? 0 }}</div>
-                    <div class="stat-label">Pagos Pendientes</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value">Bs. {{ number_format($monto_total ?? 0, 2, ',', '.') }}</div>
-                    <div class="stat-label">Monto Total Pendiente</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-value">{{ $estadisticas['total_aliados'] ?? 0 }}</div>
-                    <div class="stat-label">Aliados con Pagos</div>
-                </div>
+        {{-- Header con efecto glassmorphism y gradiente animado --}}
+        <div class="page-header">
+            <h1 class="page-title">
+                <span class="text-gray-900">Gestión de</span>
+                <span class="text-purple">Pagos a Aliados</span>
+            </h1>
+            <div class="page-actions">
+                <a href="{{ route('admin.payouts.pendientes') }}" class="action-button primary">
+                    <i class="fas fa-clock"></i> Ver Pendientes
+                </a>
+                <a href="{{ route('admin.payouts.estadisticas') }}" class="action-button secondary">
+                    <i class="fas fa-chart-bar"></i> Estadísticas
+                </a>
             </div>
         </div>
+
+        {{-- Filtros y Búsqueda con diseño moderno --}}
+        <div class="filters-card">
+            <form action="{{ route('admin.payouts.index') }}" method="GET" class="filters-form">
+                <div class="filters-grid">
+                    <div class="form-group">
+                        <label for="status">Estado</label>
+                        <select name="status" id="status" class="form-control">
+                            <option value="all" {{ request('status') == 'all' ? 'selected' : '' }}>Todos</option>
+                            <option value="pending" {{ request('status') == 'pending' ? 'selected' : '' }}>Pendiente</option>
+                            <option value="processing" {{ request('status') == 'processing' ? 'selected' : '' }}>Procesando</option>
+                            <option value="completed" {{ request('status') == 'completed' ? 'selected' : '' }}>Completado</option>
+                            <option value="reverted" {{ request('status') == 'reverted' ? 'selected' : '' }}>Revertido</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ally_id">Aliado</label>
+                        <select name="ally_id" id="ally_id" class="form-control">
+                            <option value="">Todos los aliados</option>
+                            @foreach($aliados ?? [] as $aliado)
+                                @php
+                                    $aliadoId = is_object($aliado) ? $aliado->id : ($aliado['id'] ?? null);
+                                    $aliadoNombre = is_object($aliado) ? ($aliado->name ?? $aliado->company_name ?? 'Aliado') : ($aliado['name'] ?? $aliado['company_name'] ?? 'Aliado');
+                                @endphp
+                                @if($aliadoId)
+                                    <option value="{{ $aliadoId }}" {{ request('ally_id') == $aliadoId ? 'selected' : '' }}>
+                                        {{ $aliadoNombre }}
+                                    </option>
+                                @endif
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fecha_inicio">Fecha Inicio</label>
+                        <input type="date" name="fecha_inicio" id="fecha_inicio" class="form-control"
+                            value="{{ request('fecha_inicio', now()->subMonth()->format('Y-m-d')) }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fecha_fin">Fecha Fin</label>
+                        <input type="date" name="fecha_fin" id="fecha_fin" class="form-control"
+                            value="{{ request('fecha_fin', now()->format('Y-m-d')) }}">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="search">Búsqueda</label>
+                        <input type="text" name="search" id="search" class="form-control"
+                            placeholder="ID, referencia, aliado..." value="{{ request('search') }}">
+                    </div>
+
+                    <div class="form-group filter-actions">
+                        <label>&nbsp;</label>
+                        <div class="button-group">
+                            <button type="submit" class="action-button primary">
+                                <i class="fas fa-search"></i> Filtrar
+                            </button>
+                            <a href="{{ route('admin.payouts.index') }}" class="action-button secondary">
+                                <i class="fas fa-times"></i> Limpiar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+
+        {{-- Alertas con diseño moderno --}}
+        @if (session('success'))
+            <div class="alert alert-success">
+                <i class="fas fa-check-circle"></i>
+                <span>{{ session('success') }}</span>
+                <button type="button" class="close-alert">&times;</button>
+            </div>
         @endif
 
-        {{-- Contenedor principal para la tarjeta --}}
-        <div class="payouts-card">
-            {{-- Mensajes de sesión --}}
-            @if (session('success'))
-                <div class="alert alert-success" role="alert">
-                    <i class="fas fa-check-circle"></i>
-                    <span>{{ session('success') }}</span>
-                    <button type="button" class="close-alert">&times;</button>
-                </div>
-            @endif
-            @if (session('error'))
-                <div class="alert alert-error" role="alert">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <span>{{ session('error') }}</span>
-                    <button type="button" class="close-alert">&times;</button>
-                </div>
-            @endif
+        @if (session('error'))
+            <div class="alert alert-error">
+                <i class="fas fa-exclamation-circle"></i>
+                <span>{{ session('error') }}</span>
+                <button type="button" class="close-alert">&times;</button>
+            </div>
+        @endif
 
-            @if(empty($payouts) || count($payouts) === 0)
-                <div class="no-payouts-message">
-                    <i class="fas fa-sack-dollar icon"></i>
-                    <br>
-                    No hay pagos pendientes en este momento.
-                    <br>
-                    <small class="text-muted">Los pagos se generan automáticamente cuando se procesan ventas con aliados.</small>
+        {{-- Resumen rápido con tarjetas estadísticas --}}
+        @if (isset($estadisticas))
+            <div class="stats-grid small">
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">{{ number_format($estadisticas['total_pendiente'] ?? 0) }}</div>
+                        <div class="stat-label">Pendientes</div>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fas fa-sync-alt"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">{{ number_format($estadisticas['total_procesando'] ?? 0) }}</div>
+                        <div class="stat-label">Procesando</div>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">{{ number_format($estadisticas['total_completado'] ?? 0) }}</div>
+                        <div class="stat-label">Completados</div>
+                    </div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-icon">
+                        <i class="fas fa-undo-alt"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value">{{ number_format($estadisticas['total_revertido'] ?? 0) }}</div>
+                        <div class="stat-label">Revertidos</div>
+                    </div>
+                </div>
+            </div>
+        @endif
+
+        {{-- Tabla de pagos con diseño moderno --}}
+        <div class="table-card">
+            @if (empty($payouts) || count($payouts) === 0)
+                <div class="no-data-message">
+                    <i class="fas fa-money-bill-wave icon"></i>
+                    <h3>No hay pagos registrados</h3>
+                    <p class="text-muted">Los pagos aparecerán aquí cuando se procesen ventas con aliados.</p>
                 </div>
             @else
-                <div class="table-actions">
-                    {{-- Formulario para generar archivo BNC --}}
-                    <form action="{{ route('admin.payouts.generate_bnc') }}" method="POST" class="action-form" id="generateBncForm">
-                        @csrf
-                        <div class="form-group">
-                            <label for="fecha_inicio">Fecha Inicio:</label>
-                            <input type="date" name="fecha_inicio" class="form-control" required value="{{ date('Y-m-01') }}">
-                        </div>
-                        <div class="form-group">
-                            <label for="fecha_fin">Fecha Fin:</label>
-                            <input type="date" name="fecha_fin" class="form-control" required value="{{ date('Y-m-d') }}">
-                        </div>
-                        <div class="form-group">
-                            <label for="concepto">Concepto:</label>
-                            <input type="text" name="concepto" class="form-control" value="PAGO COMISION {{ strtoupper(date('F Y')) }}" maxlength="60">
-                        </div>
-                        <button type="submit" class="action-button generate-csv-btn">
-                            <i class="fas fa-file-export"></i> Generar Archivo BNC
-                        </button>
-                    </form>
-                    
-                    {{-- Formulario para confirmar pagos --}}
-                    <form action="{{ route('admin.payouts.confirm') }}" method="POST" class="action-form process-form" id="confirmPayoutsForm" enctype="multipart/form-data">
-                        @csrf
-                        <input type="hidden" name="payout_ids" id="selected-payout-ids">
-                        <div class="form-group">
-                            <label for="fecha_pago">Fecha Pago:</label>
-                            <input type="date" name="fecha_pago" class="form-control" required value="{{ date('Y-m-d') }}">
-                        </div>
-                        <div class="form-group">
-                            <label for="referencia_pago">Referencia:</label>
-                            <input type="text" name="referencia_pago" placeholder="Referencia de pago" class="form-control" required>
-                        </div>
-                        <div class="form-group">
-                            <label for="archivo_comprobante">Comprobante:</label>
-                            <input type="file" name="archivo_comprobante" class="form-control" accept=".pdf,.jpg,.png">
-                        </div>
-                        <button type="button" class="action-button process-btn" id="confirm-payouts-btn">
-                            <i class="fas fa-check-circle"></i> Confirmar Pagos Seleccionados
-                        </button>
-                    </form>
-                </div>
-                
                 <div class="table-responsive">
-                    <table class="payouts-table">
+                    <table class="data-table">
                         <thead>
                             <tr>
-                                <th class="w-10"><input type="checkbox" id="select-all" class="rounded-sm"></th>
-                                <th>ID Pago</th>
+                                <th>ID</th>
                                 <th>Aliado</th>
-                                <th>Email</th>
-                                <th>Monto Venta (Bs.)</th>
-                                <th>Descuento Aliado</th>
-                                <th>Comisión (%)</th>
-                                <th>Monto Comisión (Bs.)</th>
-                                <th>Neto a Pagar (Bs.)</th>
-                                <th>Cuenta Destino</th>
-                                <th>Banco</th>
+                                <th>Venta ID</th>
+                                <th>Monto Venta</th>
+                                <th>Comisión</th>
+                                <th>Neto</th>
+                                <th>Estado</th>
                                 <th>Fecha Generación</th>
+                                <th>Fecha Pago</th>
+                                <th>Referencia</th>
+                                <th>Acciones</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @foreach($payouts as $payout)
+                            @forelse ($payouts as $payout)
+                                @php
+                                    // Acceso directo a los campos de la tabla payouts
+                                    $payoutId = $payout->id ?? $payout['id'] ?? null;
+                                    
+                                    // Montos directos de la tabla payouts
+                                    $saleAmount = $payout->sale_amount ?? $payout['sale_amount'] ?? 0;
+                                    $commissionPercentage = $payout->commission_percentage ?? $payout['commission_percentage'] ?? 0;
+                                    $commissionAmount = $payout->commission_amount ?? $payout['commission_amount'] ?? 0;
+                                    $netAmount = $payout->net_amount ?? $payout['net_amount'] ?? 0;
+                                    $allyDiscount = $payout->ally_discount ?? $payout['ally_discount'] ?? 0;
+                                    
+                                    // Fechas y referencias
+                                    $status = $payout->status ?? $payout['status'] ?? 'pending';
+                                    $generationDate = $payout->generation_date ?? $payout['generation_date'] ?? $payout->created_at ?? $payout['created_at'] ?? null;
+                                    $paymentDate = $payout->payment_date ?? $payout['payment_date'] ?? null;
+                                    $paymentReference = $payout->payment_reference ?? $payout['payment_reference'] ?? null;
+                                    $saleId = $payout->sale_id ?? $payout['sale_id'] ?? null;
+                                    
+                                    // Datos del aliado (si existe relación)
+                                    $allyName = 'N/A';
+                                    $allyEmail = '';
+                                    
+                                    if (isset($payout->ally) && $payout->ally) {
+                                        $allyName = $payout->ally->name ?? $payout->ally->company_name ?? 'Aliado';
+                                        $allyEmail = $payout->ally->email ?? '';
+                                    } elseif (isset($payout['ally']) && is_array($payout['ally'])) {
+                                        $allyName = $payout['ally']['name'] ?? $payout['ally']['company_name'] ?? 'Aliado';
+                                        $allyEmail = $payout['ally']['email'] ?? '';
+                                    }
+                                @endphp
+
+                                @if ($payoutId)
+                                    <tr>
+                                        <td><strong>#{{ $payoutId }}</strong></td>
+                                        <td>
+                                            <div class="font-weight-bold">{{ $allyName }}</div>
+                                            @if($allyEmail)
+                                                <small class="text-muted">{{ $allyEmail }}</small>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if($saleId)
+                                                <a href="{{ route('admin.payouts.show', $payoutId) }}" class="text-purple">
+                                                    #{{ $saleId }}
+                                                </a>
+                                            @else
+                                                <span class="text-muted">N/A</span>
+                                            @endif
+                                        </td>
+                                        <td class="text-success">
+                                            <strong>Bs. {{ number_format($saleAmount, 2, ',', '.') }}</strong>
+                                        </td>
+                                        <td>
+                                            <span class="badge badge-warning">
+                                                {{ number_format($commissionPercentage, 1) }}%
+                                            </span>
+                                            <br>
+                                            <small class="text-danger">
+                                                Bs. {{ number_format($commissionAmount, 2, ',', '.') }}
+                                            </small>
+                                            @if($allyDiscount > 0)
+                                                <br>
+                                                <small class="text-muted">
+                                                    Dto: {{ number_format($allyDiscount, 1) }}%
+                                                </small>
+                                            @endif
+                                        </td>
+                                        <td class="text-success">
+                                            <strong>Bs. {{ number_format($netAmount, 2, ',', '.') }}</strong>
+                                        </td>
+                                        <td>
+                                            @php
+                                                $estadoClase = match ($status) {
+                                                    'completed' => 'badge-success',
+                                                    'processing' => 'badge-warning',
+                                                    'pending' => 'badge-info',
+                                                    'reverted' => 'badge-danger',
+                                                    default => 'badge-info',
+                                                };
+                                                $estadoTexto = match ($status) {
+                                                    'completed' => 'Completado',
+                                                    'processing' => 'Procesando',
+                                                    'pending' => 'Pendiente',
+                                                    'reverted' => 'Revertido',
+                                                    default => 'Pendiente',
+                                                };
+                                            @endphp
+                                            <span class="badge {{ $estadoClase }}">{{ $estadoTexto }}</span>
+                                        </td>
+                                        <td>
+                                            @if ($generationDate)
+                                                @php
+                                                    $fechaGenObj = $generationDate instanceof \Carbon\Carbon
+                                                        ? $generationDate
+                                                        : \Carbon\Carbon::parse($generationDate);
+                                                @endphp
+                                                {{ $fechaGenObj->format('d/m/Y') }}
+                                                <br>
+                                                <small class="text-muted">{{ $fechaGenObj->format('H:i') }}</small>
+                                            @else
+                                                N/A
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if ($paymentDate)
+                                                {{ \Carbon\Carbon::parse($paymentDate)->format('d/m/Y') }}
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if ($paymentReference)
+                                                <code>{{ $paymentReference }}</code>
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <div class="action-buttons">
+                                                <a href="{{ route('admin.payouts.show', $payoutId) }}"
+                                                    class="btn-icon" title="Ver detalles">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+
+                                                @if ($status === 'pending')
+                                                    <a href="{{ route('admin.payouts.edit', $payoutId) }}"
+                                                        class="btn-icon" title="Editar">
+                                                        <i class="fas fa-edit"></i>
+                                                    </a>
+
+                                                    <button type="button" class="btn-icon"
+                                                        onclick="confirmarRevertir({{ $payoutId }})"
+                                                        title="Revertir">
+                                                        <i class="fas fa-undo-alt"></i>
+                                                    </button>
+                                                @endif
+
+                                                <a href="{{ route('admin.payouts.auditoria', $payoutId) }}"
+                                                    class="btn-icon" title="Auditoría">
+                                                    <i class="fas fa-history"></i>
+                                                </a>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @endif
+                            @empty
                                 <tr>
-                                    <td>
-                                        <input type="checkbox" name="payout_ids[]" value="{{ $payout['id'] }}" class="payout-checkbox rounded-sm">
-                                    </td>
-                                    <td><strong>#{{ $payout['id'] }}</strong></td>
-                                    <td>
-                                        <div class="font-weight-bold">{{ $payout['aliado']['nombre'] ?? 'N/A' }}</div>
-                                        <small class="text-muted">ID: {{ $payout['aliado']['id'] ?? 'N/A' }}</small>
-                                    </td>
-                                    <td>{{ $payout['aliado']['email'] ?? 'N/A' }}</td>
-                                    <td class="text-success">
-                                        <strong>{{ number_format($payout['montos']['monto_despues_descuento'] ?? $payout['montos']['neto'], 2, ',', '.') }}</strong>
-                                    </td>
-                                    <td>
-                                        <span class="badge badge-info">{{ number_format($payout['montos']['descuento_aliado'] ?? 0, 1) }}%</span>
-                                    </td>
-                                    <td>
-                                        <span class="badge badge-warning">{{ number_format($payout['montos']['comision_porcentaje'] ?? 0, 1) }}%</span>
-                                    </td>
-                                    <td class="text-danger">
-                                        <strong>{{ number_format($payout['montos']['comision_monto'] ?? 0, 2, ',', '.') }}</strong>
-                                    </td>
-                                    <td class="text-success">
-                                        <strong>{{ number_format($payout['montos']['neto'] ?? 0, 2, ',', '.') }}</strong>
-                                    </td>
-                                    <td>
-                                        <code>{{ $payout['aliado']['cuenta_bancaria'] ?? 'N/A' }}</code>
-                                        <br>
-                                        <small class="text-muted">{{ $payout['aliado']['tipo_cuenta'] ?? '' }}</small>
-                                    </td>
-                                    <td>{{ $payout['aliado']['banco'] ?? 'N/A' }}</td>
-                                    <td>
-                                        {{ \Carbon\Carbon::parse($payout['fechas']['generacion'])->format('d/m/Y H:i') }}
-                                        <br>
-                                        <small class="text-muted">Venta #{{ $payout['venta']['id'] ?? 'N/A' }}</small>
+                                    <td colspan="11" class="text-center py-4">
+                                        <div class="no-data-message">
+                                            <i class="fas fa-money-bill-wave icon"></i>
+                                            <h3>No hay pagos registrados</h3>
+                                            <p class="text-muted">Los pagos aparecerán aquí cuando se procesen ventas con
+                                                aliados.</p>
+                                        </div>
                                     </td>
                                 </tr>
-                            @endforeach
+                            @endforelse
                         </tbody>
                     </table>
                 </div>
 
-                {{-- Resumen de montos --}}
-                <div class="stats-card mt-4">
-                    <div class="stats-grid">
-                        <div class="stat-item">
-                            <div class="stat-value">Bs. {{ number_format($monto_total ?? 0, 2, ',', '.') }}</div>
-                            <div class="stat-label">Total a Pagar</div>
+                {{-- Paginación con diseño moderno --}}
+                @if (isset($pagination))
+                    <div class="pagination-container">
+                        <div class="pagination-info">
+                            <i class="fas fa-list-ul"></i>
+                            Mostrando {{ ($pagination['current_page'] - 1) * $pagination['per_page'] + 1 }}
+                            - {{ min($pagination['current_page'] * $pagination['per_page'], $pagination['total']) }}
+                            de {{ $pagination['total'] }} pagos
                         </div>
-                        <div class="stat-item">
-                            <div class="stat-value">Bs. {{ number_format(collect($payouts)->sum('montos.comision_monto'), 2, ',', '.') }}</div>
-                            <div class="stat-label">Total Comisiones</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-value">{{ count($payouts) }}</div>
-                            <div class="stat-label">Pagos Seleccionables</div>
+                        <div class="pagination-links">
+                            @if ($pagination['current_page'] > 1)
+                                <a href="{{ route('admin.payouts.index', array_merge(request()->query(), ['page' => $pagination['current_page'] - 1])) }}"
+                                    class="pagination-link">
+                                    <i class="fas fa-chevron-left"></i>
+                                </a>
+                            @endif
+
+                            @for ($i = 1; $i <= $pagination['last_page']; $i++)
+                                @if ($i == $pagination['current_page'])
+                                    <span class="pagination-link active">{{ $i }}</span>
+                                @else
+                                    <a href="{{ route('admin.payouts.index', array_merge(request()->query(), ['page' => $i])) }}"
+                                        class="pagination-link">{{ $i }}</a>
+                                @endif
+                            @endfor
+
+                            @if ($pagination['current_page'] < $pagination['last_page'])
+                                <a href="{{ route('admin.payouts.index', array_merge(request()->query(), ['page' => $pagination['current_page'] + 1])) }}"
+                                    class="pagination-link">
+                                    <i class="fas fa-chevron-right"></i>
+                                </a>
+                            @endif
                         </div>
                     </div>
-                </div>
+                @endif
             @endif
         </div>
     </div>
 
-    {{-- Custom Confirmation Modal --}}
-    <div id="confirmationModal" class="modal-overlay hidden">
+    {{-- Modal de confirmación para revertir con diseño moderno --}}
+    <div id="revertirModal" class="modal-overlay hidden">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Confirmar Procesamiento de Pagos</h3>
+                <h3><i class="fas fa-undo-alt"></i> Revertir Pago</h3>
                 <button type="button" class="close-modal-btn">&times;</button>
             </div>
-            <div class="modal-body">
-                <p>¿Estás seguro de que quieres confirmar los <span id="selected-count">0</span> pagos seleccionados? Esta acción no se puede deshacer.</p>
-                <div class="form-group mt-4">
-                    <label for="modal-fecha-pago">Fecha de Pago:</label>
-                    <input type="date" id="modal-fecha-pago" class="form-control" value="{{ date('Y-m-d') }}" required>
+            <form action="" method="POST" id="revertirForm">
+                @csrf
+                <div class="modal-body">
+                    <p>¿Estás seguro de que quieres revertir este pago?</p>
+                    <p class="text-warning">
+                        <i class="fas fa-exclamation-triangle"></i> 
+                        Esta acción no se puede deshacer.
+                    </p>
+
+                    <div class="form-group mt-4">
+                        <label for="motivo">Motivo de la reversión</label>
+                        <textarea name="motivo" id="motivo" class="form-control" rows="3"
+                            placeholder="Indique el motivo de la reversión..." required></textarea>
+                    </div>
                 </div>
-                <div class="form-group">
-                    <label for="modal-referencia">Referencia de Pago:</label>
-                    <input type="text" id="modal-referencia" class="form-control" placeholder="Referencia bancaria" required>
+                <div class="modal-footer">
+                    <button type="button" class="btn cancel-modal-btn">Cancelar</button>
+                    <button type="submit" class="btn btn-danger">
+                        <i class="fas fa-undo-alt"></i> Revertir Pago
+                    </button>
                 </div>
-                <div class="form-group">
-                    <label for="modal-comprobante">Comprobante (opcional):</label>
-                    <input type="file" id="modal-comprobante" class="form-control" accept=".pdf,.jpg,.png">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn cancel-modal-btn">Cancelar</button>
-                <button type="button" class="btn confirm-modal-btn">Confirmar Pagos</button>
-            </div>
+            </form>
         </div>
     </div>
-
 @endsection
 
 @push('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const selectAllCheckbox = document.getElementById('select-all');
-        const payoutCheckboxes = document.querySelectorAll('.payout-checkbox');
-        const confirmPayoutsButton = document.getElementById('confirm-payouts-btn');
-        const confirmationModal = document.getElementById('confirmationModal');
-        const confirmModalButton = confirmationModal.querySelector('.confirm-modal-btn');
-        const cancelModalButton = confirmationModal.querySelector('.cancel-modal-btn');
-        const closeModalButton = confirmationModal.querySelector('.close-modal-btn');
-        const selectedCountSpan = document.getElementById('selected-count');
-        
-        const fechaPagoInput = document.getElementById('modal-fecha-pago');
-        const referenciaInput = document.getElementById('modal-referencia');
-        const comprobanteInput = document.getElementById('modal-comprobante');
-
-        // Manejar la selección de todos los checkboxes
-        selectAllCheckbox.addEventListener('change', function() {
-            payoutCheckboxes.forEach(checkbox => {
-                checkbox.checked = this.checked;
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Cerrar alertas
+            document.querySelectorAll('.close-alert').forEach(button => {
+                button.addEventListener('click', function() {
+                    this.parentElement.style.display = 'none';
+                });
             });
-            updateSelectedCount();
-        });
 
-        // Actualizar contador de seleccionados
-        payoutCheckboxes.forEach(checkbox => {
-            checkbox.addEventListener('change', updateSelectedCount);
-        });
+            // Modal de revertir
+            const revertirModal = document.getElementById('revertirModal');
+            const revertirForm = document.getElementById('revertirForm');
+            const closeButtons = document.querySelectorAll('.close-modal-btn, .cancel-modal-btn');
 
-        function updateSelectedCount() {
-            const selectedIds = Array.from(payoutCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
-            selectedCountSpan.textContent = selectedIds.length;
-            
-            // Actualizar texto del botón
-            if (selectedIds.length > 0) {
-                confirmPayoutsButton.innerHTML = `<i class="fas fa-check-circle"></i> Confirmar ${selectedIds.length} Pagos`;
-            } else {
-                confirmPayoutsButton.innerHTML = `<i class="fas fa-check-circle"></i> Confirmar Pagos Seleccionados`;
-            }
-        }
+            window.confirmarRevertir = function(payoutId) {
+                // Usar la ruta correcta con el parámetro payoutId
+                revertirForm.action = '/admin/payouts/' + payoutId + '/revertir';
+                revertirModal.classList.remove('hidden');
+            };
 
-        // Manejar el click en el botón de confirmar pagos
-        confirmPayoutsButton.addEventListener('click', function() {
-            const selectedIds = Array.from(payoutCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
-            
-            if (selectedIds.length === 0) {
-                Swal.fire({
-                    icon: 'warning',
-                    title: 'Selección requerida',
-                    text: 'Por favor, selecciona al menos un pago para confirmar.',
-                    confirmButtonColor: '#8a2be2'
+            closeButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    revertirModal.classList.add('hidden');
                 });
-                return;
-            }
-            
-            // Calcular monto total seleccionado
-            const totalAmount = Array.from(payoutCheckboxes)
-                .filter(cb => cb.checked)
-                .reduce((sum, cb) => {
-                    const row = cb.closest('tr');
-                    const amountText = row.querySelector('td:nth-child(9) strong').textContent;
-                    const amount = parseFloat(amountText.replace(/[Bs\.,\s]/g, '').replace(',', '.'));
-                    return sum + (isNaN(amount) ? 0 : amount);
-                }, 0);
-            
-            // Mostrar el modal de confirmación
-            confirmationModal.classList.remove('hidden');
-            confirmationModal.style.display = 'flex';
-            
-            // Actualizar información en el modal
-            selectedCountSpan.textContent = selectedIds.length;
-            document.querySelector('.modal-body p').innerHTML = 
-                `¿Estás seguro de que quieres confirmar los <strong>${selectedIds.length}</strong> pagos seleccionados?<br>
-                 <strong>Monto total: Bs. ${totalAmount.toFixed(2).replace('.', ',')}</strong><br>
-                 Esta acción no se puede deshacer.`;
-        });
+            });
 
-        // Manejar la confirmación en el modal
-        confirmModalButton.addEventListener('click', function() {
-            const selectedIds = Array.from(payoutCheckboxes).filter(cb => cb.checked).map(cb => cb.value);
-            const form = document.getElementById('confirmPayoutsForm');
-            const hiddenInput = document.getElementById('selected-payout-ids');
-            
-            // Validar campos requeridos
-            if (!fechaPagoInput.value || !referenciaInput.value) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Campos requeridos',
-                    text: 'La fecha y referencia de pago son obligatorias.',
-                    confirmButtonColor: '#8a2be2'
-                });
-                return;
-            }
-
-            // Setear valores en el formulario
-            hiddenInput.value = JSON.stringify(selectedIds);
-            
-            // Actualizar campos en el formulario
-            form.querySelector('input[name="fecha_pago"]').value = fechaPagoInput.value;
-            form.querySelector('input[name="referencia_pago"]').value = referenciaInput.value;
-            
-            // Manejar archivo si se seleccionó
-            if (comprobanteInput.files.length > 0) {
-                const dataTransfer = new DataTransfer();
-                dataTransfer.items.add(comprobanteInput.files[0]);
-                form.querySelector('input[name="archivo_comprobante"]').files = dataTransfer.files;
-            }
-
-            // Mostrar loading
-            Swal.fire({
-                title: 'Procesando pagos...',
-                text: 'Por favor espere mientras se confirman los pagos.',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
+            window.addEventListener('click', function(event) {
+                if (event.target === revertirModal) {
+                    revertirModal.classList.add('hidden');
                 }
             });
-
-            // Enviar formulario
-            form.submit();
         });
-
-        // Manejar el cierre del modal
-        closeModalButton.addEventListener('click', function() {
-            confirmationModal.style.display = 'none';
-        });
-        
-        cancelModalButton.addEventListener('click', function() {
-            confirmationModal.style.display = 'none';
-        });
-
-        // Manejar envío del formulario BNC
-        document.getElementById('generateBncForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            Swal.fire({
-                title: 'Generando archivo BNC',
-                text: 'Por favor espere...',
-                allowOutsideClick: false,
-                didOpen: () => {
-                    Swal.showLoading();
-                }
-            });
-
-            this.submit();
-        });
-
-        // Cerrar alertas
-        document.querySelectorAll('.close-alert').forEach(button => {
-            button.addEventListener('click', function() {
-                this.parentElement.style.display = 'none';
-            });
-        });
-    });
-</script>
+    </script>
 @endpush

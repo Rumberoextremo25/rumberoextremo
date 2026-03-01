@@ -4,114 +4,72 @@
 
 @push('styles')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/admin/reports.css') }}">
 @endpush
 
 @section('content')
-    <div class="loading-overlay" id="loadingOverlay">
-        <div class="loading-spinner">
-            <i class="fas fa-spinner fa-spin"></i>
-            <span>Generando reporte...</span>
-        </div>
-    </div>
-
-    <div class="reports-container">
-        {{-- Header Moderno --}}
-        <div class="reports-header-modern">
-            <div class="header-content">
-                <div class="breadcrumb">
-                    <a href="{{ route('dashboard') }}" class="breadcrumb-link">
-                        <i class="fas fa-home"></i>
-                        Dashboard
-                    </a>
-                    <span class="breadcrumb-separator">/</span>
-                    <span class="breadcrumb-current">Reportes de Ventas</span>
-                </div>
-                <h1 class="page-title">
-                    <span class="title-text">Análisis de</span>
+    <div class="reports-wrapper">
+        {{-- Header con bienvenida --}}
+        <div class="reports-header-bar">
+            <div class="header-left">
+                <a href="{{ route('dashboard') }}" class="back-link">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Dashboard</span>
+                </a>
+                <div class="page-title">
+                    <span class="title-main">Análisis de</span>
                     <span class="title-accent">Ventas</span>
-                </h1>
-                <p class="page-subtitle">
-                    <i class="fas fa-chart-line"></i>
-                    Dashboard completo de métricas y tendencias de ventas
-                </p>
+                </div>
             </div>
             <div class="header-actions">
-                <div class="real-time-indicator">
-                    <i class="fas fa-sync-alt"></i>
-                    Actualizado: {{ now()->format('d/m/Y H:i') }}
+                <div class="user-greeting">
+                    <span>Bienvenido,</span>
+                    <strong>{{ Auth::user()->name }}</strong>
                 </div>
-                <div class="exchange-rate-badge">
-                    <i class="fas fa-dollar-sign"></i>
-                    Tasa Bs. {{ number_format($exchangeRateVes, 2) }} / USD
+                <div class="avatar-circle">
+                    <span>{{ substr(Auth::user()->name, 0, 1) }}</span>
                 </div>
             </div>
         </div>
 
         {{-- Información del Contexto del Usuario --}}
-        <div class="user-context-section">
+        <div class="context-bar">
             @if ($userRole === 'admin' || $userRole === 'administrador')
-                <div class="context-card admin">
-                    <div class="context-icon">
-                        <i class="fas fa-crown"></i>
-                    </div>
-                    <div class="context-content">
-                        <h3 class="context-title">Vista Administrador</h3>
-                        <p class="context-description">Acceso completo a todas las ventas del sistema</p>
-                    </div>
+                <div class="context-badge admin">
+                    <i class="fas fa-crown"></i>
+                    <span>Vista Administrador - Acceso completo a todas las ventas</span>
                 </div>
             @elseif($allyId && ($metrics['current_ally_info'] ?? null))
-                <div class="context-card ally">
-                    <div class="context-icon">
-                        <i class="fas fa-handshake"></i>
-                    </div>
-                    <div class="context-content">
-                        <h3 class="context-title">{{ $metrics['current_ally_info']->company_name }}</h3>
-                        <p class="context-description">Panel de control de ventas del aliado</p>
-                        <div class="ally-details">
-                            <div class="detail-item">
-                                <i class="fas fa-user-tie"></i>
-                                <span>{{ $metrics['current_ally_info']->contact_person_name }}</span>
-                            </div>
-                            <div class="detail-item">
-                                <i class="fas fa-id-card"></i>
-                                <span>{{ $metrics['current_ally_info']->company_rif }}</span>
-                            </div>
-                            <div class="detail-item">
-                                <i class="fas fa-tag"></i>
-                                <span class="status-badge status-{{ $metrics['current_ally_info']->status }}">
-                                    {{ ucfirst($metrics['current_ally_info']->status) }}
-                                </span>
-                            </div>
-                        </div>
-                    </div>
+                <div class="context-badge ally">
+                    <i class="fas fa-handshake"></i>
+                    <span>{{ $metrics['current_ally_info']->company_name }} - Panel de control del aliado</span>
                 </div>
             @else
-                <div class="context-card user">
-                    <div class="context-icon">
-                        <i class="fas fa-user"></i>
-                    </div>
-                    <div class="context-content">
-                        <h3 class="context-title">Vista Usuario</h3>
-                        <p class="context-description">Reporte de ventas personales</p>
-                    </div>
+                <div class="context-badge user">
+                    <i class="fas fa-user"></i>
+                    <span>Vista Usuario - Tus ventas personales</span>
                 </div>
             @endif
+            
+            <div class="real-time-indicator">
+                <i class="fas fa-sync-alt"></i>
+                <span>Actualizado: {{ now()->format('d/m/Y H:i') }}</span>
+            </div>
         </div>
 
-        {{-- Panel de Filtros Avanzados --}}
-        <div class="filters-panel-modern">
-            <div class="panel-header">
-                <h3 class="panel-title">
+        {{-- Panel de Filtros --}}
+        <div class="filters-panel">
+            <div class="filters-header" id="filtersHeader">
+                <div class="filters-title">
                     <i class="fas fa-sliders-h"></i>
-                    Filtros y Configuración
-                </h3>
-                <button class="panel-toggle" id="filtersToggle">
+                    <h3>Filtros y Configuración</h3>
+                </div>
+                <button class="filters-toggle" id="filtersToggle">
                     <i class="fas fa-chevron-down"></i>
                 </button>
             </div>
-            
+
             <div class="filters-content" id="filtersContent">
                 <div class="filters-grid">
                     {{-- Filtro de Fechas --}}
@@ -120,10 +78,12 @@
                             <i class="fas fa-calendar-alt"></i>
                             Rango de Fechas
                         </label>
-                        <div class="date-range-picker">
-                            <div class="date-input-group">
+                        <div class="date-range">
+                            <div class="date-input">
                                 <input type="date" id="startDate" class="form-control" value="{{ $startDate->format('Y-m-d') }}">
-                                <span class="date-separator">hasta</span>
+                            </div>
+                            <span class="date-separator">→</span>
+                            <div class="date-input">
                                 <input type="date" id="endDate" class="form-control" value="{{ $endDate->format('Y-m-d') }}">
                             </div>
                         </div>
@@ -135,29 +95,35 @@
                             <i class="fas fa-chart-bar"></i>
                             Periodo de Análisis
                         </label>
-                        <select id="reportType" class="form-select">
-                            <option value="monthly" {{ $reportType == 'monthly' ? 'selected' : '' }}>Vista Mensual</option>
-                            <option value="weekly" {{ $reportType == 'weekly' ? 'selected' : '' }}>Vista Semanal</option>
-                            <option value="daily" {{ $reportType == 'daily' ? 'selected' : '' }}>Vista Diaria</option>
-                        </select>
+                        <div class="select-wrapper">
+                            <select id="reportType" class="form-select">
+                                <option value="monthly" {{ $reportType == 'monthly' ? 'selected' : '' }}>Vista Mensual</option>
+                                <option value="weekly" {{ $reportType == 'weekly' ? 'selected' : '' }}>Vista Semanal</option>
+                                <option value="daily" {{ $reportType == 'daily' ? 'selected' : '' }}>Vista Diaria</option>
+                            </select>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
                     </div>
 
-                    {{-- Filtro por Aliado (Solo para administradores) --}}
+                    {{-- Filtro por Aliado (Solo admin) --}}
                     @if ($userRole === 'admin' || $userRole === 'administrador')
                     <div class="filter-group">
                         <label class="filter-label">
                             <i class="fas fa-handshake"></i>
                             Filtrar por Aliado
                         </label>
-                        <select id="allyFilter" class="form-select">
-                            <option value="">Todos los Aliados</option>
-                            @foreach($allies ?? [] as $ally)
-                                <option value="{{ $ally->id }}" 
-                                    {{ ($selectedAllyId ?? '') == $ally->id ? 'selected' : '' }}>
-                                    {{ $ally->company_name }} - {{ $ally->contact_person_name }}
-                                </option>
-                            @endforeach
-                        </select>
+                        <div class="select-wrapper">
+                            <select id="allyFilter" class="form-select">
+                                <option value="">Todos los Aliados</option>
+                                @foreach($allies ?? [] as $ally)
+                                    <option value="{{ $ally->id }}" 
+                                        {{ ($selectedAllyId ?? '') == $ally->id ? 'selected' : '' }}>
+                                        {{ $ally->company_name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
                     </div>
                     @endif
 
@@ -167,411 +133,284 @@
                             <i class="fas fa-map-marker-alt"></i>
                             Filtrar por Zona
                         </label>
-                        <select id="zoneFilter" class="form-select">
-                            <option value="">Todas las Zonas</option>
-                            @foreach($zones ?? [] as $zone)
-                                <option value="{{ $zone->id }}" 
-                                    {{ ($selectedZoneId ?? '') == $zone->id ? 'selected' : '' }}>
-                                    {{ $zone->name }}
-                                </option>
-                            @endforeach
-                        </select>
+                        <div class="select-wrapper">
+                            <select id="zoneFilter" class="form-select">
+                                <option value="">Todas las Zonas</option>
+                                @foreach($zones ?? [] as $zone)
+                                    <option value="{{ $zone->id }}" 
+                                        {{ ($selectedZoneId ?? '') == $zone->id ? 'selected' : '' }}>
+                                        {{ $zone->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
                     </div>
                 </div>
 
-                {{-- Acciones Rápidas --}}
+                {{-- Acciones rápidas --}}
+                <div class="quick-actions">
+                    <button class="quick-action-btn" data-days="7">
+                        <i class="fas fa-calendar-week"></i>
+                        Últimos 7 días
+                    </button>
+                    <button class="quick-action-btn" data-days="30">
+                        <i class="fas fa-calendar-alt"></i>
+                        Últimos 30 días
+                    </button>
+                    <button class="quick-action-btn today" data-days="0">
+                        <i class="fas fa-calendar-day"></i>
+                        Hoy
+                    </button>
+                </div>
+
+                {{-- Botones de acción --}}
                 <div class="filter-actions">
-                    <div class="quick-actions">
-                        <button class="action-btn quick-filter" data-days="7">
-                            <i class="fas fa-calendar-week"></i>
-                            Últimos 7 días
-                        </button>
-                        <button class="action-btn quick-filter" data-days="30">
-                            <i class="fas fa-calendar"></i>
-                            Últimos 30 días
-                        </button>
-                        <button class="action-btn quick-filter today" data-days="0">
-                            <i class="fas fa-calendar-day"></i>
-                            Hoy
-                        </button>
-                    </div>
-                    
-                    <div class="main-actions">
-                        <button class="modern-button secondary" id="resetFiltersButton">
-                            <i class="fas fa-redo"></i>
-                            Reiniciar
-                        </button>
-                        <button class="modern-button primary" id="applyFilterButton">
-                            <i class="fas fa-filter"></i>
-                            Aplicar Filtros
-                        </button>
-                    </div>
+                    <button class="btn-reset" id="resetFiltersButton">
+                        <i class="fas fa-redo-alt"></i>
+                        Reiniciar
+                    </button>
+                    <button class="btn-apply" id="applyFilterButton">
+                        <i class="fas fa-search"></i>
+                        Aplicar Filtros
+                    </button>
                 </div>
             </div>
         </div>
 
-        {{-- Métricas Principales en Tiempo Real --}}
-        <div class="metrics-section">
-            <h2 class="section-title">
-                <i class="fas fa-chart-bar"></i>
-                Métricas Principales
-            </h2>
-            
-            <div class="metrics-grid-main">
-                {{-- Ventas Totales --}}
-                <div class="metric-card primary">
-                    <div class="metric-icon">
-                        <i class="fas fa-dollar-sign"></i>
-                    </div>
-                    <div class="metric-content">
-                        <div class="metric-value">${{ number_format($stats['total_sales'] ?? 0, 2) }}</div>
-                        <div class="metric-label">Ventas Totales USD</div>
-                        <div class="metric-subtext">
-                            Bs. {{ number_format($stats['total_sales_ves'] ?? 0, 2) }}
-                        </div>
-                        <div class="metric-trend {{ ($stats['growth'] ?? 0) >= 0 ? 'positive' : 'negative' }}">
-                            <i class="fas fa-arrow-{{ ($stats['growth'] ?? 0) >= 0 ? 'up' : 'down' }}"></i>
-                            {{ number_format(abs($stats['growth'] ?? 0), 1) }}%
-                        </div>
+        {{-- Métricas Principales --}}
+        <div class="metrics-grid">
+            <div class="metric-card primary">
+                <div class="metric-icon">
+                    <i class="fas fa-dollar-sign"></i>
+                </div>
+                <div class="metric-content">
+                    <span class="metric-label">Ventas Totales USD</span>
+                    <span class="metric-value">${{ number_format($stats['total_sales'] ?? 0, 2) }}</span>
+                    <span class="metric-sub">Bs. {{ number_format($stats['total_sales_ves'] ?? 0, 2) }}</span>
+                    <div class="metric-trend {{ ($stats['growth'] ?? 0) >= 0 ? 'positive' : 'negative' }}">
+                        <i class="fas fa-arrow-{{ ($stats['growth'] ?? 0) >= 0 ? 'up' : 'down' }}"></i>
+                        {{ number_format(abs($stats['growth'] ?? 0), 1) }}%
                     </div>
                 </div>
+            </div>
 
-                {{-- Total Órdenes --}}
-                <div class="metric-card success">
-                    <div class="metric-icon">
-                        <i class="fas fa-shopping-cart"></i>
-                    </div>
-                    <div class="metric-content">
-                        <div class="metric-value">{{ number_format($stats['total_orders'] ?? 0) }}</div>
-                        <div class="metric-label">Total Órdenes</div>
-                        <div class="metric-subtext">
-                            @if(($stats['average_order_value'] ?? 0) > 0)
-                                ${{ number_format($stats['average_order_value'], 2) }} USD
-                                <br>
-                                Bs. {{ number_format($stats['average_order_value_ves'] ?? 0, 2) }}
-                            @else
-                                Sin datos
-                            @endif
-                        </div>
-                    </div>
+            <div class="metric-card success">
+                <div class="metric-icon">
+                    <i class="fas fa-shopping-cart"></i>
                 </div>
-
-                {{-- Clientes Únicos --}}
-                <div class="metric-card warning">
-                    <div class="metric-icon">
-                        <i class="fas fa-users"></i>
-                    </div>
-                    <div class="metric-content">
-                        <div class="metric-value">{{ number_format($stats['unique_clients'] ?? 0) }}</div>
-                        <div class="metric-label">Clientes Únicos</div>
-                        <div class="metric-subtext">
-                            {{ $stats['repeat_customers'] ?? 0 }} clientes recurrentes
-                        </div>
-                    </div>
+                <div class="metric-content">
+                    <span class="metric-label">Total Órdenes</span>
+                    <span class="metric-value">{{ number_format($stats['total_orders'] ?? 0) }}</span>
+                    @if(($stats['average_order_value'] ?? 0) > 0)
+                        <span class="metric-sub">Prom. ${{ number_format($stats['average_order_value'], 2) }}</span>
+                    @endif
                 </div>
+            </div>
 
-                {{-- Tasa de Cambio --}}
-                <div class="metric-card info">
-                    <div class="metric-icon">
-                        <i class="fas fa-exchange-alt"></i>
-                    </div>
-                    <div class="metric-content">
-                        <div class="metric-value">{{ number_format($exchangeRateVes, 2) }}</div>
-                        <div class="metric-label">Tasa BNC</div>
-                        <div class="metric-subtext">Bs. por USD</div>
-                        <div class="rate-source">
-                            <i class="fas fa-database"></i>
-                            Fuente: Banco Central
-                        </div>
-                    </div>
+            <div class="metric-card warning">
+                <div class="metric-icon">
+                    <i class="fas fa-users"></i>
+                </div>
+                <div class="metric-content">
+                    <span class="metric-label">Clientes Únicos</span>
+                    <span class="metric-value">{{ number_format($stats['unique_clients'] ?? 0) }}</span>
+                    @if(($stats['repeat_customers'] ?? 0) > 0)
+                        <span class="metric-sub">{{ $stats['repeat_customers'] }} recurrentes</span>
+                    @endif
+                </div>
+            </div>
+
+            <div class="metric-card info">
+                <div class="metric-icon">
+                    <i class="fas fa-exchange-alt"></i>
+                </div>
+                <div class="metric-content">
+                    <span class="metric-label">Tasa BNC</span>
+                    <span class="metric-value">{{ number_format($exchangeRateVes, 2) }}</span>
+                    <span class="metric-sub">Bs. por USD</span>
                 </div>
             </div>
         </div>
 
-        {{-- Información de Filtros Aplicados --}}
+        {{-- Filtros Aplicados --}}
         @if(($selectedAllyName ?? null) || ($selectedZoneName ?? null))
-        <div class="applied-filters-section">
-            <h3 class="section-subtitle">
+        <div class="applied-filters">
+            <span class="applied-label">
                 <i class="fas fa-filter"></i>
-                Filtros Aplicados
-            </h3>
-            <div class="applied-filters">
-                @if($selectedAllyName ?? null)
-                <div class="applied-filter-tag">
-                    <span class="filter-tag-label">Aliado:</span>
-                    <span class="filter-tag-value">{{ $selectedAllyName }}</span>
-                    <button class="filter-tag-remove" data-filter="ally">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                @endif
-                @if($selectedZoneName ?? null)
-                <div class="applied-filter-tag">
-                    <span class="filter-tag-label">Zona:</span>
-                    <span class="filter-tag-value">{{ $selectedZoneName }}</span>
-                    <button class="filter-tag-remove" data-filter="zone">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-                @endif
+                Filtros aplicados:
+            </span>
+            @if($selectedAllyName ?? null)
+            <div class="filter-tag">
+                <span class="tag-label">Aliado:</span>
+                <span class="tag-value">{{ $selectedAllyName }}</span>
+                <button class="tag-remove" data-filter="ally">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
+            @endif
+            @if($selectedZoneName ?? null)
+            <div class="filter-tag">
+                <span class="tag-label">Zona:</span>
+                <span class="tag-value">{{ $selectedZoneName }}</span>
+                <button class="tag-remove" data-filter="zone">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            @endif
         </div>
         @endif
 
-        {{-- Gráfico Principal Interactivo --}}
-        <div class="chart-section">
+        {{-- Gráfico Principal --}}
+        <div class="chart-card">
             <div class="chart-header">
-                <h2 class="section-title">
+                <h3 class="chart-title">
                     <i class="fas fa-chart-line"></i>
                     Tendencias de Ventas
-                </h2>
+                </h3>
                 <div class="chart-actions">
-                    <button class="chart-action-btn" id="toggleChartType">
-                        <i class="fas fa-exchange-alt"></i>
-                        Cambiar Vista
-                    </button>
-                    <button class="chart-action-btn" id="downloadChart">
+                    <div class="chart-type-toggle">
+                        <button class="type-btn active" id="toggleChartType">
+                            <i class="fas fa-chart-bar"></i>
+                        </button>
+                        <button class="type-btn" id="toggleCurrencyBtn">
+                            <i class="fas fa-dollar-sign"></i>
+                        </button>
+                    </div>
+                    <button class="chart-download" id="downloadChart" title="Descargar gráfico">
                         <i class="fas fa-download"></i>
-                        Descargar
                     </button>
                 </div>
             </div>
-            
-            <div class="chart-container-modern">
+            <div class="chart-container">
                 <canvas id="salesChart"></canvas>
             </div>
-            
-            <div class="chart-legend">
-                <div class="legend-item">
-                    <div class="legend-color" style="background: linear-gradient(135deg, #8a2be2, #4a00e0);"></div>
-                    <span class="legend-text">Ventas (USD)</span>
+        </div>
+
+        {{-- Grid de Análisis Detallado --}}
+        <div class="analysis-grid">
+            {{-- Métodos de Pago --}}
+            <div class="analysis-card">
+                <h3 class="analysis-title">
+                    <i class="fas fa-credit-card"></i>
+                    Métodos de Pago
+                </h3>
+                <div class="payment-list">
+                    @forelse (($stats['payment_methods'] ?? []) as $payment)
+                        @php
+                            $percentage = ($stats['total_orders'] ?? 0) > 0 ? 
+                                round(($payment->count / $stats['total_orders']) * 100, 1) : 0;
+                        @endphp
+                        <div class="payment-item">
+                            <div class="payment-info">
+                                <span class="payment-name">{{ ucfirst($payment->payment_method) }}</span>
+                                <span class="payment-percentage">{{ $percentage }}%</span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: {{ $percentage }}%"></div>
+                            </div>
+                            <span class="payment-count">{{ $payment->count }} órdenes</span>
+                        </div>
+                    @empty
+                        <div class="empty-data">
+                            <i class="fas fa-receipt"></i>
+                            <p>No hay datos de pagos</p>
+                        </div>
+                    @endforelse
                 </div>
-                <div class="legend-item">
-                    <div class="legend-color" style="background: linear-gradient(135deg, #00b894, #00a085);"></div>
-                    <span class="legend-text">Ventas (Bs.)</span>
+            </div>
+
+            {{-- Resumen del Reporte --}}
+            <div class="analysis-card">
+                <h3 class="analysis-title">
+                    <i class="fas fa-clipboard-list"></i>
+                    Resumen del Reporte
+                </h3>
+                <div class="summary-list">
+                    <div class="summary-item">
+                        <i class="fas fa-eye"></i>
+                        <span class="summary-label">Tipo de Vista</span>
+                        <span class="summary-value view-badge">{{ ucfirst($reportType) }}</span>
+                    </div>
+                    <div class="summary-item">
+                        <i class="fas fa-calendar"></i>
+                        <span class="summary-label">Período</span>
+                        <span class="summary-value">{{ $startDate->format('d M Y') }} - {{ $endDate->format('d M Y') }}</span>
+                    </div>
+                    <div class="summary-item">
+                        <i class="fas fa-clock"></i>
+                        <span class="summary-label">Días Analizados</span>
+                        <span class="summary-value">{{ $startDate->diffInDays($endDate) + 1 }} días</span>
+                    </div>
+                    
+                    @if (($metrics['best_day'] ?? null))
+                    <div class="summary-item highlight">
+                        <i class="fas fa-trophy"></i>
+                        <span class="summary-label">Mejor Día</span>
+                        <span class="summary-value">
+                            {{ \Carbon\Carbon::parse($metrics['best_day']->date)->format('d/m/Y') }}
+                            <small>${{ number_format($metrics['best_day']->daily_sales, 2) }}</small>
+                        </span>
+                    </div>
+                    @endif
+                    
+                    @if (($metrics['largest_sale'] ?? null))
+                    <div class="summary-item highlight">
+                        <i class="fas fa-star"></i>
+                        <span class="summary-label">Venta Más Grande</span>
+                        <span class="summary-value">
+                            <small>${{ number_format($metrics['largest_sale']->total_amount, 2) }}</small>
+                        </span>
+                    </div>
+                    @endif
                 </div>
             </div>
         </div>
-
-        {{-- Métricas Detalladas --}}
-        <div class="detailed-metrics-section">
-            <h2 class="section-title">
-                <i class="fas fa-info-circle"></i>
-                Análisis Detallado
-            </h2>
-            
-            <div class="detailed-metrics-grid">
-                {{-- Métodos de Pago --}}
-                <div class="detailed-metric-card">
-                    <h3 class="metric-card-title">
-                        <i class="fas fa-credit-card"></i>
-                        Métodos de Pago
-                    </h3>
-                    <div class="payment-methods-list">
-                        @forelse (($stats['payment_methods'] ?? []) as $payment)
-                            <div class="payment-method-item">
-                                <div class="payment-info">
-                                    <span class="payment-name">{{ ucfirst($payment->payment_method) }}</span>
-                                    <span class="payment-percentage">
-                                        @php
-                                            $percentage = ($stats['total_orders'] ?? 0) > 0 ? 
-                                                round(($payment->count / $stats['total_orders']) * 100, 1) : 0;
-                                        @endphp
-                                        {{ $percentage }}%
-                                    </span>
-                                </div>
-                                <div class="payment-bar">
-                                    <div class="payment-progress" style="width: {{ $percentage }}%"></div>
-                                </div>
-                                <span class="payment-count">{{ $payment->count }} órdenes</span>
-                            </div>
-                        @empty
-                            <div class="no-data-message">
-                                <i class="fas fa-receipt"></i>
-                                No hay datos de pagos
-                            </div>
-                        @endforelse
-                    </div>
-                </div>
-
-                {{-- Resumen del Reporte --}}
-                <div class="detailed-metric-card">
-                    <h3 class="metric-card-title">
-                        <i class="fas fa-chart-pie"></i>
-                        Resumen del Reporte
-                    </h3>
-                    <div class="report-summary">
-                        <div class="summary-item">
-                            <i class="fas fa-eye"></i>
-                            <div class="summary-content">
-                                <span class="summary-label">Tipo de Vista</span>
-                                <span class="summary-value view-type">{{ ucfirst($reportType) }}</span>
-                            </div>
-                        </div>
-                        <div class="summary-item">
-                            <i class="fas fa-calendar"></i>
-                            <div class="summary-content">
-                                <span class="summary-label">Período</span>
-                                <span class="summary-value date-range">
-                                    {{ $startDate->format('d M Y') }} - {{ $endDate->format('d M Y') }}
-                                </span>
-                            </div>
-                        </div>
-                        @if(($selectedAllyName ?? null))
-                        <div class="summary-item">
-                            <i class="fas fa-handshake"></i>
-                            <div class="summary-content">
-                                <span class="summary-label">Aliado</span>
-                                <span class="summary-value">{{ $selectedAllyName }}</span>
-                            </div>
-                        </div>
-                        @endif
-                        @if(($selectedZoneName ?? null))
-                        <div class="summary-item">
-                            <i class="fas fa-map-marker-alt"></i>
-                            <div class="summary-content">
-                                <span class="summary-label">Zona</span>
-                                <span class="summary-value">{{ $selectedZoneName }}</span>
-                            </div>
-                        </div>
-                        @endif
-                        @if (($metrics['best_day'] ?? null))
-                        <div class="summary-item highlight">
-                            <i class="fas fa-trophy"></i>
-                            <div class="summary-content">
-                                <span class="summary-label">Mejor Día</span>
-                                <span class="summary-value">
-                                    {{ \Carbon\Carbon::parse($metrics['best_day']->date)->format('d/m/Y') }}
-                                    <br>
-                                    <small>
-                                        ${{ number_format($metrics['best_day']->daily_sales, 2) }} USD
-                                        <br>
-                                        Bs. {{ number_format($metrics['best_day_ves'] ?? 0, 2) }}
-                                    </small>
-                                </span>
-                            </div>
-                        </div>
-                        @endif
-                        @if (($metrics['largest_sale'] ?? null))
-                        <div class="summary-item highlight">
-                            <i class="fas fa-star"></i>
-                            <div class="summary-content">
-                                <span class="summary-label">Venta Más Grande</span>
-                                <span class="summary-value">
-                                    <small>
-                                        ${{ number_format($metrics['largest_sale']->total_amount, 2) }} USD
-                                        <br>
-                                        Bs. {{ number_format($metrics['largest_sale_ves'] ?? 0, 2) }}
-                                    </small>
-                                </span>
-                            </div>
-                        </div>
-                        @endif
-                        <div class="summary-item">
-                            <i class="fas fa-clock"></i>
-                            <div class="summary-content">
-                                <span class="summary-label">Días Analizados</span>
-                                <span class="summary-value">
-                                    {{ $startDate->diffInDays($endDate) + 1 }} días
-                                </span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {{-- Información Exclusiva para Administradores --}}
-        @if (($userRole === 'admin' || $userRole === 'administrador') && ($metrics['top_ally'] ?? null))
-        <div class="admin-section">
-            <h2 class="section-title">
-                <i class="fas fa-trophy"></i>
-                Ranking de Aliados
-            </h2>
-            
-            <div class="admin-metrics-grid">
-                <div class="admin-metric-card">
-                    <h3 class="metric-card-title">
-                        <i class="fas fa-medal"></i>
-                        Aliado Destacado
-                    </h3>
-                    <div class="top-ally-info">
-                        <div class="ally-avatar">
-                            <i class="fas fa-crown"></i>
-                        </div>
-                        <div class="ally-details">
-                            <h4 class="ally-name">{{ $metrics['top_ally']->ally->company_name ?? 'N/A' }}</h4>
-                            <div class="ally-stats">
-                                <div class="ally-stat">
-                                    <span class="stat-value">${{ number_format($metrics['top_ally']->total_sales, 2) }}</span>
-                                    <span class="stat-label">Ventas USD</span>
-                                    <span class="stat-subtext">
-                                        Bs. {{ number_format($metrics['top_ally']->total_sales_ves ?? 0, 2) }}
-                                    </span>
-                                </div>
-                                <div class="ally-stat">
-                                    <span class="stat-value">{{ $metrics['top_ally']->total_orders }}</span>
-                                    <span class="stat-label">Órdenes</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        @endif
 
         {{-- Comparativa de Períodos --}}
-        <div class="comparison-section">
-            <h2 class="section-title">
+        <div class="comparison-card">
+            <h3 class="comparison-title">
                 <i class="fas fa-balance-scale"></i>
                 Comparativa de Períodos
-            </h2>
+            </h3>
             
             <div class="comparison-grid">
-                <div class="comparison-card">
-                    <div class="comparison-period">
+                <div class="period-card">
+                    <div class="period-header">
                         <h4>Período Actual</h4>
-                        <div class="period-dates">
-                            {{ $startDate->format('d M Y') }} - {{ $endDate->format('d M Y') }}
-                        </div>
+                        <span class="period-dates">{{ $startDate->format('d M Y') }} - {{ $endDate->format('d M Y') }}</span>
                     </div>
-                    <div class="comparison-stats">
-                        <div class="comparison-stat">
-                            <span class="stat-value">${{ number_format($stats['total_sales'] ?? 0, 2) }}</span>
+                    <div class="period-stats">
+                        <div class="period-stat">
                             <span class="stat-label">Ventas USD</span>
-                            <span class="stat-subtext">
-                                Bs. {{ number_format($stats['total_sales_ves'] ?? 0, 2) }}
-                            </span>
+                            <span class="stat-value">${{ number_format($stats['total_sales'] ?? 0, 2) }}</span>
+                            <span class="stat-sub">Bs. {{ number_format($stats['total_sales_ves'] ?? 0, 2) }}</span>
                         </div>
-                        <div class="comparison-stat">
-                            <span class="stat-value">{{ number_format($stats['total_orders'] ?? 0) }}</span>
+                        <div class="period-stat">
                             <span class="stat-label">Órdenes</span>
+                            <span class="stat-value">{{ number_format($stats['total_orders'] ?? 0) }}</span>
                         </div>
                     </div>
                 </div>
 
-                <div class="comparison-card">
-                    <div class="comparison-period">
+                <div class="period-card">
+                    <div class="period-header">
                         <h4>Período Anterior</h4>
-                        <div class="period-dates">
+                        <span class="period-dates">
                             @php
                                 $previousDays = $endDate->diffInDays($startDate);
                                 $previousStart = $startDate->copy()->subDays($previousDays);
                                 $previousEnd = $startDate->copy()->subDay();
                             @endphp
                             {{ $previousStart->format('d M Y') }} - {{ $previousEnd->format('d M Y') }}
-                        </div>
+                        </span>
                     </div>
-                    <div class="comparison-stats">
-                        <div class="comparison-stat">
-                            <span class="stat-value">${{ number_format($stats['previous_sales'] ?? 0, 2) }}</span>
+                    <div class="period-stats">
+                        <div class="period-stat">
                             <span class="stat-label">Ventas USD</span>
-                            <span class="stat-subtext">
-                                Bs. {{ number_format($stats['previous_sales_ves'] ?? 0, 2) }}
-                            </span>
+                            <span class="stat-value">${{ number_format($stats['previous_sales'] ?? 0, 2) }}</span>
                         </div>
-                        <div class="comparison-growth {{ ($stats['growth'] ?? 0) >= 0 ? 'positive' : 'negative' }}">
+                        <div class="growth-indicator {{ ($stats['growth'] ?? 0) >= 0 ? 'positive' : 'negative' }}">
                             <i class="fas fa-arrow-{{ ($stats['growth'] ?? 0) >= 0 ? 'up' : 'down' }}"></i>
                             {{ number_format(abs($stats['growth'] ?? 0), 1) }}% crecimiento
                         </div>
@@ -580,21 +419,52 @@
             </div>
         </div>
 
+        {{-- Sección Admin - Ranking de Aliados --}}
+        @if (($userRole === 'admin' || $userRole === 'administrador') && ($metrics['top_ally'] ?? null))
+        <div class="admin-section">
+            <h3 class="section-title">
+                <i class="fas fa-trophy"></i>
+                Aliado Destacado
+            </h3>
+            
+            <div class="top-ally-card">
+                <div class="ally-rank">#1</div>
+                <div class="ally-info">
+                    <div class="ally-avatar">
+                        <i class="fas fa-crown"></i>
+                    </div>
+                    <div class="ally-details">
+                        <h4 class="ally-name">{{ $metrics['top_ally']->ally->company_name ?? 'N/A' }}</h4>
+                        <div class="ally-stats">
+                            <div class="ally-stat">
+                                <span class="stat-label">Ventas USD</span>
+                                <span class="stat-value">${{ number_format($metrics['top_ally']->total_sales, 2) }}</span>
+                            </div>
+                            <div class="ally-stat">
+                                <span class="stat-label">Órdenes</span>
+                                <span class="stat-value">{{ $metrics['top_ally']->total_orders }}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
+
         {{-- Acciones de Exportación --}}
         <div class="export-section">
-            <h2 class="section-title">
+            <h3 class="export-title">
                 <i class="fas fa-download"></i>
                 Exportar Reporte
-            </h2>
-            
-            <div class="export-actions">
+            </h3>
+            <div class="export-buttons">
                 <button class="export-btn pdf" id="downloadPdfButton">
                     <i class="fas fa-file-pdf"></i>
-                    Exportar PDF
+                    PDF
                 </button>
                 <button class="export-btn excel" id="downloadExcelButton">
                     <i class="fas fa-file-excel"></i>
-                    Exportar Excel
+                    Excel
                 </button>
                 <button class="export-btn print" onclick="window.print()">
                     <i class="fas fa-print"></i>
@@ -603,23 +473,27 @@
             </div>
         </div>
     </div>
+
+    {{-- Loading Overlay --}}
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="loading-spinner">
+            <i class="fas fa-spinner fa-spin"></i>
+            <span>Generando reporte...</span>
+        </div>
+    </div>
 @endsection
 
 @push('scripts')
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Datos iniciales desde PHP
+            // Datos iniciales
             const initialLabels = @json($chartData['labels'] ?? []);
             const initialChartData = @json($chartData['data'] ?? []);
-            const initialReportType = "{{ $reportType }}";
             const exchangeRate = {{ $exchangeRateVes }};
-
-            // Calcular datos en VES
             const initialChartDataVes = initialChartData.map(amount => amount * exchangeRate);
 
-            // Referencias a elementos del DOM
+            // Referencias DOM
             const salesChartCanvas = document.getElementById('salesChart');
             const startDateInput = document.getElementById('startDate');
             const endDateInput = document.getElementById('endDate');
@@ -631,6 +505,7 @@
             const filtersToggle = document.getElementById('filtersToggle');
             const filtersContent = document.getElementById('filtersContent');
             const toggleChartType = document.getElementById('toggleChartType');
+            const toggleCurrencyBtn = document.getElementById('toggleCurrencyBtn');
             const downloadChartBtn = document.getElementById('downloadChart');
             const downloadPdfButton = document.getElementById('downloadPdfButton');
             const downloadExcelButton = document.getElementById('downloadExcelButton');
@@ -640,14 +515,7 @@
             let currentChartType = 'bar';
             let showingVes = false;
 
-            // Función para mostrar/ocultar loading
-            function showLoading(show) {
-                if (loadingOverlay) {
-                    loadingOverlay.style.display = show ? 'flex' : 'none';
-                }
-            }
-
-            // Toggle de filtros
+            // Toggle filtros
             if (filtersToggle && filtersContent) {
                 filtersToggle.addEventListener('click', function() {
                     filtersContent.classList.toggle('active');
@@ -657,27 +525,23 @@
                 });
             }
 
-            // Función para renderizar el gráfico
+            // Función para renderizar gráfico
             function renderChart(labels, data, dataVes, type = 'bar', showVes = false) {
-                if (salesChart) {
-                    salesChart.destroy();
-                }
+                if (salesChart) salesChart.destroy();
 
                 const ctx = salesChartCanvas.getContext('2d');
-                const gradientUSD = ctx.createLinearGradient(0, 0, 0, 400);
-                gradientUSD.addColorStop(0, 'rgba(138, 43, 226, 0.8)');
-                gradientUSD.addColorStop(1, 'rgba(138, 43, 226, 0.2)');
-
-                const gradientVES = ctx.createLinearGradient(0, 0, 0, 400);
-                gradientVES.addColorStop(0, 'rgba(0, 184, 148, 0.8)');
-                gradientVES.addColorStop(1, 'rgba(0, 184, 148, 0.2)');
-
-                const isLineChart = type === 'line';
                 const currentData = showVes ? dataVes : data;
                 const currentLabel = showVes ? 'Ventas (Bs.)' : 'Ventas (USD)';
-                const currentGradient = showVes ? gradientVES : gradientUSD;
-                const currentBorderColor = showVes ? 'rgba(0, 184, 148, 1)' : 'rgba(138, 43, 226, 1)';
+                const gradient = ctx.createLinearGradient(0, 0, 0, 400);
                 
+                if (showVes) {
+                    gradient.addColorStop(0, 'rgba(0, 184, 148, 0.8)');
+                    gradient.addColorStop(1, 'rgba(0, 184, 148, 0.1)');
+                } else {
+                    gradient.addColorStop(0, 'rgba(138, 43, 226, 0.8)');
+                    gradient.addColorStop(1, 'rgba(138, 43, 226, 0.1)');
+                }
+
                 salesChart = new Chart(salesChartCanvas, {
                     type: type,
                     data: {
@@ -685,45 +549,26 @@
                         datasets: [{
                             label: currentLabel,
                             data: currentData,
-                            backgroundColor: isLineChart ? 'transparent' : currentGradient,
-                            borderColor: currentBorderColor,
-                            borderWidth: isLineChart ? 3 : 2,
-                            borderRadius: isLineChart ? 0 : 8,
-                            barThickness: isLineChart ? 'flex' : 35,
-                            borderSkipped: false,
-                            fill: isLineChart,
-                            tension: isLineChart ? 0.4 : 0,
-                            pointBackgroundColor: currentBorderColor,
-                            pointBorderColor: '#fff',
-                            pointBorderWidth: 2,
-                            pointRadius: isLineChart ? 4 : 0,
-                            pointHoverRadius: 6
+                            backgroundColor: gradient,
+                            borderColor: showVes ? '#00b894' : '#8a2be2',
+                            borderWidth: 2,
+                            borderRadius: 8,
+                            fill: type === 'line' ? false : true,
+                            tension: 0.4
                         }]
                     },
                     options: {
                         responsive: true,
                         maintainAspectRatio: false,
                         plugins: {
-                            legend: {
-                                display: false
-                            },
+                            legend: { display: false },
                             tooltip: {
-                                backgroundColor: 'rgba(255, 255, 255, 0.95)',
-                                titleColor: '#1f2937',
-                                bodyColor: '#4b5563',
-                                borderColor: '#e5e7eb',
-                                borderWidth: 1,
-                                padding: 12,
-                                cornerRadius: 8,
-                                displayColors: false,
                                 callbacks: {
-                                    label: function(context) {
+                                    label: (context) => {
                                         const value = context.parsed.y;
-                                        if (showVes) {
-                                            return `Bs. ${value.toLocaleString('es-VE', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-                                        } else {
-                                            return `$${value.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}`;
-                                        }
+                                        return showVes 
+                                            ? `Bs. ${value.toLocaleString('es-VE', {minimumFractionDigits: 2})}`
+                                            : `$${value.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
                                     }
                                 }
                             }
@@ -731,277 +576,136 @@
                         scales: {
                             y: {
                                 beginAtZero: true,
-                                grid: {
-                                    color: 'rgba(0, 0, 0, 0.05)'
-                                },
                                 ticks: {
-                                    callback: function(value) {
-                                        if (showVes) {
-                                            return 'Bs. ' + value.toLocaleString('es-VE', {
-                                                maximumFractionDigits: 0
-                                            });
-                                        } else {
-                                            return '$' + value.toLocaleString('en-US', {
-                                                maximumFractionDigits: 0
-                                            });
-                                        }
-                                    },
-                                    color: '#6b7280'
-                                }
-                            },
-                            x: {
-                                grid: {
-                                    display: false
-                                },
-                                ticks: {
-                                    color: '#6b7280',
-                                    maxRotation: 45
+                                    callback: (value) => showVes 
+                                        ? 'Bs. ' + value.toLocaleString('es-VE')
+                                        : '$' + value.toLocaleString('en-US')
                                 }
                             }
-                        },
-                        interaction: {
-                            intersect: false,
-                            mode: 'index'
-                        },
-                        animation: {
-                            duration: 1000,
-                            easing: 'easeOutQuart'
                         }
                     }
                 });
             }
 
-            // Renderizar gráfico inicial si hay datos
-            if (salesChartCanvas && initialLabels.length > 0 && initialChartData.length > 0) {
+            // Render inicial
+            if (salesChartCanvas && initialLabels.length > 0) {
                 renderChart(initialLabels, initialChartData, initialChartDataVes, currentChartType, showingVes);
-            } else {
-                // Mostrar mensaje si no hay datos
-                salesChartCanvas.parentElement.innerHTML = `
-                    <div class="no-data-message" style="height: 400px; display: flex; align-items: center; justify-content: center;">
-                        <div style="text-align: center;">
-                            <i class="fas fa-chart-bar" style="font-size: 3rem; color: #9ca3af; margin-bottom: 1rem;"></i>
-                            <p style="color: #6b7280; font-size: 1.1rem;">No hay datos disponibles para el período seleccionado</p>
-                        </div>
-                    </div>
-                `;
             }
 
             // Toggle tipo de gráfico
             if (toggleChartType) {
                 toggleChartType.addEventListener('click', function() {
-                    if (initialLabels.length === 0) return;
-                    
-                    // Alternar entre USD y VES
-                    showingVes = !showingVes;
                     currentChartType = currentChartType === 'bar' ? 'line' : 'bar';
-                    
                     renderChart(initialLabels, initialChartData, initialChartDataVes, currentChartType, showingVes);
-                    
-                    // Actualizar texto del botón
-                    const currencyText = showingVes ? 'Mostrar USD' : 'Mostrar Bs.';
-                    this.innerHTML = `<i class="fas fa-exchange-alt"></i> ${currencyText}`;
+                    this.classList.toggle('active');
                 });
             }
 
-            // Descargar gráfico como imagen
+            // Toggle moneda
+            if (toggleCurrencyBtn) {
+                toggleCurrencyBtn.addEventListener('click', function() {
+                    showingVes = !showingVes;
+                    renderChart(initialLabels, initialChartData, initialChartDataVes, currentChartType, showingVes);
+                    this.innerHTML = showingVes ? '<i class="fas fa-bs"></i>' : '<i class="fas fa-dollar-sign"></i>';
+                });
+            }
+
+            // Descargar gráfico
             if (downloadChartBtn) {
-                downloadChartBtn.addEventListener('click', function() {
-                    if (initialLabels.length === 0) {
-                        alert('No hay datos para descargar');
-                        return;
-                    }
-                    
-                    const currencySuffix = showingVes ? 'ves' : 'usd';
+                downloadChartBtn.addEventListener('click', () => {
                     const link = document.createElement('a');
-                    link.download = `grafico-ventas-${currencySuffix}-${new Date().toISOString().split('T')[0]}.png`;
+                    link.download = `grafico-ventas-${new Date().toISOString().split('T')[0]}.png`;
                     link.href = salesChartCanvas.toDataURL();
                     link.click();
                 });
             }
 
             // Filtros rápidos
-            document.querySelectorAll('.quick-filter').forEach(button => {
-                button.addEventListener('click', function() {
-                    const days = parseInt(this.getAttribute('data-days'));
-                    const endDate = new Date();
-                    const startDate = new Date();
+            document.querySelectorAll('.quick-action-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const days = parseInt(this.dataset.days);
+                    const end = new Date();
+                    const start = new Date();
                     
                     if (days === 0) {
                         // Hoy
-                        startDate.setDate(endDate.getDate());
+                        start.setDate(end.getDate());
+                        reportTypeSelect.value = 'daily';
                     } else {
-                        startDate.setDate(endDate.getDate() - days);
+                        start.setDate(end.getDate() - days);
+                        if (days <= 7) reportTypeSelect.value = 'daily';
+                        else if (days <= 30) reportTypeSelect.value = 'weekly';
+                        else reportTypeSelect.value = 'monthly';
                     }
                     
-                    startDateInput.value = startDate.toISOString().split('T')[0];
-                    endDateInput.value = endDate.toISOString().split('T')[0];
-                    
-                    if (days === 0) {
-                        reportTypeSelect.value = 'daily';
-                    } else if (days <= 7) {
-                        reportTypeSelect.value = 'daily';
-                    } else if (days <= 30) {
-                        reportTypeSelect.value = 'weekly';
-                    } else {
-                        reportTypeSelect.value = 'monthly';
-                    }
-                    
+                    startDateInput.value = start.toISOString().split('T')[0];
+                    endDateInput.value = end.toISOString().split('T')[0];
                     applyFilters();
                 });
             });
 
             // Aplicar filtros
             function applyFilters() {
-                const startDate = startDateInput.value;
-                const endDate = endDateInput.value;
-                const reportType = reportTypeSelect.value;
-                const allyId = allyFilter ? allyFilter.value : '';
-                const zoneId = zoneFilter ? zoneFilter.value : '';
-
-                if (!startDate || !endDate) {
-                    alert('Por favor, selecciona ambas fechas');
-                    return;
-                }
-
-                if (startDate > endDate) {
-                    alert('La fecha inicial no puede ser mayor a la fecha final');
-                    return;
-                }
-
-                showLoading(true);
-
-                // Construir URL con parámetros
-                const url = new URL(window.location.href);
-                url.searchParams.set('startDate', startDate);
-                url.searchParams.set('endDate', endDate);
-                url.searchParams.set('reportType', reportType);
-                
-                if (allyId) {
-                    url.searchParams.set('ally_id', allyId);
-                } else {
-                    url.searchParams.delete('ally_id');
-                }
-                
-                if (zoneId) {
-                    url.searchParams.set('zone_id', zoneId);
-                } else {
-                    url.searchParams.delete('zone_id');
-                }
-
-                window.location.href = url.toString();
-            }
-
-            if (applyFilterButton) {
-                applyFilterButton.addEventListener('click', applyFilters);
-            }
-
-            // Reiniciar filtros
-            if (resetFiltersButton) {
-                resetFiltersButton.addEventListener('click', function() {
-                    const today = new Date().toISOString().split('T')[0];
-                    const thirtyDaysAgo = new Date();
-                    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-                    
-                    startDateInput.value = thirtyDaysAgo.toISOString().split('T')[0];
-                    endDateInput.value = today;
-                    reportTypeSelect.value = 'monthly';
-                    
-                    if (allyFilter) allyFilter.value = '';
-                    if (zoneFilter) zoneFilter.value = '';
-                    
-                    applyFilters();
+                const params = new URLSearchParams({
+                    startDate: startDateInput.value,
+                    endDate: endDateInput.value,
+                    reportType: reportTypeSelect.value,
+                    ...(allyFilter?.value && { ally_id: allyFilter.value }),
+                    ...(zoneFilter?.value && { zone_id: zoneFilter.value })
                 });
+                
+                loadingOverlay?.classList.add('active');
+                window.location.href = window.location.pathname + '?' + params.toString();
             }
 
-            // Remover filtros aplicados
-            document.querySelectorAll('.filter-tag-remove').forEach(button => {
-                button.addEventListener('click', function() {
-                    const filterType = this.getAttribute('data-filter');
-                    
-                    if (filterType === 'ally' && allyFilter) {
-                        allyFilter.value = '';
-                    } else if (filterType === 'zone' && zoneFilter) {
-                        zoneFilter.value = '';
-                    }
-                    
+            applyFilterButton?.addEventListener('click', applyFilters);
+
+            // Reset filtros
+            resetFiltersButton?.addEventListener('click', () => {
+                const today = new Date().toISOString().split('T')[0];
+                const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                
+                startDateInput.value = thirtyDaysAgo;
+                endDateInput.value = today;
+                reportTypeSelect.value = 'monthly';
+                if (allyFilter) allyFilter.value = '';
+                if (zoneFilter) zoneFilter.value = '';
+                applyFilters();
+            });
+
+            // Remover tags
+            document.querySelectorAll('.tag-remove').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    if (this.dataset.filter === 'ally' && allyFilter) allyFilter.value = '';
+                    if (this.dataset.filter === 'zone' && zoneFilter) zoneFilter.value = '';
                     applyFilters();
                 });
             });
 
-            // Exportar PDF
-            if (downloadPdfButton) {
-                downloadPdfButton.addEventListener('click', function() {
-                    downloadReport('pdf');
-                });
-            }
-
-            // Exportar Excel
-            if (downloadExcelButton) {
-                downloadExcelButton.addEventListener('click', function() {
-                    downloadReport('excel');
-                });
-            }
-
+            // Exportar reportes
             function downloadReport(format) {
-                const startDate = startDateInput.value;
-                const endDate = endDateInput.value;
-                const reportType = reportTypeSelect.value;
-                const allyId = allyFilter ? allyFilter.value : '';
-                const zoneId = zoneFilter ? zoneFilter.value : '';
+                const params = new URLSearchParams({
+                    startDate: startDateInput.value,
+                    endDate: endDateInput.value,
+                    reportType: reportTypeSelect.value,
+                    format: format,
+                    ...(allyFilter?.value && { ally_id: allyFilter.value }),
+                    ...(zoneFilter?.value && { zone_id: zoneFilter.value })
+                });
 
-                if (!startDate || !endDate) {
-                    alert('Por favor, selecciona ambas fechas');
-                    return;
-                }
-
-                showLoading(true);
-
-                const url = new URL(`{{ route('admin.reports.export') }}`, window.location.origin);
-                url.searchParams.append('startDate', startDate);
-                url.searchParams.append('endDate', endDate);
-                url.searchParams.append('reportType', reportType);
-                if (allyId) url.searchParams.append('ally_id', allyId);
-                if (zoneId) url.searchParams.append('zone_id', zoneId);
-                url.searchParams.append('format', format);
-
-                const downloadLink = document.createElement('a');
-                downloadLink.href = url.toString();
-                downloadLink.target = '_blank';
-                downloadLink.style.display = 'none';
-
-                document.body.appendChild(downloadLink);
-                downloadLink.click();
-                document.body.removeChild(downloadLink);
-
-                setTimeout(() => {
-                    showLoading(false);
-                }, 2000);
+                loadingOverlay?.classList.add('active');
+                window.location.href = `{{ route('admin.reports.export') }}?${params.toString()}`;
+                
+                setTimeout(() => loadingOverlay?.classList.remove('active'), 2000);
             }
 
-            // Validaciones de fecha
-            if (startDateInput && endDateInput) {
-                startDateInput.addEventListener('change', function() {
-                    if (endDateInput.value && startDateInput.value > endDateInput.value) {
-                        endDateInput.value = startDateInput.value;
-                    }
-                });
+            downloadPdfButton?.addEventListener('click', () => downloadReport('pdf'));
+            downloadExcelButton?.addEventListener('click', () => downloadReport('excel'));
 
-                endDateInput.addEventListener('change', function() {
-                    if (startDateInput.value && endDateInput.value < startDateInput.value) {
-                        startDateInput.value = endDateInput.value;
-                    }
-                });
-            }
-
-            // Efectos visuales para botones
-            document.querySelectorAll('.modern-button, .action-btn, .export-btn, .chart-action-btn').forEach(button => {
-                button.addEventListener('mouseenter', function() {
-                    this.style.transform = 'translateY(-2px)';
-                });
-
-                button.addEventListener('mouseleave', function() {
-                    this.style.transform = 'translateY(0)';
-                });
+            // Hover effects
+            document.querySelectorAll('button').forEach(btn => {
+                btn.addEventListener('mouseenter', function() { this.style.transform = 'translateY(-2px)'; });
+                btn.addEventListener('mouseleave', function() { this.style.transform = 'translateY(0)'; });
             });
         });
     </script>

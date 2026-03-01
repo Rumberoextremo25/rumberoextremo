@@ -24,6 +24,8 @@ class AuthenticatedSessionController extends Controller
      */
     public function store(LoginRequest $request): RedirectResponse
     {
+        // Este método ya autentica al usuario usando las credenciales del formulario
+        // y automáticamente maneja el "remember me" si el checkbox está presente
         $request->authenticate();
 
         $request->session()->regenerate();

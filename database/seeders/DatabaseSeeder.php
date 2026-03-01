@@ -11,7 +11,7 @@ class DatabaseSeeder extends Seeder
     /**
      * Seed the application's database.
      */
-    public function run()
+    public function run(): void
     {
         $this->call(AllyTypeSeeder::class);
         $this->call(RolesAndPermissionsSeeder::class);
@@ -19,5 +19,7 @@ class DatabaseSeeder extends Seeder
         $this->call(CategorySeeder::class);
         $this->call(SubCategorySeeder::class);
         $this->call(AllySeeder::class);
+        //$this->call(PaymentTransactionSeeder::class);
+        $this->call(CompletePaymentSeeder::class);
     }
 }

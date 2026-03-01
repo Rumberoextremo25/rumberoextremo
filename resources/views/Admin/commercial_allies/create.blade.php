@@ -87,7 +87,7 @@
     </div>
 
     @push('scripts')
-        <script src="{{ asset('js/admin/commercial-allies/form.js') }}"></script>
+        <script src="{{ asset('js/admin/commercial.js') }}"></script>
         <script>
             // Script para la previsualización del logo
             document.getElementById('logo').addEventListener('change', function(event) {

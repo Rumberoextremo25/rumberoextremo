@@ -31,7 +31,7 @@
             <hr class="section-divider">
 
             {{-- El action del formulario apunta a la ruta de actualización y usa el método PUT --}}
-            <form id="editUserForm" action="{{ route('users.update', $user->id) }}" method="POST">
+            <form id="editUserForm" action="{{ route('admin.users.update', $user->id) }}" method="POST">
                 @csrf {{-- Protección CSRF obligatoria en Laravel --}}
                 @method('PUT') {{-- Indica que esta es una solicitud PUT para actualizar --}}
 
@@ -119,7 +119,7 @@
 
                 <div class="button-group">
                     {{-- Usamos una etiqueta <a> para el botón de cancelar, para que sea navegable --}}
-                    <a href="{{ route('users.show', $user->id) }}" class="cancel-btn">
+                    <a href="{{ route('admin.users.show', $user->id) }}" class="cancel-btn">
                         <i class="fas fa-times-circle"></i> Cancelar
                     </a>
                     <button type="submit" class="submit-btn">

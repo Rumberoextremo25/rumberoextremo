@@ -20,6 +20,7 @@
                         </a>
                     </li>
                 @endif
+
                 {{-- Perfil --}}
                 <li class="sidebar-nav-item">
                     <a href="{{ route('profile') }}"
@@ -27,19 +28,31 @@
                         <i class="fa-solid fa-user"></i> <span class="sidebar-link-text">Perfil</span>
                     </a>
                 </li>
+
+                {{-- TRANSACCIONES - PARA ALIADOS Y ADMIN --}}
+                @if (Auth::user()->role === 'admin' || Auth::user()->role === 'aliado')
+                    <li class="sidebar-nav-item">
+                        <a href="{{ route('transacciones.index') }}"
+                            class="sidebar-nav-link {{ request()->routeIs('transacciones.*') ? 'active' : '' }}">
+                            <i class="fa-solid fa-money-bill-transfer"></i> <span class="sidebar-link-text">Mis Transacciones</span>
+                        </a>
+                    </li>
+                @endif
+
                 {{-- Usuarios --}}
                 @if (Auth::user()->role === 'admin')
                     <li class="sidebar-nav-item">
-                        <a href="{{ route('users') }}"
+                        <a href="{{ route('admin.users.index') }}"
                             class="sidebar-nav-link {{ request()->routeIs('users.*') ? 'active' : '' }}">
                             <i class="fa-solid fa-users"></i> <span class="sidebar-link-text">Usuarios</span>
                         </a>
                     </li>
                 @endif
+
                 {{-- Aliados --}}
                 @if (Auth::user()->role === 'admin')
                     <li class="sidebar-nav-item">
-                        <a href="{{ route('aliados.index') }}"
+                        <a href="{{ route('admin.aliados.index') }}"
                             class="sidebar-nav-link {{ request()->routeIs('aliados.*') ? 'active' : '' }}">
                             <i class="fa-solid fa-handshake"></i><span class="sidebar-link-text">Aliados</span>
                         </a>
@@ -58,13 +71,13 @@
                             </li>
                             <li class="sidebar-nav-subitem">
                                 <a href="{{ route('admin.commercial-allies.index') }}"
-                                    class="sidebar-nav-link {{ request()->routeIs('aliados-comerciales.*') ? 'active' : '' }}">
+                                    class="sidebar-nav-link {{ request()->routeIs('commercial-allies.*') ? 'active' : '' }}">
                                     <i class="fa-solid fa-store"></i> Aliados Comerciales
                                 </a>
                             </li>
                             <li class="sidebar-nav-subitem">
                                 <a href="{{ route('admin.promotions.index') }}"
-                                    class="sidebar-nav-link {{ request()->routeIs('promociones.*') ? 'active' : '' }}">
+                                    class="sidebar-nav-link {{ request()->routeIs('promotions.*') ? 'active' : '' }}">
                                     <i class="fa-solid fa-tags"></i> Promociones
                                 </a>
                             </li>
@@ -105,6 +118,7 @@
                 @endif
             @endif
         </ul>
+
         {{-- Sección de Cerrar Sesión --}}
         <div class="logout-container">
             <form method="POST" action="{{ route('logout') }}">
@@ -118,6 +132,27 @@
         </div>
     </nav>
 </aside>
+
+<!-- Estilos adicionales para el icono de transacciones -->
+<style>
+    /* Asegurar que el icono de transacciones tenga el mismo estilo que los demás */
+    .sidebar-nav-link i.fa-money-bill-transfer {
+        font-size: 1.2rem;
+        width: 20px;
+        text-align: center;
+    }
+    
+    /* Color cuando está activo (fucsia) */
+    .sidebar-nav-link.active i.fa-money-bill-transfer {
+        color: #A601B3;
+    }
+    
+    /* Efecto hover */
+    .sidebar-nav-link:hover i.fa-money-bill-transfer {
+        color: #ffffff;
+    }
+</style>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const menuToggle = document.querySelector('.menu-toggle');

@@ -17,182 +17,191 @@ use Illuminate\Support\Facades\Http;
 |--------------------------------------------------------------------------
 */
 
-// Rutas para Subcategorías
-// GET /api/subcategories
-// GET /api/subcategories/{id}
-// POST /api/subcategories
-// PUT/PATCH /api/subcategories/{id}
-// DELETE /api/subcategories/{id}
+// ===========================================
+// RUTAS PÚBLICAS (NO REQUIEREN AUTENTICACIÓN)
+// ===========================================
+
+// Autenticación
+Route::post('/login', [AuthController::class, 'login'])->name('api.login');
+
+// Home / Datos públicos
+Route::get('/home-data', [HomeController::class, 'index'])->name('api.home-data');
+
+// Bancos
+Route::prefix('banks')->name('api.banks.')->group(function () {
+    Route::post('/list', [BankController::class, 'index'])->name('list');
+    Route::get('/daily-dollar-rate', [BankController::class, 'getDailyDollarRate'])->name('daily-dollar-rate');
+});
+
+// Aliados públicos (sin autenticación)
+Route::get('/aliados', [AllyController::class, 'index'])->name('api.aliados.index');
+Route::get('/aliados/{user_id}', [AllyController::class, 'show'])->name('api.aliados.show');
+
+// RumberoAI - Rutas públicas
+Route::get('/categorias', [RumberoAIController::class, 'getCategorias'])->name('api.categorias');
+Route::post('/ia/chat', [RumberoAIController::class, 'chat'])->name('api.ia.chat');
+
+// ===========================================
+// RUTAS PROTEGIDAS CON SANCTUM
+// ===========================================
 Route::middleware('auth:sanctum')->group(function () {
-    // Rutas protegidas
-    Route::apiResource('products', ProductController::class); // Si tu dashboard usa esto
-    // ... otras rutas de gestión
-});
-
-// Puedes mantener esta ruta si la usas para desarrollo, pero considera los seeders
-Route::post('populate-db', function () {
-    \Illuminate\Support\Facades\Artisan::call('migrate:fresh --seed');
-    return response()->json(['success' => true, 'message' => 'Base de datos refrescada y sembrada.']);
-});
-
-// Ruta para obtener todos los aliados (GET /api/aliados)
-Route::get('/aliados', [AllyController::class, 'index']);
-Route::get('/aliados/{user_id}', [AllyController::class, 'show']);
-
-//Rutas para el HomeFragment de la Aplicación
-Route::get('home-data', [HomeController::class, 'index']);
-
-Route::get('/test-route', function () {
-    return 'Test successful!';
-});
-
-// Rutas públicas (no requieren autenticación)
-Route::post('login', [AuthController::class, 'login']);
-
-// Rutas protegidas por Sanctum (requieren un token de acceso válido)
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/logout', [AuthController::class, 'logout']);
-    Route::get('/user', [AuthController::class, 'user']);
-});
-
-Route::prefix('pagos')->group(function () {
-    Route::post('c2p', [PaymentController::class, 'initiateC2PPayment']);
-    Route::post('tarjeta', [PaymentController::class, 'processCardPayment']);
-    Route::post('p2p', [PaymentController::class, 'validateP2PPayment']);
     
-    // Rutas de payouts
-    Route::prefix('payouts')->group(function () {
-        Route::get('pendientes', [PaymentController::class, 'obtenerPagosPendientes']);
-        Route::get('filtro', [PaymentController::class, 'obtenerPagosPorFiltro']);
-        Route::get('estadisticas', [PaymentController::class, 'obtenerEstadisticasPayouts']);
-        Route::post('generar-archivo-bnc', [PaymentController::class, 'generarArchivoPagosBNC']);
-        Route::post('confirmar', [PaymentController::class, 'confirmarPagosProcesados']);
-        Route::get('descargar-archivo-bnc/{archivo}', [PaymentController::class, 'descargarArchivoBNC']);
-        Route::post('revertir/{payoutId}', [PaymentController::class, 'revertirPago']);
+    // ===========================================
+    // USUARIO Y AUTENTICACIÓN
+    // ===========================================
+    Route::get('/user', function (Request $request) {
+        return $request->user();
+    })->name('api.user');
+    
+    Route::post('/logout', [AuthController::class, 'logout'])->name('api.logout');
+    Route::put('/user/profile', [AuthController::class, 'updateProfile'])->name('api.user.profile');
+    
+    // ===========================================
+    // PRODUCTOS (CRUD)
+    // ===========================================
+    Route::apiResource('products', ProductController::class)->names([
+        'index' => 'api.products.index',
+        'store' => 'api.products.store',
+        'show' => 'api.products.show',
+        'update' => 'api.products.update',
+        'destroy' => 'api.products.destroy',
+    ]);
+    
+    // ===========================================
+    // RUMBERO AI - RUTAS PROTEGIDAS
+    // ===========================================
+    Route::prefix('ia')->name('api.ia.')->group(function () {
+        Route::post('/activar-descuento', [RumberoAIController::class, 'activarDescuento'])->name('activar-descuento');
+        Route::get('/promociones', [RumberoAIController::class, 'promocionesActivas'])->name('promociones');
+        Route::get('/historial', [RumberoAIController::class, 'historial'])->name('historial');
+        Route::get('/mis-descuentos', [RumberoAIController::class, 'misDescuentos'])->name('mis-descuentos');
+        Route::post('/usar-descuento/{codigo}', [RumberoAIController::class, 'usarDescuento'])->name('usar-descuento');
+    });
+    
+    // ===========================================
+    // PAGOS
+    // ===========================================
+    Route::prefix('pagos')->name('api.pagos.')->group(function () {
+        // Pagos regulares
+        Route::post('/c2p', [PaymentController::class, 'initiateC2PPayment'])->name('c2p');
+        Route::post('/tarjeta', [PaymentController::class, 'processCardPayment'])->name('tarjeta');
+        Route::post('/p2p', [PaymentController::class, 'validateP2PPayment'])->name('p2p');
+        
+        // Payouts (requieren ser admin)
+        Route::prefix('payouts')->middleware(['admin'])->name('payouts.')->group(function () {
+            Route::get('/pendientes', [PaymentController::class, 'obtenerPagosPendientes'])->name('pendientes');
+            Route::get('/filtro', [PaymentController::class, 'obtenerPagosPorFiltro'])->name('filtro');
+            Route::get('/estadisticas', [PaymentController::class, 'obtenerEstadisticasPayouts'])->name('estadisticas');
+            Route::post('/generar-archivo-bnc', [PaymentController::class, 'generarArchivoPagosBNC'])->name('generar-archivo-bnc');
+            Route::post('/confirmar', [PaymentController::class, 'confirmarPagosProcesados'])->name('confirmar');
+            Route::get('/descargar-archivo-bnc/{archivo}', [PaymentController::class, 'descargarArchivoBNC'])->name('descargar-archivo-bnc');
+            Route::post('/revertir/{payoutId}', [PaymentController::class, 'revertirPago'])->name('revertir');
+        });
     });
 });
 
-// --- Ruta para obtener la lista de Bancos (BankController) ---
-Route::prefix('banks')->group(function () {
-    Route::post('/List', [BankController::class, 'index']);
-    Route::get('/daily-dollar-rate', [BankController::class, 'getDailyDollarRate']);
-});
+// ===========================================
+// RUTAS DE DESARROLLO / DEBUG
+// ===========================================
 
-// Rutas protegidas que requieren autenticación con token
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/user', [AuthController::class, 'user']);
-    Route::post('/logout', [AuthController::class, 'logout']);
-    // Otros endpoints de usuario, ej:
-    Route::put('/user/profile', [AuthController::class, 'updateProfile']);
-});
-
-Route::get('/user', function (Request $request) {
-    return $request->user();
-});
-
-// Rutas de prueba para la API de BNC
-
-// Crea una ruta temporal para debug
-Route::get('/debug-bnc', function () {
-    return [
-        'BNC_AUTH_API_URL' => env('BNC_AUTH_API_URL'),
-        'BNC_CLIENT_GUID' => env('BNC_CLIENT_GUID'),
-        'BNC_MASTER_KEY' => substr(env('BNC_MASTER_KEY'), 0, 10) . '...',
-        'master_key_length' => strlen(env('BNC_MASTER_KEY')),
-        'app_env' => env('APP_ENV')
-    ];
-});
-
-Route::get('/test-bnc-connection', function () {
-    try {
-        $url = 'https://servicios.bncenlinea.com:16000/api/Auth/LogOn';
-
-        // Test de conectividad básica
-        $response = Http::timeout(10)->get($url);
-
-        return response()->json([
-            'url' => $url,
-            'status' => $response->status(),
-            'headers' => $response->headers(),
-            'body' => $response->body()
-        ]);
-    } catch (Exception $e) {
-        return response()->json([
-            'error' => $e->getMessage(),
-            'url' => $url
-        ], 500);
+// Ruta para poblar base de datos (solo desarrollo)
+Route::post('/populate-db', function () {
+    if (!app()->environment('local', 'development')) {
+        return response()->json(['error' => 'Ruta solo disponible en desarrollo'], 403);
     }
-});
+    \Illuminate\Support\Facades\Artisan::call('migrate:fresh --seed');
+    return response()->json(['success' => true, 'message' => 'Base de datos refrescada y sembrada.']);
+})->name('api.populate-db');
 
+// Ruta de prueba simple
+Route::get('/test-route', function () {
+    return response()->json(['message' => 'API funcionando correctamente', 'timestamp' => now()]);
+})->name('api.test-route');
 
-// Ruta de prueba para comparar tokens (autorización vs cliente)
-
-Route::get('/debug-tokens', function () {
-    $service = new App\Services\BncApiService();
+// ===========================================
+// RUTAS DE DEBUG PARA BNC (solo desarrollo)
+// ===========================================
+if (app()->environment('local', 'development')) {
     
-    // Token de autorización BNC
-    $authToken = $service->getSessionToken();
-    
-    // Token del cliente (ejemplo)
-    $clientToken = "1655508";
-    
-    return response()->json([
-        'auth_token_length' => $authToken ? strlen($authToken) : 0,
-        'auth_token_preview' => $authToken ? substr($authToken, 0, 50) . '...' : null,
-        'client_token' => $clientToken,
-        'difference' => 'auth_token va en header, client_token va en datos'
-    ]);
-});
-
-// Ruta de prueba para encriptación AES (DataCypher)
-Route::get('/test-aes-encryption', function () {
-    $encryptionKey = env('BNC_MASTER_KEY');
-    $dataToEncrypt = "TestString123";
-
-    $cypher = new App\Services\DataCypher($encryptionKey);
-
-    // Test de encriptación
-    $encryptedData = $cypher->encryptAES($dataToEncrypt);
-    $decryptedData = $cypher->decryptAES($encryptedData);
-
-    return response()->json([
-        'original_data' => $dataToEncrypt,
-        'encrypted_data' => $encryptedData,
-        'decryption_success' => $decryptedData === $dataToEncrypt
-    ]);
-});
-
-// Ruta de prueba para verificar compatibilidad legacy
-Route::get('/test/legacy-compatibility', function () {
-    try {
-        $bncService = app(\App\Services\BncApiService::class); // Ajusta el namespace según tu servicio
-        
-        $result = $bncService->verifyLegacyCompatibility();
-        
+    // Debug de configuración BNC
+    Route::get('/debug-bnc', function () {
         return response()->json([
-            'success' => $result,
-            'message' => $result ? '✅ Compatibilidad legacy verificada' : '❌ Error en compatibilidad legacy',
-            'timestamp' => now()->toISOString()
+            'BNC_AUTH_API_URL' => env('BNC_AUTH_API_URL'),
+            'BNC_CLIENT_GUID' => env('BNC_CLIENT_GUID'),
+            'BNC_MASTER_KEY' => substr(env('BNC_MASTER_KEY'), 0, 10) . '...',
+            'master_key_length' => strlen(env('BNC_MASTER_KEY')),
+            'app_env' => env('APP_ENV')
         ]);
+    })->name('api.debug-bnc');
+    
+    // Test de conexión BNC
+    Route::get('/test-bnc-connection', function () {
+        try {
+            $url = 'https://servicios.bncenlinea.com:16000/api/Auth/LogOn';
+            $response = Http::timeout(10)->get($url);
+            
+            return response()->json([
+                'url' => $url,
+                'status' => $response->status(),
+                'headers' => $response->headers(),
+                'body' => $response->body()
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+                'url' => $url
+            ], 500);
+        }
+    })->name('api.test-bnc-connection');
+    
+    // Debug de tokens
+    Route::get('/debug-tokens', function () {
+        $service = app(\App\Services\BncApiService::class);
+        $authToken = $service->getSessionToken();
+        $clientToken = "1655508";
         
-    } catch (Exception $e) {
         return response()->json([
-            'success' => false,
-            'error' => $e->getMessage(),
-            'timestamp' => now()->toISOString()
-        ], 500);
-    }
-});
-
-// Rutas públicas (sin autenticación)
-Route::get('/categorias', [RumberoAIController::class, 'getCategorias']);
-Route::post('/ia/chat', [RumberoAIController::class, 'chat']);
-
-// Rutas protegidas con Sanctum
-Route::middleware('auth:sanctum')->group(function () {
-    Route::post('/ia/activar-descuento', [RumberoAIController::class, 'activarDescuento']);
-    Route::get('/ia/promociones', [RumberoAIController::class, 'promocionesActivas']);
-    Route::get('/ia/historial', [RumberoAIController::class, 'historial']);
-    Route::get('/ia/mis-descuentos', [RumberoAIController::class, 'misDescuentos']);
-    Route::post('/ia/usar-descuento/{codigo}', [RumberoAIController::class, 'usarDescuento']);
-});
+            'auth_token_length' => $authToken ? strlen($authToken) : 0,
+            'auth_token_preview' => $authToken ? substr($authToken, 0, 50) . '...' : null,
+            'client_token' => $clientToken,
+            'difference' => 'auth_token va en header, client_token va en datos'
+        ]);
+    })->name('api.debug-tokens');
+    
+    // Test de encriptación AES
+    Route::get('/test-aes-encryption', function () {
+        $encryptionKey = env('BNC_MASTER_KEY');
+        $dataToEncrypt = "TestString123";
+        
+        $cypher = new \App\Services\DataCypher($encryptionKey);
+        
+        $encryptedData = $cypher->encryptAES($dataToEncrypt);
+        $decryptedData = $cypher->decryptAES($encryptedData);
+        
+        return response()->json([
+            'original_data' => $dataToEncrypt,
+            'encrypted_data' => $encryptedData,
+            'decryption_success' => $decryptedData === $dataToEncrypt
+        ]);
+    })->name('api.test-aes-encryption');
+    
+    // Test de compatibilidad legacy
+    Route::get('/test/legacy-compatibility', function () {
+        try {
+            $bncService = app(\App\Services\BncApiService::class);
+            $result = $bncService->verifyLegacyCompatibility();
+            
+            return response()->json([
+                'success' => $result,
+                'message' => $result ? '✅ Compatibilidad legacy verificada' : '❌ Error en compatibilidad legacy',
+                'timestamp' => now()->toISOString()
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage(),
+                'timestamp' => now()->toISOString()
+            ], 500);
+        }
+    })->name('api.legacy-compatibility');
+}
