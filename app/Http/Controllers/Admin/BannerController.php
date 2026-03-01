@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Banner; // Asegúrate de que este namespace es correcto
+use App\Models\Banner;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage; // Importa la fachada Storage
+use Illuminate\Support\Facades\Storage;
 
 class BannerController extends Controller
 {
@@ -33,30 +33,29 @@ class BannerController extends Controller
     {
         $request->validate([
             'title' => 'required|string|max:255',
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // Validación para el archivo de imagen
+            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'description' => 'nullable|string',
             'target_url' => 'nullable|url',
             'order' => 'integer|min:0',
-            'is_active' => 'boolean',
+            'is_active' => 'sometimes|boolean',
         ]);
 
         $imagePath = null;
         if ($request->hasFile('image')) {
-            $storagePath = Storage::disk('public')->put('banners', $request->file('image'));
-            // MODIFICACIÓN CLAVE AQUÍ: Generar la URL absoluta usando asset()
-            $imagePath = asset('storage/' . $storagePath);
+            // Guardar la imagen y obtener la ruta relativa
+            $imagePath = $request->file('image')->store('banners', 'public');
         }
 
         Banner::create([
             'title' => $request->title,
-            'image_url' => $imagePath, // Ahora $imagePath ya es la URL absoluta o null
+            'image_url' => $imagePath, // Guarda ruta relativa: "banners/nombre-imagen.jpg"
             'description' => $request->description,
             'target_url' => $request->target_url,
             'order' => $request->order ?? 0,
-            'is_active' => $request->boolean('is_active'), // Para checkboxes
+            'is_active' => $request->has('is_active') ? true : false,
         ]);
 
-        return redirect()->route('admin.banners.index')->with('success', 'Banner creado exitosamente.');
+        return redirect()->route('admin.banners.index')->with('success', '¡Banner creado exitosamente!');
     }
 
     /**
@@ -74,42 +73,35 @@ class BannerController extends Controller
     {
         $request->validate([
             'title' => 'required|string|max:255',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048', // 'nullable' para que no sea obligatorio al actualizar
+            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'description' => 'nullable|string',
             'target_url' => 'nullable|url',
             'order' => 'integer|min:0',
-            'is_active' => 'boolean',
+            'is_active' => 'sometimes|boolean',
         ]);
 
-        $imagePathToSave = $banner->image_url; // Mantener la URL existente por defecto
+        $imagePathToSave = $banner->image_url; // Mantener la ruta existente por defecto
 
         if ($request->hasFile('image')) {
-            // Elimina la imagen antigua si existe
+            // Eliminar la imagen anterior si existe
             if ($banner->image_url) {
-                // Hay que convertir la URL absoluta a una ruta relativa para Storage::disk('public')->delete
-                $relativePathToDelete = str_replace(url('storage') . '/', '', $banner->image_url);
-                if (Storage::disk('public')->exists($relativePathToDelete)) {
-                    Storage::disk('public')->delete($relativePathToDelete);
-                }
+                Storage::disk('public')->delete($banner->image_url);
             }
 
-            // Guarda la nueva imagen
-            $newStoragePath = Storage::disk('public')->put('banners', $request->file('image'));
-            
-            // MODIFICACIÓN CLAVE AQUÍ: Generar la URL absoluta para guardar en la base de datos
-            $imagePathToSave = asset('storage/' . $newStoragePath);
+            // Guardar la nueva imagen (ruta relativa)
+            $imagePathToSave = $request->file('image')->store('banners', 'public');
         }
 
         $banner->update([
             'title' => $request->title,
-            'image_url' => $imagePathToSave, // Ahora $imagePathToSave ya es la URL absoluta
+            'image_url' => $imagePathToSave,
             'description' => $request->description,
             'target_url' => $request->target_url,
             'order' => $request->order,
-            'is_active' => $request->boolean('is_active'),
+            'is_active' => $request->has('is_active') ? true : false,
         ]);
 
-        return redirect()->route('admin.banners.index')->with('success', 'Banner actualizado exitosamente.');
+        return redirect()->route('admin.banners.index')->with('success', '¡Banner actualizado exitosamente!');
     }
 
     /**
@@ -117,14 +109,13 @@ class BannerController extends Controller
      */
     public function destroy(Banner $banner)
     {
-        // Para eliminar, también necesitamos convertir la URL absoluta a una ruta relativa
+        // Eliminar la imagen asociada
         if ($banner->image_url) {
-            $relativePathToDelete = str_replace(Storage::url(''), '', $banner->image_url);
-            if (Storage::disk('public')->exists($relativePathToDelete)) {
-                Storage::disk('public')->delete($relativePathToDelete);
-            }
+            Storage::disk('public')->delete($banner->image_url);
         }
+        
         $banner->delete();
+        
         return redirect()->route('admin.banners.index')->with('success', 'Banner eliminado exitosamente.');
     }
 }

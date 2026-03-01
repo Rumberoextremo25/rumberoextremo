@@ -626,7 +626,7 @@ body {
     display: inline;
 }
 
-/* ========== ESTILOS DEL FORMULARIO (CREATE Y EDIT) ========== */
+/* ========== ESTILOS DEL FORMULARIO DE CREACIÓN ========== */
 
 .section-title {
     font-size: 1.2rem;
@@ -987,14 +987,6 @@ textarea.form-control {
         width: 100px;
     }
 
-    .logo-wrapper {
-        margin: 0 auto;
-    }
-
-    .action-buttons {
-        justify-content: flex-start;
-    }
-
     .form-grid {
         grid-template-columns: 1fr;
     }
@@ -1066,10 +1058,5 @@ textarea.form-control {
 
     .checkbox-wrapper {
         flex-wrap: wrap;
-    }
-
-    .ally-info {
-        flex-direction: column;
-        text-align: center;
     }
 }

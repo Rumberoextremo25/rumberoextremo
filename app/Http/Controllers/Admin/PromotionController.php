@@ -3,128 +3,108 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Promotion; // Asegúrate de que este namespace es correcto para tu modelo Promotion
+use App\Models\Promotion;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage; // Importa la fachada Storage
+use Illuminate\Support\Facades\Storage;
 
 class PromotionController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
         $promotions = Promotion::all();
         return view('Admin.promotions.index', compact('promotions'));
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create()
     {
         return view('Admin.promotions.create');
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
     public function store(Request $request)
     {
         $request->validate([
             'title' => 'required|string|max:255',
             'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'discount' => 'required|string|max:255',
-            'price' => 'required|string|max:255',
-            'expires_at' => 'nullable|date',
+            'discount' => 'required|numeric|min:0|max:100',
+            'price' => 'required|numeric|min:0',
+            'expires_at' => 'nullable|date|after_or_equal:today',
             'description' => 'nullable|string',
+            'terms_conditions' => 'nullable|string',
+            'max_uses' => 'nullable|integer|min:0',
+            'is_featured' => 'sometimes|boolean', // ← Para destacado
         ]);
 
         $imagePath = null;
         if ($request->hasFile('image')) {
-            $storagePath = Storage::disk('public')->put('promotions', $request->file('image'));
-            // MODIFICACIÓN CLAVE AQUÍ: Generar la URL absoluta usando asset()
-            $imagePath = asset('storage/' . $storagePath);
+            $imagePath = $request->file('image')->store('promotions', 'public');
         }
 
         Promotion::create([
+            'ally_id' => 1, // Asumiendo un aliado por defecto, ajusta según tu lógica
             'title' => $request->title,
-            'image_url' => $imagePath, // Ahora $imagePath ya es la URL absoluta o null
+            'image_url' => $imagePath,
             'discount' => $request->discount,
             'price' => $request->price,
-            'expires_at' => $request->expires_at,
             'description' => $request->description,
+            'terms_conditions' => $request->terms_conditions,
+            'expires_at' => $request->expires_at,
+            'max_uses' => $request->max_uses,
+            'current_uses' => 0,
+            'status' => $request->has('is_active') ? 'active' : 'inactive', // ← Usando status
+            'is_featured' => $request->has('is_featured') ? true : false, // ← Destacado
         ]);
 
-        return redirect()->route('admin.promotions.index')->with('success', 'Promoción creada exitosamente.');
+        return redirect()->route('admin.promotions.index')->with('success', '¡Promoción rumbera creada exitosamente!');
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
     public function edit(Promotion $promotion)
     {
         return view('Admin.promotions.edit', compact('promotion'));
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
     public function update(Request $request, Promotion $promotion)
     {
         $request->validate([
             'title' => 'required|string|max:255',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'discount' => 'required|string|max:255',
-            'price' => 'required|string|max:255',
+            'discount' => 'required|numeric|min:0|max:100',
+            'price' => 'required|numeric|min:0',
             'expires_at' => 'nullable|date',
             'description' => 'nullable|string',
+            'terms_conditions' => 'nullable|string',
+            'max_uses' => 'nullable|integer|min:0',
+            'is_featured' => 'sometimes|boolean',
         ]);
 
-        $imagePathToSave = $promotion->image_url; // Mantener la URL existente por defecto
+        $imagePathToSave = $promotion->image_url;
 
         if ($request->hasFile('image')) {
-            // Eliminar la imagen anterior si existe
             if ($promotion->image_url) {
-                // Hay que convertir la URL absoluta a una ruta relativa para Storage::disk('public')->delete
-                // Si la URL es: http://tu_dominio.com/storage/promotions/imagen.jpg
-                // Necesitamos extraer: promotions/imagen.jpg
-                $relativePathToDelete = str_replace(Storage::url(''), '', $promotion->image_url);
-                if (Storage::disk('public')->exists($relativePathToDelete)) {
-                    Storage::disk('public')->delete($relativePathToDelete);
-                }
+                Storage::disk('public')->delete($promotion->image_url);
             }
-
-            // Guardar la nueva imagen
-            $newStoragePath = Storage::disk('public')->put('promotions', $request->file('image'));
-            
-            // MODIFICACIÓN CLAVE AQUÍ: Generar la URL absoluta para guardar en la base de datos
-            $imagePathToSave = asset('storage/' . $newStoragePath);
+            $imagePathToSave = $request->file('image')->store('promotions', 'public');
         }
 
         $promotion->update([
             'title' => $request->title,
-            'image_url' => $imagePathToSave, // Ahora $imagePathToSave ya es la URL absoluta
+            'image_url' => $imagePathToSave,
             'discount' => $request->discount,
             'price' => $request->price,
-            'expires_at' => $request->expires_at,
             'description' => $request->description,
+            'terms_conditions' => $request->terms_conditions,
+            'expires_at' => $request->expires_at,
+            'max_uses' => $request->max_uses,
+            'status' => $request->has('is_active') ? 'active' : 'inactive', // ← Usando status
+            'is_featured' => $request->has('is_featured') ? true : false, // ← Destacado
         ]);
 
-        return redirect()->route('admin.promotions.index')->with('success', 'Promoción actualizada exitosamente.');
+        return redirect()->route('admin.promotions.index')->with('success', '¡Promoción rumbera actualizada exitosamente!');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     */
     public function destroy(Promotion $promotion)
     {
-        // Para eliminar, también necesitamos convertir la URL absoluta a una ruta relativa
         if ($promotion->image_url) {
-            $relativePathToDelete = str_replace(Storage::url(''), '', $promotion->image_url);
-            if (Storage::disk('public')->exists($relativePathToDelete)) {
-                Storage::disk('public')->delete($relativePathToDelete);
-            }
+            Storage::disk('public')->delete($promotion->image_url);
         }
         $promotion->delete();
         return redirect()->route('admin.promotions.index')->with('success', 'Promoción eliminada exitosamente.');

@@ -1,186 +1,440 @@
 @extends('layouts.admin')
 
-@section('page_title_toolbar', 'Gestión de Promociones')
+@section('title', 'Gestión de Promociones Rumberas')
 
 @push('styles')
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ asset('css/admin/promotion.css') }}">
 @endpush
 
 @section('content')
-    <div class="promotions-management-container">
-        <div class="bg-white">
-            <div class="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
-                <h2 class="text-3xl md:text-4xl font-extrabold text-gray-900 mb-4 md:mb-0">
-                    <span class="text-gray-900">Gestión de</span>
-                    <span style="color: #8a2be2;">Promociones</span>
-                </h2>
-                <a href="{{ route('admin.promotions.create') }}" class="add-btn">
-                    <i class="fas fa-plus"></i> Crear Nueva Promoción
+<div class="rumbero-wrapper">
+    {{-- HEADER CON FRASE RUMBERA --}}
+    <div class="rumbero-header">
+        <div class="header-content">
+            <h1 class="header-title">
+                Gestión de <span class="gradient-text">Promociones</span>
+            </h1>
+            <p class="header-subtitle">
+                <i class="fas fa-fire"></i>
+                ¡Prepara las ofertas más extremas para la comunidad!
+            </p>
+        </div>
+        <div class="header-actions">
+            <a href="{{ route('admin.promotions.create') }}" class="btn-rumbero">
+                <i class="fas fa-plus"></i>
+                Nueva Promoción
+                <i class="fas fa-fire"></i>
+            </a>
+        </div>
+    </div>
+
+    {{-- QUICK STATS --}}
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-icon purple">
+                <i class="fas fa-tags"></i>
+            </div>
+            <div class="stat-content">
+                <span class="stat-value">{{ $promotions->count() }}</span>
+                <span class="stat-label">Total Promociones</span>
+            </div>
+            <div class="stat-trend">
+                <i class="fas fa-arrow-up"></i>
+                <span>+12%</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon green">
+                <i class="fas fa-clock"></i>
+            </div>
+            <div class="stat-content">
+                <span class="stat-value">{{ $promotions->filter(function($p) { return !$p->expires_at || $p->expires_at->isFuture(); })->count() }}</span>
+                <span class="stat-label">Activadas</span>
+            </div>
+            <div class="stat-trend">
+                <i class="fas fa-check-circle"></i>
+                <span>Activas</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon orange">
+                <i class="fas fa-hourglass-end"></i>
+            </div>
+            <div class="stat-content">
+                <span class="stat-value">{{ $promotions->filter(function($p) { return $p->expires_at && $p->expires_at->isPast(); })->count() }}</span>
+                <span class="stat-label">Expiradas</span>
+            </div>
+            <div class="stat-trend">
+                <i class="fas fa-history"></i>
+                <span>Archivar</span>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-icon red">
+                <i class="fas fa-percent"></i>
+            </div>
+            <div class="stat-content">
+                <span class="stat-value">{{ $promotions->avg('discount') ? number_format($promotions->avg('discount'), 0) . '%' : '0%' }}</span>
+                <span class="stat-label">Descuento Promedio</span>
+            </div>
+            <div class="stat-trend">
+                <i class="fas fa-chart-line"></i>
+                <span>+5%</span>
+            </div>
+        </div>
+    </div>
+
+    {{-- ALERTAS --}}
+    @if (session('success'))
+        <div class="alert-modern success">
+            <div class="alert-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <div class="alert-content">
+                <strong>¡Éxito rumbero!</strong>
+                <p>{{ session('success') }}</p>
+            </div>
+            <button class="alert-close" onclick="this.parentElement.remove()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    @endif
+
+    @if (session('error'))
+        <div class="alert-modern error">
+            <div class="alert-icon">
+                <i class="fas fa-exclamation-circle"></i>
+            </div>
+            <div class="alert-content">
+                <strong>¡Ojo rumbero!</strong>
+                <p>{{ session('error') }}</p>
+            </div>
+            <button class="alert-close" onclick="this.parentElement.remove()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    @endif
+
+    {{-- FILTROS Y BÚSQUEDA --}}
+    <div class="filters-section">
+        <div class="search-wrapper">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchPromotion" placeholder="Buscar promociones por título...">
+        </div>
+        
+        <div class="filter-wrapper">
+            <select id="filterStatus" class="filter-select">
+                <option value="all">Todas las promociones</option>
+                <option value="active">Activadas</option>
+                <option value="expired">Expiradas</option>
+            </select>
+            <i class="fas fa-chevron-down"></i>
+        </div>
+
+        <button class="btn-refresh" id="refreshTable">
+            <i class="fas fa-sync-alt"></i>
+        </button>
+    </div>
+
+    {{-- TABLA DE PROMOCIONES --}}
+    <div class="table-wrapper">
+        @if ($promotions->isEmpty())
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-tags"></i>
+                </div>
+                <h3>¡No hay promociones rumberas!</h3>
+                <p>Comienza creando la primera oferta extrema</p>
+                <a href="{{ route('admin.promotions.create') }}" class="btn-rumbero">
+                    <i class="fas fa-plus"></i>
+                    Crear Primera Promoción
                 </a>
             </div>
-
-            {{-- Mensaje de éxito o error --}}
-            @if (session('success'))
-                <div class="alert alert-success">
-                    <i class="fas fa-check-circle"></i>
-                    <span>{{ session('success') }}</span>
-                    <button type="button" class="ml-auto" onclick="this.parentElement.style.display='none';">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            @endif
-
-            @if (session('error'))
-                <div class="alert alert-danger">
-                    <i class="fas fa-exclamation-circle"></i>
-                    <span>{{ session('error') }}</span>
-                    <button type="button" class="ml-auto" onclick="this.parentElement.style.display='none';">
-                        <i class="fas fa-times"></i>
-                    </button>
-                </div>
-            @endif
-
-            <div class="promotions-table-container">
-                @if ($promotions->isEmpty())
-                    <div class="no-records-message">
-                        <i class="fas fa-tags"></i>
-                        <p>No hay promociones para mostrar.</p>
-                        <a href="{{ route('admin.promotions.create') }}" class="add-btn">
-                            <i class="fas fa-plus"></i> Añadir la primera Promoción
-                        </a>
-                    </div>
-                @else
-                    <table class="promotions-table">
-                        <thead>
+        @else
+            <div class="table-responsive">
+                <table class="modern-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Promoción</th>
+                            <th>Imagen</th>
+                            <th>Descuento</th>
+                            <th>Precio</th>
+                            <th>Estado</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($promotions as $promotion)
+                            @php
+                                $isExpired = $promotion->expires_at && $promotion->expires_at->isPast();
+                                $isActive = !$isExpired && $promotion->is_active;
+                            @endphp
                             <tr>
-                                <th>ID</th>
-                                <th>Título</th>
-                                <th>Imagen</th>
-                                <th>Descuento</th>
-                                <th>Precio</th>
-                                <th>Expira</th>
-                                <th class="text-center">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach ($promotions as $promotion)
-                                <tr>
-                                    <td data-label="ID">{{ $promotion->id }}</td>
-                                    <td data-label="Título">{{ $promotion->title }}</td>
-                                    <td data-label="Imagen">
-                                        @if($promotion->image_url)
-                                            <img src="{{ $promotion->image_url }}" alt="{{ $promotion->title }}" class="promotion-image">
-                                        @else
-                                            <span class="no-image-text">No imagen</span>
+                                <td>
+                                    <span class="id-badge">#{{ $promotion->id }}</span>
+                                </td>
+                                <td>
+                                    <div class="promotion-info">
+                                        <div class="promotion-title">{{ $promotion->title }}</div>
+                                        @if($promotion->description)
+                                            <div class="promotion-desc">
+                                                <i class="fas fa-align-left"></i>
+                                                {{ Str::limit($promotion->description, 50) }}
+                                            </div>
                                         @endif
-                                    </td>
-                                    <td data-label="Descuento">{{ $promotion->discount }}</td>
-                                    <td data-label="Precio">{{ number_format((float)($promotion->price ?? 0), 2) }}</td>
-                                    <td data-label="Expira">{{ $promotion->expires_at ? $promotion->expires_at->format('Y-m-d') : 'N/A' }}</td>
-                                    <td class="text-center">
-                                        <div class="flex items-center justify-center gap-2">
-                                            <a href="{{ route('admin.promotions.edit', $promotion->id) }}" class="btn-icon edit-btn" title="Editar">
-                                                <i class="fas fa-edit"></i>
-                                            </a>
-                                            <form action="{{ route('admin.promotions.destroy', $promotion->id) }}" method="POST" class="delete-form" data-promotion-title="{{ $promotion->title }}">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="btn-icon delete-btn" title="Eliminar">
-                                                    <i class="fas fa-trash-alt"></i>
-                                                </button>
-                                            </form>
+                                    </div>
+                                </td>
+                                <td>
+                                    @if($promotion->image_url)
+                                        <div class="image-preview" onclick="openImageModal('{{ Storage::url($promotion->image_url) }}', '{{ $promotion->title }}')">
+                                            <img src="{{ Storage::url($promotion->image_url) }}" alt="{{ $promotion->title }}">
+                                            <div class="image-overlay">
+                                                <i class="fas fa-search-plus"></i>
+                                            </div>
                                         </div>
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                @endif
+                                    @else
+                                        <div class="no-image">
+                                            <i class="fas fa-image"></i>
+                                        </div>
+                                    @endif
+                                </td>
+                                <td>
+                                    <span class="discount-chip">
+                                        <i class="fas fa-percent"></i>
+                                        {{ $promotion->discount }}% OFF
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="price-chip">${{ number_format((float)($promotion->price ?? 0), 2) }}</span>
+                                </td>
+                                <td>
+                                    @if($promotion->expires_at)
+                                        <div class="status-container">
+                                            <span class="date-chip {{ $isExpired ? 'expired' : 'active' }}">
+                                                <i class="fas {{ $isExpired ? 'fa-calendar-times' : 'fa-calendar-check' }}"></i>
+                                                {{ $promotion->expires_at->format('d/m/Y') }}
+                                            </span>
+                                            @if($isExpired)
+                                                <span class="status-badge expired">
+                                                    <i class="fas fa-clock"></i> Expirada
+                                                </span>
+                                            @else
+                                                @if($promotion->is_active)
+                                                    <span class="status-badge active">
+                                                        <i class="fas fa-bolt"></i> Activada
+                                                    </span>
+                                                @else
+                                                    <span class="status-badge inactive">
+                                                        <i class="fas fa-pause-circle"></i> Inactiva
+                                                    </span>
+                                                @endif
+                                            @endif
+                                        </div>
+                                    @else
+                                        @if($promotion->is_active)
+                                            <span class="status-badge active">
+                                                <i class="fas fa-bolt"></i> Activada
+                                            </span>
+                                        @else
+                                            <span class="status-badge inactive">
+                                                <i class="fas fa-pause-circle"></i> Inactiva
+                                            </span>
+                                        @endif
+                                    @endif
+                                </td>
+                                <td>
+                                    <div class="action-group">
+                                        <a href="{{ route('admin.promotions.edit', $promotion->id) }}" 
+                                           class="action-btn edit" 
+                                           title="Editar">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button" 
+                                                class="action-btn view" 
+                                                title="Vista previa"
+                                                onclick="openImageModal('{{ Storage::url($promotion->image_url) }}', '{{ $promotion->title }}')">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button type="button" 
+                                                class="action-btn delete" 
+                                                title="Eliminar"
+                                                onclick="confirmDelete({{ $promotion->id }}, '{{ $promotion->title }}')">
+                                            <i class="fas fa-trash-alt"></i>
+                                        </button>
+                                    </div>
+                                    <form action="{{ route('admin.promotions.destroy', $promotion->id) }}" 
+                                          method="POST" 
+                                          id="delete-form-{{ $promotion->id }}" 
+                                          style="display: none;">
+                                        @csrf
+                                        @method('DELETE')
+                                    </form>
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
             </div>
-        </div>
+        @endif
     </div>
 
-    {{-- Custom Confirmation Modal --}}
-    <div id="confirmationModal" class="modal-overlay hidden">
+    {{-- PAGINACIÓN --}}
+    @if(method_exists($promotions, 'links'))
+        <div class="pagination-modern">
+            <div class="pagination-info">
+                <i class="fas fa-tags"></i>
+                <span>Mostrando {{ $promotions->firstItem() ?? 0 }} - {{ $promotions->lastItem() ?? 0 }} de {{ $promotions->total() }} promociones</span>
+            </div>
+            {{ $promotions->links() }}
+        </div>
+    @endif
+
+    {{-- MODAL DE VISTA PREVIA --}}
+    <div class="modal-modern" id="imageModal">
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Confirmar Eliminación</h3>
-                <button type="button" class="close-modal-btn">&times;</button>
+                <h3><i class="fas fa-eye"></i> Vista Previa</h3>
+                <button class="modal-close" onclick="closeImageModal()">
+                    <i class="fas fa-times"></i>
+                </button>
             </div>
             <div class="modal-body">
-                <p>¿Estás seguro de que quieres eliminar la promoción "<strong id="promotionTitleToDelete"></strong>"? Esta acción es irreversible.</p>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn cancel-modal-btn">Cancelar</button>
-                <button type="button" class="btn confirm-modal-btn">Eliminar</button>
+                <img id="modalImage" src="" alt="Vista previa">
+                <p id="modalImageCaption" class="image-caption"></p>
             </div>
         </div>
     </div>
-@endsection
+
+    {{-- MODAL DE CONFIRMACIÓN --}}
+    <div class="modal-modern" id="deleteModal">
+        <div class="modal-content" style="max-width: 400px;">
+            <div class="modal-icon warning">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3 class="modal-title">¡Atención Rumbero!</h3>
+            <div class="modal-body text-center">
+                <p>¿Estás seguro de eliminar la promoción:</p>
+                <p class="highlight-text" id="deletePromotionTitle"></p>
+                <p class="warning-text">
+                    <i class="fas fa-exclamation-circle"></i>
+                    Esta acción es irreversible
+                </p>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="closeDeleteModal()">Cancelar</button>
+                <button class="btn-danger" id="confirmDeleteBtn">Eliminar</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        const modal = document.getElementById('confirmationModal');
-        const closeBtn = modal.querySelector('.close-modal-btn');
-        const cancelBtn = modal.querySelector('.cancel-modal-btn');
-        const confirmBtn = modal.querySelector('.confirm-modal-btn');
-        const promotionTitleDisplay = document.getElementById('promotionTitleToDelete');
-        let formToDelete = null;
-
-        // Open modal on delete form submission
-        document.querySelectorAll('.delete-form').forEach(form => {
-            form.addEventListener('submit', function(e) {
-                e.preventDefault();
-                formToDelete = this;
-                const promotionTitle = this.dataset.promotionTitle;
-                promotionTitleDisplay.textContent = promotionTitle;
-                modal.classList.remove('hidden');
-                modal.style.display = 'flex';
+        // Búsqueda en tiempo real
+        const searchInput = document.getElementById('searchPromotion');
+        if (searchInput) {
+            searchInput.addEventListener('keyup', function() {
+                const searchTerm = this.value.toLowerCase();
+                document.querySelectorAll('.modern-table tbody tr').forEach(row => {
+                    const title = row.querySelector('.promotion-title')?.textContent.toLowerCase() || '';
+                    row.style.display = title.includes(searchTerm) ? '' : 'none';
+                });
             });
-        });
-
-        // Close modal handlers
-        function closeModal() {
-            modal.style.display = 'none';
-            formToDelete = null;
         }
 
-        closeBtn.addEventListener('click', closeModal);
-        cancelBtn.addEventListener('click', closeModal);
-        
-        modal.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                closeModal();
-            }
-        });
-
-        // Confirm deletion and submit the form
-        confirmBtn.addEventListener('click', function() {
-            if (formToDelete) {
-                formToDelete.submit();
-            }
-        });
-
-        // Efectos hover mejorados
-        document.querySelectorAll('.add-btn, .btn-icon').forEach(button => {
-            button.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-2px)';
+        // Filtro por estado
+        const filterSelect = document.getElementById('filterStatus');
+        if (filterSelect) {
+            filterSelect.addEventListener('change', function() {
+                const filterValue = this.value;
+                document.querySelectorAll('.modern-table tbody tr').forEach(row => {
+                    const statusBadge = row.querySelector('.status-badge');
+                    if (!statusBadge) return;
+                    
+                    const isActive = statusBadge.classList.contains('active');
+                    const isExpired = statusBadge.classList.contains('expired');
+                    
+                    if (filterValue === 'all') {
+                        row.style.display = '';
+                    } else if (filterValue === 'active' && isActive) {
+                        row.style.display = '';
+                    } else if (filterValue === 'expired' && isExpired) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
             });
+        }
 
-            button.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0)';
-            });
+        // Refresh button
+        document.getElementById('refreshTable')?.addEventListener('click', () => location.reload());
+
+        // Auto-cerrar alertas
+        document.querySelectorAll('.alert-modern').forEach(alert => {
+            setTimeout(() => {
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 300);
+            }, 5000);
         });
-
-        // Cerrar alertas automáticamente después de 5 segundos
-        setTimeout(() => {
-            document.querySelectorAll('.alert').forEach(alert => {
-                alert.style.display = 'none';
-            });
-        }, 5000);
     });
+
+    // Modal functions
+    function openImageModal(imageUrl, title) {
+        if (!imageUrl) return;
+        document.getElementById('modalImage').src = imageUrl;
+        document.getElementById('modalImageCaption').textContent = title;
+        document.getElementById('imageModal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeImageModal() {
+        document.getElementById('imageModal').classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    // Delete functions
+    let deleteFormId = null;
+
+    function confirmDelete(id, title) {
+        deleteFormId = id;
+        document.getElementById('deletePromotionTitle').textContent = `"${title}"`;
+        document.getElementById('deleteModal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+        
+        document.getElementById('confirmDeleteBtn').onclick = () => {
+            document.getElementById(`delete-form-${deleteFormId}`).submit();
+        };
+    }
+
+    function closeDeleteModal() {
+        document.getElementById('deleteModal').classList.remove('active');
+        document.body.style.overflow = '';
+        deleteFormId = null;
+    }
+
+    // Close modals with Escape
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            closeImageModal();
+            closeDeleteModal();
+        }
+    });
+
+    // Close modals clicking outside
+    window.onclick = (e) => {
+        if (e.target.classList.contains('modal-modern')) {
+            closeImageModal();
+            closeDeleteModal();
+        }
+    };
 </script>
 @endpush
+@endsection
