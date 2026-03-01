@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="login-wrapper">
-    <link rel="stylesheet" href="{{ asset('css/login.css') }}">
+    @vite(['resources/css/login.css'])
     
     {{-- Elementos decorativos de fondo --}}
     <div class="bg-particles"></div>
