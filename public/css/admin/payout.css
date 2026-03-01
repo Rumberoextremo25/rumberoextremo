@@ -389,6 +389,8 @@ body {
     width: 100%;
     height: 100%;
     background: rgba(0, 0, 0, 0.5);
+    /* backdrop-filter con orden correcto */
+    -webkit-backdrop-filter: blur(4px);
     backdrop-filter: blur(4px);
     z-index: 1000;
     display: none;
@@ -436,9 +438,16 @@ body {
     color: #9ca3af;
     cursor: pointer;
     transition: color 0.2s;
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.5rem;
 }
 
 .modal-header .close-modal-btn:hover {
+    background: #f3f4f6;
     color: #111827;
 }
 
@@ -560,5 +569,19 @@ body {
 
     .modal-footer .btn {
         width: 100%;
+    }
+}
+
+/* ========== SOPORTE PARA NAVEGADORES ANTIGUOS ========== */
+@supports not (backdrop-filter: blur(4px)) {
+    .modal-overlay {
+        background: rgba(0, 0, 0, 0.8);
+    }
+}
+
+/* ========== FALLBACK PARA CHECKBOX EN NAVEGADORES ANTIGUOS ========== */
+@supports not (accent-color: #8a2be2) {
+    .rounded-sm {
+        filter: hue-rotate(45deg);
     }
 }
