@@ -2,33 +2,28 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use App\Services\AIService; // 👈 IMPORTANTE: Importar AIService
+use App\Http\Controllers\Controller;
 use App\Models\Promotion;
 use App\Models\DiscountActivation;
+use App\Services\AIService;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class RumberoAIController extends Controller
 {
-    protected $aiService; // 👈 Definir la propiedad
-    protected $deepSeek;
-    protected $gemini;
+    protected $aiService;
 
     /**
-     * Constructor: Inyectamos los servicios
+     * Constructor: Inyectamos el servicio de IA
      */
-    public function __construct(AIService $aiService) // 👈 Inyectar AIService
+    public function __construct(AIService $aiService)
     {
-        $this->aiService = $aiService; // 👈 Asignar a la propiedad
+        $this->aiService = $aiService;
     }
 
     /**
-     * Muestra la página del chat de RumberoAI
-     */
-
-    /**
-     * Endpoint principal del chat
+     * Endpoint principal del chat - ¡AHORA CON RESPUESTAS REALES!
      */
     public function chat(Request $request)
     {
@@ -45,11 +40,13 @@ class RumberoAIController extends Controller
             $usuario = $request->user();
             $iaPreferida = $request->ia_preferida ?? 'gemini';
 
-            Log::info('Chat request', [
+            Log::info('🎉 Chat RumberoAI - Mensaje recibido', [
                 'usuario' => $usuario?->id,
-                'ia_preferida' => $iaPreferida
+                'ia_preferida' => $iaPreferida,
+                'mensaje' => $request->mensaje
             ]);
 
+            // Procesar mensaje con AIService
             $respuesta = $this->aiService->chat(
                 $request->mensaje,
                 $usuario ? $usuario->id : null,
@@ -58,19 +55,29 @@ class RumberoAIController extends Controller
                 $iaPreferida
             );
 
+            Log::info('✅ Respuesta generada', [
+                'ia_utilizada' => $respuesta['ia_utilizada'] ?? 'gemini'
+            ]);
+
             return response()->json([
                 'success' => true,
-                'data' => $respuesta,
-                'ia_utilizada' => $respuesta['ia_utilizada'] ?? 'gemini',
-                'mensaje' => $respuesta['respuesta'] ?? 'Respuesta generada'
+                'data' => [
+                    'respuesta' => $respuesta['respuesta'] ?? $respuesta,
+                    'ia_utilizada' => $respuesta['ia_utilizada'] ?? 'gemini',
+                    'promociones' => $respuesta['promociones'] ?? null
+                ],
+                'message' => 'Respuesta generada correctamente'
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Error en chat: ' . $e->getMessage());
+            Log::error('❌ Error en chat: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
             
             return response()->json([
                 'success' => false,
-                'message' => 'Error procesando tu mensaje'
+                'message' => '¡Ay parce! Algo salió mal. Intenta de nuevo.',
+                'error' => $e->getMessage()
             ], 500);
         }
     }
@@ -90,16 +97,17 @@ class RumberoAIController extends Controller
             if (!$usuario) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Usuario no autenticado'
+                    'message' => '¡Ojo parce! Debes iniciar sesión para activar descuentos.'
                 ], 401);
             }
 
             $promocion = Promotion::with('ally')->findOrFail($request->promotion_id);
             
+            // Verificar disponibilidad
             if (!$promocion->isAvailable()) {
                 return response()->json([
                     'success' => false,
-                    'message' => 'Esta promoción ya no está disponible'
+                    'message' => '¡Qué pena! Esta promoción ya no está disponible.'
                 ], 400);
             }
 
@@ -118,7 +126,7 @@ class RumberoAIController extends Controller
                         'aliado' => $promocion->ally->company_name,
                         'descuento' => $promocion->discount,
                         'expira' => $activacionExistente->expires_at->format('d/m/Y'),
-                        'mensaje' => "Ya tienes un código activo: {$activacionExistente->code}"
+                        'mensaje' => "🔥 Ya tienes un código activo: {$activacionExistente->code}"
                     ]
                 ]);
             }
@@ -151,7 +159,7 @@ class RumberoAIController extends Controller
                     'aliado' => $promocion->ally->company_name,
                     'descuento' => $promocion->discount,
                     'expira' => $activacion->expires_at->format('d/m/Y'),
-                    'mensaje' => "¡Promoción activada! Código: {$codigo}"
+                    'mensaje' => "🎉 ¡Promoción activada! Tu código: {$codigo}"
                 ]
             ]);
 
@@ -160,7 +168,7 @@ class RumberoAIController extends Controller
             
             return response()->json([
                 'success' => false,
-                'message' => 'Error activando el descuento'
+                'message' => 'Error activando el descuento. Intenta de nuevo.'
             ], 500);
         }
     }
@@ -178,9 +186,9 @@ class RumberoAIController extends Controller
                       ->orWhere('expires_at', '>', now());
                 });
 
-            if ($request->has('category_id')) {
+            if ($request->has('categoria')) {
                 $query->whereHas('ally', function($q) use ($request) {
-                    $q->where('category_id', $request->category_id);
+                    $q->where('category', $request->categoria);
                 });
             }
 
@@ -196,7 +204,7 @@ class RumberoAIController extends Controller
             }
 
             $promociones = $query->latest()
-                ->paginate($request->per_page ?? 20)
+                ->paginate($request->per_page ?? 10)
                 ->through(function($promocion) {
                     return [
                         'id' => $promocion->id,

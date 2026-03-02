@@ -84,6 +84,11 @@ class Ally extends Model
         return $this->belongsTo(SubCategory::class, 'sub_category_id');
     }
 
+    public function promotions()
+    {
+        return $this->hasMany(Promotion::class, 'ally_id', 'id');
+    }
+
     /**
      * An ally belongs to a specific business type
      */

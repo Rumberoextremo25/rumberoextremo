@@ -40,9 +40,9 @@ class Promotion extends Model
     /**
      * Relación: Una promoción pertenece a un aliado
      */
-    public function ally(): BelongsTo
+    public function ally()
     {
-        return $this->belongsTo(Ally::class);
+        return $this->belongsTo(Ally::class, 'ally_id');
     }
 
     /**

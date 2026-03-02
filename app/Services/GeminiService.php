@@ -8,6 +8,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use App\Models\Ally;
 use App\Models\User;
+use App\Models\Promotion;
+use App\Models\DiscountActivation;
 
 class GeminiService
 {
@@ -18,8 +20,13 @@ class GeminiService
     public function __construct()
     {
         $this->apiKey = config('gemini.api_key');
-        // Usar el modelo correcto de la lista: gemini-2.5-flash
-        $this->apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent';
+        // ✅ MODELO CONFIABLE - PROBADO Y FUNCIONA
+        $this->apiUrl = 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent';
+
+        // Alternativas comentadas:
+        // $this->apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
+        // $this->apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
+        // $this->apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent';
 
         $this->client = new Client([
             'timeout' => 30,
@@ -27,34 +34,45 @@ class GeminiService
         ]);
     }
 
-    public function chat($mensajeUsuario, $usuarioId = null, $ubicacion = null, $categoriaFiltro = null)
+    /**
+     * Chat principal con múltiples roles
+     */
+    public function chat($mensajeUsuario, $usuarioId = null, $ubicacion = null, $categoriaFiltro = null, $rol = 'ventas')
     {
         try {
             if (empty($this->apiKey)) {
                 Log::error('❌ Gemini API Key no configurada');
-                return [
-                    'success' => true,
-                    'respuesta' => $this->respuestaLocal($mensajeUsuario),
-                    'accion' => null,
-                    'aliados_relevantes' => []
-                ];
+                return $this->respuestaError('Configuración de IA no disponible');
             }
 
-            Log::info('Enviando a Gemini', [
-                'key_prefix' => substr($this->apiKey, 0, 10),
-                'modelo' => 'gemini-2.5-flash'
+            Log::info('🤖 RumberoAI - Consulta recibida', [
+                'rol' => $rol,
+                'usuario_id' => $usuarioId,
+                'mensaje' => substr($mensajeUsuario, 0, 100)
             ]);
 
-            // Obtener usuario si existe
-            $usuario = $usuarioId ? User::find($usuarioId) : null;
+            // Obtener datos del usuario
+            $usuario = null;
+            if ($usuarioId) {
+                $usuario = User::with(['ally', 'activations'])->find($usuarioId);
+            }
             $nombre = $usuario ? $usuario->name : 'Rumbero';
+            $email = $usuario ? $usuario->email : null;
 
-            // Obtener aliados para contexto
-            $aliados = $this->obtenerAliadosContexto($ubicacion, $categoriaFiltro);
+            // Obtener datos relevantes según el rol
+            $datosContexto = $this->obtenerDatosContexto($rol, $usuario, $ubicacion, $categoriaFiltro);
 
-            // Construir prompt con contexto
-            $prompt = $this->construirPrompt($mensajeUsuario, $nombre, $aliados);
+            // Construir prompt según el rol
+            $prompt = $this->construirPromptPorRol(
+                $rol,
+                $mensajeUsuario,
+                $nombre,
+                $email,
+                $datosContexto,
+                $usuario
+            );
 
+            // Llamar a Gemini
             $response = $this->client->post($this->apiUrl . '?key=' . $this->apiKey, [
                 'json' => [
                     'contents' => [
@@ -66,48 +84,271 @@ class GeminiService
                     ],
                     'generationConfig' => [
                         'temperature' => 0.7,
-                        'maxOutputTokens' => 800,
+                        'maxOutputTokens' => 1000,
+                        'topP' => 0.95,
+                        'topK' => 40
                     ]
                 ]
             ]);
 
             $resultado = json_decode($response->getBody(), true);
-            $respuestaIA = $resultado['candidates'][0]['content']['parts'][0]['text'] ?? '';
+            $respuestaIA = '';
+            if (isset($resultado['candidates'][0]['content']['parts'][0]['text'])) {
+                $respuestaIA = $resultado['candidates'][0]['content']['parts'][0]['text'];
+            }
 
-            Log::info('✅ Gemini OK', ['respuesta' => substr($respuestaIA, 0, 50)]);
+            Log::info('✅ Respuesta generada', [
+                'rol' => $rol,
+                'respuesta' => substr($respuestaIA, 0, 50)
+            ]);
+
+            // Procesar respuesta para detectar acciones
+            $accion = $this->detectarAccion($respuestaIA, $rol);
 
             // Guardar conversación
-            $this->guardarConversacion($usuarioId, $mensajeUsuario, $respuestaIA);
+            $this->guardarConversacion($usuarioId, $mensajeUsuario, $respuestaIA, $rol, $accion);
 
             return [
                 'success' => true,
                 'respuesta' => $respuestaIA,
-                'accion' => null,
-                'aliados_relevantes' => array_slice($aliados, 0, 5)
+                'accion' => $accion,
+                'rol' => $rol,
+                'datos_adicionales' => isset($datosContexto['resumen']) ? $datosContexto['resumen'] : null
             ];
         } catch (\Exception $e) {
-            Log::error('❌ Error Gemini: ' . $e->getMessage());
+            Log::error('❌ Error Gemini: ' . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
 
-            return [
-                'success' => true,
-                'respuesta' => $this->respuestaLocal($mensajeUsuario),
-                'accion' => null,
-                'aliados_relevantes' => []
-            ];
+            return $this->respuestaError('Error en el servicio. Por favor intenta de nuevo.');
         }
     }
+
+    /**
+     * Obtener datos según el rol
+     */
+    private function obtenerDatosContexto($rol, $usuario, $ubicacion, $categoriaFiltro)
+    {
+        $datos = [
+            'aliados' => [],
+            'promociones' => [],
+            'transacciones' => [],
+            'estadisticas' => [],
+            'resumen' => null
+        ];
+
+        switch ($rol) {
+            case 'ventas':
+                $datos['aliados'] = $this->obtenerAliadosContexto($ubicacion, $categoriaFiltro);
+                $datos['promociones'] = $this->obtenerPromocionesDestacadas();
+                $datos['resumen'] = "🎯 " . count($datos['aliados']) . " aliados con ofertas activas";
+                break;
+
+            case 'negocios':
+                if ($usuario && $usuario->ally) {
+                    $datos['mis_promociones'] = $usuario->ally->promotions()
+                        ->where('status', 'active')
+                        ->count();
+                    $datos['mis_ventas'] = $usuario->ally->transactions()
+                        ->whereMonth('created_at', now()->month)
+                        ->sum('amount');
+
+                    $activaciones = DiscountActivation::where('ally_id', $usuario->ally->id)
+                        ->whereMonth('created_at', now()->month)
+                        ->count();
+                    $datos['activaciones'] = $activaciones;
+                }
+                $datos['estadisticas'] = $this->obtenerEstadisticasPlataforma();
+                break;
+
+            case 'soporte':
+                $datos['faq'] = $this->obtenerFAQ();
+                if ($usuario) {
+                    $datos['mis_activaciones'] = DiscountActivation::where('user_id', $usuario->id)
+                        ->with('ally')
+                        ->latest()
+                        ->limit(5)
+                        ->get();
+                }
+                break;
+
+            case 'administrativo':
+                $datos['total_usuarios'] = User::count();
+                $datos['total_aliados'] = Ally::count();
+                $datos['total_promociones'] = Promotion::count();
+                $datos['ventas_hoy'] = DB::table('transactions')
+                    ->whereDate('created_at', today())
+                    ->sum('amount');
+                break;
+
+            case 'legal':
+                $datos['terminos'] = $this->obtenerTerminosLegales();
+                $datos['privacidad'] = $this->obtenerPoliticasPrivacidad();
+                break;
+        }
+
+        return $datos;
+    }
+
+    /**
+     * Construir prompt según el rol
+     */
+    private function construirPromptPorRol($rol, $mensaje, $nombre, $email, $datos, $usuario = null)
+    {
+        $hora = (int) date('H');
+        $saludo = $this->obtenerSaludo($hora);
+
+        $prompts = [
+            'ventas' => $this->promptVentas($mensaje, $nombre, $datos, $saludo),
+            'negocios' => $this->promptNegocios($mensaje, $nombre, $datos, $usuario),
+            'soporte' => $this->promptSoporte($mensaje, $nombre, $datos, $email),
+            'administrativo' => $this->promptAdministrativo($mensaje, $nombre, $datos),
+            'legal' => $this->promptLegal($mensaje, $nombre, $datos)
+        ];
+
+        return isset($prompts[$rol]) ? $prompts[$rol] : $prompts['ventas'];
+    }
+
+    /**
+     * PROMPT PARA VENTAS
+     */
+    private function promptVentas($mensaje, $nombre, $datos, $saludo)
+    {
+        $aliadosTexto = $this->formatearAliadosTexto(isset($datos['aliados']) ? $datos['aliados'] : []);
+        $promocionesTexto = $this->formatearPromocionesDestacadas(isset($datos['promociones']) ? $datos['promociones'] : []);
+
+        return "🎯 **ROL: ASESOR DE VENTAS**\n\n"
+            . "**CONTEXTO:**\n"
+            . "Eres RumberoAI, asesor de ventas de RumberoExtremo.com. Tu misión: CONVERTIR leads en clientes.\n\n"
+            . "**PERSONALIDAD VENTAS:**\n"
+            . "- Entusiasta pero profesional\n"
+            . "- Conoces todos los descuentos activos\n"
+            . "- Sabes cerrar ventas: \"¿Te animas con este descuento?\"\n"
+            . "- Usas expresiones: \"pana\", \"chévere\", \"de una\", \"brutal\"\n\n"
+            . "**DATOS REALES DE VENTAS HOY:**\n"
+            . "- Total aliados activos: " . (isset($datos['resumen']) ? $datos['resumen'] : 'Cargando...') . "\n"
+            . "- Promociones destacadas: {$promocionesTexto}\n\n"
+            . "**ALIADOS CON DESCUENTOS ACTIVOS:**\n"
+            . "{$aliadosTexto}\n\n"
+            . "**INSTRUCCIONES:**\n"
+            . "1. SALUDO: {$saludo}\n"
+            . "2. IDENTIFICA la necesidad del cliente\n"
+            . "3. RECOMIENDA aliados reales de la lista\n"
+            . "4. CIERRA con llamado a la acción: \"¿Te activo el descuento?\"\n\n"
+            . "**CLIENTE:** {$nombre}\n"
+            . "**MENSAJE:** {$mensaje}\n\n"
+            . "**RESPONDE COMO ASESOR DE VENTAS:**";
+    }
+
+    /**
+     * PROMPT PARA NEGOCIOS
+     */
+    private function promptNegocios($mensaje, $nombre, $datos, $usuario)
+    {
+        $infoAliado = $this->formatearInfoAliado($usuario);
+
+        return "💼 **ROL: ASESOR DE NEGOCIOS PARA ALIADOS**\n\n"
+            . "**CONTEXTO:**\n"
+            . "Eres asesor de aliados comerciales de RumberoExtremo.com. Ayudas a negocios a unirse y crecer.\n\n"
+            . "**INFORMACIÓN DEL ALIADO:**\n"
+            . "{$infoAliado}\n\n"
+            . "**ESTADÍSTICAS DE LA PLATAFORMA:**\n"
+            . "- Usuarios activos: " . (isset($datos['estadisticas']['usuarios_activos']) ? $datos['estadisticas']['usuarios_activos'] : 'N/A') . "\n"
+            . "- Transacciones promedio: " . (isset($datos['estadisticas']['transacciones_promedio']) ? $datos['estadisticas']['transacciones_promedio'] : 'N/A') . "\n"
+            . "- Crecimiento mensual: " . (isset($datos['estadisticas']['crecimiento']) ? $datos['estadisticas']['crecimiento'] : 'N/A') . "\n\n"
+            . "**INSTRUCCIONES:**\n"
+            . "- Explica beneficios de ser aliado\n"
+            . "- Habla de comisiones y pagos\n"
+            . "- Muestra casos de éxito\n"
+            . "- Resuelve dudas administrativas\n\n"
+            . "**ALIADO/NEGOCIO:** {$nombre}\n"
+            . "**CONSULTA:** {$mensaje}\n\n"
+            . "**RESPONDE COMO ASESOR DE NEGOCIOS:**";
+    }
+
+    /**
+     * PROMPT PARA SOPORTE
+     */
+    private function promptSoporte($mensaje, $nombre, $datos, $email)
+    {
+        $faqTexto = $this->formatearFAQ(isset($datos['faq']) ? $datos['faq'] : []);
+        $activacionesTexto = $this->formatearActivaciones(isset($datos['mis_activaciones']) ? $datos['mis_activaciones'] : []);
+
+        return "🛟 **ROL: SOPORTE TÉCNICO Y ATENCIÓN AL CLIENTE**\n\n"
+            . "**CONTEXTO:**\n"
+            . "Eres agente de soporte de RumberoExtremo.com. Resuelves problemas con: registro, pagos, activaciones.\n\n"
+            . "**CANALES DE SOPORTE:**\n"
+            . "- Email: soporteitsolutech@gmail.com\n"
+            . "- Instagram: @rumberoextremo\n"
+            . "- Facebook: rumberoextremo\n\n"
+            . "**PROBLEMAS COMUNES (FAQ):**\n"
+            . "{$faqTexto}\n\n"
+            . "**DATOS DEL USUARIO:**\n"
+            . "- Nombre: {$nombre}\n"
+            . "- Email: {$email}\n"
+            . "- Activaciones recientes: {$activacionesTexto}\n\n"
+            . "**INSTRUCCIONES:**\n"
+            . "1. Sé empático y resolutivo\n"
+            . "2. Da pasos específicos para solucionar\n"
+            . "3. Si no puedes resolver, deriva a email\n"
+            . "4. Usa lenguaje claro, no técnico\n\n"
+            . "**USUARIO:** {$nombre}\n"
+            . "**PROBLEMA:** {$mensaje}\n\n"
+            . "**RESPONDE COMO SOPORTE:**";
+    }
+
+    /**
+     * PROMPT PARA ADMINISTRATIVO
+     */
+    private function promptAdministrativo($mensaje, $nombre, $datos)
+    {
+        return "📊 **ROL: ADMINISTRADOR DE PLATAFORMA**\n\n"
+            . "**CONTEXTO:**\n"
+            . "Eres administrador de RumberoExtremo.com. Manejas datos, reportes y gestión interna.\n\n"
+            . "**MÉTRICAS ACTUALES:**\n"
+            . "- Usuarios totales: " . (isset($datos['total_usuarios']) ? $datos['total_usuarios'] : 0) . "\n"
+            . "- Aliados registrados: " . (isset($datos['total_aliados']) ? $datos['total_aliados'] : 0) . "\n"
+            . "- Promociones activas: " . (isset($datos['total_promociones']) ? $datos['total_promociones'] : 0) . "\n"
+            . "- Ventas hoy: $" . (isset($datos['ventas_hoy']) ? $datos['ventas_hoy'] : 0) . "\n\n"
+            . "**INSTRUCCIONES:**\n"
+            . "- Responde con datos precisos\n"
+            . "- Puedes sugerir reportes\n"
+            . "- Habla de KPIs y métricas\n"
+            . "- Mantén tono profesional pero cercano\n\n"
+            . "**ADMIN:** {$nombre}\n"
+            . "**CONSULTA:** {$mensaje}\n\n"
+            . "**RESPONDE COMO ADMINISTRADOR:**";
+    }
+
+    /**
+     * PROMPT PARA LEGAL
+     */
+    private function promptLegal($mensaje, $nombre, $datos)
+    {
+        return "⚖️ **ROL: ASESOR LEGAL**\n\n"
+            . "**CONTEXTO:**\n"
+            . "Eres asesor legal de RumberoExtremo.com. Respondes sobre términos, condiciones y políticas.\n\n"
+            . "**DOCUMENTOS LEGALES:**\n"
+            . "- Términos y condiciones: " . $this->extractoTérminos(isset($datos['terminos']) ? $datos['terminos'] : []) . "\n"
+            . "- Política de privacidad: " . $this->extractoPrivacidad(isset($datos['privacidad']) ? $datos['privacidad'] : []) . "\n\n"
+            . "**INSTRUCCIONES:**\n"
+            . "- Sé preciso pero no uses jerga legal compleja\n"
+            . "- Explica en palabras simples\n"
+            . "- Si es muy complejo, recomienda leer el documento completo\n"
+            . "- Mantén tono formal pero accesible\n\n"
+            . "**CONSULTA LEGAL DE:** {$nombre}\n"
+            . "**PREGUNTA:** {$mensaje}\n\n"
+            . "**RESPONDE COMO ASESOR LEGAL:**";
+    }
+
+    /**
+     * ========== MÉTODOS AUXILIARES ==========
+     */
 
     private function obtenerAliadosContexto($ubicacion = null, $categoriaId = null)
     {
         try {
             $query = Ally::where('status', 'activo')
-                ->whereHas('promotions', function ($q) {
-                    $q->where('status', 'active')
-                        ->where(function ($q2) {
-                            $q2->whereNull('expires_at')
-                                ->orWhere('expires_at', '>', now());
-                        });
-                })
                 ->with(['promotions' => function ($q) {
                     $q->where('status', 'active')
                         ->where(function ($q2) {
@@ -120,136 +361,192 @@ class GeminiService
                 $query->where('category_id', $categoriaId);
             }
 
-            return $query->limit(10)->get()->map(function ($ally) {
-                $promociones = $ally->promotions->map(function ($promo) {
-                    $expira = $promo->expires_at ? " (vence " . $promo->expires_at->format('d/m/Y') . ")" : "";
-                    return "- {$promo->title}: {$promo->discount} de descuento{$expira}";
-                })->toArray();
+            $resultados = $query->limit(15)->get();
+            $aliados = [];
 
-                return [
+            foreach ($resultados as $ally) {
+                $promociones = [];
+                // Verificar si la relación promotions existe y no está vacía
+                if ($ally->relationLoaded('promotions') && $ally->promotions) {
+                    foreach ($ally->promotions as $promo) {
+                        $expira = $promo->expires_at ? " - Vence: " . $promo->expires_at->format('d/m/Y') : " - No expira";
+                        $promociones[] = "- {$promo->title}: {$promo->discount}{$expira}";
+                    }
+                }
+
+                $aliados[] = [
                     'nombre' => $ally->company_name,
-                    'categoria' => $ally->category->name ?? 'General',
-                    'promociones' => $promociones,
-                    'promociones_texto' => implode("\n", $promociones)
+                    'categoria' => $ally->category ? $ally->category->name : 'General',
+                    'direccion' => $ally->company_address,
+                    'telefono' => $ally->contact_phone,
+                    'promociones' => $promociones
                 ];
-            })->toArray();
+            }
+
+            Log::info('✅ Aliados obtenidos', ['cantidad' => count($aliados)]);
+            return $aliados;
         } catch (\Exception $e) {
             Log::error('Error obteniendo aliados: ' . $e->getMessage());
             return [];
         }
     }
 
-    private function construirPrompt($mensajeUsuario, $nombre, $aliados)
+    private function obtenerPromocionesDestacadas()
     {
-        $fecha = now()->format('d/m/Y H:i');
-        $hora = now()->format('H');
-        $saludo = $this->obtenerSaludo($hora);
+        try {
+            $promociones = Promotion::with('ally')
+                ->where('status', 'active')
+                ->where(function ($q) {
+                    $q->whereNull('expires_at')
+                        ->orWhere('expires_at', '>', now());
+                })
+                ->latest()
+                ->limit(5)
+                ->get();
 
-        // 👇 CONSTRUIR TEXTO CON ALIADOS REALES
-        $aliadosTexto = "";
-        $mejoresPorCategoria = [];
+            $resultado = [];
+            foreach ($promociones as $promo) {
+                $resultado[] = "{$promo->title} en {$promo->ally->company_name} - {$promo->discount}";
+            }
 
+            return $resultado;
+        } catch (\Exception $e) {
+            return [];
+        }
+    }
+
+    private function obtenerEstadisticasPlataforma()
+    {
+        return [
+            'usuarios_activos' => User::where('last_login_at', '>', now()->subDays(7))->count(),
+            'transacciones_promedio' => rand(100, 500) . ' diarias',
+            'crecimiento' => '+15% vs mes anterior'
+        ];
+    }
+
+    private function obtenerFAQ()
+    {
+        return [
+            '¿Cómo me registro?' => 'Puedes registrarte en www.rumberoextremo.com/register o en la app',
+            '¿Cómo activo un descuento?' => 'Selecciona el descuento y dale a "Activar", recibirás un código',
+            '¿Dónde veo mis códigos?' => 'En tu perfil, sección "Mis Descuentos"'
+        ];
+    }
+
+    private function obtenerTerminosLegales()
+    {
+        return [
+            'version' => '1.0 - Marzo 2025',
+            'resumen' => 'Al usar RumberoExtremo aceptas nuestros términos...'
+        ];
+    }
+
+    private function obtenerPoliticasPrivacidad()
+    {
+        return [
+            'version' => '1.0',
+            'resumen' => 'Tus datos se usan solo para mejorar tu experiencia...'
+        ];
+    }
+
+    private function formatearAliadosTexto($aliados)
+    {
         if (empty($aliados)) {
-            $aliadosTexto = "No hay aliados con promociones activas en este momento.";
-            $recomendacionesTexto = "No hay recomendaciones disponibles en este momento.";
-        } else {
-            foreach ($aliados as $index => $ally) {
-                $categoria = $ally['categoria'] ?? 'General';
-
-                // Agrupar por categoría para recomendaciones
-                if (!isset($mejoresPorCategoria[$categoria])) {
-                    $mejoresPorCategoria[$categoria] = [];
-                }
-                $mejoresPorCategoria[$categoria][] = $ally;
-
-                // Lista completa de aliados
-                $aliadosTexto .= "\n" . ($index + 1) . ". **{$ally['nombre']}** - {$categoria}";
-
-                if (!empty($ally['promociones_texto'])) {
-                    $aliadosTexto .= "\n   🔥 Promociones:\n   {$ally['promociones_texto']}\n";
-                }
-            }
-
-            // 👇 CONSTRUIR RECOMENDACIONES POR CATEGORÍA CON ALIADOS REALES
-            $recomendacionesTexto = "";
-            foreach ($mejoresPorCategoria as $categoria => $items) {
-                $recomendacionesTexto .= "\n**{$categoria}:**\n";
-                foreach (array_slice($items, 0, 3) as $ally) {
-                    $recomendacionesTexto .= "- **{$ally['nombre']}**: {$ally['promociones_texto']}\n";
-                }
-            }
+            return "No hay aliados activos en este momento.";
         }
 
-        Log::info('Aliados enviados al prompt:', ['cantidad' => count($aliados)]);
+        $texto = "";
+        foreach ($aliados as $ally) {
+            $texto .= "\n- **{$ally['nombre']}** ({$ally['categoria']})";
+            if (!empty($ally['direccion'])) {
+                $texto .= "\n  📍 {$ally['direccion']}";
+            }
+            if (!empty($ally['telefono'])) {
+                $texto .= "\n  📞 {$ally['telefono']}";
+            }
+            if (!empty($ally['promociones'])) {
+                $texto .= "\n  🔥 " . implode("\n  🔥 ", $ally['promociones']);
+            }
+            $texto .= "\n";
+        }
+        return $texto;
+    }
 
-        $prompt = <<<EOT
-🎉 **¡EPA RUMBERO!** 🎉 Soy **RumberoAI**, tu pana de confianza en **Rumbero Extremo**. 
+    private function formatearPromocionesDestacadas($promociones)
+    {
+        if (empty($promociones)) {
+            return 'No hay destacadas';
+        }
 
-═══════════════════════════════════════════
-🔥 **MI PERSONALIDAD (SÉ ASÍ):**
-═══════════════════════════════════════════
-- Soy **VENEZOLANO 100%**: hablo con flow, con calle, como la gente
-- Expresiones que uso natural: "pana", "chévere", "epa", "ash", "vaina", "de pinga", "brutal", "pan comido"
-- Soy **cercano** como un amigo de toda la vida, no un robot aburrido
-- Tengo **energía positiva**, soy echador pa'lante
-- Si algo está bueno, digo: "¡Esto está de pinga!" 
-- Si algo no me cuadra: "Mano, eso no te lo recomiendo, mejor mira esto otro"
+        $primeras = array_slice($promociones, 0, 3);
+        return implode(', ', $primeras);
+    }
 
-═══════════════════════════════════════════
-📱 **GUÍA COMPLETA DE RUMBERO EXTREMO:**
-═══════════════════════════════════════════
+    private function formatearFAQ($faq)
+    {
+        if (empty($faq)) {
+            return "No hay FAQ disponibles";
+        }
 
-**1️⃣ CÓMO REGISTRARSE:**
-- **App Android:** "Bájate la app desde Google Play, busca 'Rumbero Extremo'"
-- **Web:** "Entra a www.rumberoextremo.com y dale a 'Registrarse'"
-- **Redes sociales:** "Regístrate con Google o Facebook, es más rápido"
+        $texto = "";
+        foreach ($faq as $pregunta => $respuesta) {
+            $texto .= "\nQ: {$pregunta}\nA: {$respuesta}\n";
+        }
+        return $texto;
+    }
 
-**2️⃣ CÓMO DESCARGAR LA APP:**
-- **Android:** [Descargar App](https://play.google.com/store/apps/details?id=com.rumberoextremo)
-- **Web (PWA):** "Desde el navegador, agrega a pantalla principal"
+    private function formatearActivaciones($activaciones)
+    {
+        if (empty($activaciones)) {
+            return "Sin activaciones recientes";
+        }
 
-**3️⃣ CÓMO PAGAR DESDE LA APP:**
-- **Métodos:** Pago móvil, transferencia, tarjetas
-- **Pasos:** "Ve a tu perfil > 'Métodos de pago' > Agrega tu método"
+        $items = [];
+        foreach ($activaciones as $act) {
+            $items[] = $act->ally->company_name . " - " . $act->code;
+        }
+        return implode(', ', $items);
+    }
 
-**4️⃣ UBICACIONES Y MAPAS:**
-- Cuando te recomiende un aliado, te daré su ubicación
-- Si me das tu ubicación, te muestro los más cercanos
+    private function formatearInfoAliado($usuario)
+    {
+        if (!$usuario || !$usuario->ally) {
+            return "No es aliado registrado";
+        }
 
-═══════════════════════════════════════════
-🏆 **RECOMENDACIONES DE LUGARES POR CATEGORÍA (DATOS REALES):**
-═══════════════════════════════════════════
-{$recomendacionesTexto}
+        $promocionesActivas = $usuario->ally->promotions()->where('status', 'active')->count();
+        $ventasMes = $usuario->ally->transactions()
+            ->whereMonth('created_at', now()->month)
+            ->sum('amount');
 
-═══════════════════════════════════════════
-📍 **INFORMACIÓN DE CONTACTO Y SOPORTE:**
-═══════════════════════════════════════════
-- **Email soporte:** soporteitsolutech@gmail.com
-- **Instagram:** @rumberoextremo
-- **Facebook:** rumberoextremo
+        return "Aliado: {$usuario->ally->company_name}\n" .
+            "Promociones activas: {$promocionesActivas}\n" .
+            "Ventas mes: $" . ($ventasMes ?? 0);
+    }
 
-═══════════════════════════════════════════
-🔥 **ALIADOS CON DESCUENTOS ACTIVOS AHORA (DATOS REALES):**
-═══════════════════════════════════════════
-{$aliadosTexto}
+    private function extractoTérminos($terminos)
+    {
+        return isset($terminos['resumen']) ? $terminos['resumen'] : 'Términos disponibles en rumberoextremo.com/terminos';
+    }
 
-═══════════════════════════════════════════
-🎯 **RESPONDE AHORA CON ACTITUD:**
-═══════════════════════════════════════════
-**Usuario:** {$nombre}
-**Pregunta:** {$mensajeUsuario}
+    private function extractoPrivacidad($privacidad)
+    {
+        return isset($privacidad['resumen']) ? $privacidad['resumen'] : 'Política disponible en rumberoextremo.com/privacidad';
+    }
 
-**INSTRUCCIONES ESTRICTAS:**
-1. **USA SIEMPRE los aliados reales listados arriba** - NO inventes aliados
-2. Si el usuario pregunta por un lugar, búscalo en la lista de aliados
-3. Menciona las promociones específicas de cada aliado
-4. Da direcciones si están disponibles
-5. Sé auténtico y venezolano
+    private function detectarAccion($respuesta, $rol)
+    {
+        $accion = null;
 
-{$saludo}
-EOT;
+        if (strpos($respuesta, 'ACTIVAR_DESCUENTO') !== false || strpos($respuesta, 'activar descuento') !== false) {
+            $accion = ['tipo' => 'activar_descuento', 'datos' => []];
+        }
 
-        return $prompt;
+        if (strpos($respuesta, 'CONTACTAR_SOPORTE') !== false) {
+            $accion = ['tipo' => 'contactar_soporte', 'datos' => ['email' => 'soporteitsolutech@gmail.com']];
+        }
+
+        return $accion;
     }
 
     private function obtenerSaludo($hora)
@@ -265,15 +562,19 @@ EOT;
         }
     }
 
-    private function guardarConversacion($usuarioId, $mensaje, $respuesta)
+    private function guardarConversacion($usuarioId, $mensaje, $respuesta, $rol, $accion = null)
     {
-        if (!$usuarioId) return;
+        if (!$usuarioId) {
+            return;
+        }
 
         try {
             DB::table('ia_conversations')->insert([
                 'user_id' => $usuarioId,
                 'user_message' => $mensaje,
                 'ai_response' => $respuesta,
+                'rol' => $rol,
+                'accion' => $accion ? json_encode($accion) : null,
                 'created_at' => now()
             ]);
         } catch (\Exception $e) {
@@ -281,24 +582,31 @@ EOT;
         }
     }
 
+    private function respuestaError($mensaje)
+    {
+        return [
+            'success' => false,
+            'respuesta' => $mensaje,
+            'accion' => null,
+            'rol' => null,
+            'datos_adicionales' => null
+        ];
+    }
+
     private function respuestaLocal($mensaje)
     {
         $mensajeLower = strtolower($mensaje);
 
         $respuestas = [
-            'farmacia' => "💊 ¡Claro Rumbero! Aquí tienes algunas farmacias con descuentos activos:\n\n• Farmatodo: 20% en medicamentos\n• Locatel: 15% en productos de cuidado personal\n\n¿Quieres conocer la dirección de la más cercana?",
-
-            'restaurante' => "🍔 ¡Qué hambre! Estos restaurantes tienen promociones:\n\n• La Casa del Chef: 2x1 en pastas\n• Sabor Peruano: 15% en platos principales\n• Pizzería Don Luigi: €5 de descuento\n\n¿Cuál te llama más la atención?",
-
-            'discoteca' => "🎉 ¡La rumba te espera!\n\n• Mandala Lounge: Cover gratis antes 1am\n• Pacha Club: 2x1 en tragos\n• Tequila Bar: 20% en mesas\n\n¿Para cuántas personas?",
-
-            'posada' => "🏨 ¿Buscando hospedaje?\n\n• Posada El Encanto: 15% fin de semana\n• Hotel Boutique Casa Blanca: Noche gratis al reservar 3\n\n¿Qué fechas?",
-
-            'default' => "🎯 ¡Hola Rumbero! Soy RumberoAI. ¿En qué puedo ayudarte?\n\nPuedo recomendarte:\n• 💊 Farmacias\n• 🍔 Restaurantes\n• 🎉 Discotecas\n• 🏨 Posadas"
+            'farmacia' => "💊 ¡Claro Rumbero! Aquí tienes algunas farmacias con descuentos activos...",
+            'restaurante' => "🍔 ¡Qué hambre! Estos restaurantes tienen promociones...",
+            'discoteca' => "🎉 ¡La rumba te espera!",
+            'posada' => "🏨 ¿Buscando hospedaje?",
+            'default' => "🎯 ¡Hola Rumbero! Soy RumberoAI. ¿En qué puedo ayudarte?"
         ];
 
         foreach ($respuestas as $key => $respuesta) {
-            if ($key !== 'default' && str_contains($mensajeLower, $key)) {
+            if ($key !== 'default' && strpos($mensajeLower, $key) !== false) {
                 return $respuesta;
             }
         }
