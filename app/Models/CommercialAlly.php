@@ -21,4 +21,9 @@ class CommercialAlly extends Model
     protected $casts = [
         'rating' => 'double',
     ];
+
+    public function ally()
+    {
+        return $this->belongsTo(CommercialAlly::class, 'ally_id');
+    }
 }
