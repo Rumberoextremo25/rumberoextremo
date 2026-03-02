@@ -42,8 +42,28 @@
     <link rel="stylesheet" href="{{ asset('css/admin/promotion-create.css') }}">
     <link rel="stylesheet" href="{{ asset('css/admin/promotion-edit.css') }}">
 
+    {{-- Estilos para modo oscuro --}}
+    <link rel="stylesheet" href="{{ asset('css/admin/dark-mode.css') }}">
+
+    {{-- Logo en el head (como favicon o preload) --}}
+    <link rel="apple-touch-icon" href="{{ asset('assets/img/logo_sidebar.png') }}">
+
     {{-- Aquí se inyectarán los estilos específicos de cada página --}}
     @stack('styles')
+
+    {{-- Aquí se inyectarán los estilos específicos de cada página --}}
+    @stack('styles')
+
+    {{-- Script para aplicar modo oscuro antes del renderizado --}}
+    <script>
+        (function() {
+            const isDarkMode = @json(auth()->check() ? auth()->user()->dark_mode_enabled : false);
+            if (isDarkMode) {
+                document.documentElement.classList.add('dark-mode');
+                document.body.classList.add('dark-mode');
+            }
+        })();
+    </script>
 
     <div class="sidebar-header">
         <a href="{{ route('welcome') }}">

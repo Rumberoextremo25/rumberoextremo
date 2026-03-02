@@ -1,0 +1,538 @@
+/* ========== COMPROBANTE DE TRANSACCIÓN ========== */
+/* Tema: Rumbero Extremo - Comprobante */
+
+/* ========== ESTILOS GENERALES ========== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    background: #f8fafc;
+    color: #1e293b;
+    padding: 2rem;
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.comprobante-wrapper {
+    max-width: 800px;
+    width: 100%;
+    margin: 0 auto;
+}
+
+/* ========== TARJETA DE COMPROBANTE ========== */
+.comprobante-card {
+    background: #ffffff;
+    border-radius: 32px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    overflow: hidden;
+    border: 1px solid #e9eef2;
+}
+
+/* ========== HEADER CON GRADIENTE ========== */
+.comprobante-header {
+    background: linear-gradient(135deg, #A601B3, #3004E1);
+    padding: 2rem;
+    color: #ffffff;
+    position: relative;
+    overflow: hidden;
+}
+
+.comprobante-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200px;
+    height: 200px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    transform: rotate(45deg);
+}
+
+.comprobante-header::after {
+    content: '';
+    position: absolute;
+    bottom: -50%;
+    left: -50%;
+    width: 300px;
+    height: 300px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 50%;
+}
+
+.header-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 1;
+}
+
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+.brand i {
+    font-size: 1.5rem;
+    color: #FFB800;
+}
+
+.comprobante-badge {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(10px);
+    padding: 0.4rem 1.2rem;
+    border-radius: 50px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.header-title {
+    position: relative;
+    z-index: 1;
+}
+
+.header-title h1 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin-bottom: 0.3rem;
+}
+
+.header-title p {
+    font-size: 1rem;
+    opacity: 0.9;
+    font-family: 'Courier New', monospace;
+}
+
+/* ========== CUERPO DEL COMPROBANTE ========== */
+.comprobante-body {
+    padding: 2rem;
+}
+
+/* ========== SECCIÓN DE ESTADO ========== */
+.status-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 1.5rem;
+    margin-bottom: 1.5rem;
+    border-bottom: 2px dashed #e9eef2;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1.5rem;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+}
+
+.status-confirmed {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.status-awaiting_review,
+.status-pending_manual_confirmation {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.status-failed {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.fecha-emision {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #64748b;
+    font-size: 0.9rem;
+}
+
+.fecha-emision i {
+    color: #A601B3;
+}
+
+/* ========== SECCIONES DE INFORMACIÓN ========== */
+.section-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 1.2rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid #A601B3;
+}
+
+.section-title i {
+    color: #A601B3;
+    font-size: 1rem;
+}
+
+.info-section,
+.amounts-section,
+.participants-section,
+.confirmation-section {
+    margin-bottom: 2rem;
+}
+
+/* ========== GRID DE INFORMACIÓN ========== */
+.info-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.2rem;
+    background: #f8fafc;
+    padding: 1.2rem;
+    border-radius: 16px;
+}
+
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.info-label {
+    font-size: 0.7rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.info-value {
+    font-size: 0.95rem;
+    color: #1e293b;
+    font-weight: 500;
+}
+
+.info-value code {
+    background: #ffffff;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    font-family: 'Courier New', monospace;
+    color: #A601B3;
+}
+
+/* ========== MONTOS ========== */
+.amounts-grid {
+    background: linear-gradient(135deg, #f8fafc, #ffffff);
+    padding: 1.2rem;
+    border-radius: 16px;
+    border: 1px solid #e9eef2;
+}
+
+.amount-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem 0;
+    border-bottom: 1px dashed #e9eef2;
+}
+
+.amount-row:last-child {
+    border-bottom: none;
+}
+
+.amount-row.total {
+    margin-top: 0.5rem;
+    padding-top: 1rem;
+    border-top: 2px solid #A601B3;
+}
+
+.amount-label {
+    font-size: 0.9rem;
+    color: #64748b;
+}
+
+.amount-value {
+    font-size: 1rem;
+    font-weight: 600;
+    font-family: 'Courier New', monospace;
+}
+
+.amount-value.original {
+    color: #10b981;
+}
+
+.amount-value.discount {
+    color: #f59e0b;
+}
+
+.amount-value.commission {
+    color: #ef4444;
+}
+
+.amount-value.net {
+    color: #A601B3;
+    font-size: 1.2rem;
+}
+
+/* ========== PARTICIPANTES ========== */
+.participants-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.2rem;
+}
+
+.participant-card {
+    background: #f8fafc;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid #e9eef2;
+    transition: all 0.3s ease;
+}
+
+.participant-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05);
+}
+
+.participant-header {
+    background: linear-gradient(135deg, #A601B3, #3004E1);
+    padding: 0.8rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #ffffff;
+}
+
+.participant-header i {
+    font-size: 1rem;
+}
+
+.participant-header h3 {
+    font-size: 0.9rem;
+    font-weight: 600;
+}
+
+.participant-body {
+    padding: 1rem;
+}
+
+.participant-name {
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 0.3rem;
+}
+
+.participant-email {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin-bottom: 0.3rem;
+}
+
+.participant-phone {
+    font-size: 0.8rem;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.participant-phone i {
+    color: #A601B3;
+    font-size: 0.7rem;
+}
+
+/* ========== JSON DATA ========== */
+.json-data {
+    background: #1e293b;
+    color: #e2e8f0;
+    padding: 1.5rem;
+    border-radius: 16px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    margin: 0;
+}
+
+/* ========== NOTAS LEGALES ========== */
+.legal-notes {
+    margin-top: 2rem;
+    padding: 1rem;
+    background: #f8fafc;
+    border-radius: 12px;
+    border-left: 4px solid #A601B3;
+}
+
+.legal-notes p {
+    font-size: 0.8rem;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.3rem;
+}
+
+.legal-notes p:last-child {
+    margin-bottom: 0;
+}
+
+.legal-notes i {
+    color: #A601B3;
+    font-size: 0.8rem;
+}
+
+.legal-notes .reference {
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+.legal-notes code {
+    background: #ffffff;
+    padding: 0.2rem 0.4rem;
+    border-radius: 4px;
+    color: #A601B3;
+}
+
+/* ========== FOOTER ========== */
+.comprobante-footer {
+    background: #f8fafc;
+    padding: 1.5rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-top: 1px solid #e9eef2;
+}
+
+.footer-info p {
+    font-size: 0.8rem;
+    color: #64748b;
+    line-height: 1.4;
+}
+
+.btn-print {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.7rem 1.5rem;
+    background: linear-gradient(135deg, #A601B3, #3004E1);
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 10px rgba(166, 1, 179, 0.2);
+}
+
+.btn-print:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(166, 1, 179, 0.3);
+}
+
+.btn-print i {
+    font-size: 1rem;
+}
+
+/* ========== ESTILOS DE IMPRESIÓN ========== */
+@media print {
+    body {
+        background: #ffffff;
+        padding: 0.5rem;
+    }
+
+    .comprobante-card {
+        box-shadow: none;
+        border: 1px solid #ddd;
+    }
+
+    .btn-print {
+        display: none;
+    }
+
+    .participant-card:hover {
+        transform: none;
+        box-shadow: none;
+    }
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 768px) {
+    body {
+        padding: 1rem;
+    }
+
+    .comprobante-header {
+        padding: 1.5rem;
+    }
+
+    .header-title h1 {
+        font-size: 1.4rem;
+    }
+
+    .comprobante-body {
+        padding: 1.5rem;
+    }
+
+    .status-section {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .info-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .participants-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .comprobante-footer {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+
+    .btn-print {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-top {
+        flex-direction: column;
+        gap: 0.8rem;
+        text-align: center;
+    }
+
+    .amount-row {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.3rem;
+    }
+
+    .amount-row.total {
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .json-data {
+        font-size: 0.7rem;
+        padding: 1rem;
+    }
+}

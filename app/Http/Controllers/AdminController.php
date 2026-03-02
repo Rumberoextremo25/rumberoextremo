@@ -4,15 +4,13 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Validator;
 use App\Models\User;
 use App\Models\ActivityLog;
 use App\Models\PaymentTransaction;
-use App\Models\PageVisit;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 use App\Models\Ally;
 use Carbon\Carbon;
-use PragmaRX\Google2FA\Google2FA;
 
 class AdminController extends Controller
 {
@@ -20,166 +18,8 @@ class AdminController extends Controller
 
     public function __construct()
     {
-        $this->google2fa = new Google2FA();
+        //
     }
-
-    /**
-     * ========== CONFIGURACIÓN Y 2FA ==========
-     */
-    public function settings()
-    {
-        $user = Auth::user();
-
-        // Generar secreto para 2FA si no existe
-        if (!$user->two_factor_secret) {
-            $user->two_factor_secret = $this->google2fa->generateSecretKey();
-            $user->save();
-        }
-
-        // Generar QR Code
-        $qrCodeSvg = $this->generateQRCodeSvg($user);
-
-        return view('Admin.settings', compact('user', 'qrCodeSvg'));
-    }
-
-    public function changePassword(Request $request)
-    {
-        $user = Auth::user();
-
-        $validator = Validator::make($request->all(), [
-            'current_password' => [
-                'required',
-                'string',
-                function ($attribute, $value, $fail) use ($user) {
-                    if (!Hash::check($value, $user->password)) {
-                        $fail('La contraseña actual es incorrecta.');
-                    }
-                }
-            ],
-            'new_password' => 'required|string|min:8|confirmed|different:current_password',
-        ], [
-            'current_password.required' => 'Debes ingresar tu contraseña actual.',
-            'new_password.required' => 'Debes ingresar una nueva contraseña.',
-            'new_password.min' => 'La nueva contraseña debe tener al menos :min caracteres.',
-            'new_password.confirmed' => 'La confirmación de la nueva contraseña no coincide.',
-            'new_password.different' => 'La nueva contraseña no puede ser igual a la actual.',
-        ]);
-
-        if ($validator->fails()) {
-            return back()->withErrors($validator)->withInput();
-        }
-
-        $user->password = Hash::make($request->new_password);
-        $user->save();
-
-        return back()->with('success', '¡Tu contraseña ha sido cambiada exitosamente!');
-    }
-
-    /**
-     * Activar/Desactivar autenticación en dos pasos
-     */
-    public function toggleTwoFactor(Request $request)
-    {
-        $user = Auth::user();
-
-        $request->validate([
-            'enabled' => 'required|boolean',
-            'verification_code' => $request->enabled ? 'required|string' : 'nullable'
-        ]);
-
-        if ($request->enabled) {
-            // Verificar el código antes de activar
-            if (!$this->verifyTwoFactorCode($user, $request->verification_code)) {
-                return $this->jsonError('El código de verificación es inválido.');
-            }
-
-            $user->two_factor_enabled = true;
-            $user->save();
-
-            $backupCodes = $this->generateBackupCodes($user);
-
-            return $this->jsonSuccess(
-                'Autenticación en dos pasos activada correctamente.',
-                ['backup_codes' => $backupCodes]
-            );
-        } else {
-            $user->two_factor_enabled = false;
-            $user->save();
-
-            return $this->jsonSuccess('Autenticación en dos pasos desactivada correctamente.');
-        }
-    }
-
-    /**
-     * Verificar código de autenticación en dos pasos
-     */
-    public function verifyTwoFactor(Request $request)
-    {
-        $request->validate([
-            'verification_code' => 'required|string'
-        ]);
-
-        $user = Auth::user();
-        $valid = $this->verifyTwoFactorCode($user, $request->verification_code);
-
-        if ($valid) {
-            return $this->jsonSuccess('Código verificado correctamente.');
-        } else {
-            return $this->jsonError('El código de verificación es inválido.');
-        }
-    }
-
-    /**
-     * Generar nuevos códigos de respaldo
-     */
-    public function generateNewBackupCodes(Request $request)
-    {
-        $user = Auth::user();
-
-        if (!$user->two_factor_enabled) {
-            return $this->jsonError('La autenticación en dos pasos no está activada.');
-        }
-
-        $backupCodes = $this->generateBackupCodes($user);
-
-        return $this->jsonSuccess(
-            'Nuevos códigos de respaldo generados correctamente.',
-            ['backup_codes' => $backupCodes]
-        );
-    }
-
-    /**
-     * Actualizar preferencias de notificaciones
-     */
-    public function updateNotificationPreferences(Request $request)
-    {
-        $request->validate([
-            'notifications_enabled' => 'required|boolean'
-        ]);
-
-        Auth::user()->update([
-            'notifications_enabled' => $request->notifications_enabled
-        ]);
-
-        return $this->jsonSuccess('Preferencias de notificaciones actualizadas correctamente.');
-    }
-
-    /**
-     * Actualizar modo oscuro
-     */
-    public function updateDarkMode(Request $request)
-    {
-        $request->validate([
-            'dark_mode_enabled' => 'required|boolean'
-        ]);
-
-        Auth::user()->update([
-            'dark_mode_enabled' => $request->dark_mode_enabled
-        ]);
-
-        return $this->jsonSuccess('Preferencia de modo oscuro actualizada correctamente.');
-    }
-
     /**
      * ========== MÉTODOS PARA TRANSACCIONES ==========
      */
@@ -197,27 +37,19 @@ class AdminController extends Controller
         // Query base con relaciones
         $query = PaymentTransaction::with(['user', 'ally']);
 
-        // Filtrar según el tipo de usuario
-        if ($user->user_type === 'admin') {
-            // ADMIN: puede filtrar por aliado si lo desea
+        // Filtrar según el rol del usuario
+        if ($user->role === 'admin') {
             if ($request->has('ally_id') && $request->ally_id) {
                 $query->where('ally_id', $request->ally_id);
             }
-            // Si no hay filtro, ve todas
-        } elseif ($user->user_type === 'aliado') {
-            // ALIADO: ver transacciones donde él es el aliado beneficiario
-            // Necesitamos encontrar el registro del aliado en la tabla allies
+        } elseif ($user->role === 'aliado') {
             $ally = Ally::where('user_id', $user->id)->first();
-
             if ($ally) {
-                // Filtrar por el ally_id de la tabla allies
                 $query->where('ally_id', $ally->id);
             } else {
-                // Si no hay registro como aliado, no mostrar nada
                 $query->whereRaw('1 = 0');
             }
         } else {
-            // USUARIO NORMAL: ver transacciones que él realizó
             $query->where('user_id', $user->id);
         }
 
@@ -230,14 +62,14 @@ class AdminController extends Controller
             $query->where('status', $request->estado);
         }
 
-        // Obtener transacciones paginadas
-        $transacciones = $query->orderBy('created_at', 'desc')->paginate(15)->withQueryString();
+        // PAGINACIÓN: 6 items por página
+        $transacciones = $query->orderBy('created_at', 'desc')
+            ->paginate(6)  // ← CAMBIADO A 6
+            ->withQueryString();
 
-        // Calcular resúmenes según el rol
-        if ($user->user_type === 'admin') {
-            // Admin: resúmenes globales o por aliado seleccionado
+        // Calcular resúmenes (igual que antes)
+        if ($user->role === 'admin') {
             $resumenQuery = PaymentTransaction::query();
-
             if ($request->has('ally_id') && $request->ally_id) {
                 $resumenQuery->where('ally_id', $request->ally_id);
             }
@@ -252,12 +84,10 @@ class AdminController extends Controller
 
             $totalTransacciones = (clone $resumenQuery)->count();
 
-            // Lista de aliados para el selector (solo para admin)
-            $aliados = User::where('user_type', 'aliado')
+            $aliados = User::where('role', 'aliado')
                 ->orderBy('name')
                 ->get(['id', 'name', 'email']);
-        } elseif ($user->user_type === 'aliado') {
-            // Aliado: resúmenes de sus transacciones
+        } elseif ($user->role === 'aliado') {
             $ally = Ally::where('user_id', $user->id)->first();
 
             if ($ally) {
@@ -276,13 +106,11 @@ class AdminController extends Controller
                 $totalTransacciones = 0;
             }
 
-            $aliados = collect(); // Vacío para aliados
+            $aliados = collect();
         } else {
-            // Usuario normal: resúmenes de sus transacciones
-            $totalRecibido = 0; // Los usuarios no reciben dinero, solo pagan
+            $totalRecibido = 0;
             $pendienteCobrar = 0;
             $totalTransacciones = PaymentTransaction::where('user_id', $user->id)->count();
-
             $aliados = collect();
         }
 
@@ -304,14 +132,18 @@ class AdminController extends Controller
     {
         $user = Auth::user();
 
-        $query = PaymentTransaction::with(['user', 'ally']);
+        // Optimización 1: Cargar solo los campos necesarios de las relaciones
+        $query = PaymentTransaction::with([
+            'user:id,name,email,phone1',  // Solo campos necesarios
+            'ally:id,company_name,contact_email,contact_phone'    // Solo campos necesarios
+        ]);
 
         // Aplicar el mismo filtro de seguridad
-        if ($user->user_type === 'admin') {
+        if ($user->role === 'admin') {
             // Admin puede ver cualquier transacción
-        } elseif ($user->user_type === 'aliado') {
+        } elseif ($user->role === 'aliado') {
             // Aliado solo puede ver transacciones donde él es el aliado
-            $ally = Ally::where('user_id', $user->id)->first();
+            $ally = Ally::where('user_id', $user->id)->first(['id']); // Solo necesitamos el ID
             if ($ally) {
                 $query->where('ally_id', $ally->id);
             } else {
@@ -322,10 +154,18 @@ class AdminController extends Controller
             $query->where('user_id', $user->id);
         }
 
-        $transaccion = $query->findOrFail($id);
+        // Optimización 2: Usar caché para transacciones que no cambian frecuentemente
+        $transaccion = Cache::remember("transaccion.detalle.{$id}", 300, function () use ($query, $id) {
+            return $query->findOrFail($id);
+        });
 
         if (request()->wantsJson()) {
-            $html = view('Admin.transacciones.partials.detalle-modal', compact('transaccion'))->render();
+            // Optimización 3: Cache también para el modal
+            $cacheKey = "transaccion.modal.{$id}";
+            $html = Cache::remember($cacheKey, 300, function () use ($transaccion) {
+                return view('Admin.transacciones.partials.detalle-modal', compact('transaccion'))->render();
+            });
+
             return response()->json([
                 'success' => true,
                 'transaccion' => $transaccion,
@@ -341,7 +181,7 @@ class AdminController extends Controller
      */
     public function transaccionAprobar($id)
     {
-        if (Auth::user()->user_type !== 'admin') {
+        if (Auth::user()->role !== 'admin') {
             return $this->jsonError('No tienes permisos para realizar esta acción.', [], 403);
         }
 
@@ -356,12 +196,17 @@ class AdminController extends Controller
         $transaccion->status = 'confirmed';
         $transaccion->save();
 
-        // Registrar actividad
+        // Registrar actividad - CON TODOS LOS CAMPOS REQUERIDOS
         ActivityLog::create([
             'user_id' => Auth::id(),
+            'performed_by' => Auth::id(), // ← AGREGAR performed_by (generalmente el mismo que user_id)
             'description' => 'Transacción confirmada',
             'details' => "Transacción #{$transaccion->id} confirmada - Monto para aliado: $" . number_format($transaccion->amount_to_ally, 0, ',', '.'),
-            'status' => 'completed'
+            'status' => 'completed',
+            'activity_type' => 'transaction_confirmed',
+            // Si hay más campos como 'ip_address', 'user_agent', etc. también hay que agregarlos
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
         ]);
 
         return $this->jsonSuccess('Transacción confirmada correctamente.', [
@@ -374,7 +219,7 @@ class AdminController extends Controller
      */
     public function transaccionRechazar($id)
     {
-        if (Auth::user()->user_type !== 'admin') {
+        if (Auth::user()->role !== 'admin') {
             return $this->jsonError('No tienes permisos para realizar esta acción.', [], 403);
         }
 
@@ -389,16 +234,96 @@ class AdminController extends Controller
         $transaccion->status = 'failed';
         $transaccion->save();
 
-        // Registrar actividad
+        // Registrar actividad - CON TODOS LOS CAMPOS REQUERIDOS
         ActivityLog::create([
             'user_id' => Auth::id(),
+            'performed_by' => Auth::id(), // ← AGREGAR performed_by
             'description' => 'Transacción rechazada',
             'details' => "Transacción #{$transaccion->id} rechazada",
-            'status' => 'failed'
+            'status' => 'failed',
+            'activity_type' => 'transaction_rejected',
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
         ]);
 
         return $this->jsonSuccess('Transacción rechazada correctamente.', [
             'transaccion' => $transaccion
+        ]);
+    }
+
+    public function aprobarMasivas(Request $request)
+    {
+        if (Auth::user()->role !== 'admin') {
+            return response()->json(['success' => false, 'message' => 'No autorizado'], 403);
+        }
+
+        $ids = $request->input('ids', []);
+
+        if (empty($ids)) {
+            return response()->json(['success' => false, 'message' => 'No hay transacciones seleccionadas']);
+        }
+
+        $transacciones = PaymentTransaction::whereIn('id', $ids)
+            ->whereIn('status', ['pending_manual_confirmation', 'awaiting_review'])
+            ->get();
+
+        foreach ($transacciones as $transaccion) {
+            $transaccion->status = 'confirmed';
+            $transaccion->save();
+
+            ActivityLog::create([
+                'user_id' => Auth::id(),
+                'performed_by' => Auth::id(),
+                'description' => 'Transacción confirmada (masiva)',
+                'details' => "Transacción #{$transaccion->id} confirmada - Monto: $" . number_format($transaccion->amount_to_ally, 0, ',', '.'),
+                'status' => 'completed',
+                'activity_type' => 'transaction_confirmed_bulk',
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => count($transacciones) . ' transacciones aprobadas correctamente'
+        ]);
+    }
+
+    public function rechazarMasivas(Request $request)
+    {
+        if (Auth::user()->role !== 'admin') {
+            return response()->json(['success' => false, 'message' => 'No autorizado'], 403);
+        }
+
+        $ids = $request->input('ids', []);
+
+        if (empty($ids)) {
+            return response()->json(['success' => false, 'message' => 'No hay transacciones seleccionadas']);
+        }
+
+        $transacciones = PaymentTransaction::whereIn('id', $ids)
+            ->whereIn('status', ['pending_manual_confirmation', 'awaiting_review'])
+            ->get();
+
+        foreach ($transacciones as $transaccion) {
+            $transaccion->status = 'failed';
+            $transaccion->save();
+
+            ActivityLog::create([
+                'user_id' => Auth::id(),
+                'performed_by' => Auth::id(),
+                'description' => 'Transacción rechazada (masiva)',
+                'details' => "Transacción #{$transaccion->id} rechazada",
+                'status' => 'failed',
+                'activity_type' => 'transaction_rejected_bulk',
+                'ip_address' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+            ]);
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => count($transacciones) . ' transacciones rechazadas correctamente'
         ]);
     }
 
@@ -411,14 +336,55 @@ class AdminController extends Controller
     {
         $user = Auth::user();
 
-        $query = PaymentTransaction::with(['user', 'ally']);
+        // Optimización: Cargar solo los campos necesarios
+        $query = PaymentTransaction::with([
+            'user:id,name,email,phone1',
+            'ally:id,company_name,contact_email,contact_phone'
+        ]);
 
-        // Si NO es admin, asegurar que sea su transacción
-        if ($user->user_type !== 'admin') {
-            $query->where('ally_id', $user->id);
+        // Aplicar filtros de seguridad según el rol
+        if ($user->role === 'admin') {
+            // Admin puede ver cualquier comprobante
+            // No se aplica filtro adicional
+        } elseif ($user->role === 'aliado') {
+            // Aliado solo puede ver comprobantes de sus transacciones
+            $ally = Ally::where('user_id', $user->id)->first(['id']);
+
+            if (!$ally) {
+                abort(403, 'No tienes permiso para ver este comprobante');
+            }
+
+            $query->where('ally_id', $ally->id);
+        } else {
+            // Usuario normal solo puede ver comprobantes de sus transacciones
+            $query->where('user_id', $user->id);
         }
 
+        // Buscar la transacción
         $transaccion = $query->findOrFail($id);
+
+        // Verificar permisos específicos (doble verificación)
+        if ($user->role !== 'admin') {
+            $ally = Ally::where('user_id', $user->id)->first();
+
+            // Para aliados, verificar que la transacción les pertenece
+            if ($user->role === 'aliado' && (!$ally || $transaccion->ally_id !== $ally->id)) {
+                abort(403, 'No tienes permiso para ver este comprobante');
+            }
+
+            // Para usuarios normales, verificar que la transacción les pertenece
+            if ($user->role !== 'aliado' && $transaccion->user_id !== $user->id) {
+                abort(403, 'No tienes permiso para ver este comprobante');
+            }
+        }
+
+        // Registrar en logs que se generó un comprobante (opcional)
+        Log::info('Comprobante generado', [
+            'user_id' => $user->id,
+            'user_role' => $user->role,
+            'transaction_id' => $transaccion->id,
+            'ip' => request()->ip()
+        ]);
 
         return view('Admin.transacciones.comprobante', compact('transaccion'));
     }
@@ -436,12 +402,12 @@ class AdminController extends Controller
         $query = PaymentTransaction::with(['user', 'ally']);
 
         // Si NO es admin, filtrar solo sus transacciones
-        if ($user->user_type !== 'admin') {
+        if ($user->role !== 'admin') {
             $query->where('ally_id', $user->id);
         }
 
         // Si es admin y seleccionó un aliado específico
-        if ($user->user_type === 'admin' && $request->has('ally_id') && $request->ally_id) {
+        if ($user->role === 'admin' && $request->has('ally_id') && $request->ally_id) {
             $query->where('ally_id', $request->ally_id);
         }
 
@@ -478,7 +444,7 @@ class AdminController extends Controller
         fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
 
         // Definir encabezados según el rol
-        if ($user->user_type === 'admin') {
+        if ($user->role === 'admin') {
             $headers = [
                 'ID',
                 'Fecha',
@@ -519,7 +485,7 @@ class AdminController extends Controller
 
         // Escribir datos
         foreach ($transacciones as $t) {
-            if ($user->user_type === 'admin') {
+            if ($user->role === 'admin') {
                 $row = [
                     $t->id,
                     $t->created_at->format('d/m/Y'),

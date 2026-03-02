@@ -1,22 +1,24 @@
-{{-- resources/views/Admin/transacciones/partials/detalle-modal.blade.php --}}
-<div class="transaction-detail">
-    <div class="detail-header">
-        <span class="detail-id">Transacción #{{ $transaccion->id }}</span>
-        <span class="detail-date">{{ $transaccion->created_at->format('d/m/Y H:i:s') }}</span>
-    </div>
-    
-    <div class="detail-sections">
-        {{-- Información general --}}
-        <div class="detail-section">
-            <h3>Información General</h3>
-            <div class="detail-grid">
-                <div class="detail-item">
-                    <span class="detail-label">Código de Referencia:</span>
-                    <span class="detail-value">{{ $transaccion->reference_code }}</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">Estado:</span>
-                    <span class="status-badge-modern badge-{{ $transaccion->status }}">
+<div class="transaction-detail-modal">
+    {{-- Información básica - Siempre visible --}}
+    <div class="detail-section">
+        <h4><i class="fa-solid fa-circle-info"></i> Información Básica</h4>
+        <div class="info-grid">
+            <div class="info-item">
+                <span class="label">ID:</span>
+                <span class="value">#{{ $transaccion->id }}</span>
+            </div>
+            <div class="info-item">
+                <span class="label">Referencia:</span>
+                <span class="value"><code>{{ $transaccion->reference_code }}</code></span>
+            </div>
+            <div class="info-item">
+                <span class="label">Fecha:</span>
+                <span class="value">{{ $transaccion->created_at->format('d/m/Y H:i') }}</span>
+            </div>
+            <div class="info-item">
+                <span class="label">Estado:</span>
+                <span class="value">
+                    <span class="status-badge status-{{ $transaccion->status }}">
                         @switch($transaccion->status)
                             @case('confirmed') ✅ Confirmada @break
                             @case('awaiting_review') ⏳ En Revisión @break
@@ -25,266 +27,239 @@
                             @default {{ $transaccion->status }}
                         @endswitch
                     </span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">Método de Pago:</span>
-                    <span class="detail-value">
-                        @if($transaccion->payment_method == 'pago_movil') 📱 Pago Móvil
-                        @elseif($transaccion->payment_method == 'transferencia_bancaria') 🏦 Transferencia
-                        @else {{ $transaccion->payment_method }}
-                        @endif
-                    </span>
-                </div>
+                </span>
             </div>
         </div>
-        
-        {{-- Información del usuario --}}
-        <div class="detail-section">
-            <h3>Usuario</h3>
-            <div class="detail-grid">
-                <div class="detail-item">
-                    <span class="detail-label">Nombre:</span>
-                    <span class="detail-value">{{ $transaccion->user->name ?? 'N/A' }}</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">Email:</span>
-                    <span class="detail-value">{{ $transaccion->user->email ?? 'N/A' }}</span>
-                </div>
-            </div>
-        </div>
-        
-        {{-- Información del aliado --}}
-        <div class="detail-section">
-            <h3>Aliado</h3>
-            <div class="detail-grid">
-                <div class="detail-item">
-                    <span class="detail-label">Nombre:</span>
-                    <span class="detail-value">{{ $transaccion->ally->name ?? 'N/A' }}</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">Email:</span>
-                    <span class="detail-value">{{ $transaccion->ally->email ?? 'N/A' }}</span>
-                </div>
-            </div>
-        </div>
-        
-        {{-- Información financiera --}}
-        <div class="detail-section">
-            <h3>Detalles del Pago</h3>
-            <div class="detail-grid financial">
-                <div class="detail-item">
-                    <span class="detail-label">Monto Original:</span>
-                    <span class="detail-value amount">$ {{ number_format($transaccion->original_amount, 0, ',', '.') }}</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">Descuento:</span>
-                    <span class="detail-value">{{ $transaccion->discount_percentage }}%</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">Comisión:</span>
-                    <span class="detail-value commission">$ {{ number_format($transaccion->platform_commission, 0, ',', '.') }}</span>
-                </div>
-                <div class="detail-item">
-                    <span class="detail-label">Neto:</span>
-                    <span class="detail-value neto">$ {{ number_format($transaccion->amount_to_ally, 0, ',', '.') }}</span>
-                </div>
-            </div>
-        </div>
-        
-        @if($transaccion->confirmation_data)
-        <div class="detail-section">
-            <h3>Datos de Confirmación</h3>
-            <pre class="confirmation-data">{{ json_encode($transaccion->confirmation_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
-        </div>
-        @endif
     </div>
-    
-    <div class="detail-footer">
-        <button class="btn-close" onclick="closeModal()">Cerrar</button>
-        @if(in_array($transaccion->status, ['pending_manual_confirmation', 'awaiting_review']) && auth()->user()->user_type === 'admin')
-        <div class="footer-actions">
-            <button class="btn-approve" onclick="aprobarTransaccion({{ $transaccion->id }})">✅ Confirmar</button>
-            <button class="btn-reject" onclick="rechazarTransaccion({{ $transaccion->id }})">❌ Rechazar</button>
+
+    {{-- Montos - Siempre visible --}}
+    <div class="detail-section">
+        <h4><i class="fa-solid fa-coins"></i> Montos</h4>
+        <div class="amounts-grid">
+            <div class="amount-item">
+                <span class="label">Original:</span>
+                <span class="value original">${{ number_format($transaccion->original_amount, 0, ',', '.') }}</span>
+            </div>
+            <div class="amount-item">
+                <span class="label">Descuento:</span>
+                <span class="value">{{ $transaccion->discount_percentage }}%</span>
+            </div>
+            <div class="amount-item">
+                <span class="label">Comisión:</span>
+                <span class="value commission">${{ number_format($transaccion->platform_commission, 0, ',', '.') }}</span>
+            </div>
+            <div class="amount-item">
+                <span class="label">Neto:</span>
+                <span class="value net">${{ number_format($transaccion->amount_to_ally, 0, ',', '.') }}</span>
+            </div>
         </div>
-        @endif
     </div>
+
+    {{-- Usuarios - Siempre visible --}}
+    <div class="detail-section">
+        <h4><i class="fa-solid fa-users"></i> Participantes</h4>
+        <div class="participants-grid">
+            <div class="participant">
+                <span class="participant-label">Usuario:</span>
+                <span class="participant-name">{{ $transaccion->user->name ?? 'N/A' }}</span>
+                <span class="participant-email">{{ $transaccion->user->email ?? '' }}</span>
+            </div>
+            <div class="participant">
+                <span class="participant-label">Aliado:</span>
+                <span class="participant-name">{{ $transaccion->ally->name ?? 'N/A' }}</span>
+                <span class="participant-email">{{ $transaccion->ally->email ?? '' }}</span>
+            </div>
+        </div>
+    </div>
+
+    {{-- Datos de confirmación - Ocultos por defecto --}}
+    @if($transaccion->confirmation_data)
+    <div class="detail-section">
+        <div class="section-header" onclick="toggleConfirmationData()">
+            <h4><i class="fa-solid fa-circle-check"></i> Datos de Confirmación</h4>
+            <i class="fa-solid fa-chevron-down" id="toggleIcon"></i>
+        </div>
+        <div id="confirmationData" style="display: none;">
+            <pre class="json-data">{{ json_encode($transaccion->confirmation_data, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
+        </div>
+    </div>
+    @endif
 </div>
 
 <style>
-.transaction-detail {
-    color: #1e293b;
-}
-
-.detail-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-bottom: 15px;
-    margin-bottom: 20px;
-    border-bottom: 1px solid #e9eef2;
-}
-
-.detail-id {
-    font-size: 1.1rem;
-    font-weight: 600;
-    color: #A601B3;
-}
-
-.detail-date {
-    font-size: 0.9rem;
-    color: #64748b;
+.transaction-detail-modal {
+    padding: 0.5rem;
 }
 
 .detail-section {
-    margin-bottom: 25px;
-}
-
-.detail-section h3 {
-    font-size: 1rem;
-    color: #1e293b;
-    margin-bottom: 15px;
-    padding-bottom: 5px;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
     border-bottom: 1px solid #e9eef2;
-    font-weight: 600;
 }
 
-.detail-grid {
+.detail-section:last-child {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.detail-section h4 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1e293b;
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.detail-section h4 i {
+    color: #A601B3;
+    font-size: 1rem;
+}
+
+.info-grid, .amounts-grid {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
-    gap: 15px;
+    gap: 1rem;
 }
 
-.detail-item {
+.info-item, .amount-item {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 0.3rem;
 }
 
-.detail-item.full-width {
-    grid-column: 1 / -1;
-}
-
-.detail-label {
-    font-size: 0.8rem;
+.info-item .label, .amount-item .label {
+    font-size: 0.75rem;
     color: #64748b;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
+    letter-spacing: 0.3px;
 }
 
-.detail-value {
-    font-size: 0.95rem;
+.info-item .value {
+    font-size: 0.9rem;
     color: #1e293b;
     font-weight: 500;
 }
 
-.detail-value.amount {
+.amount-item .value.original {
     color: #10b981;
     font-weight: 600;
 }
 
-.detail-value.commission {
+.amount-item .value.commission {
     color: #f59e0b;
     font-weight: 600;
 }
 
-.detail-value.neto {
+.amount-item .value.net {
     color: #A601B3;
-    font-weight: 600;
+    font-weight: 700;
 }
 
-.status-badge-modern {
+.participants-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.participant {
+    background: #f8fafc;
+    padding: 0.8rem;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.participant-label {
+    font-size: 0.7rem;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+}
+
+.participant-name {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+.participant-email {
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    cursor: pointer;
+    padding: 0.5rem 0;
+}
+
+.section-header:hover h4 {
+    color: #A601B3;
+}
+
+.section-header:hover i {
+    color: #A601B3;
+}
+
+.json-data {
+    background: #1e293b;
+    color: #e2e8f0;
+    padding: 1rem;
+    border-radius: 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.75rem;
+    line-height: 1.4;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    margin: 0.5rem 0 0;
+}
+
+.status-badge {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    padding: 0.4rem 1rem;
+    gap: 0.3rem;
+    padding: 0.3rem 0.8rem;
     border-radius: 30px;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 600;
 }
 
-.badge-confirmed {
+.status-confirmed {
     background: #d1fae5;
     color: #065f46;
 }
 
-.badge-awaiting_review, .badge-pending_manual_confirmation {
+.status-awaiting_review,
+.status-pending_manual_confirmation {
     background: #fef3c7;
     color: #92400e;
 }
 
-.badge-failed {
+.status-failed {
     background: #fee2e2;
     color: #991b1b;
 }
-
-.confirmation-data {
-    background: #f8fafc;
-    padding: 15px;
-    border-radius: 10px;
-    font-family: monospace;
-    font-size: 0.85rem;
-    color: #1e293b;
-    overflow-x: auto;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-}
-
-.detail-footer {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-top: 25px;
-    padding-top: 15px;
-    border-top: 1px solid #e9eef2;
-}
-
-.btn-close {
-    padding: 10px 25px;
-    background: #f1f5f9;
-    border: 1px solid #e9eef2;
-    border-radius: 10px;
-    color: #1e293b;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    font-weight: 500;
-}
-
-.btn-close:hover {
-    background: #e2e8f0;
-}
-
-.footer-actions {
-    display: flex;
-    gap: 10px;
-}
-
-.btn-approve,
-.btn-reject {
-    padding: 10px 20px;
-    border: none;
-    border-radius: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.btn-approve {
-    background: linear-gradient(135deg, #10b981, #059669);
-    color: white;
-}
-
-.btn-approve:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(16, 185, 129, 0.3);
-}
-
-.btn-reject {
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-    color: white;
-}
-
-.btn-reject:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 5px 15px rgba(239, 68, 68, 0.3);
-}
 </style>
+
+<script>
+function toggleConfirmationData() {
+    const content = document.getElementById('confirmationData');
+    const icon = document.getElementById('toggleIcon');
+    
+    if (content.style.display === 'none') {
+        content.style.display = 'block';
+        icon.classList.remove('fa-chevron-down');
+        icon.classList.add('fa-chevron-up');
+    } else {
+        content.style.display = 'none';
+        icon.classList.remove('fa-chevron-up');
+        icon.classList.add('fa-chevron-down');
+    }
+}
+</script>

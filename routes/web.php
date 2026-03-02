@@ -8,8 +8,11 @@ use App\Http\Controllers\Admin\DashboardController;
 use App\Http\Controllers\Admin\BannerController;
 use App\Http\Controllers\Admin\CommercialAllyController;
 use App\Http\Controllers\Admin\PromotionController;
+use Illuminate\Illuminate\Support\Facades\Auth;
 use App\Http\Controllers\AllyController;
 use App\Http\Controllers\UserController;
+use App\Http\Controllers\Auth\AuthenticatedSessionController;
+use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\RumberoAIController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\PayoutController;
@@ -19,6 +22,7 @@ use App\Http\Controllers\PayoutController;
 | RUTAS PÚBLICAS - LANDING PAGE
 |--------------------------------------------------------------------------
 */
+
 Route::get('/', [PageController::class, 'index'])->name('welcome');
 Route::get('/about', [PageController::class, 'about'])->name('about');
 Route::get('/demo', [PageController::class, 'demo'])->name('demo');
@@ -64,10 +68,10 @@ Route::get('/test-chat', function () {
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth'])->group(function () {
-    
+
     // Dashboard (requiere verificación de email)
     Route::middleware(['verified'])->get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    
+
     // Perfil de usuario
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
@@ -80,22 +84,30 @@ Route::middleware(['auth'])->group(function () {
 | RUTAS DE ADMIN (Protegidas con middleware admin usando la clase directamente)
 |--------------------------------------------------------------------------
 */
+
+
+// ✅ RUTAS 2FA - AGREGAR AQUÍ
+Route::get('/2fa/verify', [AuthenticatedSessionController::class, 'showTwoFactorForm'])->name('2fa.verify');
+Route::post('/2fa/verify', [AuthenticatedSessionController::class, 'verifyTwoFactor'])->name('2fa.verify.post');
+
+
 Route::prefix('admin')
     ->middleware(['auth', \App\Http\Middleware\AdminMiddleware::class])
     ->name('admin.')
     ->group(function () {
-        
+
         // ===========================================
         // CONFIGURACIÓN Y 2FA
         // ===========================================
-        Route::get('/settings', [AdminController::class, 'settings'])->name('settings');
-        Route::post('/settings/password', [AdminController::class, 'changePassword'])->name('password.change');
-        Route::post('/toggle-two-factor', [AdminController::class, 'toggleTwoFactor'])->name('toggleTwoFactor');
-        Route::post('/verify-two-factor', [AdminController::class, 'verifyTwoFactor'])->name('verifyTwoFactor');
-        Route::post('/generate-backup-codes', [AdminController::class, 'generateNewBackupCodes'])->name('generateBackupCodes');
-        Route::post('/update-notifications', [AdminController::class, 'updateNotificationPreferences'])->name('updateNotifications');
-        Route::post('/update-dark-mode', [AdminController::class, 'updateDarkMode'])->name('updateDarkMode');
-        
+        // Configuración
+        Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
+        Route::post('/settings/change-password', [SettingsController::class, 'changePassword'])->name('settings.change-password');
+        Route::post('/settings/toggle-two-factor', [SettingsController::class, 'toggleTwoFactor'])->name('settings.toggle-two-factor');
+        Route::post('/settings/verify-two-factor', [SettingsController::class, 'verifyTwoFactor'])->name('settings.verify-two-factor');
+        Route::post('/settings/generate-backup-codes', [SettingsController::class, 'generateBackupCodes'])->name('settings.generate-backup-codes');
+        Route::post('/settings/update-notifications', [SettingsController::class, 'updateNotifications'])->name('settings.update-notifications');
+        Route::post('/settings/update-dark-mode', [SettingsController::class, 'updateDarkMode'])->name('settings.update-dark-mode');
+
         // ===========================================
         // GESTIÓN DE USUARIOS (UserController)
         // ===========================================
@@ -108,7 +120,7 @@ Route::prefix('admin')
             Route::put('/{user}', [UserController::class, 'update'])->name('update');
             Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy');
         });
-        
+
         // ===========================================
         // GESTIÓN DE ALIADOS (AllyController)
         // ===========================================
@@ -121,10 +133,10 @@ Route::prefix('admin')
             Route::put('/{ally}', [AllyController::class, 'updateAlly'])->name('update');
             Route::delete('/{ally}', [AllyController::class, 'destroyAlly'])->name('destroy');
         });
-        
+
         // Utilidad para subcategorías
         Route::get('/get-subcategories', [AllyController::class, 'getSubcategories'])->name('get.subcategories');
-        
+
         // ===========================================
         // REPORTES DE VENTAS
         // ===========================================
@@ -135,7 +147,7 @@ Route::prefix('admin')
             Route::get('/sales/preview', [ReportController::class, 'exportSalesPreview'])->name('preview');
             Route::get('/sales/metrics', [ReportController::class, 'dashboardMetrics'])->name('metrics');
         });
-        
+
         // ===========================================
         // MÓDULOS DE CONTENIDO (Banners, Aliados Comerciales, Promociones)
         // ===========================================
@@ -143,12 +155,12 @@ Route::prefix('admin')
         Route::resource('banners', BannerController::class);
         Route::resource('commercial-allies', CommercialAllyController::class);
         Route::resource('promotions', PromotionController::class);
-        
+
         // ===========================================
         // PAYOUTS (TODAS LAS RUTAS UNIFICADAS)
         // ===========================================
         Route::prefix('payouts')->name('payouts.')->group(function () {
-            
+
             // VISTAS PRINCIPALES
             Route::get('/', [PayoutController::class, 'index'])->name('index');
             Route::get('/pendientes', [PayoutController::class, 'pendientes'])->name('pendientes');
@@ -157,13 +169,13 @@ Route::prefix('admin')
             Route::get('/archivos', [PayoutController::class, 'listarArchivos'])->name('archivos');
             Route::get('/lotes', [PayoutController::class, 'lotes'])->name('lotes');
             Route::get('/resumen-aliado', [PayoutController::class, 'resumenPorAliado'])->name('resumen-aliado');
-            
+
             // CRUD
             Route::get('/{payoutId}', [PayoutController::class, 'show'])->name('show');
             Route::get('/{payoutId}/edit', [PayoutController::class, 'edit'])->name('edit');
             Route::put('/{payoutId}', [PayoutController::class, 'update'])->name('update');
             Route::get('/{payoutId}/auditoria', [PayoutController::class, 'auditoria'])->name('auditoria');
-            
+
             // ACCIONES POST
             Route::post('/generar-bnc', [PayoutController::class, 'generarArchivoBNC'])->name('generar-bnc');
             Route::post('/confirmar', [PayoutController::class, 'confirmarPagos'])->name('confirmar');
@@ -173,17 +185,17 @@ Route::prefix('admin')
             Route::post('/{payoutId}/confirmar-individual', [PayoutController::class, 'confirmarPagoIndividual'])->name('confirmar-individual');
             Route::post('/simular-confirmacion', [PayoutController::class, 'simularConfirmacion'])->name('simular-confirmacion');
             Route::get('/payouts/resumen-aliado/{aliadoId}/detalle', [PayoutController::class, 'detalleAliadoJson'])->name('payouts.detalle-aliado-json');
-            Route::delete('admin/payouts/{payoutId}', [PayoutController::class, 'destroy'])->name('destroy');            
+            Route::delete('admin/payouts/{payoutId}', [PayoutController::class, 'destroy'])->name('destroy');
             // DESCARGAS Y ARCHIVOS
             Route::get('/descargar-bnc/{archivo}', [PayoutController::class, 'descargarArchivoBNC'])->name('descargar-bnc');
             Route::delete('/archivos/{archivo}', [PayoutController::class, 'eliminarArchivo'])->name('eliminar-archivo');
-            
+
             // AJAX / JSON
             Route::get('/datos-graficos', [PayoutController::class, 'datosGraficos'])->name('datos-graficos');
             Route::get('/buscar', [PayoutController::class, 'buscar'])->name('buscar');
             Route::get('/stats', [PayoutController::class, 'getStats'])->name('stats');
             Route::get('/exportar-reporte', [PayoutController::class, 'exportarReporte'])->name('exportar-reporte');
-            
+
             // POR ALIADO
             Route::get('/aliado/{aliadoId}', [PayoutController::class, 'porAliado'])->name('por-aliado');
         });
@@ -195,25 +207,36 @@ Route::prefix('admin')
 |--------------------------------------------------------------------------
 */
 Route::middleware(['auth'])->prefix('transacciones')->name('transacciones.')->group(function () {
-    
+
     // Rutas principales (usando controlador)
     Route::get('/', [AdminController::class, 'transaccionesIndex'])->name('index');
     Route::get('/mis-transacciones', [AdminController::class, 'transaccionesIndex'])->name('mis-transacciones');
     Route::get('/exportar', [AdminController::class, 'transaccionesExportar'])->name('exportar');
-    
+
     // Rutas con parámetros
     Route::get('/{id}/detalle', [AdminController::class, 'transaccionDetalle'])->name('detalle')->where('id', '[0-9]+');
-    
+
+    // 👇 CORREGIDA: Sin el prefijo 'admin/transacciones' adicional
     Route::get('/{id}/comprobante', [AdminController::class, 'transaccionComprobante'])->name('comprobante')->where('id', '[0-9]+');
-    
+
     // Acciones de admin (requieren admin)
     Route::middleware([\App\Http\Middleware\AdminMiddleware::class])->group(function () {
-        
         Route::post('/{id}/aprobar', [AdminController::class, 'transaccionAprobar'])->name('aprobar')->where('id', '[0-9]+');
-        
         Route::post('/{id}/rechazar', [AdminController::class, 'transaccionRechazar'])->name('rechazar')->where('id', '[0-9]+');
+
+        // 👇 CORREGIDAS: Quitar 'transacciones/' del path porque ya estamos en prefijo 'transacciones'
+        Route::post('/aprobar-masivas', [AdminController::class, 'aprobarMasivas'])->name('aprobar-masivas');
+        Route::post('/rechazar-masivas', [AdminController::class, 'rechazarMasivas'])->name('rechazar-masivas');
     });
 });
+
+// Rutas de pruebas
+
+Route::get('/admin/settings/test-2fa', [SettingsController::class, 'testCurrentCode'])->name('settings.test-2fa');
+
+Route::get('/test-success', function() {
+    return '✅ Login exitoso! Usuario: ' . Auth::user()->email . ' ID: ' . Auth::id();
+})->middleware('auth');
 
 /*
 |--------------------------------------------------------------------------
