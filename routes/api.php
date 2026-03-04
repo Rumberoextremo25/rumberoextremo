@@ -101,6 +101,8 @@ Route::middleware('auth:sanctum')->group(function () {
     });
 });
 
+
+/***********
 // ===========================================
 // RUTAS DE DESARROLLO / DEBUG
 // ===========================================
@@ -205,22 +207,6 @@ if (app()->environment('local', 'development')) {
             ], 500);
         }
     })->name('api.legacy-compatibility');
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
 
     // API de debug 2FA - SIN AUTENTICACIÓN (SOLO LOCAL)
     /*****  Route::prefix('debug-2fa')->group(function () {
@@ -356,5 +342,5 @@ if (app()->environment('local', 'development')) {
             }
         });
     });
-    ****************/
 }
+***************/

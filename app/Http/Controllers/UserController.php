@@ -2,10 +2,11 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User; // Make sure to import your User model
+use App\Http\Controllers\Controller;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rule; // Don't forget this for the Rule::in and Rule::unique
+use Illuminate\Validation\Rule;
 
 class UserController extends Controller
 {
@@ -14,9 +15,7 @@ class UserController extends Controller
      */
     public function usersIndex()
     {
-        $users = User::all();
         $users = User::paginate(5); // 5 usuarios por página
-        // Asegúrate de que la vista exista en resources/views/Admin/usuario/users.blade.php
         return view('Admin.usuario.users', compact('users'));
     }
 
@@ -25,7 +24,6 @@ class UserController extends Controller
      */
     public function create()
     {
-        // Asegúrate de que la vista exista en resources/views/Admin/usuario/add-user.blade.php
         return view('Admin.usuario.add-user');
     }
 
@@ -40,15 +38,13 @@ class UserController extends Controller
             'lastname' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
-            // 'user_type' en el formulario se mapeará a la columna 'role' en la DB
             'user_type' => ['required', 'string', Rule::in(['comun', 'aliado', 'afiliado', 'admin'])],
-            // 'phone1' en el formulario se mapeará a la columna 'phone1' en la DB
             'phone1' => ['nullable', 'string', 'max:20'],
             'status' => ['required', 'string', Rule::in(['activo', 'inactivo', 'pendiente'])],
             'registrationDate' => ['required', 'date'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ], [
-            // Mensajes de error personalizados (¡están perfectos!)
+            // Mensajes de error personalizados
             'firstname.required' => 'El campo Nombre es obligatorio.',
             'lastname.required' => 'El campo Apellido es obligatorio.',
             'email.required' => 'El campo Correo Electrónico es obligatorio.',
@@ -67,24 +63,21 @@ class UserController extends Controller
             'notes.max' => 'Las notas no pueden exceder los :max caracteres.',
         ]);
 
+        // 2. Crear nuevo usuario
         $user = new User();
-        $user->firstname = $request->firstname; // Corrected to use $request->firstname (lowercase) to match validation and common naming
-        $user->lastname = $request->lastname;   // Corrected to use $request->lastname (lowercase)
+        $user->firstname = $request->firstname;
+        $user->lastname = $request->lastname;
         $user->email = $request->email;
         $user->password = Hash::make($request->password);
-
-        $user->role = $request->user_type; // Corrected to use $request->user_type (lowercase) to match validation
-
+        $user->role = $request->user_type;
         $user->phone1 = $request->phone1;
-
         $user->status = $request->status;
         $user->registration_date = $request->registrationDate;
         $user->notes = $request->notes;
-
         $user->save();
 
-        // Redirect to the users index page, using a named route
-        return redirect()->route('admin.users.store')->with('success', 'Usuario creado exitosamente.');
+        // 3. Redireccionar al índice con mensaje de éxito
+        return redirect()->route('admin.users.index')->with('success', 'Usuario creado exitosamente.');
     }
 
     /**
@@ -92,7 +85,6 @@ class UserController extends Controller
      */
     public function show(User $user)
     {
-        // Asegúrate de que la vista exista en resources/views/Admin/usuario/show.blade.php
         return view('Admin.usuario.show', compact('user'));
     }
 
@@ -101,7 +93,6 @@ class UserController extends Controller
      */
     public function edit(User $user)
     {
-        // Asegúrate de que la vista exista en resources/views/Admin/usuario/edit.blade.php
         return view('Admin.usuario.edit', compact('user'));
     }
 
@@ -122,15 +113,13 @@ class UserController extends Controller
                 Rule::unique('users')->ignore($user->id),
             ],
             'password' => ['nullable', 'string', 'min:8', 'confirmed'],
-            // 'user_type' en el formulario se mapeará a la columna 'role' en la DB
             'user_type' => ['required', 'string', Rule::in(['comun', 'aliado', 'afiliado', 'admin'])],
-            // 'phone1' en el formulario se mapeará a la columna 'phone1' en la DB
             'phone1' => ['nullable', 'string', 'max:20'],
             'status' => ['required', 'string', Rule::in(['activo', 'inactivo', 'pendiente'])],
             'registrationDate' => ['required', 'date'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ], [
-            // Mensajes de error personalizados (están correctos)
+            // Mensajes de error personalizados
             'firstname.required' => 'El campo Nombre es obligatorio.',
             'lastname.required' => 'El campo Apellido es obligatorio.',
             'email.required' => 'El campo Correo Electrónico es obligatorio.',
@@ -148,26 +137,25 @@ class UserController extends Controller
             'notes.max' => 'Las notas no pueden exceder los :max caracteres.',
         ]);
 
-        $user->firstname = $request->firstname; // Corrected to use $request->firstname
-        $user->lastname = $request->lastname;   // Corrected to use $request->lastname
+        // 2. Actualizar datos del usuario
+        $user->firstname = $request->firstname;
+        $user->lastname = $request->lastname;
         $user->email = $request->email;
 
+        // Solo actualizar contraseña si se proporcionó una nueva
         if ($request->filled('password')) {
             $user->password = Hash::make($request->password);
         }
 
-        $user->role = $request->user_type; // Corrected to use $request->user_type
-
+        $user->role = $request->user_type;
         $user->phone1 = $request->phone1;
-
         $user->status = $request->status;
         $user->registration_date = $request->registrationDate;
         $user->notes = $request->notes;
-
         $user->save();
 
-        // Redirect to the users index page, using a named route
-        return redirect()->route('admin.users.update')->with('success', 'Usuario actualizado exitosamente.');
+        // 3. Redireccionar al índice con mensaje de éxito
+        return redirect()->route('admin.users.index')->with('success', 'Usuario actualizado exitosamente.');
     }
 
     /**
@@ -175,9 +163,10 @@ class UserController extends Controller
      */
     public function destroy(User $user)
     {
+        // Eliminar el usuario
         $user->delete();
 
-        // CORREGIDO: Redirigir al índice (no necesita parámetros)
+        // Redireccionar al índice con mensaje de éxito
         return redirect()->route('admin.users.index')->with('success', 'Usuario eliminado exitosamente.');
     }
 }
