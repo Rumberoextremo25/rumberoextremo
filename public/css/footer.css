@@ -69,153 +69,66 @@
 }
 
 /* Estilos para el botón de descarga en el footer */
-/* ===== ESTILOS FORZADOS PARA BOTÓN DE DESCARGA ===== */
-.footer-download-wrapper {
-    margin-top: 25px !important;
-    text-align: left !important;
+.download-container {
+    margin-top: 25px;
 }
 
-.footer-download-btn {
-    display: inline-flex !important;
-    align-items: center !important;
-    background: linear-gradient(135deg, #1a1f2e 0%, #2a3142 100%) !important;
-    padding: 12px 24px !important;
-    border-radius: 100px !important;
-    text-decoration: none !important;
-    color: white !important;
-    font-family: inherit !important;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
-    border: 1px solid rgba(255, 255, 255, 0.1) !important;
-    box-shadow: 0 10px 20px -5px rgba(0, 0, 0, 0.3) !important;
-    position: relative !important;
-    overflow: hidden !important;
-    width: 100% !important;
-    max-width: 260px !important;
+.download-btn-modern {
+    display: flex;
+    align-items: center;
+    background: linear-gradient(145deg, #0f172a, #1e293b);
+    padding: 10px 20px;
+    border-radius: 16px;
+    text-decoration: none;
+    color: white;
+    border: 1px solid rgba(74, 222, 128, 0.2);
+    box-shadow: 0 10px 20px -10px rgba(0, 0, 0, 0.5);
+    transition: all 0.3s ease;
+    max-width: 260px;
+    position: relative;
 }
 
-.footer-download-btn::before {
-    content: '' !important;
-    position: absolute !important;
-    top: 0 !important;
-    left: -100% !important;
-    width: 100% !important;
-    height: 100% !important;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent) !important;
-    transition: left 0.7s ease !important;
+.download-btn-modern:hover {
+    transform: translateY(-3px);
+    border-color: #4ade80;
+    box-shadow: 0 15px 25px -10px #4ade80;
 }
 
-.footer-download-btn:hover {
-    transform: translateY(-4px) scale(1.02) !important;
-    box-shadow: 0 15px 25px -8px rgba(52, 168, 83, 0.4) !important;
-    background: linear-gradient(135deg, #232837 0%, #333b4f 100%) !important;
-    border-color: rgba(52, 168, 83, 0.4) !important;
+.download-btn-modern i {
+    font-size: 32px;
+    color: #4ade80;
+    margin-right: 15px;
+    filter: drop-shadow(0 2px 5px rgba(74, 222, 128, 0.5));
 }
 
-.footer-download-btn:hover::before {
-    left: 100% !important;
+.btn-content {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
 }
 
-.footer-download-btn i {
-    font-size: 28px !important;
-    margin-right: 12px !important;
-    color: #34a853 !important;
-    filter: drop-shadow(0 3px 6px rgba(52, 168, 83, 0.4)) !important;
-    transition: transform 0.3s ease !important;
+.btn-sub {
+    font-size: 10px;
+    text-transform: uppercase;
+    opacity: 0.8;
+    letter-spacing: 1px;
 }
 
-.footer-download-btn:hover i {
-    transform: rotate(5deg) scale(1.1) !important;
+.btn-main {
+    font-size: 18px;
+    font-weight: 700;
+    line-height: 1.2;
 }
 
-/* ===== ESTILOS FORZADOS PARA EL TEXTO ===== */
-.footer-download-btn .download-text {
-    display: flex !important;
-    flex-direction: column !important;
-    text-align: left !important;
-    margin-right: 10px !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    position: relative !important;
-    z-index: 10 !important;
-}
-
-/* Estilos para los spans DENTRO de download-text (sin importar qué clase tengan) */
-.footer-download-btn .download-text span {
-    display: block !important;
-    color: #ffffff !important;
-    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5) !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-    line-height: 1.2 !important;
-}
-
-/* Primer span (texto superior: "DESCARGALA YA" o "DESCARGA YA") */
-.footer-download-btn .download-text span:first-child {
-    font-size: 10px !important;
-    letter-spacing: 1px !important;
-    font-weight: 400 !important;
-    text-transform: uppercase !important;
-    opacity: 0.9 !important;
-    margin-bottom: 2px !important;
-}
-
-/* Segundo span (texto inferior: "APP Oficial" o "APK Oficial") */
-.footer-download-btn .download-text span:last-child {
-    font-size: 18px !important;
-    font-weight: 700 !important;
-    letter-spacing: -0.2px !important;
-}
-
-/* ===== SOPORTE PARA CLASES ESPECÍFICAS (por si acaso) ===== */
-.small-download,
-.small-download2,
-.small-download3 {
-    font-size: 10px !important;
-    letter-spacing: 1px !important;
-    font-weight: 400 !important;
-    text-transform: uppercase !important;
-    opacity: 0.9 !important;
-    color: #ffffff !important;
-    display: block !important;
-}
-
-.large-download,
-.large-download2,
-.large-download3 {
-    font-size: 18px !important;
-    font-weight: 700 !important;
-    color: #ffffff !important;
-    display: block !important;
-}
-
-/* ===== VERSION BADGE ===== */
-.version-badge {
-    background: linear-gradient(135deg, #34a853, #2d8e47) !important;
-    padding: 3px 8px !important;
-    border-radius: 50px !important;
-    font-size: 10px !important;
-    font-weight: 700 !important;
-    box-shadow: 0 3px 8px rgba(52, 168, 83, 0.4) !important;
-    border: 1px solid rgba(255, 255, 255, 0.2) !important;
-    margin-left: auto !important;
-    color: white !important;
-    display: inline-block !important;
-}
-
-/* ===== RESPONSIVE ===== */
-@media (max-width: 768px) {
-    .footer-download-btn {
-        max-width: 100% !important;
-        justify-content: center !important;
-    }
-    
-    .footer-download-wrapper {
-        text-align: center !important;
-    }
-    
-    .footer-download-btn .download-text span:last-child {
-        font-size: 16px !important;
-    }
+.btn-badge {
+    background: #4ade80;
+    color: #0f172a;
+    font-size: 10px;
+    font-weight: 800;
+    padding: 3px 8px;
+    border-radius: 20px;
+    margin-left: 10px;
+    text-transform: uppercase;
 }
 
 /* Responsive */

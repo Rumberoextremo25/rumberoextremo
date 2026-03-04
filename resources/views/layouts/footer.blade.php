@@ -19,16 +19,15 @@
                 Extremo</p>
 
             {{-- BOTÓN DE DESCARGA APK - NUEVA UBICACIÓN --}}
-            <div class="footer-download-wrapper">
+            <div class="download-container">
                 <a href="https://rumbero-extremo-descargas.s3.us-east-1.amazonaws.com/rumbero_extremo.apk"
-                    class="footer-download-btn">
+                    class="download-btn-modern">
                     <i class="fab fa-android"></i>
-                    <span class="download-text">
-                        <span class="download-text">
-                            <span class="small-download">DESCARGALA YA</span> <!-- Cambiado -->
-                            <span class="large-download">APP Oficial</span> <!-- Cambiado -->
-                        </span>
-                    </span>
+                    <div class="btn-content">
+                        <span class="btn-sub">DESCARGALA YA</span>
+                        <span class="btn-main">APP Oficial</span>
+                    </div>
+                    <span class="btn-badge">NUEVA</span>
                 </a>
             </div>
         </div>

@@ -29,13 +29,14 @@
 
             <a href="https://rumbero-extremo-descargas.s3.us-east-1.amazonaws.com/rumbero_extremo.apk"
                 class="play-store-btn">
+                <i class="fab fa-android"></i>
                 <div class="btn-content">
-                    <i class="fab fa-google-play"></i>
                     <div class="btn-text">
-                        <span class="small-text">DISPONIBLE EN</span>
-                        <span class="large-text">Google Play</span>
+                        <span class="small-text">DESCARGALA YA</span>
+                        <span class="large-text">APP Oficial</span>
                     </div>
                 </div>
+                <span class="version-badge">v2.0</span>
             </a>
         </div>
     </section>

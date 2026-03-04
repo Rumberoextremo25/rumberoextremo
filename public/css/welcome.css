@@ -276,16 +276,17 @@ h3 {
     display: inline-flex;
     align-items: center;
     background: linear-gradient(135deg, #1a1f2e 0%, #2a3142 100%);
-    padding: 14px 32px;
+    padding: 12px 28px;
     border-radius: 100px;
     text-decoration: none;
     color: white;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
     position: relative;
     overflow: hidden;
+    gap: 10px;
 }
 
 .play-store-btn::before {
@@ -300,10 +301,10 @@ h3 {
 }
 
 .play-store-btn:hover {
-    transform: translateY(-4px) scale(1.02);
-    box-shadow: 0 20px 30px -8px rgba(74, 222, 128, 0.3);
+    transform: translateY(-4px);
+    box-shadow: 0 15px 25px -8px rgba(52, 168, 83, 0.4);
     background: linear-gradient(135deg, #232837 0%, #333b4f 100%);
-    border-color: rgba(74, 222, 128, 0.3);
+    border-color: rgba(52, 168, 83, 0.4);
 }
 
 .play-store-btn:hover::before {
@@ -312,10 +313,11 @@ h3 {
 
 .play-store-btn i {
     font-size: 36px;
-    margin-right: 16px;
-    color: #4b07b9;
-    filter: drop-shadow(0 3px 6px rgba(54, 10, 212, 0.4));
+    color: #34a853;
+    filter: drop-shadow(0 3px 6px rgba(52, 168, 83, 0.4));
     transition: transform 0.3s ease;
+    position: relative;
+    z-index: 2;
 }
 
 .play-store-btn:hover i {
@@ -325,6 +327,8 @@ h3 {
 .btn-content {
     display: flex;
     align-items: center;
+    position: relative;
+    z-index: 2;
 }
 
 .btn-text {
@@ -334,18 +338,52 @@ h3 {
 }
 
 .small-text {
-    font-size: 11px;
-    opacity: 0.8;
+    font-size: 10px;
+    opacity: 0.9;
     letter-spacing: 1px;
     font-weight: 400;
     text-transform: uppercase;
 }
 
 .large-text {
-    font-size: 22px;
+    font-size: 20px;
     font-weight: 700;
     line-height: 1.2;
     letter-spacing: -0.2px;
+}
+
+.version-badge {
+    background: linear-gradient(135deg, #34a853, #2d8e47);
+    padding: 4px 10px;
+    border-radius: 50px;
+    font-size: 11px;
+    font-weight: 700;
+    box-shadow: 0 3px 8px rgba(52, 168, 83, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    position: relative;
+    z-index: 2;
+    margin-left: 5px;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .play-store-btn {
+        padding: 10px 20px;
+    }
+    
+    .play-store-btn i {
+        font-size: 30px;
+    }
+    
+    .large-text {
+        font-size: 18px;
+    }
+    
+    .version-badge {
+        font-size: 10px;
+        padding: 3px 8px;
+    }
 }
 
 /*
