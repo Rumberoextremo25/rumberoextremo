@@ -25,9 +25,22 @@ h3 {
     font-weight: 600;
 }
 
-/* ---------------------------------- */
-/* 2. Barra de Navegación           */
-/* ---------------------------------- */
+section {
+    padding: 60px 0;
+}
+
+h2 {
+    font-size: 2.5em;
+    text-align: center;
+    margin-bottom: 40px;
+    color: #5D12D2;
+}
+
+/*
+ * -----------------------------------------------------
+ * Barra de Navegación
+ * -----------------------------------------------------
+ */
 .header {
     background-color: #ffffff;
     padding: 15px 0;
@@ -92,12 +105,7 @@ h3 {
 
 /*
  * -----------------------------------------------------
- * 3. Sección Hero
- * -----------------------------------------------------
- */
-/*
- * -----------------------------------------------------
- * 3. Sección Hero - OPTIMIZADO PARA MÓVILES
+ * Sección Hero
  * -----------------------------------------------------
  */
 .hero {
@@ -109,49 +117,14 @@ h3 {
     border-bottom-left-radius: 50px;
     border-bottom-right-radius: 50px;
     background-image: url('../../assets/img/home/fondo_banner.png');
-
-    /* ESTRATEGIA OPTIMIZADA PARA BACKGROUND */
     background-size: cover;
     background-position: center center;
     background-repeat: no-repeat;
     background-attachment: scroll;
-
-    /* Ajustes para Responsividad */
     display: flex;
     align-items: center;
     justify-content: center;
     min-height: 500px;
-    /* Altura mínima consistente */
-}
-
-/* Media Queries específicas para móviles */
-@media (max-width: 1200px) {
-    .hero {
-        padding: 100px 0;
-        min-height: 450px;
-    }
-}
-
-@media (max-width: 768px) {
-    .hero {
-        padding: 80px 0;
-        min-height: 400px;
-        background-position: top center;
-        /* Enfoca la parte superior en móviles */
-        border-bottom-left-radius: 40px;
-        border-bottom-right-radius: 40px;
-    }
-}
-
-@media (max-width: 480px) {
-    .hero {
-        padding: 60px 20px;
-        min-height: 350px;
-        border-bottom-left-radius: 30px;
-        border-bottom-right-radius: 30px;
-        background-position: center center;
-        /* O top center según tu imagen */
-    }
 }
 
 /* Overlay para mejor legibilidad */
@@ -170,23 +143,6 @@ h3 {
 }
 
 /* Contenido del Hero */
-.hero h1 {
-    font-size: 2.2em;
-    line-height: 1.1;
-    margin: 0 0 15px 0;
-    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
-    position: relative;
-    z-index: 2;
-}
-
-.hero p {
-    font-size: 1.1em;
-    margin-bottom: 30px;
-    max-width: 600px;
-    position: relative;
-    z-index: 2;
-}
-
 .hero .container {
     position: relative;
     z-index: 3;
@@ -196,82 +152,52 @@ h3 {
     margin-left: 10%;
 }
 
-/* Ajustes responsive para el contenido */
-@media (max-width: 1200px) {
-    .hero .container {
-        margin-left: 8%;
-        font-size: 1.3rem;
-    }
+.hero h1 {
+    font-size: 2.2em;
+    line-height: 1.1;
+    margin: 0 0 15px 0;
+    text-shadow: 2px 2px 8px rgba(0, 0, 0, 0.2);
+    position: relative;
+    z-index: 2;
 }
 
-@media (max-width: 768px) {
-    .hero h1 {
-        font-size: 1.8em;
-        text-align: center;
-        line-height: 1.2;
-    }
-
-    .hero p {
-        font-size: 1em;
-        text-align: center;
-        max-width: 100%;
-        line-height: 1.4;
-    }
-
-    .hero .container {
-        margin-left: 5%;
-        margin-right: 5%;
-        text-align: center;
-        font-size: 1.1rem;
-    }
-}
-
-@media (max-width: 480px) {
-    .hero h1 {
-        font-size: 1.6em;
-        margin-bottom: 12px;
-    }
-
-    .hero p {
-        font-size: 0.95em;
-        margin-bottom: 25px;
-    }
-
-    .hero .container {
-        margin-left: 0;
-        margin-right: 0;
-        font-size: 1rem;
-    }
+.hero h3 {
+    font-size: 1.3em;
+    margin-bottom: 30px;
+    max-width: 600px;
+    position: relative;
+    z-index: 2;
+    font-weight: 400;
 }
 
 .cta-button-banner {
     display: inline-block;
-    background-color: #3004E1;
+    background: linear-gradient(90deg, #3004E1, #A601B3);
+    color: white;
     padding: 15px 30px;
     border-radius: 50px;
     font-weight: 600;
     text-decoration: none;
     transition: all 0.3s ease;
-    box-shadow: 0 8px 20px rgba(232, 63, 111, 0.4);
+    box-shadow: 0 8px 20px rgba(166, 1, 179, 0.4);
     position: relative;
     z-index: 2;
+    margin-right: 20px;
+    margin-bottom: 15px;
 }
 
 .cta-button-banner:hover {
     transform: translateY(-3px);
-    background-color: #A601B3;
+    background: linear-gradient(90deg, #A601B3, #3004E1);
     color: #ffffff;
+    box-shadow: 0 12px 25px rgba(166, 1, 179, 0.5);
 }
 
-/* Ajustes del botón para móviles */
-@media (max-width: 768px) {
-    .cta-button-banner {
-        padding: 12px 25px;
-        font-size: 0.95em;
-    }
-}
-
-
+/*
+ * -----------------------------------------------------
+ * Botón APK Original (Descarga Directa)
+ * -----------------------------------------------------
+ */
 .play-store-btn {
     display: inline-flex;
     align-items: center;
@@ -287,6 +213,7 @@ h3 {
     position: relative;
     overflow: hidden;
     gap: 10px;
+    vertical-align: middle;
 }
 
 .play-store-btn::before {
@@ -324,20 +251,20 @@ h3 {
     transform: rotate(5deg) scale(1.1);
 }
 
-.btn-content {
+.play-store-btn .btn-content {
     display: flex;
     align-items: center;
     position: relative;
     z-index: 2;
 }
 
-.btn-text {
+.play-store-btn .btn-text {
     display: flex;
     flex-direction: column;
     text-align: left;
 }
 
-.small-text {
+.play-store-btn .small-text {
     font-size: 10px;
     opacity: 0.9;
     letter-spacing: 1px;
@@ -345,7 +272,7 @@ h3 {
     text-transform: uppercase;
 }
 
-.large-text {
+.play-store-btn .large-text {
     font-size: 20px;
     font-weight: 700;
     line-height: 1.2;
@@ -366,42 +293,167 @@ h3 {
     margin-left: 5px;
 }
 
-/* Responsive */
-@media (max-width: 480px) {
-    .play-store-btn {
-        padding: 10px 20px;
-    }
-    
-    .play-store-btn i {
-        font-size: 30px;
-    }
-    
-    .large-text {
-        font-size: 18px;
-    }
-    
-    .version-badge {
-        font-size: 10px;
-        padding: 3px 8px;
-    }
+/*
+ * -----------------------------------------------------
+ * Contenedor de Botones de Tiendas
+ * -----------------------------------------------------
+ */
+.app-buttons-container {
+    display: flex;
+    gap: 20px;
+    justify-content: flex-start;
+    align-items: center;
+    margin-top: 30px;
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 2;
 }
 
 /*
  * -----------------------------------------------------
- * 4. Secciones de Contenido
+ * Botones de Tiendas (AMBOS "PRÓXIMAMENTE")
  * -----------------------------------------------------
  */
-section {
-    padding: 60px 0;
+.store-btn {
+    display: inline-flex;
+    align-items: center;
+    background: linear-gradient(135deg, #1a1f2e 0%, #2a3142 100%);
+    padding: 12px 28px;
+    border-radius: 100px;
+    text-decoration: none;
+    color: white;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    position: relative;
+    overflow: hidden;
+    gap: 10px;
+    min-width: 220px;
 }
 
-h2 {
-    font-size: 2.5em;
-    text-align: center;
-    margin-bottom: 40px;
-    color: #5D12D2;
+.store-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.7s ease;
 }
 
+.store-btn i {
+    font-size: 36px;
+    filter: drop-shadow(0 3px 6px rgba(255, 255, 255, 0.2));
+    transition: transform 0.3s ease;
+    position: relative;
+    z-index: 2;
+}
+
+.store-btn .btn-content {
+    display: flex;
+    align-items: center;
+    position: relative;
+    z-index: 2;
+    flex: 1;
+}
+
+.store-btn .btn-text {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.store-btn .small-text {
+    font-size: 10px;
+    opacity: 0.9;
+    letter-spacing: 1px;
+    font-weight: 400;
+    text-transform: uppercase;
+}
+
+.store-btn .large-text {
+    font-size: 20px;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.2px;
+}
+
+/* Estilo para botones deshabilitados (Próximamente) */
+.store-btn.disabled {
+    opacity: 0.8;
+    cursor: not-allowed;
+    pointer-events: none;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+}
+
+.store-btn.disabled i {
+    color: #999;
+    filter: none;
+}
+
+.store-btn.disabled .btn-text {
+    opacity: 0.7;
+}
+
+.store-btn.disabled:hover {
+    transform: none;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+}
+
+.store-btn.disabled:hover::before {
+    left: -100%;
+}
+
+.store-btn.disabled:hover i {
+    transform: none;
+}
+
+/* Google Play Button - Deshabilitado */
+.store-btn.google-play.disabled i {
+    color: #999;
+}
+
+/* App Store Button - Deshabilitado */
+.store-btn.app-store.disabled i {
+    color: #999;
+}
+
+/*
+ * -----------------------------------------------------
+ * Badges de Estado (AMBOS "PRÓXIMAMENTE")
+ * -----------------------------------------------------
+ */
+.status-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    padding: 4px 12px;
+    border-radius: 50px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: white;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    z-index: 3;
+}
+
+/* Badge "Próximamente" (mismo estilo para ambos) */
+.status-badge.soon {
+    background: linear-gradient(135deg, #FF9800, #F57C00);
+}
+
+/* Eliminamos el badge de testing ya que ambos son "próximamente" */
+
+/*
+ * -----------------------------------------------------
+ * Sección Features
+ * -----------------------------------------------------
+ */
 .features {
     background-color: #ffffff;
     padding: 60px 0;
@@ -464,6 +516,11 @@ h2 {
     text-align: center;
 }
 
+/*
+ * -----------------------------------------------------
+ * Sección Testimonios
+ * -----------------------------------------------------
+ */
 .testimonials-section {
     background-color: #f9f9f9;
     padding: 60px 20px;
@@ -519,7 +576,6 @@ h2 {
     font-style: normal;
 }
 
-/* Estilos para el círculo morado con el ícono */
 .testimonial-card::before {
     content: '';
     width: 80px;
@@ -543,6 +599,11 @@ h2 {
     border: 4px solid #A601B3;
 }
 
+/*
+ * -----------------------------------------------------
+ * Sección CTA Alternativa
+ * -----------------------------------------------------
+ */
 .cta-alt {
     background: linear-gradient(to right, #6c05cd, #FF6B8B);
     color: white;
@@ -562,12 +623,24 @@ h2 {
 .cta-alt .cta-button {
     background-color: white;
     color: #6c05cd;
+    padding: 12px 30px;
+    border-radius: 50px;
+    text-decoration: none;
+    font-weight: 600;
+    display: inline-block;
+    transition: transform 0.3s ease;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
-/* ---------------------------------- */
-/* 5. Carrusel de Imágenes            */
-/* ---------------------------------- */
+.cta-alt .cta-button:hover {
+    transform: translateY(-3px);
+}
+
+/*
+ * -----------------------------------------------------
+ * Carrusel de Imágenes
+ * -----------------------------------------------------
+ */
 .image-carousel-section {
     background-color: #f9f9f9;
     display: flex;
@@ -605,7 +678,7 @@ h2 {
     border: none;
     font-size: 1.5em;
     cursor: pointer;
-    padding: 10px;
+    padding: 10px 15px;
     border-radius: 50%;
     z-index: 2;
     box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
@@ -649,9 +722,21 @@ h2 {
 
 /*
  * -----------------------------------------------------
- * 7. Responsividad
+ * Responsividad
  * -----------------------------------------------------
  */
+@media (max-width: 1200px) {
+    .hero {
+        padding: 100px 0;
+        min-height: 450px;
+    }
+    
+    .hero .container {
+        margin-left: 8%;
+        font-size: 1.3rem;
+    }
+}
+
 @media (max-width: 992px) {
     .hero {
         padding: 150px 0;
@@ -660,42 +745,62 @@ h2 {
     .hero h1 {
         font-size: 2.5em;
     }
+    
+    .app-buttons-container {
+        justify-content: center;
+    }
 }
 
 @media (max-width: 768px) {
     .hero {
         padding: 120px 0;
-        /* Ajustamos el fondo para que cubra toda la pantalla en móviles */
-        background-size: 100% 100%;
-        background-attachment: scroll;
-        /* Para evitar efectos extraños al hacer scroll */
+        min-height: 400px;
+        background-position: top center;
+        border-bottom-left-radius: 40px;
+        border-bottom-right-radius: 40px;
     }
 
     .hero .container {
-        /* Hacemos que el contenedor ocupe el 100% del ancho */
         width: 100%;
         padding: 0 20px;
         box-sizing: border-box;
-        /* Aseguramos que el padding no desborde */
         text-align: center;
-        /* Centramos el contenido de texto */
         margin-left: 0;
+        font-size: 1.1rem;
     }
 
     .hero h1 {
-        font-size: 2em;
+        font-size: 1.8em;
+        text-align: center;
         line-height: 1.2;
     }
 
-    .hero p {
-        font-size: 1em;
-        max-width: 90%;
-        margin: 0 auto 20px auto;
+    .hero h3 {
+        font-size: 1.1em;
+        text-align: center;
+        max-width: 100%;
+        line-height: 1.4;
     }
 
     .cta-button-banner {
-        padding: 12px 25px;
-        font-size: 0.9em;
+        margin-right: 0;
+        margin-bottom: 15px;
+        display: inline-block;
+    }
+    
+    .play-store-btn {
+        margin-bottom: 15px;
+    }
+    
+    .app-buttons-container {
+        flex-direction: column;
+        gap: 15px;
+        justify-content: center;
+    }
+    
+    .store-btn {
+        width: 100%;
+        max-width: 280px;
     }
 }
 
@@ -706,5 +811,71 @@ h2 {
 
     .hero h1 {
         font-size: 1.8em;
+    }
+}
+
+@media (max-width: 480px) {
+    .hero {
+        padding: 60px 20px;
+        min-height: 350px;
+        border-bottom-left-radius: 30px;
+        border-bottom-right-radius: 30px;
+        background-position: center center;
+    }
+
+    .hero h1 {
+        font-size: 1.6em;
+        margin-bottom: 12px;
+    }
+
+    .hero h3 {
+        font-size: 1em;
+        margin-bottom: 25px;
+    }
+
+    .hero .container {
+        margin-left: 0;
+        margin-right: 0;
+        font-size: 1rem;
+    }
+
+    .cta-button-banner {
+        padding: 12px 25px;
+        font-size: 0.95em;
+    }
+    
+    .play-store-btn {
+        padding: 10px 20px;
+    }
+    
+    .play-store-btn i {
+        font-size: 30px;
+    }
+    
+    .play-store-btn .large-text {
+        font-size: 18px;
+    }
+    
+    .version-badge {
+        font-size: 10px;
+        padding: 3px 8px;
+    }
+    
+    .store-btn {
+        padding: 10px 20px;
+        min-width: 200px;
+    }
+    
+    .store-btn i {
+        font-size: 30px;
+    }
+    
+    .store-btn .large-text {
+        font-size: 18px;
+    }
+    
+    .status-badge {
+        font-size: 9px;
+        padding: 3px 10px;
     }
 }

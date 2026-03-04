@@ -1,74 +1,84 @@
 /*
- * Estilos CSS para el footer.
- * Adaptado a la paleta de colores y el estilo de la imagen proporcionada.
- * Diseño moderno y responsivo.
+ * -----------------------------------------------------
+ * Estilos CSS para el Footer
+ * Diseño moderno y responsivo
+ * Adaptado a la paleta de colores de Rumbero Extremo
+ * -----------------------------------------------------
  */
 
-/* Estilos generales del footer */
+/* =====================================================
+   1. ESTILOS GENERALES DEL FOOTER
+   ===================================================== */
 .footer {
-  background-color: #f8f8fc;
-  padding: 50px 0;
-  font-family: 'Roboto Condensed', Arial, sans-serif;
-  position: relative;
-  overflow: hidden;
-  color: #1f1f3a;
+    background-color: #f8f8fc;
+    padding: 50px 0;
+    font-family: 'Roboto Condensed', Arial, sans-serif;
+    position: relative;
+    overflow: hidden;
+    color: #1f1f3a;
 }
 
 .footer-wave {
-  display: none;
+    display: none;
 }
 
-/* Contenedor principal del footer */
+/* =====================================================
+   2. CONTENEDOR PRINCIPAL - GRID
+   ===================================================== */
 .container.footer-grid-container {
-  max-width: 1200px;
-  margin: 0 auto;
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-  padding: 20px;
-  position: relative;
-  z-index: 1;
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 20px;
+    padding: 20px;
+    position: relative;
+    z-index: 1;
 }
 
-/* Estilos para cada sección del footer */
+/* =====================================================
+   3. SECCIONES DEL FOOTER - ESTILOS BASE
+   ===================================================== */
 .footer-section {
-  background-color: #f8f8fc;
-  border-radius: 25px;
-  padding: 10px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  align-items: center;
+    background-color: #f8f8fc;
+    border-radius: 25px;
+    padding: 10px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
 }
 
 .footer-section h3 {
-  color: #3004E1;
-  font-size: 1.5em;
-  margin-bottom: 15px;
-  font-weight: bold;
+    color: #3004E1;
+    font-size: 1.5em;
+    margin-bottom: 15px;
+    font-weight: bold;
 }
 
 .footer-section p {
-  color: #000000;
-  line-height: 1.6;
-  margin-bottom: 10px;
-  font-size: 0.95em;
+    color: #000000;
+    line-height: 1.6;
+    margin-bottom: 10px;
+    font-size: 0.95em;
 }
 
-/* Sección Rumbero Extremo (Logo) */
+/* =====================================================
+   4. SECCIÓN 1 - RUMBERO EXTREMO (ACERCA DE)
+   ===================================================== */
 .footer-about .footer-logo-link {
-  margin-bottom: 10px;
-  display: inline-block;
+    margin-bottom: 10px;
+    display: inline-block;
 }
 
 .footer-about .footer-logo {
-  max-width: 70px;
-  height: auto;
+    max-width: 70px;
+    height: auto;
 }
 
-/* Estilos para el botón de descarga en el footer */
+/* ----- BOTÓN DE DESCARGA APK ----- */
 .download-container {
     margin-top: 25px;
 }
@@ -131,297 +141,382 @@
     text-transform: uppercase;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-    .footer-download-btn {
-        max-width: 100%;
-        justify-content: center;
-    }
-    
-    .footer-download-wrapper {
-        text-align: center;
-    }
+/* ----- BADGES DE TIENDAS (AMBOS "PRÓXIMAMENTE") ----- */
+.store-badges-container {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    flex-wrap: wrap;
+    justify-content: center;
 }
 
-/* Enlaces Rápidos */
+.store-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    border-radius: 30px;
+    text-decoration: none;
+    color: #ffffff;
+    font-size: 0.85em;
+    transition: all 0.2s ease;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(5px);
+    background: rgba(15, 23, 42, 0.8);
+}
+
+.store-badge i {
+    font-size: 16px;
+    margin-right: 6px;
+}
+
+.store-badge .badge-text {
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+
+/* Estilo para badges deshabilitados (Próximamente) */
+.store-badge.disabled {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+    opacity: 0.7;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+.store-badge.disabled i {
+    color: #999;
+}
+
+.store-badge.disabled .badge-text {
+    color: #aaa;
+}
+
+/* Google Play Badge específico */
+.store-badge.google-play-badge.disabled i {
+    color: #999;
+}
+
+/* App Store Badge específico */
+.store-badge.app-store-badge.disabled i {
+    color: #999;
+}
+
+/* =====================================================
+   5. SECCIÓN 2 - ENLACES RÁPIDOS
+   ===================================================== */
 .footer-links ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  margin-top: 15px;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 100%;
-  align-items: center;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    margin-top: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    align-items: center;
 }
 
 .footer-links h3 {
-  color: #3004E1;
-  font-size: 1.5em;
-  margin-bottom: 15px;
-  margin-top: 10px;
-  font-weight: bold;
+    color: #3004E1;
+    font-size: 1.5em;
+    margin-bottom: 15px;
+    margin-top: 10px;
+    font-weight: bold;
 }
 
 .footer-links li {
-  width: 80%;
-  max-width: 250px;
+    width: 80%;
+    max-width: 250px;
 }
 
 .footer-links a {
-  background-color: #A601B3;
-  color: #fff;
-  padding: 8px 15px;
-  border-radius: 20px;
-  text-decoration: none;
-  font-weight: bold;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-  display: block;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  font-size: 0.85em;
+    background-color: #A601B3;
+    color: #fff;
+    padding: 8px 15px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    display: block;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    font-size: 0.85em;
 }
 
 .footer-links a:hover {
-  background-color: #3004E1;
-  transform: translateY(-2px);
+    background-color: #3004E1;
+    transform: translateY(-2px);
 }
 
-/* Sección Conéctate */
+/* =====================================================
+   6. SECCIÓN 3 - CONÉCTATE
+   ===================================================== */
 .footer-connect .connect-icon-container {
-  background-color: #e2dcdc;
-  border-radius: 50%;
-  padding: 20px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin-bottom: 20px;
-  transition: transform 0.3s ease;
+    background-color: #e2dcdc;
+    border-radius: 50%;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px;
+    transition: transform 0.3s ease;
 }
 
 .footer-connect .connect-icon-container:hover {
-  transform: scale(1.1);
+    transform: scale(1.1);
 }
 
 .footer-connect svg {
-  width: 60px;
-  height: 60px;
-  color: #3004E1;
-  stroke: #A601B3;
-}
-
-/* Asegurar que los iconos de Font Awesome se vean bien */
-.fas {
-  font-family: 'Font Awesome 5 Free';
-  font-weight: 900;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    width: 60px;
+    height: 60px;
+    color: #3004E1;
+    stroke: #A601B3;
 }
 
 /* Íconos de redes sociales */
 .footer-connect .social-icons-connect {
-  display: flex;
-  gap: 15px;
-  margin-top: 20px;
-  align-items: center;
-  justify-content: center;
-  width: 100%;
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
 }
 
-/* Estilo para los íconos individuales (los enlaces que contienen los íconos) */
 .social-icons-connect a {
-  font-size: 2.5em;
-  color: #a0a0a0;
-  transition: color 0.3s ease, transform 0.3s ease;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  width: 60px;
-  height: 60px;
+    font-size: 2.5em;
+    color: #a0a0a0;
+    transition: color 0.3s ease, transform 0.3s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 60px;
+    height: 60px;
 }
 
 .social-icons-connect a:hover {
-  color: #3004E1;
-  transform: translateY(-5px) scale(1.1);
+    color: #3004E1;
+    transform: translateY(-5px) scale(1.1);
 }
 
 /* Si estás usando imágenes para los íconos */
 .social-icons-connect img {
-  width: 60px;
-  height: 60px;
-  filter: grayscale(100%) brightness(0.8);
-  transition: filter 0.3s ease, transform 0.3s ease;
+    width: 60px;
+    height: 60px;
+    filter: grayscale(100%) brightness(0.8);
+    transition: filter 0.3s ease, transform 0.3s ease;
 }
 
 .social-icons-connect a:hover img {
-  filter: none;
-  transform: translateY(-5px) scale(1.1);
+    filter: none;
+    transform: translateY(-5px) scale(1.1);
 }
 
-/* Newsletter Section Specific Adjustments */
+/* =====================================================
+   7. SECCIÓN 4 - NEWSLETTER
+   ===================================================== */
 .footer-section.footer-newsletter {
-  padding: 20px;
-  justify-content: center;
+    padding: 20px;
+    justify-content: center;
 }
 
 .footer-newsletter h3 {
-  font-size: 1.5em;
-  margin-bottom: 10px;
+    font-size: 1.5em;
+    margin-bottom: 10px;
 }
 
 .footer-newsletter p {
-  font-size: 0.85em;
-  margin-bottom: 15px;
-  text-align: center;
+    font-size: 0.85em;
+    margin-bottom: 15px;
+    text-align: center;
 }
 
 .newsletter-input-group {
-  display: flex;
-  align-items: center;
-  width: 100%;
-  max-width: 320px;
-  border-radius: 30px;
-  background: linear-gradient(to right, #A601B3, #3004E1);
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-  margin-bottom: 8px;
-  padding: 3px;
-  box-sizing: border-box;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 320px;
+    border-radius: 30px;
+    background: linear-gradient(to right, #A601B3, #3004E1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 8px;
+    padding: 3px;
+    box-sizing: border-box;
 }
 
 .newsletter-input-group input[type="email"] {
-  flex-grow: 1;
-  min-width: 0;
-  padding: 8px 15px;
-  border: none;
-  outline: none;
-  font-size: 0.8em;
-  background-color: #fff;
-  border-radius: 20px 0 0 20px;
-  color: #1f1f3a;
-  height: 38px;
-  box-sizing: border-box;
+    flex-grow: 1;
+    min-width: 0;
+    padding: 8px 15px;
+    border: none;
+    outline: none;
+    font-size: 0.8em;
+    background-color: #fff;
+    border-radius: 20px 0 0 20px;
+    color: #1f1f3a;
+    height: 38px;
+    box-sizing: border-box;
 }
 
 .newsletter-input-group input[type="email"]::placeholder {
-  color: #a0a0a0;
+    color: #a0a0a0;
 }
 
 .newsletter-input-group .subscribe-button {
-  flex-shrink: 0;
-  flex-basis: auto;
-  min-width: 80px;
-  background-color: transparent;
-  color: #fff;
-  border: none;
-  padding: 8px 15px;
-  font-size: 0.8em;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
-  font-weight: bold;
-  height: 38px;
-  border-radius: 0 20px 20px 0;
-  white-space: nowrap;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+    flex-shrink: 0;
+    flex-basis: auto;
+    min-width: 80px;
+    background-color: transparent;
+    color: #fff;
+    border: none;
+    padding: 8px 15px;
+    font-size: 0.8em;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    font-weight: bold;
+    height: 38px;
+    border-radius: 0 20px 20px 0;
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
 .newsletter-input-group .subscribe-button:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  transform: translateY(-1px);
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-1px);
 }
 
 .error-message,
 .success-message {
-  font-size: 0.7em;
-  margin-top: 5px;
-  text-align: center;
-  width: 100%;
+    font-size: 0.7em;
+    margin-top: 5px;
+    text-align: center;
+    width: 100%;
 }
 
 .error-message {
-  color: #e74c3c;
+    color: #e74c3c;
 }
 
 .success-message {
-  color: #2ecc71;
+    color: #2ecc71;
 }
 
-/* Estilos de la sección inferior de copyright */
+/* =====================================================
+   8. SECCIÓN DE COPYRIGHT
+   ===================================================== */
 .footer-bottom {
-  text-align: center;
-  margin-top: 3rem;
-  padding-top: 2rem;
-  border-top: 1px solid rgba(0, 0, 0, 0.1);
-  font-size: 0.9rem;
-  color: #1f1f3a;
+    text-align: center;
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    font-size: 0.9rem;
+    color: #1f1f3a;
 }
 
 .footer-bottom p {
-  margin: 0.5rem 0;
+    margin: 0.5rem 0;
 }
 
-/* ===== MEDIA QUERIES ===== */
+/* =====================================================
+   9. UTILIDADES
+   ===================================================== */
+/* Asegurar que los iconos de Font Awesome se vean bien */
+.fas {
+    font-family: 'Font Awesome 5 Free';
+    font-weight: 900;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
 
-/* Tablets y pantallas medianas */
+/* =====================================================
+   10. MEDIA QUERIES - RESPONSIVIDAD
+   ===================================================== */
+
+/* Tablets y pantallas medianas (1024px y menores) */
 @media (max-width: 1024px) {
-  .container.footer-grid-container {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 25px;
-  }
+    .container.footer-grid-container {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 25px;
+    }
 }
 
-/* Móviles */
+/* Móviles (768px y menores) */
 @media (max-width: 768px) {
-  .footer {
-    padding: 30px 0;
-  }
+    .footer {
+        padding: 30px 0;
+    }
 
-  .container.footer-grid-container {
-    grid-template-columns: 1fr;
-    gap: 30px;
-    padding: 15px;
-  }
+    .container.footer-grid-container {
+        grid-template-columns: 1fr;
+        gap: 30px;
+        padding: 15px;
+    }
 
-  .footer-links li {
-    width: 80%;
-    max-width: 300px;
-  }
+    .footer-links li {
+        width: 80%;
+        max-width: 300px;
+    }
 
-  .newsletter-input-group {
-    flex-direction: column;
-    border-radius: 25px;
-    max-width: 300px;
-    background: linear-gradient(to bottom, #3004E1, #A601B3);
-  }
+    .newsletter-input-group {
+        flex-direction: column;
+        border-radius: 25px;
+        max-width: 300px;
+        background: linear-gradient(to bottom, #3004E1, #A601B3);
+    }
 
-  .newsletter-input-group input[type="email"] {
-    border-radius: 25px;
-    margin-bottom: 8px;
-    width: 100%;
-    height: 45px;
-    text-align: center;
-    border: 1px solid #a601b3;
-  }
+    .newsletter-input-group input[type="email"] {
+        border-radius: 25px;
+        margin-bottom: 8px;
+        width: 100%;
+        height: 45px;
+        text-align: center;
+        border: 1px solid #a601b3;
+    }
 
-  .newsletter-input-group .subscribe-button {
-    width: 100%;
-    border-radius: 25px;
-    height: 45px;
-    font-size: 0.9em;
-    padding: 10px 0;
-  }
+    .newsletter-input-group .subscribe-button {
+        width: 100%;
+        border-radius: 25px;
+        height: 45px;
+        font-size: 0.9em;
+        padding: 10px 0;
+    }
+    
+    /* Ajustes para badges en móvil */
+    .store-badges-container {
+        justify-content: center;
+        margin-top: 10px;
+    }
+    
+    .store-badge {
+        padding: 5px 10px;
+        font-size: 0.8em;
+    }
+    
+    .store-badge i {
+        font-size: 14px;
+        margin-right: 5px;
+    }
 }
 
-/* Móviles pequeños */
+/* Móviles pequeños (480px y menores) */
 @media (max-width: 480px) {
-  .social-icons-connect a {
-    width: 50px;
-    height: 50px;
-  }
-  
-  .social-icons-connect img {
-    width: 50px;
-    height: 50px;
-  }
+    .social-icons-connect a {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .social-icons-connect img {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .store-badges-container {
+        gap: 8px;
+    }
+    
+    .store-badge {
+        padding: 4px 8px;
+        font-size: 0.75em;
+    }
 }

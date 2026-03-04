@@ -21,12 +21,14 @@
             </h1>
             <br>
             <h3>Conecta, explora y vive sin limites<br>
-
                 ¡Qué esperas para ser un Rumbero afíliate!
             </h3>
             <br>
+
+            <!-- Botón de registro -->
             <a href="{{ route('register') }}" class="cta-button-banner">¡Yo Soy Rumbero!</a>
 
+            <!-- Botón APK original (Android) -->
             <a href="https://rumbero-extremo-descargas.s3.us-east-1.amazonaws.com/rumbero_extremo.apk"
                 class="play-store-btn">
                 <i class="fab fa-android"></i>
@@ -38,6 +40,33 @@
                 </div>
                 <span class="version-badge">v2.0</span>
             </a>
+
+            <!-- Contenedor para botones de tiendas oficiales -->
+            <div class="app-buttons-container">
+                <!-- Google Play Button - Coming Soon -->
+                <a href="#" class="store-btn google-play disabled">
+                    <i class="fab fa-google-play"></i>
+                    <div class="btn-content">
+                        <div class="btn-text">
+                            <span class="small-text">PRÓXIMAMENTE EN</span>
+                            <span class="large-text">Google Play</span>
+                        </div>
+                    </div>
+                    <span class="status-badge soon">Próximamente</span>
+                </a>
+
+                <!-- App Store Button - Coming Soon -->
+                <a href="#" class="store-btn app-store disabled">
+                    <i class="fab fa-apple"></i>
+                    <div class="btn-content">
+                        <div class="btn-text">
+                            <span class="small-text">PRÓXIMAMENTE EN</span>
+                            <span class="large-text">App Store</span>
+                        </div>
+                    </div>
+                    <span class="status-badge soon">Próximamente</span>
+                </a>
+            </div>
         </div>
     </section>
 

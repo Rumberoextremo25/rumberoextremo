@@ -30,6 +30,21 @@
                     <span class="btn-badge">NUEVA</span>
                 </a>
             </div>
+
+            {{-- NUEVOS BOTONES DE TIENDAS (ambos con "Próximamente") --}}
+            <div class="store-badges-container">
+                <!-- Google Play Badge - Coming Soon -->
+                <a href="#" class="store-badge google-play-badge disabled">
+                    <i class="fab fa-google-play"></i>
+                    <span class="badge-text">Próximamente</span>
+                </a>
+                
+                <!-- App Store Badge - Coming Soon -->
+                <a href="#" class="store-badge app-store-badge disabled">
+                    <i class="fab fa-apple"></i>
+                    <span class="badge-text">Próximamente</span>
+                </a>
+            </div>
         </div>
 
         {{-- Sección 2: Enlaces Rápidos --}}
