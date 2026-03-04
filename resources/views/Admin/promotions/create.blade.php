@@ -98,6 +98,8 @@
             <form action="{{ route('admin.promotions.store') }}" method="POST" enctype="multipart/form-data" id="promotionForm">
                 @csrf
 
+                {{-- ✅ ELIMINADO: Selector de aliados --}}
+
                 {{-- INFORMACIÓN BÁSICA --}}
                 <div class="form-section">
                     <div class="section-title">

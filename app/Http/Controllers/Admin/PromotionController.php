@@ -1,10 +1,10 @@
 <?php
+// app/Http/Controllers/Admin/PromotionController.php
 
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Promotion;
-use App\Models\Ally;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -24,9 +24,8 @@ class PromotionController extends Controller
      */
     public function create()
     {
-        // Obtener todos los aliados para el select
-        $allies = Ally::orderBy('company_name')->get();
-        return view('Admin.promotions.create', compact('allies'));
+        // ✅ Ya no necesitas obtener aliados
+        return view('Admin.promotions.create');
     }
 
     /**
@@ -35,7 +34,7 @@ class PromotionController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'ally_id' => 'required|exists:allies,id',
+            // ✅ ELIMINADO: 'ally_id' ya no es requerido
             'title' => 'required|string|max:255',
             'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'discount' => 'required|numeric|min:0|max:100',
@@ -46,8 +45,6 @@ class PromotionController extends Controller
             'max_uses' => 'nullable|integer|min:0',
             'is_featured' => 'sometimes|boolean',
         ], [
-            'ally_id.required' => 'Debes seleccionar un aliado para la promoción.',
-            'ally_id.exists' => 'El aliado seleccionado no existe.',
             'title.required' => 'El título de la promoción es obligatorio.',
             'image.required' => 'La imagen de la promoción es obligatoria.',
             'image.image' => 'El archivo debe ser una imagen.',
@@ -69,9 +66,9 @@ class PromotionController extends Controller
             $imagePath = $request->file('image')->store('promotions', 'public');
         }
 
-        // Crear la promoción
+        // ✅ Crear la promoción SIN aliado (ally_id será null)
         Promotion::create([
-            'ally_id' => $request->ally_id,
+            'ally_id' => null,  // ← EXPLÍCITAMENTE null
             'title' => $request->title,
             'image_url' => $imagePath,
             'discount' => $request->discount,
@@ -95,9 +92,8 @@ class PromotionController extends Controller
      */
     public function edit(Promotion $promotion)
     {
-        // Obtener todos los aliados para el select
-        $allies = Ally::orderBy('company_name')->get();
-        return view('Admin.promotions.edit', compact('promotion', 'allies'));
+        // ✅ Ya no necesitas obtener aliados
+        return view('Admin.promotions.edit', compact('promotion'));
     }
 
     /**
@@ -106,7 +102,6 @@ class PromotionController extends Controller
     public function update(Request $request, Promotion $promotion)
     {
         $request->validate([
-            'ally_id' => 'required|exists:allies,id',
             'title' => 'required|string|max:255',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'discount' => 'required|numeric|min:0|max:100',
@@ -117,8 +112,6 @@ class PromotionController extends Controller
             'max_uses' => 'nullable|integer|min:0',
             'is_featured' => 'sometimes|boolean',
         ], [
-            'ally_id.required' => 'Debes seleccionar un aliado para la promoción.',
-            'ally_id.exists' => 'El aliado seleccionado no existe.',
             'title.required' => 'El título de la promoción es obligatorio.',
             'image.image' => 'El archivo debe ser una imagen.',
             'image.mimes' => 'La imagen debe ser de tipo: jpeg, png, jpg, gif, svg.',
@@ -135,17 +128,14 @@ class PromotionController extends Controller
         // Procesar la nueva imagen si se subió
         $imagePathToSave = $promotion->image_url;
         if ($request->hasFile('image')) {
-            // Eliminar la imagen anterior
             if ($promotion->image_url) {
                 Storage::disk('public')->delete($promotion->image_url);
             }
-            // Guardar la nueva imagen
             $imagePathToSave = $request->file('image')->store('promotions', 'public');
         }
 
-        // Actualizar la promoción
+        // ✅ Actualizar sin modificar el ally_id existente
         $promotion->update([
-            'ally_id' => $request->ally_id,
             'title' => $request->title,
             'image_url' => $imagePathToSave,
             'discount' => $request->discount,
@@ -156,6 +146,7 @@ class PromotionController extends Controller
             'max_uses' => $request->max_uses ?? 0,
             'status' => $request->has('is_active') ? 'active' : 'inactive',
             'is_featured' => $request->has('is_featured'),
+            // ✅ NO tocamos 'ally_id'
         ]);
 
         return redirect()
@@ -168,12 +159,10 @@ class PromotionController extends Controller
      */
     public function destroy(Promotion $promotion)
     {
-        // Eliminar la imagen asociada
         if ($promotion->image_url) {
             Storage::disk('public')->delete($promotion->image_url);
         }
         
-        // Eliminar la promoción
         $promotion->delete();
 
         return redirect()
