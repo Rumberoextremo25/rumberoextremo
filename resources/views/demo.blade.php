@@ -38,24 +38,6 @@
                     </a>
                 </div>
 
-                <div class="download-demo-wrapper" style="margin: 30px 0; text-align: center;">
-                    <p
-                        style="font-weight: 600; margin-bottom: 20px; font-size: 1.2rem; color: #252525; text-shadow: 0 2px 5px rgba(0,0,0,0.3); letter-spacing: 0.5px;">
-                        <i class="fas fa-download" style="margin-right: 8px; color: #4ade80;"></i>
-                        ¿Descarga ya la app de Rumbero Extremo?
-                    </p>
-
-                    <a href="https://rumbero-extremo-descargas.s3.us-east-1.amazonaws.com/rumbero_extremo.apk"
-                        class="download-apk-btn">
-                        <i class="fab fa-android"></i>
-                        <span class="btn-content-download">
-                            <span class="small-text-download">DESCARGAR</span>
-                            <span class="large-text-download">APK Oficial</span>
-                        </span>
-                        <span class="badge-new">v2.0</span>
-                    </a>
-                </div>
-
                 <div class="video-container">
                     <iframe width="560" height="315" src="https://youtube.com/shorts/v4j2Hxq7BoI?si=55IQhtH_cOKmcK3D"
                         title="YouTube video player" frameborder="0"

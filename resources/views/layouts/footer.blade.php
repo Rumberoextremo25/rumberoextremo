@@ -17,6 +17,18 @@
 
                 Descubre los mejores eventos y lugares, conecta con amigos y vive la experiencia de ser un Rumbero
                 Extremo</p>
+            
+            {{-- BOTÓN DE DESCARGA APK - NUEVA UBICACIÓN --}}
+            <div class="footer-download-wrapper">
+                <a href="https://rumbero-extremo-descargas.s3.us-east-1.amazonaws.com/rumbero_extremo.apk" 
+                   class="footer-download-btn">
+                    <i class="fab fa-android"></i>
+                    <span class="download-text">
+                        <span class="small-download">DESCARGALA YA</span>
+                        <span class="large-download">APP Oficial</span>
+                    </span>
+                </a>
+            </div>
         </div>
 
         {{-- Sección 2: Enlaces Rápidos --}}
