@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use App\Models\Sale;
+use App\Models\Ally;
 use App\Models\ActivityLog;
 use Carbon\Carbon;
 use App\Http\Controllers\Controller;
@@ -44,7 +45,7 @@ class DashboardController extends Controller
         $totalUsers = User::where('user_type', '!=', 'admin')->count();
 
         // Contar aliados (usuarios con user_type = 'aliado' o registros en tabla allies)
-        $totalAllies = User::where('user_type', 'aliado')->count();
+        $totalAllies = Ally::count();
 
         // Ventas totales (suma de ventas completadas)
         $totalSales = Sale::whereIn('status', ['completed', 'completado'])->sum('total_amount');
@@ -68,7 +69,7 @@ class DashboardController extends Controller
             $todayUsers = User::whereDate('created_at', Carbon::today())->count();
 
             // Aliados registrados hoy
-            $todayAllies = User::where('user_type', 'aliado')
+            $todayAllies = Ally::where('user_id', 'user')
                 ->whereDate('created_at', Carbon::today())
                 ->count();
 

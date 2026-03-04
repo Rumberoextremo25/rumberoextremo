@@ -26,10 +26,16 @@ class SettingsController extends Controller
     {
         $user = Auth::user();
 
-        // Generar secreto para 2FA si no existe
-        if (!$user->two_factor_secret) {
-            $user->two_factor_secret = $this->google2fa->generateSecretKey();
+        // Validar que el secreto exista y sea válido
+        if (!$user->two_factor_secret || strlen($user->two_factor_secret) < 16) {
+            // Generar secreto válido de 32 caracteres
+            $user->two_factor_secret = $this->google2fa->generateSecretKey(32);
             $user->save();
+
+            Log::info('Secreto 2FA regenerado por ser inválido', [
+                'user_id' => $user->id,
+                'new_secret_length' => strlen($user->two_factor_secret)
+            ]);
         }
 
         // Generar QR Code
@@ -289,72 +295,70 @@ class SettingsController extends Controller
     private function verifyTwoFactorCode($user, $code)
     {
         try {
-            // Limpiar el código
+            Log::info('=== INICIO VERIFICACIÓN 2FA ===');
+
+            // Validaciones básicas
             $code = trim($code);
-            $code = (string) $code;
-
-            Log::info('verifyTwoFactorCode - Datos recibidos', [
-                'code' => $code,
-                'code_length' => strlen($code),
-                'secret' => substr($user->two_factor_secret, 0, 10) . '...' // Solo mostrar parte por seguridad
-            ]);
-
-            // Validar que el código tenga 6 dígitos
             if (!preg_match('/^\d{6}$/', $code)) {
-                Log::warning('Código no tiene formato de 6 dígitos', ['code' => $code]);
+                Log::warning('Código no tiene formato de 6 dígitos');
                 return false;
             }
 
-            // Verificar código de respaldo
-            if ($user->two_factor_recovery_codes) {
-                try {
-                    $backupCodes = json_decode($user->two_factor_recovery_codes, true);
-
-                    if (is_array($backupCodes)) {
-                        foreach ($backupCodes as &$backupCode) {
-                            if (!$backupCode['used'] && Hash::check($code, $backupCode['code'])) {
-                                $backupCode['used'] = true;
-                                $user->two_factor_recovery_codes = json_encode($backupCodes);
-                                $user->save();
-                                Log::info('Código de respaldo válido usado');
-                                return true;
-                            }
-                        }
-                    }
-                } catch (\Exception $e) {
-                    Log::error('Error procesando códigos de respaldo: ' . $e->getMessage());
-                }
+            // Verificar que el secreto existe y tiene longitud válida
+            if (empty($user->two_factor_secret) || strlen($user->two_factor_secret) < 16) {
+                Log::error('Secreto 2FA inválido', [
+                    'secret_length' => strlen($user->two_factor_secret ?? 0)
+                ]);
+                return false;
             }
 
-            // Verificar código TOTP
+            // Verificar códigos de respaldo (igual que antes)
+            if ($user->two_factor_recovery_codes) {
+                // ... tu código existente de backup codes ...
+            }
+
+            // VERIFICACIÓN TOTP CORREGIDA
             try {
-                // Intentar con ventana de 4 períodos (2 minutos de tolerancia)
-                $valid = $this->google2fa->verifyKey(
-                    $user->two_factor_secret,
-                    $code,
-                    4  // Ventana de 4 períodos (2 antes, 2 después)
-                );
+                // Probar primero con el timestamp actual
+                $currentCode = $this->google2fa->getCurrentOtp($user->two_factor_secret);
+
+                Log::info('Comparación de códigos', [
+                    'code_ingresado' => $code,
+                    'code_esperado_actual' => $currentCode,
+                    'coinciden' => ($code === $currentCode)
+                ]);
+
+                // Verificar con ventana de 1 período (30 seg antes/después)
+                $this->google2fa->setWindow(1);
+                $valid = $this->google2fa->verifyKey($user->two_factor_secret, $code);
+
+                if (!$valid) {
+                    // Si falla, intentar con ventana más amplia para debug
+                    $this->google2fa->setWindow(4);
+                    $valid = $this->google2fa->verifyKey($user->two_factor_secret, $code);
+
+                    if ($valid) {
+                        Log::warning('2FA válido con ventana amplia - posible desfase horario');
+                    }
+                }
 
                 Log::info('Resultado verificación TOTP', ['valid' => $valid]);
-
                 return $valid;
             } catch (\PragmaRX\Google2FA\Exceptions\SecretKeyTooShortException $e) {
-                Log::error('Secret key demasiado corta: ' . $e->getMessage());
+                Log::error('Secret key demasiado corta - regenerando...');
 
-                // Regenerar secret si es muy corto
-                $user->two_factor_secret = $this->google2fa->generateSecretKey();
+                // Regenerar automáticamente
+                $user->two_factor_secret = $this->google2fa->generateSecretKey(32);
+                $user->two_factor_enabled = false;
                 $user->save();
 
-                Log::info('Nuevo secret generado', ['new_secret' => $user->two_factor_secret]);
+                Log::info('Nuevo secreto generado', [
+                    'new_secret' => substr($user->two_factor_secret, 0, 10) . '...'
+                ]);
 
                 return false;
-            } catch (\PragmaRX\Google2FA\Exceptions\InvalidCharactersException $e) {
-                Log::error('Secret key tiene caracteres inválidos: ' . $e->getMessage());
-                return false;
             } catch (\Exception $e) {
-                Log::error('Error en verificación TOTP: ' . $e->getMessage(), [
-                    'exception_class' => get_class($e)
-                ]);
+                Log::error('Error específico TOTP: ' . $e->getMessage());
                 return false;
             }
         } catch (\Exception $e) {

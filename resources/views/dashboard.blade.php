@@ -56,7 +56,7 @@
                         </span>
                     @else
                         <span class="metric-badge neutral">
-                            <i class="fa-solid fa-minus"></i> Sin cambios
+                            <i class="fa-solid fa-minus"></i> Usuarios Activos
                         </span>
                     @endif
                 </div>
@@ -80,7 +80,7 @@
                         </span>
                     @else
                         <span class="metric-badge neutral">
-                            <i class="fa-solid fa-minus"></i> Sin cambios
+                            <i class="fa-solid fa-minus"></i> Aliados Activos
                         </span>
                     @endif
                 </div>

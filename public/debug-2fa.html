@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Debug 2FA API</title>
+    <style>
+        body { font-family: Arial; padding: 20px; background: #1a1a1a; color: #fff; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #333; padding: 15px; border-radius: 5px; overflow: auto; }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Debug 2FA API</h1>
+        
+        <div>
+            <button onclick="loadUsers()">1. Cargar Usuarios</button>
+            <button onclick="checkFirstUser()">2. Ver códigos del primer usuario</button>
+            <button onclick="regenerateFirstUser()">3. Regenerar secreto (primer usuario)</button>
+            <button onclick="disableFirstUser()">4. Desactivar 2FA (primer usuario)</button>
+        </div>
+        
+        <div id="userSelect" style="margin: 20px 0; display: none;">
+            <select id="userId"></select>
+            <button onclick="checkSelectedUser()">Ver códigos</button>
+            <button onclick="regenerateSelectedUser()">Regenerar</button>
+            <button onclick="disableSelectedUser()">Desactivar</button>
+        </div>
+        
+        <h3>Resultado:</h3>
+        <pre id="result">Haz clic en un botón...</pre>
+    </div>
+
+    <script>
+        const API_BASE = '/api/debug-2fa';
+        
+        async function apiCall(url, options = {}) {
+            document.getElementById('result').textContent = 'Cargando...';
+            try {
+                const response = await fetch(url, options);
+                const text = await response.text();
+                
+                // Intentar parsear como JSON
+                try {
+                    const data = JSON.parse(text);
+                    document.getElementById('result').textContent = JSON.stringify(data, null, 2);
+                    return data;
+                } catch (e) {
+                    document.getElementById('result').textContent = 'Error: No es JSON válido\n\n' + text;
+                    return null;
+                }
+            } catch (error) {
+                document.getElementById('result').textContent = 'Error de red: ' + error.message;
+                return null;
+            }
+        }
+        
+        async function loadUsers() {
+            const data = await apiCall(`${API_BASE}/users`);
+            if (data && data.users) {
+                const select = document.getElementById('userId');
+                select.innerHTML = '';
+                data.users.forEach(user => {
+                    const option = document.createElement('option');
+                    option.value = user.id;
+                    option.textContent = `${user.name} (${user.email}) - 2FA: ${user.two_factor_enabled ? '✅' : '❌'}`;
+                    select.appendChild(option);
+                });
+                document.getElementById('userSelect').style.display = 'block';
+            }
+        }
+        
+        async function checkFirstUser() {
+            await apiCall(`${API_BASE}/check`);
+        }
+        
+        async function regenerateFirstUser() {
+            if (!confirm('¿Regenerar secreto? El usuario deberá escanear nuevo QR')) return;
+            await apiCall(`${API_BASE}/regenerate`, { method: 'POST' });
+        }
+        
+        async function disableFirstUser() {
+            if (!confirm('¿DESACTIVAR 2FA?')) return;
+            await apiCall(`${API_BASE}/disable`, { method: 'POST' });
+        }
+        
+        async function checkSelectedUser() {
+            const userId = document.getElementById('userId').value;
+            await apiCall(`${API_BASE}/check/${userId}`);
+        }
+        
+        async function regenerateSelectedUser() {
+            if (!confirm('¿Regenerar secreto?')) return;
+            const userId = document.getElementById('userId').value;
+            await apiCall(`${API_BASE}/regenerate/${userId}`, { method: 'POST' });
+        }
+        
+        async function disableSelectedUser() {
+            if (!confirm('¿DESACTIVAR 2FA?')) return;
+            const userId = document.getElementById('userId').value;
+            await apiCall(`${API_BASE}/disable/${userId}`, { method: 'POST' });
+        }
+    </script>
+</body>
+</html>
