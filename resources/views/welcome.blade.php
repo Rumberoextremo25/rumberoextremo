@@ -16,16 +16,27 @@
 @section('content')
     <section class="hero">
         <div class="container">
-            <h1>Tu Próxima Aventura te<br> 
+            <h1>Tu Próxima Aventura te<br>
                 está esperando
             </h1>
             <br>
-            <h3>Conecta, explora y vive sin limites<br> 
+            <h3>Conecta, explora y vive sin limites<br>
 
                 ¡Qué esperas para ser un Rumbero afíliate!
             </h3>
             <br>
             <a href="{{ route('register') }}" class="cta-button-banner">¡Yo Soy Rumbero!</a>
+
+            <a href="https://rumbero-extremo-descargas.s3.us-east-1.amazonaws.com/rumbero_extremo.apk"
+                class="play-store-btn">
+                <div class="btn-content">
+                    <i class="fab fa-google-play"></i>
+                    <div class="btn-text">
+                        <span class="small-text">DISPONIBLE EN</span>
+                        <span class="large-text">Google Play</span>
+                    </div>
+                </div>
+            </a>
         </div>
     </section>
 
@@ -36,7 +47,7 @@
                 <div class="feature-item">
                     <img src="assets/img/home/eventos_1.jpg" alt="Eventos Actualizados">
                     <h3>Eventos <br> Rumberos</h3>
-                    <p>Nuevos Aliados,  Conectar con Rumberos, Promociones Aliadas</p>
+                    <p>Nuevos Aliados, Conectar con Rumberos, Promociones Aliadas</p>
                 </div>
                 <div class="feature-item">
                     <img src="assets/img/home/nuevos_lugares.jpg" alt="Descubre Lugares Nuevos">

@@ -124,6 +124,114 @@ body {
     box-shadow: var(--shadow-md);
 }
 
+/*  ESTILOS PARA EL LINK DE DESCARGA DE APLICACION */
+
+/* Estilos para el nuevo botón de descarga APK */
+.download-apk-btn {
+    display: inline-flex;
+    align-items: center;
+    background: linear-gradient(135deg, #1a1f2e 0%, #2a3142 100%);
+    padding: 14px 36px;
+    border-radius: 100px;
+    text-decoration: none;
+    color: white;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.download-apk-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.7s ease;
+}
+
+.download-apk-btn:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 20px 30px -8px rgba(52, 168, 83, 0.4);
+    background: linear-gradient(135deg, #232837 0%, #333b4f 100%);
+    border-color: rgba(52, 168, 83, 0.4);
+}
+
+.download-apk-btn:hover::before {
+    left: 100%;
+}
+
+.download-apk-btn i {
+    font-size: 36px;
+    margin-right: 16px;
+    color: #7434a8;
+    filter: drop-shadow(0 3px 6px rgba(133, 12, 170, 0.4));
+    transition: transform 0.3s ease;
+}
+
+.download-apk-btn:hover i {
+    transform: rotate(5deg) scale(1.1);
+}
+
+.btn-content-download {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    margin-right: 15px;
+}
+
+.small-text-download {
+    font-size: 11px;
+    opacity: 0.8;
+    letter-spacing: 1px;
+    font-weight: 400;
+    text-transform: uppercase;
+}
+
+.large-text-download {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.2px;
+}
+
+/* Badge de versión */
+.badge-new {
+    background: linear-gradient(135deg, #43139b, #7e10c7);
+    padding: 4px 10px;
+    border-radius: 50px;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    box-shadow: 0 3px 8px rgba(80, 4, 167, 0.4);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+    .download-apk-btn {
+        padding: 12px 24px;
+    }
+    
+    .download-apk-btn i {
+        font-size: 28px;
+        margin-right: 12px;
+    }
+    
+    .large-text-download {
+        font-size: 18px;
+    }
+    
+    .badge-new {
+        padding: 3px 8px;
+        font-size: 10px;
+    }
+}
+
 .video-container {
     position: relative;
     width: 100%;

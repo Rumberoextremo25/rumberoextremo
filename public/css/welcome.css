@@ -271,6 +271,83 @@ h3 {
     }
 }
 
+
+.play-store-btn {
+    display: inline-flex;
+    align-items: center;
+    background: linear-gradient(135deg, #1a1f2e 0%, #2a3142 100%);
+    padding: 14px 32px;
+    border-radius: 100px;
+    text-decoration: none;
+    color: white;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.play-store-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.7s ease;
+}
+
+.play-store-btn:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 20px 30px -8px rgba(74, 222, 128, 0.3);
+    background: linear-gradient(135deg, #232837 0%, #333b4f 100%);
+    border-color: rgba(74, 222, 128, 0.3);
+}
+
+.play-store-btn:hover::before {
+    left: 100%;
+}
+
+.play-store-btn i {
+    font-size: 36px;
+    margin-right: 16px;
+    color: #4b07b9;
+    filter: drop-shadow(0 3px 6px rgba(54, 10, 212, 0.4));
+    transition: transform 0.3s ease;
+}
+
+.play-store-btn:hover i {
+    transform: rotate(5deg) scale(1.1);
+}
+
+.btn-content {
+    display: flex;
+    align-items: center;
+}
+
+.btn-text {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.small-text {
+    font-size: 11px;
+    opacity: 0.8;
+    letter-spacing: 1px;
+    font-weight: 400;
+    text-transform: uppercase;
+}
+
+.large-text {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.2;
+    letter-spacing: -0.2px;
+}
+
 /*
  * -----------------------------------------------------
  * 4. Secciones de Contenido
