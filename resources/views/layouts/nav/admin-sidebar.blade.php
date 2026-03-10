@@ -28,6 +28,16 @@
                     </a>
                 </li>
 
+                {{-- ===== NUEVO: GENERADOR DE QR (solo admin) ===== --}}
+                @if (Auth::user()->role === 'admin')
+                    <li class="sidebar-nav-item">
+                        <a href="{{ route('admin.qr.index') }}"
+                            class="sidebar-nav-link {{ request()->routeIs('backoffice.qr.*') ? 'active' : '' }}">
+                            <i class="fa-solid fa-qrcode"></i> <span class="sidebar-link-text">Generar QR</span>
+                        </a>
+                    </li>
+                @endif
+
                 {{-- TRANSACCIONES - PARA ALIADOS Y ADMIN --}}
                 @if (Auth::user()->role === 'admin' || Auth::user()->role === 'aliado')
                     <li class="sidebar-nav-item">
@@ -200,6 +210,13 @@
     /* Efecto hover */
     .sidebar-nav-link:hover i.fa-money-bill-transfer {
         color: #ffffff;
+    }
+    
+    /* Estilo específico para el icono de QR */
+    .sidebar-nav-link i.fa-qrcode {
+        font-size: 1.2rem;
+        width: 20px;
+        text-align: center;
     }
 </style>
 

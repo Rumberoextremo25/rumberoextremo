@@ -14,6 +14,7 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\SettingsController;
 use App\Http\Controllers\RumberoAIController;
+use App\Http\Controllers\QRGeneratorController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\PayoutController;
 
@@ -228,6 +229,13 @@ Route::middleware(['auth'])->prefix('transacciones')->name('transacciones.')->gr
         Route::post('/aprobar-masivas', [AdminController::class, 'aprobarMasivas'])->name('aprobar-masivas');
         Route::post('/rechazar-masivas', [AdminController::class, 'rechazarMasivas'])->name('rechazar-masivas');
     });
+});
+
+// routes/web.php
+Route::middleware(['auth'])->group(function () {
+    Route::get('/admin/qr/generate', [QRGeneratorController::class, 'index'])->name('admin.qr.index');
+    Route::post('/admin/qr/generate', [QRGeneratorController::class, 'generate'])->name('admin.qr.generate');
+    Route::post('/admin/qr/download', [QRGeneratorController::class, 'download'])->name('admin.qr.download');
 });
 
 
