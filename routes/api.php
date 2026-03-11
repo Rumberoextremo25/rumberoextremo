@@ -83,14 +83,13 @@ Route::middleware('auth:sanctum')->group(function () {
     // PAGOS
     // ===========================================
 
-    Route::prefix('pagos')->middleware('firebase.auth')->group(function () {
-        
-    });
-
-    Route::prefix('pagos')->name('api.pagos.')->group(function () {
+    Route::prefix('pagos')->group(function () {
         Route::post('/c2p', [PaymentController::class, 'initiateC2PPayment']);
         Route::post('/tarjeta', [PaymentController::class, 'processCardPayment']);
         Route::post('/p2p', [PaymentController::class, 'validateP2PPayment']);
+    });
+
+    Route::prefix('pagos')->name('api.pagos.')->group(function () {
         // Payouts (requieren ser admin)
         Route::prefix('payouts')->middleware(['admin'])->name('payouts.')->group(function () {
             Route::get('/pendientes', [PaymentController::class, 'obtenerPagosPendientes'])->name('pendientes');
