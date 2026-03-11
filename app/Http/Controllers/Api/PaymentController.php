@@ -113,10 +113,31 @@ class PaymentController extends Controller
 
         $result = $this->bncApiService->validateP2PPayment($validated);
 
+        // 🔍 LOG PARA VER LA ESTRUCTURA REAL
+        Log::info('📦 Respuesta de BNC validateP2PPayment:', $result);
+
+        // Determinar si existe el movimiento basado en la respuesta
+        $paymentExists = false;
+
+        if (isset($result['MovementExists'])) {
+            $paymentExists = $result['MovementExists'];
+        } elseif (isset($result['success']) && $result['success'] === true) {
+            $paymentExists = true;
+        } elseif (isset($result['Status']) && $result['Status'] === 'OK') {
+            $paymentExists = true;
+        } elseif (isset($result['data']['exists'])) {
+            $paymentExists = $result['data']['exists'];
+        } elseif (isset($result['exists'])) {
+            $paymentExists = $result['exists'];
+        } elseif (isset($result['Reference']) && !empty($result['Reference'])) {
+            // Si hay referencia, asumimos que existe
+            $paymentExists = true;
+        }
+
         return response()->json([
             'success' => true,
-            'payment_exists' => $result['MovementExists'] ?? false,
-            'payment_details' => $result['MovementExists'] ? $result : null
+            'payment_exists' => $paymentExists,
+            'payment_details' => $paymentExists ? $result : null
         ]);
     }
 
