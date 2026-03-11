@@ -3,8 +3,6 @@
 namespace App\Http\Middleware;
 
 use Closure;
-use App\Models\User;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Google_Client;
 use Illuminate\Support\Facades\Log;
@@ -15,19 +13,15 @@ class VerifyFirebaseToken
 
     public function __construct()
     {
-        $this->client = new Google_Client(['client_id' => env('FIREBASE_CLIENT_ID')]);
+        // ✅ Inicializar Google Client solo con el client_id
+        $this->client = new Google_Client();
+        $this->client->setClientId(env('FIREBASE_CLIENT_ID'));
         
-        // Configuración correcta para Firebase
-        $this->client->setAuthConfig([
-            'type' => 'service_account',
-            'project_id' => env('FIREBASE_PROJECT_ID'),
+        // Log para verificar la configuración
+        Log::info('✅ VerifyFirebaseToken inicializado', [
             'client_id' => env('FIREBASE_CLIENT_ID'),
-            // Si tienes un archivo de credenciales, puedes usar:
-            // $this->client->setAuthConfig(storage_path('app/firebase-credentials.json'));
+            'project_id' => env('FIREBASE_PROJECT_ID')
         ]);
-        
-        // Configurar el cliente para aceptar tokens de Firebase
-        $this->client->setApplicationName('RumberoExtremo');
     }
 
     public function handle(Request $request, Closure $next)
@@ -37,11 +31,10 @@ class VerifyFirebaseToken
         Log::info('URL: ' . $request->fullUrl());
         Log::info('Method: ' . $request->method());
         
+        // Obtener el token del header Authorization
         $token = $request->bearerToken();
         
         Log::info('Token presente: ' . ($token ? 'SI' : 'NO'));
-        Log::info('FIREBASE_PROJECT_ID: ' . env('FIREBASE_PROJECT_ID', 'NO DEFINIDO'));
-        Log::info('FIREBASE_CLIENT_ID: ' . env('FIREBASE_CLIENT_ID', 'NO DEFINIDO'));
         
         if (!$token) {
             Log::error('❌ Token no proporcionado');
@@ -52,20 +45,18 @@ class VerifyFirebaseToken
         }
         
         try {
-            Log::info('Intentando verificar token...');
-            
-            // 🔴 CORRECCIÓN IMPORTANTE: Verificar el token correctamente
+            // ✅ Verificar el token con Google Client
+            Log::info('Verificando token con Google Client...');
             $payload = $this->client->verifyIdToken($token);
             
             if ($payload) {
-                Log::info('✅ Token VÁLIDO');
-                Log::info('Usuario autenticado:', [
+                Log::info('✅ Token VÁLIDO', [
                     'uid' => $payload['sub'] ?? 'N/A',
                     'email' => $payload['email'] ?? 'N/A',
                     'name' => $payload['name'] ?? 'N/A'
                 ]);
                 
-                // Agregar el usuario autenticado al request
+                // Agregar datos del usuario al request
                 $request->merge([
                     'firebase_user' => [
                         'uid' => $payload['sub'],
@@ -75,23 +66,19 @@ class VerifyFirebaseToken
                     ]
                 ]);
                 
-                // También puedes autenticar al usuario en Laravel si tienes un modelo User
-                $user = User::updateOrCreate(
-                       ['firebase_uid' => $payload['sub']],
-                      ['email' => $payload['email'], 'name' => $payload['name'] ?? '']
-                   );
-                   Auth::login($user);
-                
+                // Continuar con la petición
                 return $next($request);
             }
             
-            Log::error('❌ Token INVÁLIDO - Payload vacío');
+            // Si el payload es null, el token es inválido
+            Log::error('❌ Token INVÁLIDO - verifyIdToken devolvió null');
             return response()->json([
                 'success' => false,
                 'message' => 'Token inválido'
             ], 401);
             
         } catch (\InvalidArgumentException $e) {
+            // Error cuando el token está mal formado
             Log::error('❌ Token mal formado: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
@@ -99,7 +86,8 @@ class VerifyFirebaseToken
             ], 401);
             
         } catch (\Exception $e) {
-            Log::error('❌ EXCEPCIÓN GENERAL: ' . $e->getMessage());
+            // Cualquier otro error
+            Log::error('❌ Error verificando token: ' . $e->getMessage());
             Log::error('Stack trace: ' . $e->getTraceAsString());
             
             return response()->json([
