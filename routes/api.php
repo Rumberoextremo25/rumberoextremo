@@ -90,15 +90,17 @@ Route::middleware('auth:sanctum')->group(function () {
 
         // ✅ CORRECTO: todas usan el mismo middleware
         Route::post('/c2p', [PaymentController::class, 'initiateC2PPayment'])
-            ->middleware(VerifyFirebaseToken::class);  // ← punto y coma
+            ->middleware(VerifyFirebaseToken::class)
+            ->name('api.pagos.c2p');
 
         Route::post('/p2p', [PaymentController::class, 'validateP2PPayment'])
-            ->middleware(VerifyFirebaseToken::class);  // ← punto y coma
+            ->middleware(VerifyFirebaseToken::class)
+            ->name('api.pagos.p2p');
 
         // ✅ CORRECTO: /pagos/tarjeta (sin doble /pagos/)
-        Route::post('/tarjeta', [PaymentController::class, 'processCardPayment'])
-            ->middleware(VerifyFirebaseToken::class);  // ← punto y coma
-
+        Route::post('/pagos/tarjeta', [PaymentController::class, 'processCardPayment'])
+            ->middleware(VerifyFirebaseToken::class)
+            ->name('api.pagos.tarjeta');
     });
 
 
