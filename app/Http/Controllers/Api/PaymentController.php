@@ -10,6 +10,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 use App\Http\Controllers\Controller;
 
+use function Symfony\Component\String\s;
+
 class PaymentController extends Controller
 {
     protected BncApiService $bncApiService;
@@ -79,7 +81,7 @@ class PaymentController extends Controller
                 'Currency' => 'BS', // Siempre Bolívares
                 'idCardType' => (int)$validatedData['idCardType'],
                 'CardNumber' => $validatedData['CardNumber'],
-                'dtExpiration' => (int)$validatedData['dtExpiration'],
+                'dtExpiration' => (string)$validatedData['dtExpiration'],
                 'CardHolderName' => $validatedData['CardHolderName'],
                 'AccountType' => (int)$validatedData['AccountType'],
                 'CVV' => (int)$validatedData['CVV'],
