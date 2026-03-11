@@ -6,6 +6,7 @@ namespace App\Http\Middleware;
 use Closure;
 use Google_Client;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class VerifyFirebaseToken
 {
@@ -46,7 +47,7 @@ class VerifyFirebaseToken
             ], 401);
             
         } catch (\Exception $e) {
-            \Log::error('Error verificando token Firebase: ' . $e->getMessage());
+            Log::error('Error verificando token Firebase: ' . $e->getMessage());
             
             return response()->json([
                 'success' => false,
