@@ -82,12 +82,14 @@ Route::middleware('auth:sanctum')->group(function () {
     // ===========================================
     // PAGOS
     // ===========================================
-    Route::prefix('pagos')->name('api.pagos.')->group(function () {
-        // Pagos regulares
-        Route::post('/c2p', [PaymentController::class, 'initiateC2PPayment'])->name('c2p');
-        Route::post('/tarjeta', [PaymentController::class, 'processCardPayment'])->name('tarjeta');
-        Route::post('/p2p', [PaymentController::class, 'validateP2PPayment'])->name('p2p');
 
+    Route::prefix('pagos')->middleware('firebase.auth')->group(function () {
+        Route::post('/c2p', [PaymentController::class, 'initiateC2PPayment']);
+        Route::post('/tarjeta', [PaymentController::class, 'processCardPayment']);
+        Route::post('/p2p', [PaymentController::class, 'validateP2PPayment']);
+    });
+
+    Route::prefix('pagos')->name('api.pagos.')->group(function () {
         // Payouts (requieren ser admin)
         Route::prefix('payouts')->middleware(['admin'])->name('payouts.')->group(function () {
             Route::get('/pendientes', [PaymentController::class, 'obtenerPagosPendientes'])->name('pendientes');
@@ -343,4 +345,4 @@ if (app()->environment('local', 'development')) {
         });
     });
 }
-***************/
+ ***************/
