@@ -2,12 +2,12 @@
 
 namespace App\Services;
 
-use App\Models\Sale;
-use App\Models\Payout;
 use App\Models\Ally;
-use App\Models\PaymentTransaction;
-use App\Models\Payment;
 use App\Models\Order;
+use App\Models\Payment;
+use App\Models\Payout;
+use App\Models\PaymentTransaction;
+use App\Models\Sale;
 use App\Models\User;
 use App\Helpers\JsonHelper;
 use Illuminate\Http\Request;
@@ -50,17 +50,32 @@ class PaymentProcessorService
 
             // 2. Validar datos del sistema
             $systemValidatedData = $request->validate([
-                'user_id' => 'nullable|integer|exists:allies,user_id',
                 'descripcion' => 'nullable|string|max:255',
             ]);
 
             $validatedData = array_merge($bankValidatedData, $systemValidatedData);
 
-            // 3. Obtener usuario autenticado
-            $user = auth()->user();
-            if (!$user) {
-                throw new \Exception('Usuario no autenticado');
+            // 🔥 3. Obtener usuario desde Firebase (NO auth()->user())
+            $firebaseUser = $request->get('firebase_user');
+            if (!$firebaseUser) {
+                throw new \Exception('Usuario no autenticado con Firebase');
             }
+
+            // Buscar o crear usuario en tu BD por el UID de Firebase
+            $user = User::firstOrCreate(
+                ['firebase_uid' => $firebaseUser['uid']],
+                [
+                    'name' => $firebaseUser['name'] ?? $firebaseUser['email'] ?? 'Usuario Firebase',
+                    'email' => $firebaseUser['email'] ?? null,
+                    'password' => bcrypt(uniqid()), // Contraseña aleatoria
+                ]
+            );
+
+            Log::info("✅ Usuario obtenido/creado desde Firebase", [
+                'user_id' => $user->id,
+                'firebase_uid' => $firebaseUser['uid'],
+                'email' => $firebaseUser['email'] ?? null
+            ]);
 
             // 4. Preparar datos para BNC
             $bncData = $prepareBncData($validatedData);
@@ -82,7 +97,8 @@ class PaymentProcessorService
             ]);
             Log::info("✅ Order creada", ['order_id' => $order->id]);
 
-            // 7. Procesar aliado
+            // 7. Procesar aliado (usa el user_id)
+            $validatedData['user_id'] = $user->id;
             $aliadoData = $this->processAliadoData($validatedData);
 
             // 8. Validar errores de aliado
@@ -331,7 +347,7 @@ class PaymentProcessorService
         $aliadoData = [
             'has_aliado' => false,
             'aliado_id' => null,
-            'user_id' => null,
+            'user_id' => $validatedData['user_id'] ?? null,
             'aliado_name' => null,
             'aliado_status' => null,
             'discount' => 0,

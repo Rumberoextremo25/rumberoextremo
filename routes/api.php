@@ -11,6 +11,7 @@ use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\BankController;
 use App\Http\Controllers\RumberoAIController;
 use Illuminate\Support\Facades\Http;
+use App\Http\Middleware\VerifyFirebaseToken;
 
 /*
 |--------------------------------------------------------------------------
@@ -83,13 +84,29 @@ Route::middleware('auth:sanctum')->group(function () {
     // PAGOS
     // ===========================================
 
+
+    // ===== RUTAS PÚBLICAS (sin middleware) =====
     Route::prefix('pagos')->group(function () {
-        Route::post('/c2p', [PaymentController::class, 'initiateC2PPayment']);
-        Route::post('/tarjeta', [PaymentController::class, 'processCardPayment']);
-        Route::post('/p2p', [PaymentController::class, 'validateP2PPayment']);
+
+        // ✅ CORRECTO: todas usan el mismo middleware
+        Route::post('/c2p', [PaymentController::class, 'initiateC2PPayment'])
+            ->middleware(VerifyFirebaseToken::class);  // ← punto y coma
+
+        Route::post('/p2p', [PaymentController::class, 'validateP2PPayment'])
+            ->middleware(VerifyFirebaseToken::class);  // ← punto y coma
+
+        // ✅ CORRECTO: /pagos/tarjeta (sin doble /pagos/)
+        Route::post('/tarjeta', [PaymentController::class, 'processCardPayment'])
+            ->middleware(VerifyFirebaseToken::class);  // ← punto y coma
+
     });
 
-    Route::prefix('pagos')->name('api.pagos.')->group(function () {
+
+
+
+    Route::prefix('pagos')->group(function () {
+        // ✅ CORRECTO - sin repetir 'pagos'
+        Route::match(['get', 'post'], '/tarjeta', [PaymentController::class, 'processCardPayment']);
         // Payouts (requieren ser admin)
         Route::prefix('payouts')->middleware(['admin'])->name('payouts.')->group(function () {
             Route::get('/pendientes', [PaymentController::class, 'obtenerPagosPendientes'])->name('pendientes');
