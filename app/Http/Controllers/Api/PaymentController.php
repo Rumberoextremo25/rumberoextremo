@@ -64,7 +64,7 @@ class PaymentController extends Controller
             'Amount' => 'required|numeric|min:0.01',
             'idCardType' => 'required|integer',
             'CardNumber' => 'required|string|max:20',
-            'dtExpiration' => 'required|numeric|digits:6',
+            'dtExpiration' => 'required|string|size:6|regex:/^[0-9]{6}$/',
             'CardHolderName' => 'required|string|max:255',
             'AccountType' => 'required|integer',
             'CVV' => 'required|numeric|digits_between:3,4',
