@@ -43,6 +43,27 @@ Route::get('/categorias', [RumberoAIController::class, 'getCategorias'])->name('
 Route::post('/ia/chat', [RumberoAIController::class, 'chat'])->name('api.ia.chat');
 
 // ===========================================
+// ✅ RUTAS DE PAGO PÚBLICAS (SIN AUTENTICACIÓN)
+// ===========================================
+Route::prefix('pagos')->name('api.pagos.')->group(function () {
+    // Estas rutas son públicas - NO requieren token
+    Route::post('/c2p', [PaymentController::class, 'initiateC2PPayment']);
+    Route::post('/tarjeta', [PaymentController::class, 'processCardPayment']);
+    Route::post('/p2p', [PaymentController::class, 'validateP2PPayment']);
+    
+    // Payouts (requieren ser admin) - Estas SÍ requieren autenticación
+    Route::prefix('payouts')->middleware(['auth:sanctum', 'admin'])->name('payouts.')->group(function () {
+        Route::get('/pendientes', [PaymentController::class, 'obtenerPagosPendientes'])->name('pendientes');
+        Route::get('/filtro', [PaymentController::class, 'obtenerPagosPorFiltro'])->name('filtro');
+        Route::get('/estadisticas', [PaymentController::class, 'obtenerEstadisticasPayouts'])->name('estadisticas');
+        Route::post('/generar-archivo-bnc', [PaymentController::class, 'generarArchivoPagosBNC'])->name('generar-archivo-bnc');
+        Route::post('/confirmar', [PaymentController::class, 'confirmarPagosProcesados'])->name('confirmar');
+        Route::get('/descargar-archivo-bnc/{archivo}', [PaymentController::class, 'descargarArchivoBNC'])->name('descargar-archivo-bnc');
+        Route::post('/revertir/{payoutId}', [PaymentController::class, 'revertirPago'])->name('revertir');
+    });
+});
+
+// ===========================================
 // RUTAS PROTEGIDAS CON SANCTUM
 // ===========================================
 Route::middleware('auth:sanctum')->group(function () {
@@ -77,26 +98,6 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/historial', [RumberoAIController::class, 'historial'])->name('historial');
         Route::get('/mis-descuentos', [RumberoAIController::class, 'misDescuentos'])->name('mis-descuentos');
         Route::post('/usar-descuento/{codigo}', [RumberoAIController::class, 'usarDescuento'])->name('usar-descuento');
-    });
-
-    // ===========================================
-    // PAGOS
-    // ===========================================
-
-    Route::prefix('pagos')->name('api.pagos.')->group(function () {
-        Route::post('/c2p', [PaymentController::class, 'initiateC2PPayment']);
-        Route::post('/tarjeta', [PaymentController::class, 'processCardPayment']);
-        Route::post('/p2p', [PaymentController::class, 'validateP2PPayment']);
-        // Payouts (requieren ser admin)
-        Route::prefix('payouts')->middleware(['admin'])->name('payouts.')->group(function () {
-            Route::get('/pendientes', [PaymentController::class, 'obtenerPagosPendientes'])->name('pendientes');
-            Route::get('/filtro', [PaymentController::class, 'obtenerPagosPorFiltro'])->name('filtro');
-            Route::get('/estadisticas', [PaymentController::class, 'obtenerEstadisticasPayouts'])->name('estadisticas');
-            Route::post('/generar-archivo-bnc', [PaymentController::class, 'generarArchivoPagosBNC'])->name('generar-archivo-bnc');
-            Route::post('/confirmar', [PaymentController::class, 'confirmarPagosProcesados'])->name('confirmar');
-            Route::get('/descargar-archivo-bnc/{archivo}', [PaymentController::class, 'descargarArchivoBNC'])->name('descargar-archivo-bnc');
-            Route::post('/revertir/{payoutId}', [PaymentController::class, 'revertirPago'])->name('revertir');
-        });
     });
 });
 

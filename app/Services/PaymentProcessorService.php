@@ -2,14 +2,14 @@
 
 namespace App\Services;
 
-use App\Models\Sale;
-use App\Models\Payout;
 use App\Models\Ally;
-use App\Models\PaymentTransaction;
-use App\Models\Payment;
 use App\Models\Order;
+use App\Models\Payment;
+use App\Models\PaymentTransaction;
+use App\Models\Payout;
+use App\Models\Sale;
 use App\Models\User;
-use App\Helpers\JsonHelper;
+use App\Utils\JsonHelper;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -56,11 +56,15 @@ class PaymentProcessorService
 
             $validatedData = array_merge($bankValidatedData, $systemValidatedData);
 
-            // 3. Obtener usuario autenticado
+            // 3. Obtener usuario (OPCIONAL - puede ser null para pagos públicos)
             $user = auth()->user();
-            if (!$user) {
-                throw new \Exception('Usuario no autenticado');
-            }
+            $userId = $user ? $user->id : ($validatedData['user_id'] ?? null);
+
+            Log::info("Usuario procesando pago", [
+                'authenticated' => $user ? 'si' : 'no',
+                'user_id' => $userId,
+                'has_user_in_request' => isset($validatedData['user_id'])
+            ]);
 
             // 4. Preparar datos para BNC
             $bncData = $prepareBncData($validatedData);
@@ -98,18 +102,19 @@ class PaymentProcessorService
                 $aliadoData['monto_neto'] = $validatedData['Amount'];
             }
 
-            // 9. CREAR PAYMENT TRANSACTION
+            // 9. CREAR PAYMENT TRANSACTION (con userId opcional)
             $transaction = $this->createPaymentTransaction(
                 $paymentType,
                 $validatedData,
-                $user,
+                $userId,
                 $aliadoData,
                 $payment->id,
                 $order->id
             );
             Log::info("✅ PaymentTransaction creada", [
                 'transaction_id' => $transaction->id,
-                'reference' => $transaction->reference_code
+                'reference' => $transaction->reference_code,
+                'user_id' => $transaction->user_id
             ]);
 
             // 10. Ejecutar pago en BNC
@@ -148,7 +153,7 @@ class PaymentProcessorService
                     'comision' => $aliadoData['comision_porcentaje']
                 ]);
                 $payout = $this->payoutService->createPayout($venta, $aliadoData, $bncResponse);
-                
+
                 $transaction->update([
                     'payout_id' => $payout->id,
                     'status' => 'confirmed'
@@ -189,6 +194,7 @@ class PaymentProcessorService
                 'message' => 'Datos de entrada inválidos.',
                 'errors' => $e->errors()
             ], 422);
+            
         } catch (\Exception $e) {
             DB::rollBack();
             Log::error("ERROR GENERAL en pago {$paymentType}: " . $e->getMessage(), [
@@ -203,12 +209,12 @@ class PaymentProcessorService
     }
 
     /**
-     * Crear PaymentTransaction
+     * Crear PaymentTransaction (acepta userId nullable)
      */
     private function createPaymentTransaction(
         string $paymentType,
         array $validatedData,
-        User $user,
+        ?int $userId,
         array $aliadoData,
         int $paymentId,
         int $orderId
@@ -223,7 +229,7 @@ class PaymentProcessorService
         ];
 
         return PaymentTransaction::create([
-            'user_id' => $user->id,
+            'user_id' => $userId,
             'ally_id' => $aliadoData['aliado_id'] ?? null,
             'original_amount' => $validatedData['Amount'],
             'discount_percentage' => $aliadoData['discount'] ?? 0,
@@ -299,9 +305,23 @@ class PaymentProcessorService
     private function executeBncPayment(string $paymentType, array $bncData): array
     {
         try {
-            Log::debug("Ejecutando pago BNC: {$paymentType}", [
-                'bnc_data_keys' => array_keys($bncData)
+            Log::info("🔵 ENVIANDO A BNC - {$paymentType}", [
+                'bnc_data_keys' => array_keys($bncData),
+                'bnc_data_sanitized' => $this->sanitizeSensitiveData($bncData)
             ]);
+
+            // Verificar que BncApiService tenga token válido
+            if (!$this->bncApiService->hasWorkingKey()) {
+                Log::warning("🟡 BNC - No hay WorkingKey válido, intentando obtener...");
+                
+                $encryptedToken = $this->bncApiService->getSessionToken();
+                if ($encryptedToken) {
+                    $workingKey = $this->bncApiService->processSessionToken($encryptedToken);
+                    Log::info("🟢 BNC - WorkingKey obtenido: " . ($workingKey ? 'OK' : 'FALLÓ'));
+                } else {
+                    Log::error("🔴 BNC - No se pudo obtener token de sesión");
+                }
+            }
 
             $response = match ($paymentType) {
                 'c2p' => $this->bncApiService->initiateC2PPayment($bncData),
@@ -310,17 +330,51 @@ class PaymentProcessorService
                 default => throw new \Exception("Tipo de pago no soportado: {$paymentType}")
             };
 
-            Log::debug("Respuesta BNC ejecutada", [
-                'payment_type' => $paymentType,
+            // Log de la respuesta completa (sanitizada)
+            Log::info("🔵 RESPUESTA DE BNC - {$paymentType}", [
                 'response_type' => gettype($response),
-                'response_keys' => is_array($response) ? array_keys($response) : 'NOT_ARRAY'
+                'response_status' => $response['Status'] ?? ($response['success'] ?? 'unknown'),
+                'response_message' => $response['Message'] ?? ($response['message'] ?? 'Sin mensaje'),
+                'response_code' => $response['Code'] ?? ($response['code'] ?? 'N/A'),
+                'has_reference' => isset($response['Reference']) ? 'SI' : 'NO',
+                'has_transaction_id' => isset($response['TransactionIdentifier']) ? 'SI' : 'NO',
+                'has_auth_code' => isset($response['AuthorizationCode']) ? 'SI' : 'NO',
             ]);
 
+            // Verificar si la respuesta es exitosa
+            if (isset($response['Status']) && $response['Status'] !== 'OK') {
+                Log::error("🔴 BNC - Error en respuesta: " . ($response['Message'] ?? 'Error desconocido'));
+            }
+
             return $response;
+            
         } catch (\Exception $e) {
-            Log::error("Error ejecutando pago BNC {$paymentType}: " . $e->getMessage());
+            Log::error("🔴 ERROR EN BNC - {$paymentType}: " . $e->getMessage(), [
+                'trace' => $e->getTraceAsString()
+            ]);
             throw $e;
         }
+    }
+
+    /**
+     * Sanitiza datos sensibles para logs
+     */
+    private function sanitizeSensitiveData(array $data): array
+    {
+        $sanitized = [];
+        foreach ($data as $key => $value) {
+            if (in_array($key, ['CardNumber', 'CVV', 'CardPIN', 'Token'])) {
+                $value = (string)$value;
+                $sanitized[$key] = strlen($value) > 8 
+                    ? substr($value, 0, 4) . '****' . substr($value, -4)
+                    : '****';
+            } elseif (is_array($value)) {
+                $sanitized[$key] = $this->sanitizeSensitiveData($value);
+            } else {
+                $sanitized[$key] = $value;
+            }
+        }
+        return $sanitized;
     }
 
     /**
@@ -395,7 +449,6 @@ class PaymentProcessorService
                             'comision_monto' => $aliadoData['monto_comision'],
                             'monto_neto_aliado' => $aliadoData['monto_neto'],
                         ]);
-
                     } else {
                         $aliadoData['aliado_errors'][] = "Aliado inactivo o suspendido: {$aliado->status}";
                         Log::warning("Aliado no activo por user_id", [
@@ -426,7 +479,7 @@ class PaymentProcessorService
      */
     private function determineCommission(float $discountAliado): float
     {
-        $comision = match(true) {
+        $comision = match (true) {
             $discountAliado >= 0 && $discountAliado <= 10 => 15.0,
             $discountAliado > 10 && $discountAliado <= 20 => 12.0,
             $discountAliado > 20 && $discountAliado <= 30 => 10.0,
@@ -516,6 +569,17 @@ class PaymentProcessorService
     {
         Log::debug("Validando respuesta BNC para: {$paymentType}", ['response' => $bncResponse]);
 
+        // Primero verificar si hay error explícito
+        if (isset($bncResponse['Status']) && $bncResponse['Status'] !== 'OK') {
+            Log::warning("🔴 BNC respondió con Status: {$bncResponse['Status']}");
+            return false;
+        }
+
+        if (isset($bncResponse['success']) && $bncResponse['success'] === false) {
+            Log::warning("🔴 BNC respondió con success: false");
+            return false;
+        }
+
         $validations = [
             'c2p' => function ($response) {
                 $hasStatusOK = isset($response['Status']) && $response['Status'] === 'OK';
@@ -527,23 +591,44 @@ class PaymentProcessorService
                     $hasReference;
             },
             'card' => function ($response) {
-                return isset($response['TransactionIdentifier']) && !empty($response['TransactionIdentifier']) &&
-                    isset($response['Reference']) && !empty($response['Reference']);
+                $hasTransactionId = isset($response['TransactionIdentifier']) && !empty($response['TransactionIdentifier']);
+                $hasReference = isset($response['Reference']) && !empty($response['Reference']);
+                
+                if (!$hasTransactionId) {
+                    Log::warning("🔴 Falta TransactionIdentifier en respuesta BNC");
+                }
+                if (!$hasReference) {
+                    Log::warning("🔴 Falta Reference en respuesta BNC");
+                }
+                
+                return $hasTransactionId && $hasReference;
             },
             'p2p' => function ($response) {
-                return isset($response['Reference']) && !empty($response['Reference']) &&
-                    isset($response['AuthorizationCode']) && !empty($response['AuthorizationCode']);
+                $hasReference = isset($response['Reference']) && !empty($response['Reference']);
+                $hasAuthCode = isset($response['AuthorizationCode']) && !empty($response['AuthorizationCode']);
+                
+                if (!$hasReference) {
+                    Log::warning("🔴 Falta Reference en respuesta BNC");
+                }
+                if (!$hasAuthCode) {
+                    Log::warning("🔴 Falta AuthorizationCode en respuesta BNC");
+                }
+                
+                return $hasReference && $hasAuthCode;
             }
         ];
 
         if ($paymentType && isset($validations[$paymentType])) {
             $isValid = $validations[$paymentType]($bncResponse);
             if ($isValid) {
-                Log::info("Validación {$paymentType} exitosa");
+                Log::info("✅ Validación {$paymentType} exitosa");
                 return true;
+            } else {
+                Log::warning("🔴 Validación específica para {$paymentType} falló");
             }
         }
 
+        // Validaciones genéricas como fallback
         $genericValidations = [
             'has_reference' => isset($bncResponse['Reference']) && !empty($bncResponse['Reference']),
             'has_status_ok' => isset($bncResponse['Status']) && $bncResponse['Status'] === 'OK' &&
@@ -559,12 +644,12 @@ class PaymentProcessorService
 
         foreach ($genericValidations as $validationName => $validation) {
             if ($validation) {
-                Log::info('Validación genérica exitosa', ['validation_criteria' => $validationName]);
+                Log::info("✅ Validación genérica exitosa: {$validationName}");
                 return true;
             }
         }
 
-        Log::warning('Validación BNC fallida');
+        Log::warning('🔴 Todas las validaciones BNC fallaron');
         return false;
     }
 
