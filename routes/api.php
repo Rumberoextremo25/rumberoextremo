@@ -84,24 +84,19 @@ Route::middleware('auth:sanctum')->group(function () {
     // PAGOS
     // ===========================================
 
-
-    // ===== RUTAS PÚBLICAS (sin middleware) =====
+    // ========== RUTAS PROTEGIDAS (CON AUTENTICACIÓN) ==========
     Route::prefix('pagos')->group(function () {
 
-    // ✅ CORRECTO: todas usan el mismo middleware
-    Route::post('/c2p', [PaymentController::class, 'initiateC2PPayment'])
-        ->middleware(VerifyFirebaseToken::class)
-        ->name('api.pagos.c2p');
+        // ✅ ENDPOINTS PÚBLICOS - Sin autenticación
+        Route::post('/c2p', [PaymentController::class, 'initiateC2PPayment'])
+            ->name('api.pagos.c2p');
 
-    Route::post('/p2p', [PaymentController::class, 'validateP2PPayment'])
-        ->middleware(VerifyFirebaseToken::class)
-        ->name('api.pagos.p2p');
+        Route::post('/p2p', [PaymentController::class, 'validateP2PPayment'])
+            ->name('api.pagos.p2p');
 
-    // ✅ CORRECTO: SOLO '/tarjeta' (sin repetir 'pagos')
-    Route::post('/tarjeta', [PaymentController::class, 'processCardPayment'])
-        ->middleware(VerifyFirebaseToken::class)
-        ->name('api.pagos.tarjeta');
-});
+        Route::post('/tarjeta', [PaymentController::class, 'processCardPayment'])
+            ->name('api.pagos.tarjeta');
+    });
 
 
 
