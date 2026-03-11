@@ -107,8 +107,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
     Route::prefix('pagos')->group(function () {
-        // ✅ CORRECTO - sin repetir 'pagos'
-        Route::match(['get', 'post'], '/tarjeta', [PaymentController::class, 'processCardPayment']);
         // Payouts (requieren ser admin)
         Route::prefix('payouts')->middleware(['admin'])->name('payouts.')->group(function () {
             Route::get('/pendientes', [PaymentController::class, 'obtenerPagosPendientes'])->name('pendientes');
