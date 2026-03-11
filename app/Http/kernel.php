@@ -57,7 +57,6 @@ class Kernel extends HttpKernel
         'precognitive' => \Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests::class,
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
-        'firebase.auth' => \App\Http\Middleware\VerifyFirebaseToken::class,
 
         // ✅ MIDDLEWARE ADMIN - VERIFICA QUE ESTÉ AQUÍ
         'admin' => \App\Http\Middleware\AdminMiddleware::class,

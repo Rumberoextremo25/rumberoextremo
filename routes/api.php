@@ -11,7 +11,6 @@ use App\Http\Controllers\Api\PaymentController;
 use App\Http\Controllers\Api\BankController;
 use App\Http\Controllers\RumberoAIController;
 use Illuminate\Support\Facades\Http;
-use App\Http\Middleware\VerifyFirebaseToken;
 
 /*
 |--------------------------------------------------------------------------
@@ -84,24 +83,10 @@ Route::middleware('auth:sanctum')->group(function () {
     // PAGOS
     // ===========================================
 
-    // ========== RUTAS PROTEGIDAS (CON AUTENTICACIÓN) ==========
-    Route::prefix('pagos')->group(function () {
-
-        // ✅ ENDPOINTS PÚBLICOS - Sin autenticación
-        Route::post('/c2p', [PaymentController::class, 'initiateC2PPayment'])
-            ->name('api.pagos.c2p');
-
-        Route::post('/p2p', [PaymentController::class, 'validateP2PPayment'])
-            ->name('api.pagos.p2p');
-
-        Route::post('/tarjeta', [PaymentController::class, 'processCardPayment'])
-            ->name('api.pagos.tarjeta');
-    });
-
-
-
-
-    Route::prefix('pagos')->group(function () {
+    Route::prefix('pagos')->name('api.pagos.')->group(function () {
+        Route::post('/c2p', [PaymentController::class, 'initiateC2PPayment']);
+        Route::post('/tarjeta', [PaymentController::class, 'processCardPayment']);
+        Route::post('/p2p', [PaymentController::class, 'validateP2PPayment']);
         // Payouts (requieren ser admin)
         Route::prefix('payouts')->middleware(['admin'])->name('payouts.')->group(function () {
             Route::get('/pendientes', [PaymentController::class, 'obtenerPagosPendientes'])->name('pendientes');
