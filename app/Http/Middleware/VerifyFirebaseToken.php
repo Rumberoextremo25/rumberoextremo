@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use Google_Client;
 use Illuminate\Support\Facades\Log;
 
+error_log("🚀 ARCHIVO VerifyFirebaseToken.php CARGADO");
+
 class VerifyFirebaseToken
 {
     public function handle(Request $request, Closure $next)
