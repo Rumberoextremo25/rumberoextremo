@@ -97,48 +97,165 @@ class PaymentController extends Controller
     }
 
     /**
-     * Valida si un pago P2P ya fue realizado
+     * PASO 1: SOLICITAR DÉBITO (envía SMS con código)
      */
-    public function validateP2PPayment(Request $request): JsonResponse
+    public function solicitarDebito(Request $request): JsonResponse
     {
         $validated = $request->validate([
-            'ClientID' => 'required|string|min:6|max:20',
-            'Reference' => 'required|string|max:100',
             'Amount' => 'required|numeric|min:0.01|max:999999.99',
-            'DateMovement' => 'required|date|date_format:Y-m-d',
-            'AccountNumber' => 'nullable|string|max:50',
+            'DebtorAccount' => 'required|string|max:20',
+            'DebtorAccountType' => 'required|string|in:CELE,CTAH,CTAV,AHORROS,CORRIENTE',
+            'DebtorBank' => 'required|string|size:4',
+            'DebtorID' => 'required|string|max:15',
+        ]);
+
+        Log::info('📤 SOLICITAR DÉBITO - Request:', $validated);
+
+        try {
+            // Llamar al servicio BNC
+            $result = $this->bncApiService->solicitarDebito($validated);
+
+            Log::info('📦 SOLICITAR DÉBITO - Respuesta BNC:', $result);
+
+            // Procesar respuesta según estructura del banco
+            $success = false;
+            $message = 'Error en la solicitud';
+            $requestId = null;
+
+            if (isset($result['success']) && $result['success'] === true) {
+                $success = true;
+                $message = $result['message'] ?? 'Código SMS enviado';
+                $requestId = $result['requestId'] ?? $result['data']['requestId'] ?? null;
+            } elseif (isset($result['Status']) && $result['Status'] === 'OK') {
+                $success = true;
+                $message = 'Código SMS enviado';
+                $requestId = $result['RequestId'] ?? $result['TransactionId'] ?? null;
+            } elseif (isset($result['CodigoRespuesta']) && $result['CodigoRespuesta'] === '00') {
+                $success = true;
+                $message = 'Código SMS enviado';
+                $requestId = $result['IdSolicitud'] ?? null;
+            }
+
+            return response()->json([
+                'success' => $success,
+                'message' => $message,
+                'data' => [
+                    'requestId' => $requestId,
+                    'expiresIn' => 300 // 5 minutos para ingresar código
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error('❌ SOLICITAR DÉBITO - Error: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al procesar la solicitud: ' . $e->getMessage(),
+                'data' => null
+            ], 500);
+        }
+    }
+
+    /**
+     * PASO 2: EMITIR DÉBITO (confirma con código SMS)
+     */
+    public function emitirDebito(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'DebtorBank' => 'required|string|size:4',
+            'DebtorAccount' => 'required|string|max:20',
+            'DebtorAccType' => 'required|string|in:CELE,CTAH,CTAV,AHORROS,CORRIENTE',
+            'Concept' => 'required|string|max:10',
+            'AddtlInf' => 'required|string|size:6', // Código SMS de 6 dígitos
+            'DebtorID' => 'required|string|max:15',
+            'Amount' => 'required|numeric|min:0.01|max:999999.99',
+            'DebtorName' => 'required|string|max:100',
             'ChildClientID' => 'nullable|string|max:50',
             'BranchID' => 'nullable|string|max:50',
         ]);
 
-        $result = $this->bncApiService->validateP2PPayment($validated);
+        Log::info('📤 EMITIR DÉBITO - Request:', $validated);
 
-        // 🔍 LOG PARA VER LA ESTRUCTURA REAL
-        Log::info('📦 Respuesta de BNC validateP2PPayment:', $result);
+        try {
+            // Llamar al servicio BNC
+            $result = $this->bncApiService->emitirDebito($validated);
 
-        // Determinar si existe el movimiento basado en la respuesta
-        $paymentExists = false;
+            Log::info('📦 EMITIR DÉBITO - Respuesta BNC:', $result);
 
-        if (isset($result['MovementExists'])) {
-            $paymentExists = $result['MovementExists'];
-        } elseif (isset($result['success']) && $result['success'] === true) {
-            $paymentExists = true;
-        } elseif (isset($result['Status']) && $result['Status'] === 'OK') {
-            $paymentExists = true;
-        } elseif (isset($result['data']['exists'])) {
-            $paymentExists = $result['data']['exists'];
-        } elseif (isset($result['exists'])) {
-            $paymentExists = $result['exists'];
-        } elseif (isset($result['Reference']) && !empty($result['Reference'])) {
-            // Si hay referencia, asumimos que existe
-            $paymentExists = true;
+            // Procesar respuesta según estructura del banco
+            $success = false;
+            $message = 'Error al emitir el débito';
+            $transactionId = null;
+            $reference = null;
+
+            if (isset($result['success']) && $result['success'] === true) {
+                $success = true;
+                $message = $result['message'] ?? 'Débito procesado exitosamente';
+                $transactionId = $result['transactionId'] ?? $result['data']['transactionId'] ?? null;
+                $reference = $result['reference'] ?? $result['data']['reference'] ?? null;
+            } elseif (isset($result['Status']) && $result['Status'] === 'OK') {
+                $success = true;
+                $message = 'Débito procesado exitosamente';
+                $transactionId = $result['TransactionId'] ?? null;
+                $reference = $result['Reference'] ?? null;
+            } elseif (isset($result['CodigoRespuesta']) && $result['CodigoRespuesta'] === '00') {
+                $success = true;
+                $message = 'Débito procesado exitosamente';
+                $transactionId = $result['IdTransaccion'] ?? null;
+                $reference = $result['Referencia'] ?? null;
+            }
+
+            return response()->json([
+                'success' => $success,
+                'message' => $message,
+                'data' => [
+                    'transactionId' => $transactionId,
+                    'reference' => $reference,
+                    'amount' => $validated['Amount'],
+                    'date' => now()->toDateTimeString()
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error('❌ EMITIR DÉBITO - Error: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al procesar el débito: ' . $e->getMessage(),
+                'data' => null
+            ], 500);
         }
+    }
 
-        return response()->json([
-            'success' => true,
-            'payment_exists' => $paymentExists,
-            'payment_details' => $paymentExists ? $result : null
+    /**
+     * Opcional: Reenviar código SMS
+     */
+    public function reenviarSms(Request $request): JsonResponse
+    {
+        $validated = $request->validate([
+            'requestId' => 'required|string|max:50',
+            'DebtorID' => 'required|string|max:15',
         ]);
+
+        Log::info('📤 REENVIAR SMS - Request:', $validated);
+
+        try {
+            $result = $this->bncApiService->reenviarSms($validated);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Código reenviado exitosamente',
+                'data' => [
+                    'expiresIn' => 300
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error('❌ REENVIAR SMS - Error: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al reenviar código: ' . $e->getMessage(),
+                'data' => null
+            ], 500);
+        }
     }
 
     /**

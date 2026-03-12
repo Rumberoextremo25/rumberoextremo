@@ -16,6 +16,9 @@ class BncApiService
     private string $c2pApiUrl;
     private string $vposApiUrl;
     private string $validationApiUrl;
+    private string $debitTokenRequestUrl;
+    private string $debitBeginnerUrl;
+    private string $debitReenviarUrl;
     private string $banksApiUrl;
     private string $ratesApiUrl;
     protected DataCypher $dataCypher;
@@ -31,6 +34,9 @@ class BncApiService
         $this->validationApiUrl = env('BNC_P2P_API_URL');
         $this->banksApiUrl = env('BNC_BANKS_API_URL');
         $this->ratesApiUrl = env('BNC_RATES_API_URL');
+        $this->debitTokenRequestUrl = env('BNC_DEBITO_SOLICITAR_URL');  // /api/SIMF/DebitTokenRequest
+        $this->debitBeginnerUrl = env('BNC_DEBITO_EMITIR_URL');         // /api/SIMF/DebitBeginner
+        $this->debitReenviarUrl = env('BNC_DEBITO_REENVIAR_URL');
 
         $this->dataCypher = new DataCypher($this->masterKey);
     }
@@ -165,24 +171,108 @@ class BncApiService
         }, $this->vposApiUrl);
     }
 
-    public function validateP2PPayment(array $data): ?array
+    /**
+     * ==================== MÉTODOS PARA DÉBITO INMEDIATO ====================
+     */
+
+    /**
+     * PASO 1: SOLICITAR DÉBITO (envía SMS)
+     * Endpoint: /api/SIMF/DebitTokenRequest
+     * 
+     * Request:
+     * {
+     *   "Amount": 150.50,
+     *   "DebtorAccount": "584142786580",
+     *   "DebtorAccountType": "CELE",
+     *   "DebtorBank": "0191",
+     *   "DebtorID": "V16113363"
+     * }
+     */
+    public function solicitarDebito(array $data): ?array
     {
-        return $this->executeTransaction('P2P_VALIDATION', $data, [
-            'ClientID',
-            'Reference',
+        return $this->executeTransaction('DEBIT_TOKEN_REQUEST', $data, [
             'Amount',
-            'DateMovement'
+            'DebtorAccount',
+            'DebtorAccountType',
+            'DebtorBank',
+            'DebtorID'
         ], function ($data) {
             return [
-                "ClientID" => $data['ClientID'],
-                "AccountNumber" => $data['AccountNumber'] ?? "",
-                "Reference" => $data['Reference'],
                 "Amount" => (float)$data['Amount'],
-                "DateMovement" => $data['DateMovement'],
+                "DebtorAccount" => $data['DebtorAccount'],
+                "DebtorAccountType" => $data['DebtorAccountType'],
+                "DebtorBank" => $data['DebtorBank'],
+                "DebtorID" => $data['DebtorID']
+            ];
+        }, $this->debitTokenRequestUrl); // URL: /api/SIMF/DebitTokenRequest
+    }
+
+    /**
+     * PASO 2: EMITIR DÉBITO (confirma con código SMS)
+     * Endpoint: /api/SIMF/DebitBeginner
+     * 
+     * Request:
+     * {
+     *   "DebtorBank": "0191",
+     *   "DebtorAccount": "584142786580",
+     *   "DebtorAccType": "CELE",
+     *   "Concept": "DIJPaLP",
+     *   "AddtlInf": "123456",
+     *   "DebtorID": "V16113363",
+     *   "Amount": 150.50,
+     *   "DebtorName": "Juan Pérez",
+     *   "ChildClientID": "",
+     *   "BranchID": ""
+     * }
+     */
+    public function emitirDebito(array $data): ?array
+    {
+        return $this->executeTransaction('DEBIT_BEGINNER', $data, [
+            'DebtorBank',
+            'DebtorAccount',
+            'DebtorAccType',
+            'Concept',
+            'AddtlInf',
+            'DebtorID',
+            'Amount',
+            'DebtorName'
+        ], function ($data) {
+            return [
+                "DebtorBank" => $data['DebtorBank'],
+                "DebtorAccount" => $data['DebtorAccount'],
+                "DebtorAccType" => $data['DebtorAccType'],
+                "Concept" => $data['Concept'],
+                "AddtlInf" => $data['AddtlInf'],
+                "DebtorID" => $data['DebtorID'],
+                "Amount" => (float)$data['Amount'],
+                "DebtorName" => $data['DebtorName'],
                 "ChildClientID" => $data['ChildClientID'] ?? "",
                 "BranchID" => $data['BranchID'] ?? ""
             ];
-        }, $this->validationApiUrl); // Usar URL de validación
+        }, $this->debitBeginnerUrl); // URL: /api/SIMF/DebitBeginner
+    }
+
+    /**
+     * Opcional: REENVIAR CÓDIGO SMS
+     * Endpoint: /api/debito/reenviar-sms
+     * 
+     * Request:
+     * {
+     *   "requestId": "REQ123456",
+     *   "DebtorID": "V16113363"
+     * }
+     */
+    public function reenviarSms(array $data): ?array
+    {
+        return $this->executeTransaction('DEBIT_REENVIAR_SMS', $data, [
+            'requestId',
+            'DebtorID'
+        ], function ($data) {
+            return [
+                "requestId" => $data['requestId'],
+                "DebtorID" => $data['DebtorID']
+            ];
+        }, $this->debitReenviarUrl); // URL: /api/debito/reenviar-sms
     }
 
     public function getBanksFromBnc(): ?array

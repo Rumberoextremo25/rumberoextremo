@@ -52,11 +52,13 @@ class PaymentProcessorService
             $systemValidatedData = $request->validate([
                 'user_id' => 'nullable|integer|exists:allies,user_id',
                 'descripcion' => 'nullable|string|max:255',
+                'codigo_sms' => 'required_if:paymentType,debito_emitir|string|size:6',
+                'request_id' => 'nullable|string|max:50',
             ]);
 
             $validatedData = array_merge($bankValidatedData, $systemValidatedData);
 
-            // 3. Obtener usuario (OPCIONAL - puede ser null para pagos públicos)
+            // 3. Obtener usuario
             $user = auth()->user();
             $userId = $user ? $user->id : ($validatedData['user_id'] ?? null);
 
@@ -79,7 +81,7 @@ class PaymentProcessorService
 
             // 6. CREAR ORDER
             $order = Order::create([
-                'total' => $validatedData['Amount'],
+                'total' => $validatedData['Amount'] ?? $validatedData['monto'] ?? 0,
                 'status' => 'pending',
                 'created_at' => now(),
                 'updated_at' => now(),
@@ -99,10 +101,10 @@ class PaymentProcessorService
                 $aliadoData['discount'] = 0;
                 $aliadoData['comision_porcentaje'] = 0;
                 $aliadoData['monto_comision'] = 0;
-                $aliadoData['monto_neto'] = $validatedData['Amount'];
+                $aliadoData['monto_neto'] = $validatedData['Amount'] ?? $validatedData['monto'] ?? 0;
             }
 
-            // 9. CREAR PAYMENT TRANSACTION (con userId opcional)
+            // 9. CREAR PAYMENT TRANSACTION
             $transaction = $this->createPaymentTransaction(
                 $paymentType,
                 $validatedData,
@@ -118,7 +120,7 @@ class PaymentProcessorService
             ]);
 
             // 10. Ejecutar pago en BNC
-            $bncResponse = $this->executeBncPayment($paymentType, $bncData);
+            $bncResponse = $this->executeBncPayment($paymentType, $bncData, $validatedData);
 
             // 11. Validar respuesta del BNC
             if (!$this->isBncResponseSuccessful($bncResponse, $paymentType)) {
@@ -171,7 +173,7 @@ class PaymentProcessorService
 
             return response()->json([
                 'success' => true,
-                'message' => "Pago {$paymentType} procesado exitosamente.",
+                'message' => $this->getSuccessMessage($paymentType),
                 'data' => $this->buildSuccessResponse(
                     $venta,
                     $payout,
@@ -209,7 +211,22 @@ class PaymentProcessorService
     }
 
     /**
-     * Crear PaymentTransaction (acepta userId nullable)
+     * Obtener mensaje de éxito según tipo de pago
+     */
+    private function getSuccessMessage(string $paymentType): string
+    {
+        return match ($paymentType) {
+            'c2p' => 'Pago móvil procesado exitosamente.',
+            'card' => 'Pago con tarjeta procesado exitosamente.',
+            'debito_solicitar' => 'Solicitud de débito enviada. Revisa tu SMS.',
+            'debito_emitir' => 'Débito inmediato procesado exitosamente.',
+            'debito_reenviar' => 'Código SMS reenviado exitosamente.',
+            default => "Pago {$paymentType} procesado exitosamente."
+        };
+    }
+
+    /**
+     * Crear PaymentTransaction
      */
     private function createPaymentTransaction(
         string $paymentType,
@@ -219,6 +236,8 @@ class PaymentProcessorService
         int $paymentId,
         int $orderId
     ): PaymentTransaction {
+        $monto = $validatedData['Amount'] ?? $validatedData['monto'] ?? 0;
+        
         $confirmationData = [
             'request_data' => $validatedData,
             'payment_type' => $paymentType,
@@ -228,15 +247,21 @@ class PaymentProcessorService
             'created_at' => now()->toDateTimeString()
         ];
 
+        $status = match ($paymentType) {
+            'debito_solicitar' => 'pending_sms',
+            'debito_emitir' => 'pending_confirmation',
+            default => 'pending_manual_confirmation'
+        };
+
         return PaymentTransaction::create([
             'user_id' => $userId,
             'ally_id' => $aliadoData['aliado_id'] ?? null,
-            'original_amount' => $validatedData['Amount'],
+            'original_amount' => $monto,
             'discount_percentage' => $aliadoData['discount'] ?? 0,
-            'amount_to_ally' => $aliadoData['monto_neto'] ?? 0,
+            'amount_to_ally' => $aliadoData['monto_neto'] ?? $monto,
             'platform_commission' => $aliadoData['monto_comision'] ?? 0,
             'payment_method' => $this->mapPaymentMethod($paymentType),
-            'status' => 'pending_manual_confirmation',
+            'status' => $status,
             'reference_code' => $this->generateReferenceCode(),
             'confirmation_data' => JsonHelper::encode($confirmationData),
         ]);
@@ -282,7 +307,7 @@ class PaymentProcessorService
         return match ($paymentType) {
             'c2p' => 'pago_movil',
             'card' => 'tarjeta_credito',
-            'p2p' => 'transferencia_bancaria',
+            'debito_solicitar', 'debito_emitir', 'debito_reenviar' => 'debito_inmediato',
             default => $paymentType
         };
     }
@@ -302,7 +327,7 @@ class PaymentProcessorService
     /**
      * Ejecuta el pago según el tipo
      */
-    private function executeBncPayment(string $paymentType, array $bncData): array
+    private function executeBncPayment(string $paymentType, array $bncData, array $validatedData): array
     {
         try {
             Log::info("🔵 ENVIANDO A BNC - {$paymentType}", [
@@ -326,25 +351,22 @@ class PaymentProcessorService
             $response = match ($paymentType) {
                 'c2p' => $this->bncApiService->initiateC2PPayment($bncData),
                 'card' => $this->bncApiService->processCardPayment($bncData),
-                'p2p' => $this->bncApiService->validateP2PPayment($bncData),
+                'debito_solicitar' => $this->bncApiService->solicitarDebito($bncData),
+                'debito_emitir' => $this->bncApiService->emitirDebito($bncData),
+                'debito_reenviar' => $this->bncApiService->reenviarSms($bncData),
                 default => throw new \Exception("Tipo de pago no soportado: {$paymentType}")
             };
 
-            // Log de la respuesta completa (sanitizada)
+            // Log de la respuesta completa
             Log::info("🔵 RESPUESTA DE BNC - {$paymentType}", [
                 'response_type' => gettype($response),
                 'response_status' => $response['Status'] ?? ($response['success'] ?? 'unknown'),
                 'response_message' => $response['Message'] ?? ($response['message'] ?? 'Sin mensaje'),
                 'response_code' => $response['Code'] ?? ($response['code'] ?? 'N/A'),
                 'has_reference' => isset($response['Reference']) ? 'SI' : 'NO',
+                'has_request_id' => isset($response['requestId']) ? 'SI' : 'NO',
                 'has_transaction_id' => isset($response['TransactionIdentifier']) ? 'SI' : 'NO',
-                'has_auth_code' => isset($response['AuthorizationCode']) ? 'SI' : 'NO',
             ]);
-
-            // Verificar si la respuesta es exitosa
-            if (isset($response['Status']) && $response['Status'] !== 'OK') {
-                Log::error("🔴 BNC - Error en respuesta: " . ($response['Message'] ?? 'Error desconocido'));
-            }
 
             return $response;
             
@@ -363,7 +385,7 @@ class PaymentProcessorService
     {
         $sanitized = [];
         foreach ($data as $key => $value) {
-            if (in_array($key, ['CardNumber', 'CVV', 'CardPIN', 'Token'])) {
+            if (in_array($key, ['CardNumber', 'CVV', 'CardPIN', 'Token', 'DebtorAccount'])) {
                 $value = (string)$value;
                 $sanitized[$key] = strlen($value) > 8 
                     ? substr($value, 0, 4) . '****' . substr($value, -4)
@@ -382,6 +404,8 @@ class PaymentProcessorService
      */
     private function processAliadoData(array $validatedData): array
     {
+        $monto = $validatedData['Amount'] ?? $validatedData['monto'] ?? 0;
+        
         $aliadoData = [
             'has_aliado' => false,
             'aliado_id' => null,
@@ -391,8 +415,8 @@ class PaymentProcessorService
             'discount' => 0,
             'comision_porcentaje' => 0,
             'monto_comision' => 0,
-            'monto_despues_descuento' => $validatedData['Amount'],
-            'monto_neto' => $validatedData['Amount'],
+            'monto_despues_descuento' => $monto,
+            'monto_neto' => $monto,
             'aliado_valid' => false,
             'aliado_errors' => []
         ];
@@ -429,7 +453,7 @@ class PaymentProcessorService
                         $aliadoData['comision_porcentaje'] = $this->determineCommission($aliadoData['discount']);
 
                         // Cálculos detallados
-                        $aliadoData['monto_despues_descuento'] = $validatedData['Amount'] * (1 - ($aliadoData['discount'] / 100));
+                        $aliadoData['monto_despues_descuento'] = $monto * (1 - ($aliadoData['discount'] / 100));
                         $aliadoData['monto_comision'] = round(
                             $aliadoData['monto_despues_descuento'] * ($aliadoData['comision_porcentaje'] / 100),
                             2
@@ -444,7 +468,7 @@ class PaymentProcessorService
                             'aliado_id' => $aliado->id,
                             'discount_aliado' => $aliadoData['discount'] . '%',
                             'comision_plataforma' => $aliadoData['comision_porcentaje'] . '%',
-                            'monto_original' => $validatedData['Amount'],
+                            'monto_original' => $monto,
                             'monto_despues_descuento' => $aliadoData['monto_despues_descuento'],
                             'comision_monto' => $aliadoData['monto_comision'],
                             'monto_neto_aliado' => $aliadoData['monto_neto'],
@@ -520,12 +544,14 @@ class PaymentProcessorService
         Order $order,
         Payment $payment
     ): Sale {
+        $monto = $validatedData['Amount'] ?? $validatedData['monto'] ?? 0;
+        
         $baseData = [
             'aliado_id' => $aliadoData['aliado_id'] ?? null,
-            'monto_total' => $validatedData['Amount'],
-            'monto_pagado' => $validatedData['Amount'],
-            'referencia_banco' => $bncResponse['Reference'] ?? null,
-            'transaction_id' => $bncResponse['TransactionIdentifier'] ?? null,
+            'monto_total' => $monto,
+            'monto_pagado' => $monto,
+            'referencia_banco' => $bncResponse['Reference'] ?? $bncResponse['reference'] ?? null,
+            'transaction_id' => $bncResponse['TransactionIdentifier'] ?? $bncResponse['transactionId'] ?? null,
             'estado' => 'completado',
             'fecha_venta' => now(),
             'fecha_pago' => now(),
@@ -541,20 +567,21 @@ class PaymentProcessorService
         $specificData = match ($paymentType) {
             'c2p' => [
                 'metodo_pago' => 'pago_movil',
-                'banco_destino' => $validatedData['DebtorBankCode'],
-                'telefono_cliente' => $validatedData['DebtorCellPhone'],
-                'cedula_cliente' => $validatedData['DebtorID'],
+                'banco_destino' => $validatedData['DebtorBankCode'] ?? null,
+                'telefono_cliente' => $validatedData['DebtorCellPhone'] ?? null,
+                'cedula_cliente' => $validatedData['DebtorID'] ?? null,
             ],
             'card' => [
                 'metodo_pago' => 'tarjeta_credito',
-                'numero_tarjeta' => substr($validatedData['CardNumber'], -4),
-                'nombre_titular' => $validatedData['CardHolderName'],
+                'numero_tarjeta' => isset($validatedData['CardNumber']) ? substr($validatedData['CardNumber'], -4) : null,
+                'nombre_titular' => $validatedData['CardHolderName'] ?? null,
             ],
-            'p2p' => [
-                'metodo_pago' => 'transferencia_p2p',
-                'banco_destino' => $validatedData['BeneficiaryBankCode'],
-                'telefono_beneficiario' => $validatedData['BeneficiaryCellPhone'],
-                'cedula_beneficiario' => $validatedData['BeneficiaryID'],
+            'debito_solicitar', 'debito_emitir', 'debito_reenviar' => [
+                'metodo_pago' => 'debito_inmediato',
+                'banco_origen' => $validatedData['DebtorBank'] ?? null,
+                'cuenta_origen' => isset($validatedData['DebtorAccount']) ? substr($validatedData['DebtorAccount'], -4) : null,
+                'cedula_cliente' => $validatedData['DebtorID'] ?? null,
+                'codigo_sms' => $validatedData['codigo_sms'] ?? null,
             ],
             default => ['metodo_pago' => $paymentType]
         };
@@ -580,41 +607,36 @@ class PaymentProcessorService
             return false;
         }
 
+        // Validaciones por tipo de pago
         $validations = [
             'c2p' => function ($response) {
-                $hasStatusOK = isset($response['Status']) && $response['Status'] === 'OK';
-                $hasReference = isset($response['Reference']) && !empty($response['Reference']);
-                $hasAuthCode = isset($response['AuthorizationCode']) && !empty($response['AuthorizationCode']);
-
-                return ($hasStatusOK && $hasReference) ||
-                    ($hasReference && $hasAuthCode) ||
-                    $hasReference;
+                return isset($response['Reference']) && !empty($response['Reference']);
             },
             'card' => function ($response) {
-                $hasTransactionId = isset($response['TransactionIdentifier']) && !empty($response['TransactionIdentifier']);
-                $hasReference = isset($response['Reference']) && !empty($response['Reference']);
-                
-                if (!$hasTransactionId) {
-                    Log::warning("🔴 Falta TransactionIdentifier en respuesta BNC");
-                }
-                if (!$hasReference) {
-                    Log::warning("🔴 Falta Reference en respuesta BNC");
-                }
-                
-                return $hasTransactionId && $hasReference;
+                return isset($response['TransactionIdentifier']) && !empty($response['TransactionIdentifier']) &&
+                       isset($response['Reference']) && !empty($response['Reference']);
             },
-            'p2p' => function ($response) {
-                $hasReference = isset($response['Reference']) && !empty($response['Reference']);
-                $hasAuthCode = isset($response['AuthorizationCode']) && !empty($response['AuthorizationCode']);
+            'debito_solicitar' => function ($response) {
+                $hasRequestId = isset($response['requestId']) || 
+                               isset($response['data']['requestId']) ||
+                               isset($response['RequestId']);
+                $statusOk = isset($response['Status']) && $response['Status'] === 'OK';
                 
-                if (!$hasReference) {
-                    Log::warning("🔴 Falta Reference en respuesta BNC");
-                }
-                if (!$hasAuthCode) {
-                    Log::warning("🔴 Falta AuthorizationCode en respuesta BNC");
-                }
+                return $hasRequestId || $statusOk;
+            },
+            'debito_emitir' => function ($response) {
+                $hasTransactionId = isset($response['transactionId']) ||
+                                   isset($response['data']['transactionId']) ||
+                                   isset($response['TransactionId']);
+                $hasReference = isset($response['reference']) ||
+                               isset($response['data']['reference']) ||
+                               isset($response['Reference']);
+                $statusOk = isset($response['Status']) && $response['Status'] === 'OK';
                 
-                return $hasReference && $hasAuthCode;
+                return ($hasTransactionId && $hasReference) || $statusOk;
+            },
+            'debito_reenviar' => function ($response) {
+                return isset($response['success']) && $response['success'] === true;
             }
         ];
 
@@ -631,15 +653,10 @@ class PaymentProcessorService
         // Validaciones genéricas como fallback
         $genericValidations = [
             'has_reference' => isset($bncResponse['Reference']) && !empty($bncResponse['Reference']),
-            'has_status_ok' => isset($bncResponse['Status']) && $bncResponse['Status'] === 'OK' &&
-                (isset($bncResponse['Reference']) || isset($bncResponse['TransactionIdentifier'])),
-            'has_transaction_id' => isset($bncResponse['TransactionIdentifier']) && !empty($bncResponse['TransactionIdentifier']) &&
-                isset($bncResponse['Reference']) && !empty($bncResponse['Reference']),
-            'has_auth_code' => isset($bncResponse['AuthorizationCode']) && !empty($bncResponse['AuthorizationCode']) &&
-                isset($bncResponse['Reference']) && !empty($bncResponse['Reference']),
+            'has_request_id' => isset($bncResponse['requestId']) || isset($bncResponse['RequestId']),
+            'has_transaction_id' => isset($bncResponse['transactionId']) || isset($bncResponse['TransactionId']),
+            'has_status_ok' => isset($bncResponse['Status']) && $bncResponse['Status'] === 'OK',
             'has_success_true' => isset($bncResponse['success']) && $bncResponse['success'] === true,
-            'c2p_reference_only' => $paymentType === 'c2p' &&
-                isset($bncResponse['Reference']) && !empty($bncResponse['Reference'])
         ];
 
         foreach ($genericValidations as $validationName => $validation) {
@@ -697,6 +714,8 @@ class PaymentProcessorService
             'bnc_response' => [
                 'Reference' => $bncResponse['Reference'] ?? null,
                 'Status' => $bncResponse['Status'] ?? null,
+                'requestId' => $bncResponse['requestId'] ?? null,
+                'transactionId' => $bncResponse['transactionId'] ?? null,
             ]
         ];
 
@@ -710,6 +729,14 @@ class PaymentProcessorService
                 'monto_despues_descuento' => $aliadoData['monto_despues_descuento'],
                 'monto_neto' => $aliadoData['monto_neto'],
                 'payout_id' => $payout?->id,
+            ];
+        }
+
+        if ($payout) {
+            $response['payout'] = [
+                'id' => $payout->id,
+                'monto' => $payout->monto,
+                'estado' => $payout->estado,
             ];
         }
 

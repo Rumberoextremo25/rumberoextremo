@@ -49,8 +49,10 @@ Route::prefix('pagos')->name('api.pagos.')->group(function () {
     // Estas rutas son públicas - NO requieren token
     Route::post('/c2p', [PaymentController::class, 'initiateC2PPayment']);
     Route::post('/tarjeta', [PaymentController::class, 'processCardPayment']);
-    Route::post('/p2p', [PaymentController::class, 'validateP2PPayment']);
-    
+    Route::post('/solicitar', [PaymentController::class, 'solicitarDebito']);
+    Route::post('/emitir', [PaymentController::class, 'emitirDebito']);
+    Route::post('/reenviar-sms', [PaymentController::class, 'reenviarSms']);
+
     // Payouts (requieren ser admin) - Estas SÍ requieren autenticación
     Route::prefix('payouts')->middleware(['auth:sanctum', 'admin'])->name('payouts.')->group(function () {
         Route::get('/pendientes', [PaymentController::class, 'obtenerPagosPendientes'])->name('pendientes');
