@@ -38,7 +38,7 @@ class PaymentController extends Controller
             'DebtorCellPhone' => 'required|string|regex:/^[0-9]{10,15}$/',
             'DebtorID' => 'required|string|min:6|max:20',
             'Amount' => 'required|numeric|min:0.01',
-            'Token' => 'required|string|regex:/^[0-9]{6,7}$/',
+            'Token' => 'required|string|regex:/^[0-9]{6,8}$/',
             'Terminal' => 'required|string|max:50',
         ], function ($validatedData) {
             return [
