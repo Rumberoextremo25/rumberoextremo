@@ -51,25 +51,10 @@
                                 <select class="form-select" name="ally_id" id="allySelect" required>
                                     <option value="">-- Seleccione un aliado --</option>
                                     @foreach($allies as $ally)
-                                        <option value="{{ $ally->id }}">
-                                            {{ $ally->name }} (ID: {{ $ally->id }})
+                                        <option value="{{ $ally->id }}" data-discount="{{ $ally->descuento_aliado }}">
+                                            {{ $ally->name }} (ID: {{ $ally->id }}) - {{ $ally->descuento_aliado }}% descuento
                                         </option>
                                     @endforeach
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Tipo de QR -->
-                        <div class="row mb-4">
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">
-                                    <i class="fas fa-tag me-2"></i>Tipo de QR
-                                </label>
-                                <select class="form-select" name="type" id="qrTypeSelect" required>
-                                    <option value="">-- Seleccione tipo --</option>
-                                    <option value="c2p">📱 C2P - Pago Móvil</option>
-                                    <option value="card">💳 Tarjeta de Crédito/Débito</option>
-                                    <option value="p2p">🔄 P2P - Transferencia</option>
                                 </select>
                             </div>
                         </div>
@@ -102,6 +87,13 @@
                                 <!-- Aquí se insertará el QR -->
                             </div>
                             
+                            <div class="mb-3">
+                                <span class="badge bg-info p-2">
+                                    <i class="fas fa-percentage me-1"></i>
+                                    Descuento del aliado: <span id="resultDiscount">0%</span>
+                                </span>
+                            </div>
+                            
                             <div class="d-flex justify-content-center gap-2 flex-wrap">
                                 <button type="button" class="btn btn-success" id="btnDownloadPNG">
                                     <i class="fas fa-download me-2"></i>PNG
@@ -128,20 +120,21 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     const allySelect = document.getElementById('allySelect');
-    const qrTypeSelect = document.getElementById('qrTypeSelect');
     const allyInfo = document.getElementById('allyInfo');
     const allyInfoText = document.getElementById('allyInfoText');
     const form = document.getElementById('qrGeneratorForm');
     const btnGenerate = document.getElementById('btnGenerate');
     const qrResult = document.getElementById('qrResult');
     const qrImageContainer = document.getElementById('qrImageContainer');
+    const resultDiscount = document.getElementById('resultDiscount');
 
-    // Mostrar información cuando se selecciona todo
+    // Mostrar información cuando se selecciona aliado
     function updateAllyInfo() {
-        if (allySelect.value && qrTypeSelect.value) {
-            const allyName = allySelect.options[allySelect.selectedIndex].text;
-            const typeText = qrTypeSelect.options[qrTypeSelect.selectedIndex].text;
-            allyInfoText.textContent = `Generando QR ${typeText} para: ${allyName}`;
+        if (allySelect.value) {
+            const selectedOption = allySelect.options[allySelect.selectedIndex];
+            const allyName = selectedOption.text.split(' - ')[0];
+            const discount = selectedOption.dataset.discount;
+            allyInfoText.innerHTML = `Generando QR para: <strong>${allyName}</strong> | Descuento: <strong>${discount}%</strong>`;
             allyInfo.style.display = 'block';
         } else {
             allyInfo.style.display = 'none';
@@ -149,14 +142,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     allySelect.addEventListener('change', updateAllyInfo);
-    qrTypeSelect.addEventListener('change', updateAllyInfo);
 
     // Generar QR
     form.addEventListener('submit', async function(e) {
         e.preventDefault();
         
-        if (!allySelect.value || !qrTypeSelect.value) {
-            alert('Seleccione un aliado y tipo de QR');
+        if (!allySelect.value) {
+            alert('Seleccione un aliado');
             return;
         }
 
@@ -165,6 +157,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
         try {
             const formData = new FormData(form);
+            // Agregar tipo por defecto si no existe en el backend
+            formData.append('type', 'c2p');
             
             const response = await fetch('{{ route("admin.qr.generate") }}', {
                 method: 'POST',
@@ -178,6 +172,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
             if (data.success) {
                 qrImageContainer.innerHTML = data.qr_code;
+                if (data.ally_info && data.ally_info.discount) {
+                    resultDiscount.textContent = data.ally_info.discount + '%';
+                }
                 qrResult.style.display = 'block';
                 
                 window.lastQRData = {
