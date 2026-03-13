@@ -501,4 +501,121 @@ class BncApiService
             return ['success' => false, 'error' => $e->getMessage()];
         }
     }
+
+    /**
+     * MÉTODO DE PRUEBA LOCAL - Ejecuta desde el navegador
+    public function testLocalDebito(): array
+    {
+        $results = [
+            'steps' => [],
+            'success' => false,
+            'message' => ''
+        ];
+
+        try {
+            // PASO 1: Verificar configuración
+            $results['steps'][] = ['name' => 'Verificando configuración...', 'status' => 'pending'];
+
+            $config = [
+                'authApiUrl' => $this->authApiUrl,
+                'clientGuid' => $this->clientGuid,
+                'masterKey' => !empty($this->masterKey) ? '✓ Configurado' : '✗ Faltante',
+                'debitTokenRequestUrl' => $this->debitTokenRequestUrl,
+                'debitBeginnerUrl' => $this->debitBeginnerUrl
+            ];
+
+            $results['config'] = $config;
+            $results['steps'][] = ['name' => 'Configuración verificada', 'status' => 'ok'];
+
+            // PASO 2: Obtener Session Token
+            $results['steps'][] = ['name' => 'Obteniendo Session Token...', 'status' => 'pending'];
+
+            $encryptedToken = $this->getSessionToken();
+            if (!$encryptedToken) {
+                throw new Exception('No se pudo obtener Session Token');
+            }
+
+            $results['steps'][] = ['name' => 'Session Token obtenido', 'status' => 'ok'];
+            $results['token_length'] = strlen($encryptedToken);
+
+            // PASO 3: Procesar Working Key
+            $results['steps'][] = ['name' => 'Procesando Working Key...', 'status' => 'pending'];
+
+            $workingKey = $this->processSessionToken($encryptedToken);
+            if (!$workingKey) {
+                throw new Exception('No se pudo obtener Working Key');
+            }
+
+            $results['steps'][] = ['name' => 'Working Key procesado', 'status' => 'ok'];
+            $results['working_key_length'] = strlen($workingKey);
+
+            // PASO 4: Probar solicitud de débito (sin enviar al BNC aún)
+            $results['steps'][] = ['name' => 'Preparando datos de prueba...', 'status' => 'pending'];
+
+            $testData = [
+                'Amount' => 100.50,
+                'DebtorAccount' => '584142786580',
+                'DebtorAccountType' => 'CELE',
+                'DebtorBank' => '0191',
+                'DebtorID' => 'V16113363'
+            ];
+
+            $jsonData = json_encode($testData);
+            $encryptedValue = $this->dataCypher->encryptWithKey($jsonData, $workingKey);
+            $validationHash = $this->dataCypher->encryptSHA256($jsonData);
+
+            $solicitud = [
+                "ClientGUID" => $this->clientGuid,
+                "value" => $encryptedValue,
+                "Validation" => $validationHash,
+                "Reference" => $this->generateDailyReference(),
+                "swTestOperation" => false
+            ];
+
+            $results['test_request'] = [
+                'original_data' => $testData,
+                'encrypted_length' => strlen($encryptedValue),
+                'validation_length' => strlen($validationHash),
+                'reference' => $solicitud['Reference']
+            ];
+
+            $results['steps'][] = ['name' => 'Datos preparados correctamente', 'status' => 'ok'];
+
+            // PASO 5: Probar conexión con BNC (opcional)
+            $results['steps'][] = ['name' => 'Probando conexión con BNC...', 'status' => 'pending'];
+
+            try {
+                $response = Http::timeout(10)
+                    ->withHeaders(['Content-Type' => 'application/json'])
+                    ->post($this->debitTokenRequestUrl, $solicitud);
+
+                $results['bnc_response'] = [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                    'successful' => $response->successful()
+                ];
+
+                if ($response->successful()) {
+                    $results['steps'][] = ['name' => 'Conexión con BNC exitosa', 'status' => 'ok'];
+                    $results['success'] = true;
+                    $results['message'] = 'Todo funciona correctamente';
+                } else {
+                    $results['steps'][] = ['name' => 'BNC respondió con error', 'status' => 'error'];
+                    $results['message'] = 'Error en respuesta del BNC';
+                }
+            } catch (\Exception $e) {
+                $results['bnc_response'] = [
+                    'error' => $e->getMessage(),
+                    'type' => get_class($e)
+                ];
+                $results['steps'][] = ['name' => 'Error conectando con BNC', 'status' => 'error'];
+                $results['message'] = 'Error de conexión: ' . $e->getMessage();
+            }
+        } catch (\Exception $e) {
+            $results['steps'][] = ['name' => 'ERROR: ' . $e->getMessage(), 'status' => 'error'];
+            $results['message'] = $e->getMessage();
+        }
+
+        return $results;
+    } */
 }

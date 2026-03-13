@@ -104,10 +104,20 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 
+
+
+
 /***********
 // ===========================================
 // RUTAS DE DESARROLLO / DEBUG
 // ===========================================
+
+// routes/api.php - Agrega esto TEMPORALMENTE
+Route::get('/debito/test-local', function() {
+    $bnc = app(App\Services\BncApiService::class);
+    $result = $bnc->testLocalDebito();
+    return response()->json($result);
+});
 
 // Ruta para poblar base de datos (solo desarrollo)
 Route::post('/populate-db', function () {
