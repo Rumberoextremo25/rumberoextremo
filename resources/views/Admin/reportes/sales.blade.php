@@ -185,9 +185,8 @@
                     <i class="fas fa-dollar-sign"></i>
                 </div>
                 <div class="metric-content">
-                    <span class="metric-label">Ventas Totales USD</span>
+                    <span class="metric-label">Ventas Totales</span>
                     <span class="metric-value">${{ number_format($stats['total_sales'] ?? 0, 2) }}</span>
-                    <span class="metric-sub">Bs. {{ number_format($stats['total_sales_ves'] ?? 0, 2) }}</span>
                     <div class="metric-trend {{ ($stats['growth'] ?? 0) >= 0 ? 'positive' : 'negative' }}">
                         <i class="fas fa-arrow-{{ ($stats['growth'] ?? 0) >= 0 ? 'up' : 'down' }}"></i>
                         {{ number_format(abs($stats['growth'] ?? 0), 1) }}%
@@ -215,20 +214,16 @@
                 <div class="metric-content">
                     <span class="metric-label">Clientes Únicos</span>
                     <span class="metric-value">{{ number_format($stats['unique_clients'] ?? 0) }}</span>
-                    @if(($stats['repeat_customers'] ?? 0) > 0)
-                        <span class="metric-sub">{{ $stats['repeat_customers'] }} recurrentes</span>
-                    @endif
                 </div>
             </div>
 
             <div class="metric-card info">
                 <div class="metric-icon">
-                    <i class="fas fa-exchange-alt"></i>
+                    <i class="fas fa-chart-line"></i>
                 </div>
                 <div class="metric-content">
-                    <span class="metric-label">Tasa BNC</span>
-                    <span class="metric-value">{{ number_format($exchangeRateVes, 2) }}</span>
-                    <span class="metric-sub">Bs. por USD</span>
+                    <span class="metric-label">Promedio por Orden</span>
+                    <span class="metric-value">${{ number_format($stats['average_order_value'] ?? 0, 2) }}</span>
                 </div>
             </div>
         </div>
@@ -272,9 +267,6 @@
                     <div class="chart-type-toggle">
                         <button class="type-btn active" id="toggleChartType">
                             <i class="fas fa-chart-bar"></i>
-                        </button>
-                        <button class="type-btn" id="toggleCurrencyBtn">
-                            <i class="fas fa-dollar-sign"></i>
                         </button>
                     </div>
                     <button class="chart-download" id="downloadChart" title="Descargar gráfico">
@@ -382,9 +374,8 @@
                     </div>
                     <div class="period-stats">
                         <div class="period-stat">
-                            <span class="stat-label">Ventas USD</span>
+                            <span class="stat-label">Ventas</span>
                             <span class="stat-value">${{ number_format($stats['total_sales'] ?? 0, 2) }}</span>
-                            <span class="stat-sub">Bs. {{ number_format($stats['total_sales_ves'] ?? 0, 2) }}</span>
                         </div>
                         <div class="period-stat">
                             <span class="stat-label">Órdenes</span>
@@ -407,7 +398,7 @@
                     </div>
                     <div class="period-stats">
                         <div class="period-stat">
-                            <span class="stat-label">Ventas USD</span>
+                            <span class="stat-label">Ventas</span>
                             <span class="stat-value">${{ number_format($stats['previous_sales'] ?? 0, 2) }}</span>
                         </div>
                         <div class="growth-indicator {{ ($stats['growth'] ?? 0) >= 0 ? 'positive' : 'negative' }}">
@@ -437,7 +428,7 @@
                         <h4 class="ally-name">{{ $metrics['top_ally']->ally->company_name ?? 'N/A' }}</h4>
                         <div class="ally-stats">
                             <div class="ally-stat">
-                                <span class="stat-label">Ventas USD</span>
+                                <span class="stat-label">Ventas</span>
                                 <span class="stat-value">${{ number_format($metrics['top_ally']->total_sales, 2) }}</span>
                             </div>
                             <div class="ally-stat">
@@ -490,8 +481,6 @@
             // Datos iniciales
             const initialLabels = @json($chartData['labels'] ?? []);
             const initialChartData = @json($chartData['data'] ?? []);
-            const exchangeRate = {{ $exchangeRateVes }};
-            const initialChartDataVes = initialChartData.map(amount => amount * exchangeRate);
 
             // Referencias DOM
             const salesChartCanvas = document.getElementById('salesChart');
@@ -505,7 +494,6 @@
             const filtersToggle = document.getElementById('filtersToggle');
             const filtersContent = document.getElementById('filtersContent');
             const toggleChartType = document.getElementById('toggleChartType');
-            const toggleCurrencyBtn = document.getElementById('toggleCurrencyBtn');
             const downloadChartBtn = document.getElementById('downloadChart');
             const downloadPdfButton = document.getElementById('downloadPdfButton');
             const downloadExcelButton = document.getElementById('downloadExcelButton');
@@ -513,7 +501,6 @@
 
             let salesChart;
             let currentChartType = 'bar';
-            let showingVes = false;
 
             // Toggle filtros
             if (filtersToggle && filtersContent) {
@@ -526,31 +513,23 @@
             }
 
             // Función para renderizar gráfico
-            function renderChart(labels, data, dataVes, type = 'bar', showVes = false) {
+            function renderChart(labels, data, type = 'bar') {
                 if (salesChart) salesChart.destroy();
 
                 const ctx = salesChartCanvas.getContext('2d');
-                const currentData = showVes ? dataVes : data;
-                const currentLabel = showVes ? 'Ventas (Bs.)' : 'Ventas (USD)';
                 const gradient = ctx.createLinearGradient(0, 0, 0, 400);
-                
-                if (showVes) {
-                    gradient.addColorStop(0, 'rgba(0, 184, 148, 0.8)');
-                    gradient.addColorStop(1, 'rgba(0, 184, 148, 0.1)');
-                } else {
-                    gradient.addColorStop(0, 'rgba(138, 43, 226, 0.8)');
-                    gradient.addColorStop(1, 'rgba(138, 43, 226, 0.1)');
-                }
+                gradient.addColorStop(0, 'rgba(138, 43, 226, 0.8)');
+                gradient.addColorStop(1, 'rgba(138, 43, 226, 0.1)');
 
                 salesChart = new Chart(salesChartCanvas, {
                     type: type,
                     data: {
                         labels: labels,
                         datasets: [{
-                            label: currentLabel,
-                            data: currentData,
+                            label: 'Ventas (USD)',
+                            data: data,
                             backgroundColor: gradient,
-                            borderColor: showVes ? '#00b894' : '#8a2be2',
+                            borderColor: '#8a2be2',
                             borderWidth: 2,
                             borderRadius: 8,
                             fill: type === 'line' ? false : true,
@@ -566,9 +545,7 @@
                                 callbacks: {
                                     label: (context) => {
                                         const value = context.parsed.y;
-                                        return showVes 
-                                            ? `Bs. ${value.toLocaleString('es-VE', {minimumFractionDigits: 2})}`
-                                            : `$${value.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+                                        return `$${value.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
                                     }
                                 }
                             }
@@ -577,9 +554,7 @@
                             y: {
                                 beginAtZero: true,
                                 ticks: {
-                                    callback: (value) => showVes 
-                                        ? 'Bs. ' + value.toLocaleString('es-VE')
-                                        : '$' + value.toLocaleString('en-US')
+                                    callback: (value) => '$' + value.toLocaleString('en-US')
                                 }
                             }
                         }
@@ -589,24 +564,15 @@
 
             // Render inicial
             if (salesChartCanvas && initialLabels.length > 0) {
-                renderChart(initialLabels, initialChartData, initialChartDataVes, currentChartType, showingVes);
+                renderChart(initialLabels, initialChartData, currentChartType);
             }
 
             // Toggle tipo de gráfico
             if (toggleChartType) {
                 toggleChartType.addEventListener('click', function() {
                     currentChartType = currentChartType === 'bar' ? 'line' : 'bar';
-                    renderChart(initialLabels, initialChartData, initialChartDataVes, currentChartType, showingVes);
+                    renderChart(initialLabels, initialChartData, currentChartType);
                     this.classList.toggle('active');
-                });
-            }
-
-            // Toggle moneda
-            if (toggleCurrencyBtn) {
-                toggleCurrencyBtn.addEventListener('click', function() {
-                    showingVes = !showingVes;
-                    renderChart(initialLabels, initialChartData, initialChartDataVes, currentChartType, showingVes);
-                    this.innerHTML = showingVes ? '<i class="fas fa-bs"></i>' : '<i class="fas fa-dollar-sign"></i>';
                 });
             }
 
@@ -694,7 +660,7 @@
                 });
 
                 loadingOverlay?.classList.add('active');
-                window.location.href = `{{ route('admin.reports.transactions.export') }}?${params.toString()}`;
+                window.location.href = `{{ route('admin.reports.sales.export') }}?${params.toString()}`;
                 
                 setTimeout(() => loadingOverlay?.classList.remove('active'), 2000);
             }
