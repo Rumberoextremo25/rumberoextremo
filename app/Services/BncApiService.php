@@ -34,11 +34,11 @@ class BncApiService
         $this->validationApiUrl = env('BNC_P2P_API_URL');
         $this->banksApiUrl = env('BNC_BANKS_API_URL');
         $this->ratesApiUrl = env('BNC_RATES_API_URL');
-        $this->debitTokenRequestUrl = env('BNC_DEBITO_SOLICITAR_URL');  // /api/SIMF/DebitTokenRequest
-        $this->debitBeginnerUrl = env('BNC_DEBITO_EMITIR_URL');         // /api/SIMF/DebitBeginner
+        $this->debitTokenRequestUrl = env('BNC_DEBITO_SOLICITAR_URL');
+        $this->debitBeginnerUrl = env('BNC_DEBITO_EMITIR_URL');
         $this->debitReenviarUrl = env('BNC_DEBITO_REENVIAR_URL');
 
-        $this->dataCypher = new DataCypher($this->masterKey);
+        $this->dataCypher = new DataCypher($this->masterKey ?? '');
     }
 
     /**
