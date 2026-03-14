@@ -341,7 +341,7 @@
                                 @if (auth()->user()->role === 'admin')
                                     <td>
                                         <div class="user-info">
-                                            <span class="user-name">{{ $transaccion->ally->name ?? 'N/A' }}</span>
+                                            <span class="user-name">{{ $transaccion->ally->company_name ?? 'N/A' }}</span>
                                             <span class="user-email">{{ $transaccion->ally->email ?? '' }}</span>
                                         </div>
                                     </td>

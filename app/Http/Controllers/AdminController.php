@@ -2,14 +2,13 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Models\Ally;
+use App\Models\PaymentTransaction;
 use App\Models\User;
 use App\Models\ActivityLog;
-use App\Models\PaymentTransaction;
-use Illuminate\Support\Facades\Cache;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
-use App\Models\Ally;
 use Carbon\Carbon;
 
 class AdminController extends Controller
@@ -20,6 +19,7 @@ class AdminController extends Controller
     {
         //
     }
+    
     /**
      * ========== MÉTODOS PARA TRANSACCIONES ==========
      */
@@ -35,7 +35,11 @@ class AdminController extends Controller
         $user = Auth::user();
 
         // Query base con relaciones
-        $query = PaymentTransaction::with(['user', 'ally']);
+        $query = PaymentTransaction::with([
+            'user:id,name,email',
+            'ally:id,company_name,contact_email,user_id',
+            'ally.user:id,name,email'
+        ]);
 
         // Filtrar según el rol del usuario
         if ($user->role === 'admin') {
@@ -43,13 +47,17 @@ class AdminController extends Controller
                 $query->where('ally_id', $request->ally_id);
             }
         } elseif ($user->role === 'aliado') {
+            // Buscar el registro del aliado asociado a este usuario
             $ally = Ally::where('user_id', $user->id)->first();
             if ($ally) {
+                // Filtrar por ally_id (ID en tabla allies)
                 $query->where('ally_id', $ally->id);
             } else {
+                // Si no tiene perfil de aliado, no mostrar nada
                 $query->whereRaw('1 = 0');
             }
         } else {
+            // Usuario normal: ver solo sus transacciones como cliente
             $query->where('user_id', $user->id);
         }
 
@@ -64,108 +72,125 @@ class AdminController extends Controller
 
         // PAGINACIÓN: 6 items por página
         $transacciones = $query->orderBy('created_at', 'desc')
-            ->paginate(6)  // ← CAMBIADO A 6
+            ->paginate(6)
             ->withQueryString();
 
-        // Calcular resúmenes (igual que antes)
+        // Calcular resúmenes
+        $resumen = $this->calcularResumenTransacciones($user, $request);
+
+        return view('Admin.transacciones.aliado', [
+            'transacciones' => $transacciones,
+            'totalRecibido' => $resumen['totalRecibido'],
+            'pendienteCobrar' => $resumen['pendienteCobrar'],
+            'totalTransacciones' => $resumen['totalTransacciones'],
+            'aliados' => $resumen['aliados'],
+            'comisiones' => $resumen['comisiones'] ?? null,
+            'totalComisiones' => $resumen['totalComisiones'] ?? 0
+        ]);
+    }
+
+    /**
+     * Calcular resúmenes de transacciones según rol
+     */
+    private function calcularResumenTransacciones($user, $request)
+    {
+        $result = [
+            'totalRecibido' => 0,
+            'pendienteCobrar' => 0,
+            'totalTransacciones' => 0,
+            'aliados' => collect(),
+            'comisiones' => null,
+            'totalComisiones' => 0
+        ];
+
         if ($user->role === 'admin') {
-            $resumenQuery = PaymentTransaction::query();
+            $query = PaymentTransaction::query();
+            
             if ($request->has('ally_id') && $request->ally_id) {
-                $resumenQuery->where('ally_id', $request->ally_id);
+                $query->where('ally_id', $request->ally_id);
             }
 
-            $totalRecibido = (clone $resumenQuery)
-                ->whereIn('status', ['confirmed', 'awaiting_review'])
+            $result['totalRecibido'] = (clone $query)
+                ->whereIn('status', ['confirmed'])
                 ->sum('amount_to_ally');
 
-            $pendienteCobrar = (clone $resumenQuery)
-                ->where('status', 'pending_manual_confirmation')
+            $result['pendienteCobrar'] = (clone $query)
+                ->whereIn('status', ['pending_manual_confirmation', 'awaiting_review'])
                 ->sum('amount_to_ally');
 
-            $totalTransacciones = (clone $resumenQuery)->count();
+            $result['totalTransacciones'] = (clone $query)->count();
 
-            $aliados = User::where('role', 'aliado')
+            // Lista de aliados para el filtro (solo para admin)
+            $result['aliados'] = User::where('role', 'aliado')
                 ->orderBy('name')
                 ->get(['id', 'name', 'email']);
+
+            // Calcular total de comisiones (plataforma)
+            $result['totalComisiones'] = (clone $query)
+                ->where('status', 'confirmed')
+                ->sum('platform_commission');
+
         } elseif ($user->role === 'aliado') {
             $ally = Ally::where('user_id', $user->id)->first();
-
+            
             if ($ally) {
-                $totalRecibido = PaymentTransaction::where('ally_id', $ally->id)
-                    ->whereIn('status', ['confirmed', 'awaiting_review'])
+                $query = PaymentTransaction::where('ally_id', $ally->id);
+
+                $result['totalRecibido'] = (clone $query)
+                    ->whereIn('status', ['confirmed'])
                     ->sum('amount_to_ally');
 
-                $pendienteCobrar = PaymentTransaction::where('ally_id', $ally->id)
-                    ->where('status', 'pending_manual_confirmation')
+                $result['pendienteCobrar'] = (clone $query)
+                    ->whereIn('status', ['pending_manual_confirmation', 'awaiting_review'])
                     ->sum('amount_to_ally');
 
-                $totalTransacciones = PaymentTransaction::where('ally_id', $ally->id)->count();
-            } else {
-                $totalRecibido = 0;
-                $pendienteCobrar = 0;
-                $totalTransacciones = 0;
+                $result['totalTransacciones'] = (clone $query)->count();
+
+                // Calcular comisiones generadas por este aliado
+                $result['totalComisiones'] = (clone $query)
+                    ->where('status', 'confirmed')
+                    ->sum('platform_commission');
             }
 
-            $aliados = collect();
         } else {
-            $totalRecibido = 0;
-            $pendienteCobrar = 0;
-            $totalTransacciones = PaymentTransaction::where('user_id', $user->id)->count();
-            $aliados = collect();
+            // Usuario normal
+            $result['totalTransacciones'] = PaymentTransaction::where('user_id', $user->id)->count();
         }
 
-        return view('Admin.transacciones.aliado', compact(
-            'transacciones',
-            'totalRecibido',
-            'pendienteCobrar',
-            'totalTransacciones',
-            'aliados'
-        ));
+        return $result;
     }
 
     /**
      * Ver detalle de una transacción específica
-     * - ADMIN: puede ver cualquier transacción
-     * - ALIADO: solo puede ver sus propias transacciones
      */
     public function transaccionDetalle($id)
     {
         $user = Auth::user();
 
-        // Optimización 1: Cargar solo los campos necesarios de las relaciones
+        // Query con relaciones necesarias
         $query = PaymentTransaction::with([
-            'user:id,name,email,phone1',  // Solo campos necesarios
-            'ally:id,company_name,contact_email,contact_phone'    // Solo campos necesarios
+            'user:id,name,email,phone1',
+            'ally:id,company_name,contact_email,contact_phone',
+            'ally.user:id,name,email'
         ]);
 
-        // Aplicar el mismo filtro de seguridad
+        // Aplicar filtros de seguridad
         if ($user->role === 'admin') {
             // Admin puede ver cualquier transacción
         } elseif ($user->role === 'aliado') {
-            // Aliado solo puede ver transacciones donde él es el aliado
-            $ally = Ally::where('user_id', $user->id)->first(['id']); // Solo necesitamos el ID
-            if ($ally) {
-                $query->where('ally_id', $ally->id);
-            } else {
+            $ally = Ally::where('user_id', $user->id)->first(['id']);
+            if (!$ally) {
                 abort(403, 'No tienes permiso para ver esta transacción');
             }
+            $query->where('ally_id', $ally->id);
         } else {
-            // Usuario normal solo puede ver sus propias transacciones
             $query->where('user_id', $user->id);
         }
 
-        // Optimización 2: Usar caché para transacciones que no cambian frecuentemente
-        $transaccion = Cache::remember("transaccion.detalle.{$id}", 300, function () use ($query, $id) {
-            return $query->findOrFail($id);
-        });
+        $transaccion = $query->findOrFail($id);
 
         if (request()->wantsJson()) {
-            // Optimización 3: Cache también para el modal
-            $cacheKey = "transaccion.modal.{$id}";
-            $html = Cache::remember($cacheKey, 300, function () use ($transaccion) {
-                return view('Admin.transacciones.partials.detalle-modal', compact('transaccion'))->render();
-            });
-
+            $html = view('Admin.transacciones.partials.detalle-modal', compact('transaccion'))->render();
             return response()->json([
                 'success' => true,
                 'transaccion' => $transaccion,
@@ -187,27 +212,19 @@ class AdminController extends Controller
 
         $transaccion = PaymentTransaction::findOrFail($id);
 
-        // Verificar que la transacción esté en estado pendiente
         if (!in_array($transaccion->status, ['pending_manual_confirmation', 'awaiting_review'])) {
             return $this->jsonError('Solo se pueden confirmar transacciones pendientes.');
         }
 
-        // Actualizar estado
         $transaccion->status = 'confirmed';
         $transaccion->save();
 
-        // Registrar actividad - CON TODOS LOS CAMPOS REQUERIDOS
-        ActivityLog::create([
-            'user_id' => Auth::id(),
-            'performed_by' => Auth::id(), // ← AGREGAR performed_by (generalmente el mismo que user_id)
-            'description' => 'Transacción confirmada',
-            'details' => "Transacción #{$transaccion->id} confirmada - Monto para aliado: $" . number_format($transaccion->amount_to_ally, 0, ',', '.'),
-            'status' => 'completed',
-            'activity_type' => 'transaction_confirmed',
-            // Si hay más campos como 'ip_address', 'user_agent', etc. también hay que agregarlos
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-        ]);
+        $this->registrarActividad(
+            'Transacción confirmada',
+            "Transacción #{$transaccion->id} confirmada - Monto para aliado: Bs. " . number_format($transaccion->amount_to_ally, 2, ',', '.'),
+            'completed',
+            'transaction_confirmed'
+        );
 
         return $this->jsonSuccess('Transacción confirmada correctamente.', [
             'transaccion' => $transaccion
@@ -225,32 +242,28 @@ class AdminController extends Controller
 
         $transaccion = PaymentTransaction::findOrFail($id);
 
-        // Verificar que la transacción esté en estado pendiente
         if (!in_array($transaccion->status, ['pending_manual_confirmation', 'awaiting_review'])) {
             return $this->jsonError('Solo se pueden rechazar transacciones pendientes.');
         }
 
-        // Actualizar estado
         $transaccion->status = 'failed';
         $transaccion->save();
 
-        // Registrar actividad - CON TODOS LOS CAMPOS REQUERIDOS
-        ActivityLog::create([
-            'user_id' => Auth::id(),
-            'performed_by' => Auth::id(), // ← AGREGAR performed_by
-            'description' => 'Transacción rechazada',
-            'details' => "Transacción #{$transaccion->id} rechazada",
-            'status' => 'failed',
-            'activity_type' => 'transaction_rejected',
-            'ip_address' => request()->ip(),
-            'user_agent' => request()->userAgent(),
-        ]);
+        $this->registrarActividad(
+            'Transacción rechazada',
+            "Transacción #{$transaccion->id} rechazada",
+            'failed',
+            'transaction_rejected'
+        );
 
         return $this->jsonSuccess('Transacción rechazada correctamente.', [
             'transaccion' => $transaccion
         ]);
     }
 
+    /**
+     * Aprobar múltiples transacciones
+     */
     public function aprobarMasivas(Request $request)
     {
         if (Auth::user()->role !== 'admin') {
@@ -267,28 +280,29 @@ class AdminController extends Controller
             ->whereIn('status', ['pending_manual_confirmation', 'awaiting_review'])
             ->get();
 
+        $count = 0;
         foreach ($transacciones as $transaccion) {
             $transaccion->status = 'confirmed';
             $transaccion->save();
+            $count++;
 
-            ActivityLog::create([
-                'user_id' => Auth::id(),
-                'performed_by' => Auth::id(),
-                'description' => 'Transacción confirmada (masiva)',
-                'details' => "Transacción #{$transaccion->id} confirmada - Monto: $" . number_format($transaccion->amount_to_ally, 0, ',', '.'),
-                'status' => 'completed',
-                'activity_type' => 'transaction_confirmed_bulk',
-                'ip_address' => $request->ip(),
-                'user_agent' => $request->userAgent(),
-            ]);
+            $this->registrarActividad(
+                'Transacción confirmada (masiva)',
+                "Transacción #{$transaccion->id} confirmada - Monto: Bs. " . number_format($transaccion->amount_to_ally, 2, ',', '.'),
+                'completed',
+                'transaction_confirmed_bulk'
+            );
         }
 
         return response()->json([
             'success' => true,
-            'message' => count($transacciones) . ' transacciones aprobadas correctamente'
+            'message' => $count . ' transacciones aprobadas correctamente'
         ]);
     }
 
+    /**
+     * Rechazar múltiples transacciones
+     */
     public function rechazarMasivas(Request $request)
     {
         if (Auth::user()->role !== 'admin') {
@@ -305,85 +319,57 @@ class AdminController extends Controller
             ->whereIn('status', ['pending_manual_confirmation', 'awaiting_review'])
             ->get();
 
+        $count = 0;
         foreach ($transacciones as $transaccion) {
             $transaccion->status = 'failed';
             $transaccion->save();
+            $count++;
 
-            ActivityLog::create([
-                'user_id' => Auth::id(),
-                'performed_by' => Auth::id(),
-                'description' => 'Transacción rechazada (masiva)',
-                'details' => "Transacción #{$transaccion->id} rechazada",
-                'status' => 'failed',
-                'activity_type' => 'transaction_rejected_bulk',
-                'ip_address' => $request->ip(),
-                'user_agent' => $request->userAgent(),
-            ]);
+            $this->registrarActividad(
+                'Transacción rechazada (masiva)',
+                "Transacción #{$transaccion->id} rechazada",
+                'failed',
+                'transaction_rejected_bulk'
+            );
         }
 
         return response()->json([
             'success' => true,
-            'message' => count($transacciones) . ' transacciones rechazadas correctamente'
+            'message' => $count . ' transacciones rechazadas correctamente'
         ]);
     }
 
     /**
      * Generar comprobante de transacción
-     * - ADMIN: puede ver comprobante de cualquier transacción
-     * - ALIADO: solo puede ver comprobante de sus propias transacciones
      */
     public function transaccionComprobante($id)
     {
         $user = Auth::user();
 
-        // Optimización: Cargar solo los campos necesarios
         $query = PaymentTransaction::with([
             'user:id,name,email,phone1',
             'ally:id,company_name,contact_email,contact_phone'
         ]);
 
-        // Aplicar filtros de seguridad según el rol
-        if ($user->role === 'admin') {
-            // Admin puede ver cualquier comprobante
-            // No se aplica filtro adicional
-        } elseif ($user->role === 'aliado') {
-            // Aliado solo puede ver comprobantes de sus transacciones
-            $ally = Ally::where('user_id', $user->id)->first(['id']);
-
-            if (!$ally) {
-                abort(403, 'No tienes permiso para ver este comprobante');
+        // Filtros de seguridad
+        if ($user->role !== 'admin') {
+            if ($user->role === 'aliado') {
+                $ally = Ally::where('user_id', $user->id)->first(['id']);
+                if (!$ally) {
+                    abort(403, 'No tienes permiso para ver este comprobante');
+                }
+                $query->where('ally_id', $ally->id);
+            } else {
+                $query->where('user_id', $user->id);
             }
-
-            $query->where('ally_id', $ally->id);
-        } else {
-            // Usuario normal solo puede ver comprobantes de sus transacciones
-            $query->where('user_id', $user->id);
         }
 
-        // Buscar la transacción
         $transaccion = $query->findOrFail($id);
 
-        // Verificar permisos específicos (doble verificación)
-        if ($user->role !== 'admin') {
-            $ally = Ally::where('user_id', $user->id)->first();
-
-            // Para aliados, verificar que la transacción les pertenece
-            if ($user->role === 'aliado' && (!$ally || $transaccion->ally_id !== $ally->id)) {
-                abort(403, 'No tienes permiso para ver este comprobante');
-            }
-
-            // Para usuarios normales, verificar que la transacción les pertenece
-            if ($user->role !== 'aliado' && $transaccion->user_id !== $user->id) {
-                abort(403, 'No tienes permiso para ver este comprobante');
-            }
-        }
-
-        // Registrar en logs que se generó un comprobante (opcional)
         Log::info('Comprobante generado', [
             'user_id' => $user->id,
             'user_role' => $user->role,
-            'transaction_id' => $transaccion->id,
-            'ip' => request()->ip()
+            'transaction_id' => $transaccion->id
         ]);
 
         return view('Admin.transacciones.comprobante', compact('transaccion'));
@@ -391,24 +377,27 @@ class AdminController extends Controller
 
     /**
      * Exportar transacciones a CSV
-     * - ADMIN: exporta todas las transacciones (o filtradas por aliado)
-     * - ALIADO: exporta solo sus propias transacciones
      */
     public function transaccionesExportar(Request $request)
     {
         $user = Auth::user();
 
-        // Query base con relaciones
-        $query = PaymentTransaction::with(['user', 'ally']);
+        $query = PaymentTransaction::with(['user', 'ally', 'ally.user']);
 
-        // Si NO es admin, filtrar solo sus transacciones
-        if ($user->role !== 'admin') {
-            $query->where('ally_id', $user->id);
-        }
-
-        // Si es admin y seleccionó un aliado específico
-        if ($user->role === 'admin' && $request->has('ally_id') && $request->ally_id) {
-            $query->where('ally_id', $request->ally_id);
+        // Filtrar según rol
+        if ($user->role === 'admin') {
+            if ($request->has('ally_id') && $request->ally_id) {
+                $query->where('ally_id', $request->ally_id);
+            }
+        } elseif ($user->role === 'aliado') {
+            $ally = Ally::where('user_id', $user->id)->first();
+            if ($ally) {
+                $query->where('ally_id', $ally->id);
+            } else {
+                $query->whereRaw('1 = 0');
+            }
+        } else {
+            $query->where('user_id', $user->id);
         }
 
         // Aplicar filtros
@@ -420,107 +409,70 @@ class AdminController extends Controller
             $query->where('status', $request->estado);
         }
 
-        // Obtener transacciones
         $transacciones = $query->orderBy('created_at', 'desc')->get();
 
-        // Si no hay transacciones
         if ($transacciones->isEmpty()) {
             return redirect()->back()->with('error', 'No hay transacciones para exportar');
         }
 
-        // Generar CSV
+        return $this->generarCSV($transacciones, $user);
+    }
+
+    /**
+     * Generar archivo CSV
+     */
+    private function generarCSV($transacciones, $user)
+    {
         $filename = "transacciones_" . date('Y-m-d_His') . ".csv";
 
-        // Configurar headers para descarga
         header('Content-Type: text/csv; charset=utf-8');
         header('Content-Disposition: attachment; filename="' . $filename . '"');
-        header('Pragma: no-cache');
-        header('Expires: 0');
 
-        // Crear archivo CSV en memoria
         $output = fopen('php://output', 'w');
+        fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF)); // BOM UTF-8
 
-        // Agregar BOM para UTF-8 (soporte para caracteres especiales)
-        fprintf($output, chr(0xEF) . chr(0xBB) . chr(0xBF));
-
-        // Definir encabezados según el rol
-        if ($user->role === 'admin') {
-            $headers = [
-                'ID',
-                'Fecha',
-                'Hora',
-                'Código de Referencia',
-                'Aliado',
-                'Email Aliado',
-                'Usuario',
-                'Email Usuario',
-                'Monto Original',
-                'Descuento %',
-                'Comisión Plataforma',
-                'Monto para Aliado',
-                'Método de Pago',
-                'Estado',
-                'Fecha Creación'
-            ];
-        } else {
-            $headers = [
-                'ID',
-                'Fecha',
-                'Hora',
-                'Código de Referencia',
-                'Usuario',
-                'Email Usuario',
-                'Monto Original',
-                'Descuento %',
-                'Comisión Plataforma',
-                'Monto para Aliado',
-                'Método de Pago',
-                'Estado',
-                'Fecha Creación'
-            ];
-        }
-
-        // Escribir encabezados
+        // Encabezados
+        $headers = [
+            'ID',
+            'Fecha',
+            'Hora',
+            'Código Referencia',
+            'Cliente',
+            'Email Cliente',
+            'Aliado',
+            'Email Aliado',
+            'Monto Original (Bs.)',
+            'Descuento %',
+            'Comisión Plataforma (Bs.)',
+            'Monto para Aliado (Bs.)',
+            'Método de Pago',
+            'Estado',
+            'Fecha Creación'
+        ];
         fputcsv($output, $headers);
 
-        // Escribir datos
+        // Datos
         foreach ($transacciones as $t) {
-            if ($user->role === 'admin') {
-                $row = [
-                    $t->id,
-                    $t->created_at->format('d/m/Y'),
-                    $t->created_at->format('H:i:s'),
-                    $t->reference_code,
-                    $t->ally->name ?? 'N/A',
-                    $t->ally->email ?? 'N/A',
-                    $t->user->name ?? 'N/A',
-                    $t->user->email ?? 'N/A',
-                    '$ ' . number_format($t->original_amount, 0, ',', '.'),
-                    $t->discount_percentage . '%',
-                    '$ ' . number_format($t->platform_commission, 0, ',', '.'),
-                    '$ ' . number_format($t->amount_to_ally, 0, ',', '.'),
-                    $this->formatPaymentMethod($t->payment_method),
-                    $this->formatStatus($t->status),
-                    $t->created_at->format('d/m/Y H:i:s')
-                ];
-            } else {
-                $row = [
-                    $t->id,
-                    $t->created_at->format('d/m/Y'),
-                    $t->created_at->format('H:i:s'),
-                    $t->reference_code,
-                    $t->user->name ?? 'N/A',
-                    $t->user->email ?? 'N/A',
-                    '$ ' . number_format($t->original_amount, 0, ',', '.'),
-                    $t->discount_percentage . '%',
-                    '$ ' . number_format($t->platform_commission, 0, ',', '.'),
-                    '$ ' . number_format($t->amount_to_ally, 0, ',', '.'),
-                    $this->formatPaymentMethod($t->payment_method),
-                    $this->formatStatus($t->status),
-                    $t->created_at->format('d/m/Y H:i:s')
-                ];
-            }
-
+            $nombreAliado = $t->ally->company_name ?? ($t->ally->user->name ?? 'N/A');
+            $emailAliado = $t->ally->contact_email ?? ($t->ally->user->email ?? 'N/A');
+            
+            $row = [
+                $t->id,
+                $t->created_at->format('d/m/Y'),
+                $t->created_at->format('H:i:s'),
+                $t->reference_code,
+                $t->user->name ?? 'N/A',
+                $t->user->email ?? 'N/A',
+                $nombreAliado,
+                $emailAliado,
+                number_format($t->original_amount, 2, ',', '.'),
+                $t->discount_percentage . '%',
+                number_format($t->platform_commission, 2, ',', '.'),
+                number_format($t->amount_to_ally, 2, ',', '.'),
+                $this->formatPaymentMethod($t->payment_method),
+                $this->formatStatus($t->status),
+                $t->created_at->format('d/m/Y H:i:s')
+            ];
             fputcsv($output, $row);
         }
 
@@ -537,19 +489,31 @@ class AdminController extends Controller
      */
     private function applyDateFilter($query, $filter)
     {
-        switch ($filter) {
-            case 'today':
-                return $query->whereDate('created_at', Carbon::today());
-            case 'yesterday':
-                return $query->whereDate('created_at', Carbon::yesterday());
-            case 'week':
-                return $query->whereBetween('created_at', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()]);
-            case 'month':
-                return $query->whereMonth('created_at', Carbon::now()->month)
-                    ->whereYear('created_at', Carbon::now()->year);
-            default:
-                return $query;
-        }
+        return match ($filter) {
+            'today' => $query->whereDate('created_at', Carbon::today()),
+            'yesterday' => $query->whereDate('created_at', Carbon::yesterday()),
+            'week' => $query->whereBetween('created_at', [Carbon::now()->startOfWeek(), Carbon::now()->endOfWeek()]),
+            'month' => $query->whereMonth('created_at', Carbon::now()->month)
+                ->whereYear('created_at', Carbon::now()->year),
+            default => $query,
+        };
+    }
+
+    /**
+     * Registrar actividad
+     */
+    private function registrarActividad($descripcion, $detalles, $estado, $tipo)
+    {
+        ActivityLog::create([
+            'user_id' => Auth::id(),
+            'performed_by' => Auth::id(),
+            'description' => $descripcion,
+            'details' => $detalles,
+            'status' => $estado,
+            'activity_type' => $tipo,
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->userAgent(),
+        ]);
     }
 
     /**
@@ -652,6 +616,8 @@ class AdminController extends Controller
     {
         return match ($method) {
             'pago_movil' => '📱 Pago Móvil',
+            'tarjeta_credito' => '💳 Tarjeta de Crédito',
+            'debito_inmediato' => '🏦 Débito Inmediato',
             'transferencia_bancaria' => '🏦 Transferencia',
             default => $method ?? 'N/A'
         };
@@ -665,9 +631,11 @@ class AdminController extends Controller
         return match ($status) {
             'confirmed' => '✅ Confirmada',
             'awaiting_review' => '⏳ En Revisión',
-            'pending_manual_confirmation' => '⌛ Pendiente Confirmación',
+            'pending_manual_confirmation' => '⌛ Pendiente',
+            'pending_sms' => '📱 Esperando SMS',
+            'pending_confirmation' => '⏰ Por Confirmar',
             'failed' => '❌ Fallida',
-            default => $status
+            default => $status ?? 'N/A'
         };
     }
 }

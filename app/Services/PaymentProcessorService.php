@@ -6,12 +6,13 @@ use App\Models\Ally;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\PaymentTransaction;
-use App\Models\Payout;
 use App\Models\Sale;
-use App\Models\User;
-use App\Utils\JsonHelper;
-use Illuminate\Http\Request;
+use App\Models\Payout;
+use App\Services\BncApiService;
+use App\Services\PayoutService;
+use App\Helpers\JsonHelper;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
@@ -58,14 +59,14 @@ class PaymentProcessorService
 
             $validatedData = array_merge($bankValidatedData, $systemValidatedData);
 
-            // 3. Obtener usuario
-            $user = auth()->user();
-            $userId = $user ? $user->id : ($validatedData['user_id'] ?? null);
+            // 3. Obtener usuario autenticado
+            $authUser = auth()->user();
+            $clientUserId = $authUser ? $authUser->id : ($validatedData['user_id'] ?? null);
 
             Log::info("Usuario procesando pago", [
-                'authenticated' => $user ? 'si' : 'no',
-                'user_id' => $userId,
-                'has_user_in_request' => isset($validatedData['user_id'])
+                'authenticated' => $authUser ? 'si' : 'no',
+                'client_user_id' => $clientUserId,
+                'has_ally_in_request' => isset($validatedData['user_id'])
             ]);
 
             // 4. Preparar datos para BNC
@@ -88,35 +89,36 @@ class PaymentProcessorService
             ]);
             Log::info("✅ Order creada", ['order_id' => $order->id]);
 
-            // 7. Procesar aliado
-            $aliadoData = $this->processAliadoData($validatedData);
+            // 7. Procesar aliado (receptor del pago)
+            $allyData = $this->processAllyData($validatedData);
 
             // 8. Validar errores de aliado
-            if (!empty($aliadoData['aliado_errors']) && $aliadoData['has_aliado']) {
+            if (!empty($allyData['ally_errors']) && $allyData['has_ally']) {
                 Log::warning("Problemas con aliado, pero continuando con pago", [
-                    'user_id' => $aliadoData['user_id'],
-                    'errors' => $aliadoData['aliado_errors']
+                    'ally_user_id' => $allyData['user_id'],
+                    'errors' => $allyData['ally_errors']
                 ]);
-                $aliadoData['has_aliado'] = false;
-                $aliadoData['discount'] = 0;
-                $aliadoData['comision_porcentaje'] = 0;
-                $aliadoData['monto_comision'] = 0;
-                $aliadoData['monto_neto'] = $validatedData['Amount'] ?? $validatedData['monto'] ?? 0;
+                $allyData['has_ally'] = false;
+                $allyData['discount'] = 0;
+                $allyData['commission_percentage'] = 0;
+                $allyData['commission_amount'] = 0;
+                $allyData['net_amount'] = $validatedData['Amount'] ?? $validatedData['monto'] ?? 0;
             }
 
             // 9. CREAR PAYMENT TRANSACTION
             $transaction = $this->createPaymentTransaction(
                 $paymentType,
                 $validatedData,
-                $userId,
-                $aliadoData,
+                $clientUserId,
+                $allyData,
                 $payment->id,
                 $order->id
             );
             Log::info("✅ PaymentTransaction creada", [
                 'transaction_id' => $transaction->id,
                 'reference' => $transaction->reference_code,
-                'user_id' => $transaction->user_id
+                'client_user_id' => $transaction->user_id,
+                'ally_id' => $transaction->ally_id
             ]);
 
             // 10. Ejecutar pago en BNC
@@ -135,26 +137,26 @@ class PaymentProcessorService
             $order->update(['status' => 'completed']);
 
             // 14. Guardar venta
-            $venta = $this->createSale(
+            $sale = $this->createSale(
                 $paymentType,
                 $validatedData,
                 $bncResponse,
-                $aliadoData,
+                $allyData,
                 $transaction,
                 $order,
                 $payment
             );
 
-            // 15. Crear payout si aplica
+            // 15. Crear payout si aplica (comisión para el aliado)
             $payout = null;
-            if ($aliadoData['has_aliado'] && $aliadoData['aliado_valid']) {
+            if ($allyData['has_ally'] && $allyData['ally_valid']) {
                 Log::debug("Creando payout para aliado válido", [
-                    'user_id' => $aliadoData['user_id'],
-                    'aliado_id' => $aliadoData['aliado_id'],
-                    'discount' => $aliadoData['discount'],
-                    'comision' => $aliadoData['comision_porcentaje']
+                    'ally_user_id' => $allyData['user_id'],
+                    'ally_id' => $allyData['ally_id'],
+                    'discount' => $allyData['discount'],
+                    'commission' => $allyData['commission_percentage']
                 ]);
-                $payout = $this->payoutService->createPayout($venta, $aliadoData, $bncResponse);
+                $payout = $this->payoutService->createPayout($sale, $allyData, $bncResponse);
 
                 $transaction->update([
                     'payout_id' => $payout->id,
@@ -163,22 +165,28 @@ class PaymentProcessorService
             } else {
                 $transaction->update(['status' => 'confirmed']);
                 Log::debug("No se crea payout - aliado no válido o no existe", [
-                    'has_aliado' => $aliadoData['has_aliado'],
-                    'aliado_valid' => $aliadoData['aliado_valid'] ?? false,
-                    'user_id' => $aliadoData['user_id']
+                    'has_ally' => $allyData['has_ally'],
+                    'ally_valid' => $allyData['ally_valid'] ?? false,
+                    'user_id' => $allyData['user_id']
                 ]);
             }
 
             DB::commit();
 
+            Log::info("🎉 Pago completado exitosamente", [
+                'payment_type' => $paymentType,
+                'transaction_id' => $transaction->id,
+                'reference' => $transaction->reference_code
+            ]);
+
             return response()->json([
                 'success' => true,
                 'message' => $this->getSuccessMessage($paymentType),
                 'data' => $this->buildSuccessResponse(
-                    $venta,
+                    $sale,
                     $payout,
                     $bncResponse,
-                    $aliadoData,
+                    $allyData,
                     $transaction,
                     $order,
                     $payment
@@ -187,7 +195,7 @@ class PaymentProcessorService
             
         } catch (ValidationException $e) {
             DB::rollBack();
-            Log::error("ERROR DE VALIDACIÓN en {$paymentType}", [
+            Log::error("❌ ERROR DE VALIDACIÓN en {$paymentType}", [
                 'errors' => $e->errors(),
                 'request_data' => $request->all()
             ]);
@@ -199,13 +207,18 @@ class PaymentProcessorService
             
         } catch (\Exception $e) {
             DB::rollBack();
-            Log::error("ERROR GENERAL en pago {$paymentType}: " . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
+            Log::error("❌ ERROR GENERAL en pago {$paymentType}: " . $e->getMessage(), [
+                'trace' => $e->getTraceAsString(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
             ]);
+            
+            $errorDetails = config('app.debug') ? $e->getMessage() : null;
+            
             return response()->json([
                 'success' => false,
                 'message' => 'Error al procesar el pago. Por favor, intente nuevamente.',
-                'error_details' => config('app.debug') ? $e->getMessage() : null,
+                'error_details' => $errorDetails,
             ], 500);
         }
     }
@@ -231,19 +244,19 @@ class PaymentProcessorService
     private function createPaymentTransaction(
         string $paymentType,
         array $validatedData,
-        ?int $userId,
-        array $aliadoData,
+        ?int $clientUserId,
+        array $allyData,
         int $paymentId,
         int $orderId
     ): PaymentTransaction {
-        $monto = $validatedData['Amount'] ?? $validatedData['monto'] ?? 0;
+        $amount = $validatedData['Amount'] ?? $validatedData['monto'] ?? 0;
         
         $confirmationData = [
             'request_data' => $validatedData,
             'payment_type' => $paymentType,
             'payment_id' => $paymentId,
             'order_id' => $orderId,
-            'aliado_data' => $aliadoData,
+            'ally_data' => $allyData,
             'created_at' => now()->toDateTimeString()
         ];
 
@@ -254,12 +267,12 @@ class PaymentProcessorService
         };
 
         return PaymentTransaction::create([
-            'user_id' => $userId,
-            'ally_id' => $aliadoData['aliado_id'] ?? null,
-            'original_amount' => $monto,
-            'discount_percentage' => $aliadoData['discount'] ?? 0,
-            'amount_to_ally' => $aliadoData['monto_neto'] ?? $monto,
-            'platform_commission' => $aliadoData['monto_comision'] ?? 0,
+            'user_id' => $clientUserId,                    // Quién pagó (cliente)
+            'ally_id' => $allyData['ally_id'] ?? null,     // A quién va el pago (aliado)
+            'original_amount' => $amount,
+            'discount_percentage' => $allyData['discount'] ?? 0,
+            'amount_to_ally' => $allyData['net_amount'] ?? $amount,
+            'platform_commission' => $allyData['commission_amount'] ?? 0,
             'payment_method' => $this->mapPaymentMethod($paymentType),
             'status' => $status,
             'reference_code' => $this->generateReferenceCode(),
@@ -345,9 +358,12 @@ class PaymentProcessorService
                     Log::info("🟢 BNC - WorkingKey obtenido: " . ($workingKey ? 'OK' : 'FALLÓ'));
                 } else {
                     Log::error("🔴 BNC - No se pudo obtener token de sesión");
+                    throw new \Exception("No se pudo obtener token de sesión del BNC");
                 }
             }
 
+            $startTime = microtime(true);
+            
             $response = match ($paymentType) {
                 'c2p' => $this->bncApiService->initiateC2PPayment($bncData),
                 'card' => $this->bncApiService->processCardPayment($bncData),
@@ -356,16 +372,19 @@ class PaymentProcessorService
                 'debito_reenviar' => $this->bncApiService->reenviarSms($bncData),
                 default => throw new \Exception("Tipo de pago no soportado: {$paymentType}")
             };
+            
+            $executionTime = round((microtime(true) - $startTime) * 1000, 2);
+            Log::info("⏱️ Tiempo de respuesta BNC: {$executionTime}ms");
 
-            // Log de la respuesta completa
+            if (!is_array($response)) {
+                Log::error("🔴 Respuesta de BNC no es un array", ['response' => $response]);
+                throw new \Exception("Respuesta inválida del BNC");
+            }
+
             Log::info("🔵 RESPUESTA DE BNC - {$paymentType}", [
-                'response_type' => gettype($response),
-                'response_status' => $response['Status'] ?? ($response['success'] ?? 'unknown'),
-                'response_message' => $response['Message'] ?? ($response['message'] ?? 'Sin mensaje'),
-                'response_code' => $response['Code'] ?? ($response['code'] ?? 'N/A'),
+                'response' => $response,
                 'has_reference' => isset($response['Reference']) ? 'SI' : 'NO',
-                'has_request_id' => isset($response['requestId']) ? 'SI' : 'NO',
-                'has_transaction_id' => isset($response['TransactionIdentifier']) ? 'SI' : 'NO',
+                'has_status' => isset($response['Status']) ? 'SI' : 'NO',
             ]);
 
             return $response;
@@ -400,92 +419,92 @@ class PaymentProcessorService
     }
 
     /**
-     * Procesa datos del aliado con COMISIÓN MANUAL según descuento
+     * Procesa datos del aliado (receptor del pago)
      */
-    private function processAliadoData(array $validatedData): array
+    private function processAllyData(array $validatedData): array
     {
-        $monto = $validatedData['Amount'] ?? $validatedData['monto'] ?? 0;
+        $amount = $validatedData['Amount'] ?? $validatedData['monto'] ?? 0;
         
-        $aliadoData = [
-            'has_aliado' => false,
-            'aliado_id' => null,
+        $allyData = [
+            'has_ally' => false,
+            'ally_id' => null,
             'user_id' => null,
-            'aliado_name' => null,
-            'aliado_status' => null,
+            'ally_name' => null,
+            'ally_status' => null,
             'discount' => 0,
-            'comision_porcentaje' => 0,
-            'monto_comision' => 0,
-            'monto_despues_descuento' => $monto,
-            'monto_neto' => $monto,
-            'aliado_valid' => false,
-            'aliado_errors' => []
+            'commission_percentage' => 0,
+            'commission_amount' => 0,
+            'amount_after_discount' => $amount,
+            'net_amount' => $amount,
+            'ally_valid' => false,
+            'ally_errors' => []
         ];
 
         if (!empty($validatedData['user_id'])) {
             try {
                 Log::debug("Buscando aliado por user_id en BD", ['user_id' => $validatedData['user_id']]);
 
-                $aliado = Ally::with('user')
+                $ally = Ally::with('user')
                     ->where('user_id', $validatedData['user_id'])
                     ->first();
 
-                if ($aliado) {
+                if ($ally) {
                     Log::debug("Aliado encontrado por user_id", [
-                        'aliado_id' => $aliado->id,
-                        'user_id' => $aliado->user_id,
-                        'company_name' => $aliado->company_name,
-                        'discount' => $aliado->discount,
-                        'status' => $aliado->status
+                        'ally_id' => $ally->id,
+                        'user_id' => $ally->user_id,
+                        'company_name' => $ally->company_name,
+                        'discount' => $ally->discount,
+                        'status' => $ally->status
                     ]);
 
-                    if ($aliado->isActive()) {
-                        $aliadoData['has_aliado'] = true;
-                        $aliadoData['aliado_id'] = $aliado->id;
-                        $aliadoData['user_id'] = $aliado->user_id;
-                        $aliadoData['aliado_name'] = $aliado->company_name ?? $aliado->user->name ?? 'Aliado';
-                        $aliadoData['aliado_status'] = $aliado->status;
-                        $aliadoData['aliado_valid'] = true;
+                    if ($ally->isActive()) {
+                        $allyData['has_ally'] = true;
+                        $allyData['ally_id'] = $ally->id;           // ID en tabla allies (5)
+                        $allyData['user_id'] = $ally->user_id;       // ID en tabla users (8)
+                        $allyData['ally_name'] = $ally->company_name ?? $ally->user->name ?? 'Aliado';
+                        $allyData['ally_status'] = $ally->status;
+                        $allyData['ally_valid'] = true;
 
                         // Obtener descuento del aliado
-                        $aliadoData['discount'] = $this->parseDiscount($aliado->discount);
+                        $allyData['discount'] = $this->parseDiscount($ally->discount);
 
                         // Determinar comisión según descuento
-                        $aliadoData['comision_porcentaje'] = $this->determineCommission($aliadoData['discount']);
+                        $allyData['commission_percentage'] = $this->determineCommission($allyData['discount']);
 
                         // Cálculos detallados
-                        $aliadoData['monto_despues_descuento'] = $monto * (1 - ($aliadoData['discount'] / 100));
-                        $aliadoData['monto_comision'] = round(
-                            $aliadoData['monto_despues_descuento'] * ($aliadoData['comision_porcentaje'] / 100),
+                        $allyData['amount_after_discount'] = $amount * (1 - ($allyData['discount'] / 100));
+                        $allyData['commission_amount'] = round(
+                            $allyData['amount_after_discount'] * ($allyData['commission_percentage'] / 100),
                             2
                         );
-                        $aliadoData['monto_neto'] = round(
-                            $aliadoData['monto_despues_descuento'] - $aliadoData['monto_comision'],
+                        $allyData['net_amount'] = round(
+                            $allyData['amount_after_discount'] - $allyData['commission_amount'],
                             2
                         );
 
                         Log::info("✅ Cálculos con comisión manual completados", [
-                            'user_id' => $aliado->user_id,
-                            'aliado_id' => $aliado->id,
-                            'discount_aliado' => $aliadoData['discount'] . '%',
-                            'comision_plataforma' => $aliadoData['comision_porcentaje'] . '%',
-                            'monto_original' => $monto,
-                            'monto_despues_descuento' => $aliadoData['monto_despues_descuento'],
-                            'comision_monto' => $aliadoData['monto_comision'],
-                            'monto_neto_aliado' => $aliadoData['monto_neto'],
+                            'user_id' => $ally->user_id,
+                            'ally_id' => $ally->id,
+                            'discount' => $allyData['discount'] . '%',
+                            'commission_percentage' => $allyData['commission_percentage'] . '%',
+                            'original_amount' => $amount,
+                            'amount_after_discount' => $allyData['amount_after_discount'],
+                            'commission_amount' => $allyData['commission_amount'],
+                            'net_amount' => $allyData['net_amount'],
                         ]);
                     } else {
-                        $aliadoData['aliado_errors'][] = "Aliado inactivo o suspendido: {$aliado->status}";
+                        $allyData['ally_errors'][] = "Aliado inactivo o suspendido: {$ally->status}";
                         Log::warning("Aliado no activo por user_id", [
                             'user_id' => $validatedData['user_id'],
-                            'status' => $aliado->status
+                            'status' => $ally->status
                         ]);
                     }
                 } else {
-                    $aliadoData['aliado_errors'][] = "No se encontró aliado para el user_id: {$validatedData['user_id']}";
+                    $allyData['ally_errors'][] = "No se encontró aliado para el user_id: {$validatedData['user_id']}";
                     Log::warning("Aliado no encontrado por user_id", ['user_id' => $validatedData['user_id']]);
                 }
             } catch (\Exception $e) {
-                $aliadoData['aliado_errors'][] = "Error al consultar aliado por user_id: " . $e->getMessage();
+                $allyData['ally_errors'][] = "Error al consultar aliado por user_id: " . $e->getMessage();
                 Log::error("Error consultando aliado por user_id", [
                     'user_id' => $validatedData['user_id'],
                     'error' => $e->getMessage()
@@ -495,28 +514,28 @@ class PaymentProcessorService
             Log::debug("No se proporcionó user_id, procesando como pago directo");
         }
 
-        return $aliadoData;
+        return $allyData;
     }
 
     /**
      * Determina la comisión manual según el descuento del aliado
      */
-    private function determineCommission(float $discountAliado): float
+    private function determineCommission(float $discount): float
     {
-        $comision = match (true) {
-            $discountAliado >= 0 && $discountAliado <= 10 => 15.0,
-            $discountAliado > 10 && $discountAliado <= 20 => 12.0,
-            $discountAliado > 20 && $discountAliado <= 30 => 10.0,
-            $discountAliado > 30 => 8.0,
+        $commission = match (true) {
+            $discount >= 0 && $discount <= 10 => 15.0,
+            $discount > 10 && $discount <= 20 => 12.0,
+            $discount > 20 && $discount <= 30 => 10.0,
+            $discount > 30 => 8.0,
             default => 15.0
         };
 
         Log::debug("Comisión determinada", [
-            'discount_aliado' => $discountAliado,
-            'comision_calculada' => $comision
+            'discount' => $discount,
+            'commission_calculated' => $commission
         ]);
 
-        return $comision;
+        return $commission;
     }
 
     /**
@@ -539,51 +558,47 @@ class PaymentProcessorService
         string $paymentType,
         array $validatedData,
         array $bncResponse,
-        array $aliadoData,
+        array $allyData,
         PaymentTransaction $transaction,
         Order $order,
         Payment $payment
     ): Sale {
-        $monto = $validatedData['Amount'] ?? $validatedData['monto'] ?? 0;
+        $amount = $validatedData['Amount'] ?? $validatedData['monto'] ?? 0;
         
         $baseData = [
-            'aliado_id' => $aliadoData['aliado_id'] ?? null,
-            'monto_total' => $monto,
-            'monto_pagado' => $monto,
-            'referencia_banco' => $bncResponse['Reference'] ?? $bncResponse['reference'] ?? null,
+            'ally_id' => $allyData['ally_id'] ?? null,
+            'total_amount' => $amount,
+            'paid_amount' => $amount,
+            'bank_reference' => $bncResponse['Reference'] ?? $bncResponse['reference'] ?? null,
             'transaction_id' => $bncResponse['TransactionIdentifier'] ?? $bncResponse['transactionId'] ?? null,
-            'estado' => 'completado',
-            'fecha_venta' => now(),
-            'fecha_pago' => now(),
-            'descripcion' => $validatedData['descripcion'] ?? "Pago {$paymentType} procesado",
-            'codigo_autorizacion' => $bncResponse['AuthorizationCode'] ?? null,
-            'respuesta_banco' => JsonHelper::encode($bncResponse),
-            'currency' => 'BS',
-            'payment_transaction_id' => $transaction->id,
-            'order_id' => $order->id,
-            'payment_id' => $payment->id,
+            'status' => 'completed',
+            'sale_date' => now(),
+            'payment_date' => now(),
+            'description' => $validatedData['descripcion'] ?? "Pago {$paymentType} procesado",
+            'authorization_code' => $bncResponse['AuthorizationCode'] ?? null,
+            'bank_response' => JsonHelper::encode($bncResponse),
         ];
 
         $specificData = match ($paymentType) {
             'c2p' => [
-                'metodo_pago' => 'pago_movil',
-                'banco_destino' => $validatedData['DebtorBankCode'] ?? null,
-                'telefono_cliente' => $validatedData['DebtorCellPhone'] ?? null,
-                'cedula_cliente' => $validatedData['DebtorID'] ?? null,
+                'payment_method' => 'pago_movil',
+                'destination_bank' => $validatedData['DebtorBankCode'] ?? null,
+                'client_phone' => $validatedData['DebtorCellPhone'] ?? null,
+                'client_id_number' => $validatedData['DebtorID'] ?? null,
             ],
             'card' => [
-                'metodo_pago' => 'tarjeta_credito',
-                'numero_tarjeta' => isset($validatedData['CardNumber']) ? substr($validatedData['CardNumber'], -4) : null,
-                'nombre_titular' => $validatedData['CardHolderName'] ?? null,
+                'payment_method' => 'tarjeta_credito',
+                'card_last_digits' => isset($validatedData['CardNumber']) ? substr($validatedData['CardNumber'], -4) : null,
+                'card_holder_name' => $validatedData['CardHolderName'] ?? null,
             ],
             'debito_solicitar', 'debito_emitir', 'debito_reenviar' => [
-                'metodo_pago' => 'debito_inmediato',
-                'banco_origen' => $validatedData['DebtorBank'] ?? null,
-                'cuenta_origen' => isset($validatedData['DebtorAccount']) ? substr($validatedData['DebtorAccount'], -4) : null,
-                'cedula_cliente' => $validatedData['DebtorID'] ?? null,
-                'codigo_sms' => $validatedData['codigo_sms'] ?? null,
+                'payment_method' => 'debito_inmediato',
+                'destination_bank' => $validatedData['DebtorBank'] ?? null,
+                'account_last_digits' => isset($validatedData['DebtorAccount']) ? substr($validatedData['DebtorAccount'], -4) : null,
+                'client_id_number' => $validatedData['DebtorID'] ?? null,
+                'sms_code' => $validatedData['codigo_sms'] ?? null,
             ],
-            default => ['metodo_pago' => $paymentType]
+            default => ['payment_method' => $paymentType]
         };
 
         return Sale::create(array_merge($baseData, $specificData));
@@ -674,23 +689,23 @@ class PaymentProcessorService
      * Construye respuesta de éxito con todas las entidades
      */
     private function buildSuccessResponse(
-        Sale $venta,
+        Sale $sale,
         ?Payout $payout,
         array $bncResponse,
-        array $aliadoData,
+        array $allyData,
         PaymentTransaction $transaction,
         Order $order,
         Payment $payment
     ): array {
         $response = [
-            'venta' => [
-                'id' => $venta->id,
-                'monto_total' => $venta->monto_total,
-                'referencia_banco' => $venta->referencia_banco,
-                'transaction_id' => $venta->transaction_id,
-                'metodo_pago' => $venta->metodo_pago,
-                'estado' => $venta->estado,
-                'fecha_venta' => $venta->fecha_venta ? $venta->fecha_venta->format('Y-m-d H:i:s') : now()->format('Y-m-d H:i:s'),
+            'sale' => [
+                'id' => $sale->id,
+                'total_amount' => $sale->total_amount,
+                'bank_reference' => $sale->bank_reference,
+                'transaction_id' => $sale->transaction_id,
+                'payment_method' => $sale->payment_method,
+                'status' => $sale->status,
+                'sale_date' => $sale->sale_date ? $sale->sale_date->format('Y-m-d H:i:s') : now()->format('Y-m-d H:i:s'),
             ],
             'payment_transaction' => [
                 'id' => $transaction->id,
@@ -719,15 +734,15 @@ class PaymentProcessorService
             ]
         ];
 
-        if ($aliadoData['has_aliado']) {
-            $response['aliado'] = [
-                'aliado_id' => $aliadoData['aliado_id'],
-                'aliado_name' => $aliadoData['aliado_name'],
-                'discount' => $aliadoData['discount'],
-                'comision_porcentaje' => $aliadoData['comision_porcentaje'],
-                'monto_comision' => $aliadoData['monto_comision'],
-                'monto_despues_descuento' => $aliadoData['monto_despues_descuento'],
-                'monto_neto' => $aliadoData['monto_neto'],
+        if ($allyData['has_ally']) {
+            $response['ally'] = [
+                'ally_id' => $allyData['ally_id'],
+                'ally_name' => $allyData['ally_name'],
+                'discount' => $allyData['discount'],
+                'commission_percentage' => $allyData['commission_percentage'],
+                'commission_amount' => $allyData['commission_amount'],
+                'amount_after_discount' => $allyData['amount_after_discount'],
+                'net_amount' => $allyData['net_amount'],
                 'payout_id' => $payout?->id,
             ];
         }
@@ -735,8 +750,8 @@ class PaymentProcessorService
         if ($payout) {
             $response['payout'] = [
                 'id' => $payout->id,
-                'monto' => $payout->monto,
-                'estado' => $payout->estado,
+                'amount' => $payout->amount,
+                'status' => $payout->status,
             ];
         }
 

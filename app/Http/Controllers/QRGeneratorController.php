@@ -17,7 +17,7 @@ class QRGeneratorController extends Controller
             ->get([
                 'id',
                 'company_name as name',
-                'descuento_aliado' // Campo de descuento del aliado
+                'discount' // Campo de descuento del aliado
             ]);
         
         return view('Admin.qr-generator', compact('allies'));
@@ -33,7 +33,7 @@ class QRGeneratorController extends Controller
 
             // Obtener datos del aliado (solo campos necesarios)
             $ally = Ally::where('id', $validated['ally_id'])
-                ->select('id', 'company_name', 'descuento_aliado')
+                ->select('id', 'company_name', 'discount')
                 ->firstOrFail();
 
             // Construir datos del QR - SOLO ID, NOMBRE Y DESCUENTO DEL ALIADO

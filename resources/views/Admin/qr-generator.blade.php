@@ -51,8 +51,8 @@
                                 <select class="form-select" name="ally_id" id="allySelect" required>
                                     <option value="">-- Seleccione un aliado --</option>
                                     @foreach($allies as $ally)
-                                        <option value="{{ $ally->id }}" data-discount="{{ $ally->descuento_aliado }}">
-                                            {{ $ally->name }} (ID: {{ $ally->id }}) - {{ $ally->descuento_aliado }}% descuento
+                                        <option value="{{ $ally->id }}" data-discount="{{ $ally->discount }}">
+                                            {{ $ally->name }} (ID: {{ $ally->id }}) - {{ $ally->discount }}% descuento
                                         </option>
                                     @endforeach
                                 </select>
