@@ -25,19 +25,18 @@ class BncApiService
 
     public function __construct()
     {
-        // Asignar con valores por defecto (string vacío) para NO devolver null
-        $this->authApiUrl = env('BNC_AUTH_API_URL') ?? '';
-        $this->clientGuid = env('BNC_CLIENT_GUID') ?? '';
-        $this->masterKey = env('BNC_MASTER_KEY') ?? '';
-        $this->merchantId = env('BNC_MERCHANT_ID') ?? '';
-        $this->c2pApiUrl = env('BNC_C2P_API_URL') ?? '';
-        $this->vposApiUrl = env('BNC_VPOS_API_URL') ?? '';
-        $this->validationApiUrl = env('BNC_P2P_API_URL') ?? '';
-        $this->banksApiUrl = env('BNC_BANKS_API_URL') ?? '';
-        $this->ratesApiUrl = env('BNC_RATES_API_URL') ?? '';
-        $this->debitTokenRequestUrl = env('BNC_DEBITO_SOLICITAR_URL') ?? '';
-        $this->debitBeginnerUrl = env('BNC_DEBITO_EMITIR_URL') ?? '';
-        $this->debitReenviarUrl = env('BNC_DEBITO_REENVIAR_URL') ?? '';
+        $this->authApiUrl = env('BNC_AUTH_API_URL');
+        $this->clientGuid = env('BNC_CLIENT_GUID');
+        $this->masterKey = env('BNC_MASTER_KEY');
+        $this->merchantId = env('BNC_MERCHANT_ID');
+        $this->c2pApiUrl = env('BNC_C2P_API_URL');
+        $this->vposApiUrl = env('BNC_VPOS_API_URL');
+        $this->validationApiUrl = env('BNC_P2P_API_URL');
+        $this->banksApiUrl = env('BNC_BANKS_API_URL');
+        $this->ratesApiUrl = env('BNC_RATES_API_URL');
+        $this->debitTokenRequestUrl = env('BNC_DEBITO_SOLICITAR_URL');  // /api/SIMF/DebitTokenRequest
+        $this->debitBeginnerUrl = env('BNC_DEBITO_EMITIR_URL');         // /api/SIMF/DebitBeginner
+        $this->debitReenviarUrl = env('BNC_DEBITO_REENVIAR_URL');
 
         $this->dataCypher = new DataCypher($this->masterKey);
     }
@@ -176,6 +175,19 @@ class BncApiService
      * ==================== MÉTODOS PARA DÉBITO INMEDIATO ====================
      */
 
+    /**
+     * PASO 1: SOLICITAR DÉBITO (envía SMS)
+     * Endpoint: /api/SIMF/DebitTokenRequest
+     * 
+     * Request:
+     * {
+     *   "Amount": 150.50,
+     *   "DebtorAccount": "584142786580",
+     *   "DebtorAccountType": "CELE",
+     *   "DebtorBank": "0191",
+     *   "DebtorID": "V16113363"
+     * }
+     */
     public function solicitarDebito(array $data): ?array
     {
         return $this->executeTransaction('DEBIT_TOKEN_REQUEST', $data, [
@@ -192,9 +204,27 @@ class BncApiService
                 "DebtorBank" => $data['DebtorBank'],
                 "DebtorID" => $data['DebtorID']
             ];
-        }, $this->debitTokenRequestUrl);
+        }, $this->debitTokenRequestUrl); // URL: /api/SIMF/DebitTokenRequest
     }
 
+    /**
+     * PASO 2: EMITIR DÉBITO (confirma con código SMS)
+     * Endpoint: /api/SIMF/DebitBeginner
+     * 
+     * Request:
+     * {
+     *   "DebtorBank": "0191",
+     *   "DebtorAccount": "584142786580",
+     *   "DebtorAccType": "CELE",
+     *   "Concept": "DIJPaLP",
+     *   "AddtlInf": "123456",
+     *   "DebtorID": "V16113363",
+     *   "Amount": 150.50,
+     *   "DebtorName": "Juan Pérez",
+     *   "ChildClientID": "",
+     *   "BranchID": ""
+     * }
+     */
     public function emitirDebito(array $data): ?array
     {
         return $this->executeTransaction('DEBIT_BEGINNER', $data, [
@@ -219,9 +249,19 @@ class BncApiService
                 "ChildClientID" => $data['ChildClientID'] ?? "",
                 "BranchID" => $data['BranchID'] ?? ""
             ];
-        }, $this->debitBeginnerUrl);
+        }, $this->debitBeginnerUrl); // URL: /api/SIMF/DebitBeginner
     }
 
+    /**
+     * Opcional: REENVIAR CÓDIGO SMS
+     * Endpoint: /api/debito/reenviar-sms
+     * 
+     * Request:
+     * {
+     *   "requestId": "REQ123456",
+     *   "DebtorID": "V16113363"
+     * }
+     */
     public function reenviarSms(array $data): ?array
     {
         return $this->executeTransaction('DEBIT_REENVIAR_SMS', $data, [
@@ -232,7 +272,7 @@ class BncApiService
                 "requestId" => $data['requestId'],
                 "DebtorID" => $data['DebtorID']
             ];
-        }, $this->debitReenviarUrl);
+        }, $this->debitReenviarUrl); // URL: /api/debito/reenviar-sms
     }
 
     public function getBanksFromBnc(): ?array
@@ -359,6 +399,7 @@ class BncApiService
                 return null;
             }
 
+            // Verificar integridad
             $expectedValidation = $this->dataCypher->encryptSHA256($decryptedValue);
             if (!hash_equals($expectedValidation, $encryptedResponse['validation'])) {
                 Log::warning('Validation hash no coincide en respuesta encriptada');
@@ -460,4 +501,121 @@ class BncApiService
             return ['success' => false, 'error' => $e->getMessage()];
         }
     }
+
+    /**
+     * MÉTODO DE PRUEBA LOCAL - Ejecuta desde el navegador
+    public function testLocalDebito(): array
+    {
+        $results = [
+            'steps' => [],
+            'success' => false,
+            'message' => ''
+        ];
+
+        try {
+            // PASO 1: Verificar configuración
+            $results['steps'][] = ['name' => 'Verificando configuración...', 'status' => 'pending'];
+
+            $config = [
+                'authApiUrl' => $this->authApiUrl,
+                'clientGuid' => $this->clientGuid,
+                'masterKey' => !empty($this->masterKey) ? '✓ Configurado' : '✗ Faltante',
+                'debitTokenRequestUrl' => $this->debitTokenRequestUrl,
+                'debitBeginnerUrl' => $this->debitBeginnerUrl
+            ];
+
+            $results['config'] = $config;
+            $results['steps'][] = ['name' => 'Configuración verificada', 'status' => 'ok'];
+
+            // PASO 2: Obtener Session Token
+            $results['steps'][] = ['name' => 'Obteniendo Session Token...', 'status' => 'pending'];
+
+            $encryptedToken = $this->getSessionToken();
+            if (!$encryptedToken) {
+                throw new Exception('No se pudo obtener Session Token');
+            }
+
+            $results['steps'][] = ['name' => 'Session Token obtenido', 'status' => 'ok'];
+            $results['token_length'] = strlen($encryptedToken);
+
+            // PASO 3: Procesar Working Key
+            $results['steps'][] = ['name' => 'Procesando Working Key...', 'status' => 'pending'];
+
+            $workingKey = $this->processSessionToken($encryptedToken);
+            if (!$workingKey) {
+                throw new Exception('No se pudo obtener Working Key');
+            }
+
+            $results['steps'][] = ['name' => 'Working Key procesado', 'status' => 'ok'];
+            $results['working_key_length'] = strlen($workingKey);
+
+            // PASO 4: Probar solicitud de débito (sin enviar al BNC aún)
+            $results['steps'][] = ['name' => 'Preparando datos de prueba...', 'status' => 'pending'];
+
+            $testData = [
+                'Amount' => 100.50,
+                'DebtorAccount' => '584142786580',
+                'DebtorAccountType' => 'CELE',
+                'DebtorBank' => '0191',
+                'DebtorID' => 'V16113363'
+            ];
+
+            $jsonData = json_encode($testData);
+            $encryptedValue = $this->dataCypher->encryptWithKey($jsonData, $workingKey);
+            $validationHash = $this->dataCypher->encryptSHA256($jsonData);
+
+            $solicitud = [
+                "ClientGUID" => $this->clientGuid,
+                "value" => $encryptedValue,
+                "Validation" => $validationHash,
+                "Reference" => $this->generateDailyReference(),
+                "swTestOperation" => false
+            ];
+
+            $results['test_request'] = [
+                'original_data' => $testData,
+                'encrypted_length' => strlen($encryptedValue),
+                'validation_length' => strlen($validationHash),
+                'reference' => $solicitud['Reference']
+            ];
+
+            $results['steps'][] = ['name' => 'Datos preparados correctamente', 'status' => 'ok'];
+
+            // PASO 5: Probar conexión con BNC (opcional)
+            $results['steps'][] = ['name' => 'Probando conexión con BNC...', 'status' => 'pending'];
+
+            try {
+                $response = Http::timeout(10)
+                    ->withHeaders(['Content-Type' => 'application/json'])
+                    ->post($this->debitTokenRequestUrl, $solicitud);
+
+                $results['bnc_response'] = [
+                    'status' => $response->status(),
+                    'body' => $response->body(),
+                    'successful' => $response->successful()
+                ];
+
+                if ($response->successful()) {
+                    $results['steps'][] = ['name' => 'Conexión con BNC exitosa', 'status' => 'ok'];
+                    $results['success'] = true;
+                    $results['message'] = 'Todo funciona correctamente';
+                } else {
+                    $results['steps'][] = ['name' => 'BNC respondió con error', 'status' => 'error'];
+                    $results['message'] = 'Error en respuesta del BNC';
+                }
+            } catch (\Exception $e) {
+                $results['bnc_response'] = [
+                    'error' => $e->getMessage(),
+                    'type' => get_class($e)
+                ];
+                $results['steps'][] = ['name' => 'Error conectando con BNC', 'status' => 'error'];
+                $results['message'] = 'Error de conexión: ' . $e->getMessage();
+            }
+        } catch (\Exception $e) {
+            $results['steps'][] = ['name' => 'ERROR: ' . $e->getMessage(), 'status' => 'error'];
+            $results['message'] = $e->getMessage();
+        }
+
+        return $results;
+    } */
 }
