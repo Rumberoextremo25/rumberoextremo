@@ -8,7 +8,6 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Http;
 use App\Http\Controllers\Controller;
 
 class ReportController extends Controller
@@ -35,52 +34,6 @@ class ReportController extends Controller
     private function getUserAllyId($user)
     {
         return $this->isAlly($user) ? $user->ally->id : null;
-    }
-
-    /**
-     * Obtiene tasa de cambio desde el endpoint interno /api/banks/daily-dollar-rate
-     */
-    private function getExchangeRate()
-    {
-        try {
-            $response = Http::timeout(10)->get(url('/api/banks/daily-dollar-rate'));
-            
-            if ($response->successful()) {
-                $data = $response->json();
-                
-                // Extraer tasa del response
-                if (isset($data['success']) && $data['success'] === true && isset($data['data']['PriceRateBCV'])) {
-                    $rate = (float) $data['data']['PriceRateBCV'];
-                    
-                    // Si la tasa es válida, retornarla
-                    if ($rate > 100 && $rate < 1000) {
-                        return $rate;
-                    }
-                }
-            }
-            
-            // Si el API falla, usar tasa actualizada manualmente
-            return $this->getCurrentRate();
-            
-        } catch (\Exception $e) {
-            Log::error('Error obteniendo tasa del dólar: ' . $e->getMessage());
-            return $this->getCurrentRate();
-        }
-    }
-
-    /**
-     * Obtiene la tasa actual (actualizada manualmente según el mercado)
-     */
-    private function getCurrentRate()
-    {
-        // Tasas actualizadas para Noviembre 2025 (basado en tasas reales del mercado)
-        $currentRates = [
-            '2025-11' => 233.05,  // Tasa actual del BCV
-            '2025-12' => 235.50,  // Proyección
-        ];
-        
-        $currentMonth = now()->format('Y-m');
-        return $currentRates[$currentMonth] ?? 233.05;
     }
 
     /**
@@ -124,10 +77,9 @@ class ReportController extends Controller
         $userRole = $user->role;
         $allyId = $this->getUserAllyId($user);
 
-        $exchangeRateVes = $this->getExchangeRate();
         $chartData = $this->getChartData($startDate, $endDate, $reportType, $userRole, $allyId, $selectedAllyId, $selectedZone);
-        $stats = $this->getSalesStats($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone);
-        $metrics = $this->getAdditionalMetrics($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone);
+        $stats = $this->getSalesStats($startDate, $endDate, $userRole, $allyId, $selectedAllyId, $selectedZone);
+        $metrics = $this->getAdditionalMetrics($startDate, $endDate, $userRole, $allyId, $selectedAllyId, $selectedZone);
 
         // Obtener datos para los filtros
         $allies = $this->isAdmin($userRole) ? Ally::orderBy('company_name')->get() : collect();
@@ -143,7 +95,6 @@ class ReportController extends Controller
             'reportType',
             'chartData',
             'stats',
-            'exchangeRateVes',
             'metrics',
             'userRole',
             'allyId',
@@ -320,9 +271,9 @@ class ReportController extends Controller
     }
 
     /**
-     * Obtiene estadísticas generales de ventas con conversión a VES
+     * Obtiene estadísticas generales de ventas
      */
-    private function getSalesStats($startDate, $endDate, $userRole = null, $allyId = null, $exchangeRate = null, $selectedAllyId = null, $selectedZone = null)
+    private function getSalesStats($startDate, $endDate, $userRole = null, $allyId = null, $selectedAllyId = null, $selectedZone = null)
     {
         $query = Sale::whereBetween('sale_date', [$startDate, $endDate])
             ->where('status', 'completed');
@@ -331,10 +282,8 @@ class ReportController extends Controller
         $query = $this->applyFilters($query, $userRole, $allyId, $selectedAllyId, $selectedZone);
 
         $totalSales = $query->sum('total_amount');
-        $totalSalesVes = $exchangeRate ? $totalSales * $exchangeRate : null;
         $totalOrders = $query->count();
         $averageOrderValue = $totalOrders > 0 ? $totalSales / $totalOrders : 0;
-        $averageOrderValueVes = $exchangeRate ? $averageOrderValue * $exchangeRate : null;
         $uniqueClients = $query->distinct('client_id')->count('client_id');
 
         $paymentMethodsQuery = Sale::whereBetween('sale_date', [$startDate, $endDate])
@@ -360,30 +309,25 @@ class ReportController extends Controller
         $previousSalesQuery = $this->applyFilters($previousSalesQuery, $userRole, $allyId, $selectedAllyId, $selectedZone);
 
         $previousSales = $previousSalesQuery->sum('total_amount');
-        $previousSalesVes = $exchangeRate ? $previousSales * $exchangeRate : null;
 
         $growth = $previousSales > 0 ?
             (($totalSales - $previousSales) / $previousSales) * 100 : ($totalSales > 0 ? 100 : 0);
 
         return [
             'total_sales' => $totalSales,
-            'total_sales_ves' => $totalSalesVes,
             'total_orders' => $totalOrders,
             'average_order_value' => $averageOrderValue,
-            'average_order_value_ves' => $averageOrderValueVes,
             'unique_clients' => $uniqueClients,
             'payment_methods' => $paymentMethods,
             'growth' => $growth,
             'previous_sales' => $previousSales,
-            'previous_sales_ves' => $previousSalesVes,
-            'exchange_rate' => $exchangeRate
         ];
     }
 
     /**
      * Obtiene métricas adicionales adaptadas a tu estructura
      */
-    private function getAdditionalMetrics($startDate, $endDate, $userRole = null, $allyId = null, $exchangeRate = null, $selectedAllyId = null, $selectedZone = null)
+    private function getAdditionalMetrics($startDate, $endDate, $userRole = null, $allyId = null, $selectedAllyId = null, $selectedZone = null)
     {
         $isAdmin = $this->isAdmin($userRole);
 
@@ -401,10 +345,6 @@ class ReportController extends Controller
                 ->groupBy('ally_id')
                 ->orderByDesc('total_sales')
                 ->first();
-
-            if ($topAlly && $exchangeRate) {
-                $topAlly->total_sales_ves = $topAlly->total_sales * $exchangeRate;
-            }
         }
 
         $branchQuery = Sale::with('branch')
@@ -420,10 +360,6 @@ class ReportController extends Controller
             ->orderByDesc('total_sales')
             ->first();
 
-        if ($topBranch && $exchangeRate) {
-            $topBranch->total_sales_ves = $topBranch->total_sales * $exchangeRate;
-        }
-
         $largestSaleQuery = Sale::with(['client', 'ally', 'branch'])
             ->whereBetween('sale_date', [$startDate, $endDate])
             ->where('status', 'completed');
@@ -432,7 +368,6 @@ class ReportController extends Controller
         $largestSaleQuery = $this->applyFilters($largestSaleQuery, $userRole, $allyId, $selectedAllyId, $selectedZone);
 
         $largestSale = $largestSaleQuery->orderByDesc('total_amount')->first();
-        $largestSaleVes = $exchangeRate && $largestSale ? $largestSale->total_amount * $exchangeRate : null;
 
         $bestDayQuery = Sale::whereBetween('sale_date', [$startDate, $endDate])
             ->where('status', 'completed');
@@ -449,8 +384,6 @@ class ReportController extends Controller
             ->groupBy('date')
             ->orderByDesc('daily_sales')
             ->first();
-
-        $bestDayVes = $exchangeRate && $bestDay ? $bestDay->daily_sales * $exchangeRate : null;
 
         $paymentMethodQuery = Sale::whereBetween('sale_date', [$startDate, $endDate])
             ->where('status', 'completed');
@@ -473,13 +406,10 @@ class ReportController extends Controller
             'top_ally' => $topAlly,
             'top_branch' => $topBranch,
             'largest_sale' => $largestSale,
-            'largest_sale_ves' => $largestSaleVes,
             'best_day' => $bestDay,
-            'best_day_ves' => $bestDayVes,
             'top_payment_method' => $topPaymentMethod,
             'current_ally_info' => $currentAllyInfo,
             'is_admin' => $isAdmin,
-            'exchange_rate' => $exchangeRate
         ];
     }
 
@@ -501,9 +431,8 @@ class ReportController extends Controller
         $userRole = $user->role;
         $allyId = $this->getUserAllyId($user);
 
-        $exchangeRateVes = $this->getExchangeRate();
         $chartData = $this->getChartData($startDate, $endDate, $reportType, $userRole, $allyId, $selectedAllyId, $selectedZone);
-        $stats = $this->getSalesStats($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone);
+        $stats = $this->getSalesStats($startDate, $endDate, $userRole, $allyId, $selectedAllyId, $selectedZone);
 
         return response()->json([
             'success' => true,
@@ -514,7 +443,6 @@ class ReportController extends Controller
                 'total_orders' => $chartData['total_orders']
             ],
             'stats' => $stats,
-            'exchange_rate' => $exchangeRateVes,
             'date_range' => [
                 'start' => $startDate->format('Y-m-d'),
                 'end' => $endDate->format('Y-m-d'),
@@ -546,11 +474,10 @@ class ReportController extends Controller
             $userRole = $user->role;
             $allyId = $this->getUserAllyId($user);
 
-            $exchangeRateVes = $this->getExchangeRate();
             $chartData = $this->getChartData($startDate, $endDate, $reportType, $userRole, $allyId, $selectedAllyId, $selectedZone);
-            $stats = $this->getSalesStats($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone);
-            $metrics = $this->getAdditionalMetrics($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone);
-            $dailySales = $this->getDailySalesForPdf($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone);
+            $stats = $this->getSalesStats($startDate, $endDate, $userRole, $allyId, $selectedAllyId, $selectedZone);
+            $metrics = $this->getAdditionalMetrics($startDate, $endDate, $userRole, $allyId, $selectedAllyId, $selectedZone);
+            $dailySales = $this->getDailySalesForPdf($startDate, $endDate, $userRole, $allyId, $selectedAllyId, $selectedZone);
 
             $pdf = app('dompdf.wrapper');
             $pdf->setPaper('A4', 'landscape');
@@ -561,7 +488,6 @@ class ReportController extends Controller
                 'reportType',
                 'chartData',
                 'stats',
-                'exchangeRateVes',
                 'metrics',
                 'dailySales',
                 'userRole',
@@ -602,11 +528,10 @@ class ReportController extends Controller
         $userRole = $user->role;
         $allyId = $this->getUserAllyId($user);
 
-        $exchangeRateVes = $this->getExchangeRate();
         $chartData = $this->getChartData($startDate, $endDate, $reportType, $userRole, $allyId, $selectedAllyId, $selectedZone);
-        $stats = $this->getSalesStats($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone);
-        $metrics = $this->getAdditionalMetrics($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone);
-        $dailySales = $this->getDailySalesForPdf($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone);
+        $stats = $this->getSalesStats($startDate, $endDate, $userRole, $allyId, $selectedAllyId, $selectedZone);
+        $metrics = $this->getAdditionalMetrics($startDate, $endDate, $userRole, $allyId, $selectedAllyId, $selectedZone);
+        $dailySales = $this->getDailySalesForPdf($startDate, $endDate, $userRole, $allyId, $selectedAllyId, $selectedZone);
 
         $pdf = app('dompdf.wrapper');
         $pdf->loadView('Admin.reportes.pdf.sales-pdf', compact(
@@ -615,7 +540,6 @@ class ReportController extends Controller
             'reportType',
             'chartData',
             'stats',
-            'exchangeRateVes',
             'metrics',
             'dailySales',
             'userRole',
@@ -630,7 +554,7 @@ class ReportController extends Controller
     /**
      * Obtiene datos diarios para el PDF
      */
-    private function getDailySalesForPdf($startDate, $endDate, $userRole = null, $allyId = null, $exchangeRate = null, $selectedAllyId = null, $selectedZone = null)
+    private function getDailySalesForPdf($startDate, $endDate, $userRole = null, $allyId = null, $selectedAllyId = null, $selectedZone = null)
     {
         $query = Sale::whereBetween('sale_date', [$startDate, $endDate])
             ->where('status', 'completed');
@@ -648,14 +572,12 @@ class ReportController extends Controller
             ->groupBy('date')
             ->orderBy('date')
             ->get()
-            ->map(function ($item) use ($exchangeRate) {
+            ->map(function ($item) {
                 return [
                     'date' => Carbon::parse($item->date),
                     'sales_usd' => (float) $item->sales_usd,
-                    'sales_ves' => (float) $item->sales_usd * $exchangeRate,
                     'orders' => $item->orders,
                     'average' => (float) $item->average,
-                    'average_ves' => (float) $item->average * $exchangeRate
                 ];
             });
     }
@@ -681,27 +603,22 @@ class ReportController extends Controller
         // Aplicar filtros
         $query = $this->applyFilters($query, $userRole, $allyId, $selectedAllyId, $selectedZone);
 
-        $exchangeRate = $this->getExchangeRate();
-
         $recentSales = $query->get()
-            ->map(function ($sale) use ($exchangeRate) {
+            ->map(function ($sale) {
                 return [
                     'id' => $sale->id,
                     'client' => $sale->client->name ?? 'Cliente no identificado',
                     'ally' => $sale->ally->company_name ?? 'Aliado no identificado',
                     'branch' => $sale->branch->name ?? 'Sucursal no identificada',
                     'amount' => $sale->total_amount,
-                    'amount_ves' => $sale->total_amount * $exchangeRate,
                     'date' => $sale->sale_date->format('d/m/Y H:i'),
                     'payment_method' => $sale->payment_method,
-                    'exchange_rate' => $exchangeRate
                 ];
             });
 
         return response()->json([
             'success' => true,
             'recent_sales' => $recentSales,
-            'exchange_rate' => $exchangeRate
         ]);
     }
 
@@ -725,28 +642,22 @@ class ReportController extends Controller
             return $this->applyFilters($query, $userRole, $allyId, $selectedAllyId, $selectedZone);
         };
 
-        $exchangeRate = $this->getExchangeRate();
-
         $todaySales = $applyFilters(Sale::whereDate('sale_date', $today)
             ->where('status', 'completed'))->sum('total_amount');
-        $todaySalesVes = $todaySales * $exchangeRate;
 
         $yesterdaySales = $applyFilters(Sale::whereDate('sale_date', $yesterday)
             ->where('status', 'completed'))->sum('total_amount');
-        $yesterdaySalesVes = $yesterdaySales * $exchangeRate;
 
         $dailyGrowth = $yesterdaySales > 0 ?
             (($todaySales - $yesterdaySales) / $yesterdaySales) * 100 : 0;
 
         $monthSales = $applyFilters(Sale::whereBetween('sale_date', [$thisMonth, $today])
             ->where('status', 'completed'))->sum('total_amount');
-        $monthSalesVes = $monthSales * $exchangeRate;
 
         $lastMonthSales = $applyFilters(Sale::whereBetween('sale_date', [
             $lastMonth,
             $thisMonth->copy()->subDay()
         ])->where('status', 'completed'))->sum('total_amount');
-        $lastMonthSalesVes = $lastMonthSales * $exchangeRate;
 
         $monthlyGrowth = $lastMonthSales > 0 ?
             (($monthSales - $lastMonthSales) / $lastMonthSales) * 100 : 0;
@@ -755,16 +666,11 @@ class ReportController extends Controller
             'success' => true,
             'metrics' => [
                 'today_sales' => $todaySales,
-                'today_sales_ves' => $todaySalesVes,
                 'yesterday_sales' => $yesterdaySales,
-                'yesterday_sales_ves' => $yesterdaySalesVes,
                 'daily_growth' => $dailyGrowth,
                 'month_sales' => $monthSales,
-                'month_sales_ves' => $monthSalesVes,
                 'last_month_sales' => $lastMonthSales,
-                'last_month_sales_ves' => $lastMonthSalesVes,
                 'monthly_growth' => $monthlyGrowth,
-                'exchange_rate' => $exchangeRate,
                 'user_role' => $userRole
             ]
         ]);
