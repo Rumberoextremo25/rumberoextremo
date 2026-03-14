@@ -142,11 +142,28 @@ Route::prefix('admin')
         // REPORTES DE VENTAS
         // ===========================================
         Route::prefix('reports')->name('reports.')->group(function () {
-            Route::get('/sales', [ReportController::class, 'sales'])->name('sales');
+            // Rutas principales (vistas)
+            Route::get('/transactions', [ReportController::class, 'transactions'])->name('transactions');
+            Route::get('/sales', [ReportController::class, 'sales'])->name('sales'); // Alias para transactions
+
+            // Datos AJAX para gráficos
+            Route::get('/transactions/data', [ReportController::class, 'transactionsData'])->name('transactions.data');
             Route::get('/sales/data', [ReportController::class, 'salesData'])->name('sales.data');
-            Route::get('/sales/export', [ReportController::class, 'exportSales'])->name('export');
-            Route::get('/sales/preview', [ReportController::class, 'exportSalesPreview'])->name('preview');
-            Route::get('/sales/metrics', [ReportController::class, 'dashboardMetrics'])->name('metrics');
+            Route::get('/payouts/data', [ReportController::class, 'payoutsData'])->name('payouts.data');
+
+            // Exportaciones PDF
+            Route::get('/transactions/export', [ReportController::class, 'exportTransactions'])->name('transactions.export');
+            Route::get('/transactions/preview', [ReportController::class, 'previewTransactions'])->name('transactions.preview');
+
+            // Mantener compatibilidad con exportaciones antiguas (si es necesario)
+            Route::get('/sales/export', [ReportController::class, 'exportTransactions'])->name('sales.export');
+            Route::get('/sales/preview', [ReportController::class, 'previewTransactions'])->name('sales.preview');
+
+            // Métricas del dashboard
+            Route::get('/dashboard/metrics', [ReportController::class, 'dashboardMetrics'])->name('dashboard.metrics');
+
+            // Datos en tiempo real
+            Route::get('/recent/transactions', [ReportController::class, 'recentTransactions'])->name('recent.transactions');
         });
 
         // ===========================================
@@ -525,7 +542,7 @@ Route::get('/debug-2fa-panel', function() {
     return response($html);
 });
 
-**********************/
+ **********************/
 /*
 |--------------------------------------------------------------------------
 | RUTAS DE AUTENTICACIÓN (Breeze/Jetstream)

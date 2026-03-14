@@ -694,7 +694,7 @@
                 });
 
                 loadingOverlay?.classList.add('active');
-                window.location.href = `{{ route('admin.reports.export') }}?${params.toString()}`;
+                window.location.href = `{{ route('admin.reports.transactions.export') }}?${params.toString()}`;
                 
                 setTimeout(() => loadingOverlay?.classList.remove('active'), 2000);
             }
