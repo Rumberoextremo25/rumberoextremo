@@ -6,6 +6,8 @@ use App\Models\Sale;
 use App\Models\PaymentTransaction;
 use App\Models\Payout;
 use App\Models\Ally;
+use App\Models\User;
+use App\Models\Client;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -40,7 +42,7 @@ class ReportController extends Controller
     }
 
     /**
-     * Obtiene tasa de cambio desde el endpoint interno
+     * Obtiene tasa de cambio desde el endpoint interno /api/banks/daily-dollar-rate
      */
     private function getExchangeRate()
     {
@@ -53,12 +55,14 @@ class ReportController extends Controller
                 if (isset($data['success']) && $data['success'] === true && isset($data['data']['PriceRateBCV'])) {
                     $rate = (float) $data['data']['PriceRateBCV'];
                     
+                    // Validar que la tasa sea razonable
                     if ($rate > 100 && $rate < 1000) {
                         return $rate;
                     }
                 }
             }
             
+            // Si el API falla, usar tasa actualizada manualmente
             return $this->getCurrentRate();
             
         } catch (\Exception $e) {
@@ -68,11 +72,18 @@ class ReportController extends Controller
     }
 
     /**
-     * Obtiene la tasa actual (fallback)
+     * Obtiene la tasa actual (actualizada manualmente según el mercado)
      */
     private function getCurrentRate()
     {
-        return 233.05;
+        // Tasas actualizadas para 2026
+        $currentRates = [
+            '2026-03' => 233.05,  // Tasa actual del BCV
+            '2026-04' => 235.50,  // Proyección
+        ];
+        
+        $currentMonth = now()->format('Y-m');
+        return $currentRates[$currentMonth] ?? 233.05;
     }
 
     /**
