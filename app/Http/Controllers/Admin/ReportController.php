@@ -3,25 +3,16 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Models\Sale;
-use App\Models\PaymentTransaction;
-use App\Models\Payout;
 use App\Models\Ally;
-use App\Http\Controllers\Api\BankController;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
 use App\Http\Controllers\Controller;
 
 class ReportController extends Controller
 {
-
-    protected BankController $bankController;
-
-    public function __construct(BankController $bankController)
-    {
-        $this->bankController = $bankController;
-    }
     /**
      * Determina si el usuario actual es administrador
      */
@@ -35,7 +26,7 @@ class ReportController extends Controller
      */
     private function isAlly($user)
     {
-        return $user->role === 'aliado' && $user->ally;
+        return $user->is_ally && $user->ally;
     }
 
     /**
@@ -47,36 +38,32 @@ class ReportController extends Controller
     }
 
     /**
-     * Obtiene tasa de cambio consultando al BankController
+     * Obtiene tasa de cambio desde el endpoint interno /api/banks/daily-dollar-rate
      */
     private function getExchangeRate()
     {
         try {
-            $request = new \Illuminate\Http\Request();
-            $response = $this->bankController->getDailyDollarRate($request);
-
-            if (!$response) {
-                return $this->getCurrentRate();
-            }
-
-            $data = $response->getData(true);
-
-            Log::info('Respuesta de BankController:', $data);
-
-            if (isset($data['success']) && $data['success'] === true) {
-                $rate = $data['data']['PriceRateBCV'] ??
-                    $data['data']['rate'] ??
-                    $data['data']['value'] ??
-                    (is_numeric($data['data']) ? $data['data'] : null);
-
-                if ($rate && $rate > 100 && $rate < 1000) {
-                    return (float) $rate;
+            $response = Http::timeout(10)->get(url('/api/banks/daily-dollar-rate'));
+            
+            if ($response->successful()) {
+                $data = $response->json();
+                
+                // Extraer tasa del response
+                if (isset($data['success']) && $data['success'] === true && isset($data['data']['PriceRateBCV'])) {
+                    $rate = (float) $data['data']['PriceRateBCV'];
+                    
+                    // Si la tasa es válida, retornarla
+                    if ($rate > 100 && $rate < 1000) {
+                        return $rate;
+                    }
                 }
             }
-
+            
+            // Si el API falla, usar tasa actualizada manualmente
             return $this->getCurrentRate();
+            
         } catch (\Exception $e) {
-            Log::error('Error obteniendo tasa: ' . $e->getMessage());
+            Log::error('Error obteniendo tasa del dólar: ' . $e->getMessage());
             return $this->getCurrentRate();
         }
     }
@@ -86,12 +73,12 @@ class ReportController extends Controller
      */
     private function getCurrentRate()
     {
-        // Tasas actualizadas para 2026
+        // Tasas actualizadas para Noviembre 2025 (basado en tasas reales del mercado)
         $currentRates = [
-            '2026-03' => 233.05,  // Tasa actual del BCV
-            '2026-04' => 235.50,  // Proyección
+            '2025-11' => 233.05,  // Tasa actual del BCV
+            '2025-12' => 235.50,  // Proyección
         ];
-
+        
         $currentMonth = now()->format('Y-m');
         return $currentRates[$currentMonth] ?? 233.05;
     }
@@ -116,17 +103,15 @@ class ReportController extends Controller
     }
 
     /**
-     * Muestra el dashboard de reportes de transacciones
+     * Muestra el dashboard de reportes de ventas
      */
-    public function transactions(Request $request)
+    public function sales(Request $request)
     {
         $startDate = $request->input('startDate', now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->input('endDate', now()->format('Y-m-d'));
         $reportType = $request->input('reportType', 'monthly');
         $selectedAllyId = $request->input('ally_id');
         $selectedZone = $request->input('zone_id');
-        $selectedStatus = $request->input('status', 'all');
-        $selectedPaymentMethod = $request->input('payment_method', 'all');
 
         $startDate = Carbon::parse($startDate)->startOfDay();
         $endDate = Carbon::parse($endDate)->endOfDay();
@@ -140,147 +125,63 @@ class ReportController extends Controller
         $allyId = $this->getUserAllyId($user);
 
         $exchangeRateVes = $this->getExchangeRate();
+        $chartData = $this->getChartData($startDate, $endDate, $reportType, $userRole, $allyId, $selectedAllyId, $selectedZone);
+        $stats = $this->getSalesStats($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone);
+        $metrics = $this->getAdditionalMetrics($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone);
 
-        // Obtener datos de PaymentTransaction
-        $transactionChartData = $this->getTransactionChartData($startDate, $endDate, $reportType, $userRole, $allyId, $selectedAllyId, $selectedZone, $selectedStatus, $selectedPaymentMethod);
-        $transactionStats = $this->getTransactionStats($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone, $selectedStatus, $selectedPaymentMethod);
-
-        // Obtener lista de transacciones
-        $transactions = $this->getTransactionsList($startDate, $endDate, $userRole, $allyId, $selectedAllyId, $selectedZone, $selectedStatus, $selectedPaymentMethod);
-
-        // Obtener datos de ventas (Sales)
-        $salesStats = $this->getSalesStats($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone);
-        $salesChartData = $this->getSalesChartData($startDate, $endDate, $reportType, $userRole, $allyId, $selectedAllyId, $selectedZone);
-
-        // Obtener datos de payouts
-        $payoutStats = $this->getPayoutStats($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone);
-        $pendingPayouts = $this->getPendingPayouts($userRole, $allyId, $selectedAllyId, $selectedZone);
-
-        // Datos para filtros
+        // Obtener datos para los filtros
         $allies = $this->isAdmin($userRole) ? Ally::orderBy('company_name')->get() : collect();
         $zones = $this->getZonesFromAllies();
-        $statuses = [
-            'confirmed' => 'Confirmada',
-            'pending_manual_confirmation' => 'Pendiente',
-            'pending_sms' => 'Esperando SMS',
-            'pending_confirmation' => 'Por Confirmar',
-            'failed' => 'Fallida',
-            'awaiting_review' => 'En Revisión'
-        ];
-        $paymentMethods = [
-            'pago_movil' => 'Pago Móvil',
-            'tarjeta_credito' => 'Tarjeta de Crédito',
-            'debito_inmediato' => 'Débito Inmediato'
-        ];
 
+        // Obtener nombres para mostrar en los filtros aplicados
         $selectedAllyName = $selectedAllyId ? Ally::find($selectedAllyId)->company_name ?? null : null;
+        $selectedZoneName = $selectedZone;
 
         return view('Admin.reportes.sales', compact(
             'startDate',
             'endDate',
             'reportType',
-            'transactionChartData',
-            'transactionStats',
-            'salesStats',
-            'salesChartData',
-            'payoutStats',
-            'pendingPayouts',
+            'chartData',
+            'stats',
             'exchangeRateVes',
-            'transactions',
+            'metrics',
             'userRole',
             'allyId',
             'allies',
             'zones',
-            'statuses',
-            'paymentMethods',
             'selectedAllyId',
             'selectedZone',
-            'selectedStatus',
-            'selectedPaymentMethod',
-            'selectedAllyName'
+            'selectedAllyName',
+            'selectedZoneName'
         ));
     }
 
     /**
-     * Alias para transactions() - Mantiene compatibilidad con rutas existentes
+     * Obtiene datos para el gráfico según el tipo de reporte
      */
-    public function sales(Request $request)
+    private function getChartData($startDate, $endDate, $reportType, $userRole = null, $allyId = null, $selectedAllyId = null, $selectedZone = null)
     {
-        return $this->transactions($request);
-    }
-
-    /**
-     * Obtiene lista de transacciones
-     */
-    private function getTransactionsList($startDate, $endDate, $userRole, $allyId, $selectedAllyId, $selectedZone, $selectedStatus, $selectedPaymentMethod)
-    {
-        $query = PaymentTransaction::with(['user', 'ally'])
-            ->whereBetween('created_at', [$startDate, $endDate]);
+        $query = Sale::whereBetween('sale_date', [$startDate, $endDate])
+            ->where('status', 'completed');
 
         // Aplicar filtros
-        $query = $this->applyTransactionFilters($query, $userRole, $allyId, $selectedAllyId, $selectedZone, $selectedStatus, $selectedPaymentMethod);
+        $query = $this->applyFilters($query, $userRole, $allyId, $selectedAllyId, $selectedZone);
 
-        return $query->orderBy('created_at', 'desc')
-            ->limit(100)
-            ->get()
-            ->map(function ($transaction) {
-                return [
-                    'id' => $transaction->id,
-                    'reference' => $transaction->reference_code,
-                    'date' => $transaction->created_at->format('d/m/Y H:i'),
-                    'user' => $transaction->user->name ?? 'N/A',
-                    'user_email' => $transaction->user->email ?? 'N/A',
-                    'ally' => $transaction->ally->company_name ?? 'Pago Directo',
-                    'ally_email' => $transaction->ally->contact_email ?? 'N/A',
-                    'original_amount' => $transaction->original_amount,
-                    'discount' => $transaction->discount_percentage,
-                    'commission' => $transaction->platform_commission,
-                    'net_amount' => $transaction->amount_to_ally,
-                    'payment_method' => $this->formatPaymentMethod($transaction->payment_method),
-                    'status' => $this->formatStatus($transaction->status),
-                    'status_code' => $transaction->status
-                ];
-            });
+        switch ($reportType) {
+            case 'daily':
+                return $this->getDailyData($query, $startDate, $endDate);
+            case 'weekly':
+                return $this->getWeeklyData($query, $startDate, $endDate);
+            case 'monthly':
+            default:
+                return $this->getMonthlyData($query, $startDate, $endDate);
+        }
     }
 
     /**
-     * Aplica filtros a las consultas de transacciones
+     * Aplica filtros a las consultas
      */
-    private function applyTransactionFilters($query, $userRole, $allyId, $selectedAllyId = null, $selectedZone = null, $selectedStatus = null, $selectedPaymentMethod = null)
-    {
-        // Si es aliado, solo puede ver sus propias transacciones
-        if (!$this->isAdmin($userRole) && $allyId) {
-            $query->where('ally_id', $allyId);
-        }
-        // Si es admin y seleccionó un aliado específico
-        elseif ($this->isAdmin($userRole) && $selectedAllyId) {
-            $query->where('ally_id', $selectedAllyId);
-        }
-
-        // Aplicar filtro por zona
-        if ($selectedZone) {
-            $query->whereHas('ally', function ($q) use ($selectedZone) {
-                $q->where('company_address', $selectedZone);
-            });
-        }
-
-        // Aplicar filtro por estado
-        if ($selectedStatus && $selectedStatus !== 'all') {
-            $query->where('status', $selectedStatus);
-        }
-
-        // Aplicar filtro por método de pago
-        if ($selectedPaymentMethod && $selectedPaymentMethod !== 'all') {
-            $query->where('payment_method', $selectedPaymentMethod);
-        }
-
-        return $query;
-    }
-
-    /**
-     * Aplica filtros a las consultas de ventas
-     */
-    private function applySaleFilters($query, $userRole, $allyId, $selectedAllyId = null, $selectedZone = null)
+    private function applyFilters($query, $userRole, $allyId, $selectedAllyId = null, $selectedZone = null)
     {
         // Si es aliado, solo puede ver sus propias ventas
         if (!$this->isAdmin($userRole) && $allyId) {
@@ -291,7 +192,7 @@ class ReportController extends Controller
             $query->where('ally_id', $selectedAllyId);
         }
 
-        // Aplicar filtro por zona
+        // Aplicar filtro por zona si está seleccionado
         if ($selectedZone) {
             $query->whereHas('ally', function ($q) use ($selectedZone) {
                 $q->where('company_address', $selectedZone);
@@ -302,380 +203,288 @@ class ReportController extends Controller
     }
 
     /**
-     * Obtiene datos para el gráfico de transacciones
+     * Datos para vista diaria
      */
-    private function getTransactionChartData($startDate, $endDate, $reportType, $userRole = null, $allyId = null, $selectedAllyId = null, $selectedZone = null, $selectedStatus = null, $selectedPaymentMethod = null)
+    private function getDailyData($query, $startDate, $endDate)
     {
-        $query = PaymentTransaction::whereBetween('created_at', [$startDate, $endDate]);
+        $period = new \DatePeriod($startDate, new \DateInterval('P1D'), $endDate);
 
-        // Aplicar filtros
-        $query = $this->applyTransactionFilters($query, $userRole, $allyId, $selectedAllyId, $selectedZone, $selectedStatus, $selectedPaymentMethod);
+        $data = $query->select(
+            DB::raw('DATE(sale_date) as date'),
+            DB::raw('SUM(total_amount) as total_sales'),
+            DB::raw('COUNT(*) as total_orders')
+        )
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get()
+            ->keyBy(function ($item) {
+                return Carbon::parse($item->date)->format('Y-m-d');
+            });
 
-        return $this->formatChartData($query, $reportType, $startDate, $endDate, 'amount_to_ally');
-    }
+        $labels = [];
+        $salesData = [];
+        $ordersData = [];
 
-    /**
-     * Obtiene datos para el gráfico de ventas
-     */
-    private function getSalesChartData($startDate, $endDate, $reportType, $userRole = null, $allyId = null, $selectedAllyId = null, $selectedZone = null)
-    {
-        $query = Sale::whereBetween('sale_date', [$startDate, $endDate])
-            ->where('status', 'completed');
+        foreach ($period as $date) {
+            $dateString = $date->format('Y-m-d');
+            $formattedDate = $date->format('d M');
 
-        // Aplicar filtros
-        $query = $this->applySaleFilters($query, $userRole, $allyId, $selectedAllyId, $selectedZone);
+            $labels[] = $formattedDate;
 
-        return $this->formatChartData($query, $reportType, $startDate, $endDate, 'total_amount');
-    }
-
-    /**
-     * Formatea datos para gráficos
-     */
-    private function formatChartData($query, $reportType, $startDate, $endDate, $amountField)
-    {
-        switch ($reportType) {
-            case 'daily':
-                $period = new \DatePeriod($startDate, new \DateInterval('P1D'), $endDate);
-
-                $data = $query->select(
-                    DB::raw('DATE(created_at) as date'),
-                    DB::raw('SUM(' . $amountField . ') as total'),
-                    DB::raw('COUNT(*) as count')
-                )
-                    ->groupBy('date')
-                    ->get()
-                    ->keyBy('date');
-
-                $labels = [];
-                $values = [];
-                $counts = [];
-
-                foreach ($period as $date) {
-                    $dateString = $date->format('Y-m-d');
-                    $labels[] = $date->format('d/m');
-                    $values[] = isset($data[$dateString]) ? (float) $data[$dateString]->total : 0;
-                    $counts[] = isset($data[$dateString]) ? $data[$dateString]->count : 0;
-                }
-
-                return [
-                    'labels' => $labels,
-                    'values' => $values,
-                    'counts' => $counts,
-                    'total_count' => array_sum($counts)
-                ];
-
-            case 'weekly':
-                $data = $query->select(
-                    DB::raw('YEAR(created_at) as year'),
-                    DB::raw('WEEK(created_at, 1) as week'),
-                    DB::raw('MIN(created_at) as week_start'),
-                    DB::raw('SUM(' . $amountField . ') as total'),
-                    DB::raw('COUNT(*) as count')
-                )
-                    ->groupBy('year', 'week')
-                    ->orderBy('year')
-                    ->orderBy('week')
-                    ->get();
-
-                $labels = $data->map(function ($item) {
-                    $weekStart = Carbon::parse($item->week_start);
-                    return "Sem {$item->week} (" . $weekStart->format('d/m') . ")";
-                });
-
-                return [
-                    'labels' => $labels,
-                    'values' => $data->pluck('total')->map(fn($v) => (float) $v),
-                    'counts' => $data->pluck('count'),
-                    'total_count' => $data->sum('count')
-                ];
-
-            case 'monthly':
-            default:
-                $data = $query->select(
-                    DB::raw('YEAR(created_at) as year'),
-                    DB::raw('MONTH(created_at) as month'),
-                    DB::raw('SUM(' . $amountField . ') as total'),
-                    DB::raw('COUNT(*) as count')
-                )
-                    ->groupBy('year', 'month')
-                    ->orderBy('year')
-                    ->orderBy('month')
-                    ->get();
-
-                $labels = $data->map(function ($item) {
-                    $date = Carbon::createFromDate($item->year, $item->month, 1);
-                    return $date->format('M Y');
-                });
-
-                return [
-                    'labels' => $labels,
-                    'values' => $data->pluck('total')->map(fn($v) => (float) $v),
-                    'counts' => $data->pluck('count'),
-                    'total_count' => $data->sum('count')
-                ];
+            if (isset($data[$dateString])) {
+                $salesData[] = (float) $data[$dateString]->total_sales;
+                $ordersData[] = $data[$dateString]->total_orders;
+            } else {
+                $salesData[] = 0;
+                $ordersData[] = 0;
+            }
         }
-    }
-
-    /**
-     * Obtiene estadísticas de transacciones
-     */
-    private function getTransactionStats($startDate, $endDate, $userRole, $allyId, $exchangeRate, $selectedAllyId = null, $selectedZone = null, $selectedStatus = null, $selectedPaymentMethod = null)
-    {
-        $query = PaymentTransaction::whereBetween('created_at', [$startDate, $endDate]);
-
-        // Aplicar filtros
-        $query = $this->applyTransactionFilters($query, $userRole, $allyId, $selectedAllyId, $selectedZone, $selectedStatus, $selectedPaymentMethod);
-
-        $totalAmount = $query->sum('amount_to_ally');
-        $totalCommission = $query->sum('platform_commission');
-        $totalCount = $query->count();
-
-        $confirmedQuery = clone $query;
-        $confirmedAmount = $confirmedQuery->where('status', 'confirmed')->sum('amount_to_ally');
-        $confirmedCount = $confirmedQuery->where('status', 'confirmed')->count();
-
-        $pendingQuery = clone $query;
-        $pendingAmount = $pendingQuery->whereIn('status', ['pending_manual_confirmation', 'awaiting_review', 'pending_sms'])->sum('amount_to_ally');
-        $pendingCount = $pendingQuery->whereIn('status', ['pending_manual_confirmation', 'awaiting_review', 'pending_sms'])->count();
 
         return [
-            'total_amount' => $totalAmount,
-            'total_amount_ves' => $totalAmount * $exchangeRate,
-            'total_commission' => $totalCommission,
-            'total_commission_ves' => $totalCommission * $exchangeRate,
-            'total_count' => $totalCount,
-            'confirmed_amount' => $confirmedAmount,
-            'confirmed_amount_ves' => $confirmedAmount * $exchangeRate,
-            'confirmed_count' => $confirmedCount,
-            'pending_amount' => $pendingAmount,
-            'pending_amount_ves' => $pendingAmount * $exchangeRate,
-            'pending_count' => $pendingCount,
-            'exchange_rate' => $exchangeRate
+            'labels' => $labels,
+            'data' => $salesData,
+            'orders' => $ordersData,
+            'total_orders' => array_sum($ordersData)
         ];
     }
 
     /**
-     * Obtiene estadísticas de ventas (Sales)
+     * Datos para vista semanal
      */
-    private function getSalesStats($startDate, $endDate, $userRole, $allyId, $exchangeRate, $selectedAllyId = null, $selectedZone = null)
+    private function getWeeklyData($query, $startDate, $endDate)
+    {
+        $data = $query->select(
+            DB::raw('YEAR(sale_date) as year'),
+            DB::raw('WEEK(sale_date, 1) as week'),
+            DB::raw('MIN(sale_date) as week_start'),
+            DB::raw('SUM(total_amount) as total_sales'),
+            DB::raw('COUNT(*) as total_orders')
+        )
+            ->groupBy('year', 'week')
+            ->orderBy('year')
+            ->orderBy('week')
+            ->get();
+
+        $labels = $data->map(function ($item) {
+            $weekStart = Carbon::parse($item->week_start);
+            return "Sem {$item->week} (" . $weekStart->format('d/m') . ")";
+        });
+
+        $salesData = $data->pluck('total_sales')->map(function ($value) {
+            return (float) $value;
+        });
+
+        $ordersData = $data->pluck('total_orders');
+
+        return [
+            'labels' => $labels,
+            'data' => $salesData,
+            'orders' => $ordersData,
+            'total_orders' => $data->sum('total_orders')
+        ];
+    }
+
+    /**
+     * Datos para vista mensual
+     */
+    private function getMonthlyData($query, $startDate, $endDate)
+    {
+        $data = $query->select(
+            DB::raw('YEAR(sale_date) as year'),
+            DB::raw('MONTH(sale_date) as month'),
+            DB::raw('SUM(total_amount) as total_sales'),
+            DB::raw('COUNT(*) as total_orders')
+        )
+            ->groupBy('year', 'month')
+            ->orderBy('year')
+            ->orderBy('month')
+            ->get();
+
+        $labels = $data->map(function ($item) {
+            $date = Carbon::createFromDate($item->year, $item->month, 1);
+            return $date->format('M Y');
+        });
+
+        $salesData = $data->pluck('total_sales')->map(function ($value) {
+            return (float) $value;
+        });
+
+        $ordersData = $data->pluck('total_orders');
+
+        return [
+            'labels' => $labels,
+            'data' => $salesData,
+            'orders' => $ordersData,
+            'total_orders' => $data->sum('total_orders')
+        ];
+    }
+
+    /**
+     * Obtiene estadísticas generales de ventas con conversión a VES
+     */
+    private function getSalesStats($startDate, $endDate, $userRole = null, $allyId = null, $exchangeRate = null, $selectedAllyId = null, $selectedZone = null)
     {
         $query = Sale::whereBetween('sale_date', [$startDate, $endDate])
             ->where('status', 'completed');
 
         // Aplicar filtros
-        $query = $this->applySaleFilters($query, $userRole, $allyId, $selectedAllyId, $selectedZone);
+        $query = $this->applyFilters($query, $userRole, $allyId, $selectedAllyId, $selectedZone);
 
-        $totalAmount = $query->sum('total_amount');
-        $totalCount = $query->count();
-        $averageAmount = $totalCount > 0 ? $totalAmount / $totalCount : 0;
-
-        // Clientes únicos
+        $totalSales = $query->sum('total_amount');
+        $totalSalesVes = $exchangeRate ? $totalSales * $exchangeRate : null;
+        $totalOrders = $query->count();
+        $averageOrderValue = $totalOrders > 0 ? $totalSales / $totalOrders : 0;
+        $averageOrderValueVes = $exchangeRate ? $averageOrderValue * $exchangeRate : null;
         $uniqueClients = $query->distinct('client_id')->count('client_id');
 
-        // Métodos de pago más usados
-        $paymentMethods = $query->select('payment_method', DB::raw('COUNT(*) as count'))
+        $paymentMethodsQuery = Sale::whereBetween('sale_date', [$startDate, $endDate])
+            ->where('status', 'completed');
+
+        // Aplicar filtros a la consulta de métodos de pago
+        $paymentMethodsQuery = $this->applyFilters($paymentMethodsQuery, $userRole, $allyId, $selectedAllyId, $selectedZone);
+
+        $paymentMethods = $paymentMethodsQuery
+            ->select('payment_method', DB::raw('COUNT(*) as count'))
             ->groupBy('payment_method')
             ->orderBy('count', 'desc')
             ->get();
 
+        $previousPeriodDays = $endDate->diffInDays($startDate);
+        $previousStartDate = $startDate->copy()->subDays($previousPeriodDays);
+        $previousEndDate = $startDate->copy()->subDay();
+
+        $previousSalesQuery = Sale::whereBetween('sale_date', [$previousStartDate, $previousEndDate])
+            ->where('status', 'completed');
+
+        // Aplicar filtros a la consulta del período anterior
+        $previousSalesQuery = $this->applyFilters($previousSalesQuery, $userRole, $allyId, $selectedAllyId, $selectedZone);
+
+        $previousSales = $previousSalesQuery->sum('total_amount');
+        $previousSalesVes = $exchangeRate ? $previousSales * $exchangeRate : null;
+
+        $growth = $previousSales > 0 ?
+            (($totalSales - $previousSales) / $previousSales) * 100 : ($totalSales > 0 ? 100 : 0);
+
         return [
-            'total_amount' => $totalAmount,
-            'total_amount_ves' => $totalAmount * $exchangeRate,
-            'total_count' => $totalCount,
-            'average_amount' => $averageAmount,
-            'average_amount_ves' => $averageAmount * $exchangeRate,
+            'total_sales' => $totalSales,
+            'total_sales_ves' => $totalSalesVes,
+            'total_orders' => $totalOrders,
+            'average_order_value' => $averageOrderValue,
+            'average_order_value_ves' => $averageOrderValueVes,
             'unique_clients' => $uniqueClients,
             'payment_methods' => $paymentMethods,
+            'growth' => $growth,
+            'previous_sales' => $previousSales,
+            'previous_sales_ves' => $previousSalesVes,
             'exchange_rate' => $exchangeRate
         ];
     }
 
     /**
-     * Obtiene estadísticas de payouts
+     * Obtiene métricas adicionales adaptadas a tu estructura
      */
-    private function getPayoutStats($startDate, $endDate, $userRole, $allyId, $exchangeRate, $selectedAllyId = null, $selectedZone = null)
-    {
-        $query = Payout::whereBetween('created_at', [$startDate, $endDate]);
-
-        // Aplicar filtros por aliado
-        if (!$this->isAdmin($userRole) && $allyId) {
-            $query->where('ally_id', $allyId);
-        } elseif ($this->isAdmin($userRole) && $selectedAllyId) {
-            $query->where('ally_id', $selectedAllyId);
-        }
-
-        // Filtro por zona
-        if ($selectedZone) {
-            $query->whereHas('ally', function ($q) use ($selectedZone) {
-                $q->where('company_address', $selectedZone);
-            });
-        }
-
-        $totalPayouts = $query->sum('net_amount');
-        $totalCount = $query->count();
-
-        $pendingAmount = (clone $query)->where('status', 'pending')->sum('net_amount');
-        $pendingCount = (clone $query)->where('status', 'pending')->count();
-
-        $completedAmount = (clone $query)->where('status', 'completed')->sum('net_amount');
-        $completedCount = (clone $query)->where('status', 'completed')->count();
-
-        return [
-            'total_amount' => $totalPayouts,
-            'total_amount_ves' => $totalPayouts * $exchangeRate,
-            'total_count' => $totalCount,
-            'pending_amount' => $pendingAmount,
-            'pending_amount_ves' => $pendingAmount * $exchangeRate,
-            'pending_count' => $pendingCount,
-            'completed_amount' => $completedAmount,
-            'completed_amount_ves' => $completedAmount * $exchangeRate,
-            'completed_count' => $completedCount,
-            'exchange_rate' => $exchangeRate
-        ];
-    }
-
-    /**
-     * Obtiene payouts pendientes
-     */
-    private function getPendingPayouts($userRole, $allyId, $selectedAllyId = null, $selectedZone = null)
-    {
-        $query = Payout::with(['ally', 'sale'])
-            ->where('status', 'pending');
-
-        // Aplicar filtros
-        if (!$this->isAdmin($userRole) && $allyId) {
-            $query->where('ally_id', $allyId);
-        } elseif ($this->isAdmin($userRole) && $selectedAllyId) {
-            $query->where('ally_id', $selectedAllyId);
-        }
-
-        if ($selectedZone) {
-            $query->whereHas('ally', function ($q) use ($selectedZone) {
-                $q->where('company_address', $selectedZone);
-            });
-        }
-
-        return $query->orderBy('created_at', 'desc')
-            ->limit(10)
-            ->get()
-            ->map(function ($payout) {
-                return [
-                    'id' => $payout->id,
-                    'ally' => $payout->ally->company_name ?? 'N/A',
-                    'amount' => $payout->net_amount,
-                    'date' => $payout->created_at->format('d/m/Y'),
-                    'sale_reference' => $payout->sale_reference
-                ];
-            });
-    }
-
-    /**
-     * Obtiene métricas adicionales
-     */
-    private function getAdditionalMetrics($startDate, $endDate, $userRole, $allyId, $exchangeRate, $selectedAllyId = null, $selectedZone = null, $selectedStatus = null, $selectedPaymentMethod = null)
+    private function getAdditionalMetrics($startDate, $endDate, $userRole = null, $allyId = null, $exchangeRate = null, $selectedAllyId = null, $selectedZone = null)
     {
         $isAdmin = $this->isAdmin($userRole);
 
-        // Top aliado por volumen de transacciones
         $topAlly = null;
         if ($isAdmin) {
-            $topAllyQuery = PaymentTransaction::whereBetween('created_at', [$startDate, $endDate])
-                ->where('status', 'confirmed');
+            $topAllyQuery = Sale::with('ally')
+                ->whereBetween('sale_date', [$startDate, $endDate])
+                ->where('status', 'completed');
 
-            if ($selectedZone) {
-                $topAllyQuery->whereHas('ally', function ($q) use ($selectedZone) {
-                    $q->where('company_address', $selectedZone);
-                });
-            }
+            // Aplicar filtros
+            $topAllyQuery = $this->applyFilters($topAllyQuery, $userRole, $allyId, $selectedAllyId, $selectedZone);
 
-            $topAlly = $topAllyQuery->select('ally_id', DB::raw('SUM(amount_to_ally) as total'))
+            $topAlly = $topAllyQuery
+                ->select('ally_id', DB::raw('SUM(total_amount) as total_sales'), DB::raw('COUNT(*) as total_orders'))
                 ->groupBy('ally_id')
-                ->orderByDesc('total')
+                ->orderByDesc('total_sales')
                 ->first();
 
-            if ($topAlly) {
-                $ally = Ally::find($topAlly->ally_id);
-                $topAlly->name = $ally->company_name ?? 'N/A';
-                $topAlly->total_ves = $topAlly->total * $exchangeRate;
+            if ($topAlly && $exchangeRate) {
+                $topAlly->total_sales_ves = $topAlly->total_sales * $exchangeRate;
             }
         }
 
-        // Transacción más grande
-        $largestTransactionQuery = PaymentTransaction::whereBetween('created_at', [$startDate, $endDate])
-            ->where('status', 'confirmed');
+        $branchQuery = Sale::with('branch')
+            ->whereBetween('sale_date', [$startDate, $endDate])
+            ->where('status', 'completed');
 
-        $largestTransactionQuery = $this->applyTransactionFilters($largestTransactionQuery, $userRole, $allyId, $selectedAllyId, $selectedZone, $selectedStatus, $selectedPaymentMethod);
+        // Aplicar filtros
+        $branchQuery = $this->applyFilters($branchQuery, $userRole, $allyId, $selectedAllyId, $selectedZone);
 
-        $largestTransaction = $largestTransactionQuery->orderByDesc('amount_to_ally')->first();
-        $largestTransactionVes = $largestTransaction ? $largestTransaction->amount_to_ally * $exchangeRate : null;
-
-        // Mejor día
-        $bestDayQuery = PaymentTransaction::whereBetween('created_at', [$startDate, $endDate])
-            ->where('status', 'confirmed');
-
-        $bestDayQuery = $this->applyTransactionFilters($bestDayQuery, $userRole, $allyId, $selectedAllyId, $selectedZone, $selectedStatus, $selectedPaymentMethod);
-
-        $bestDay = $bestDayQuery->select(
-            DB::raw('DATE(created_at) as date'),
-            DB::raw('SUM(amount_to_ally) as daily_total')
-        )
-            ->groupBy('date')
-            ->orderByDesc('daily_total')
+        $topBranch = $branchQuery
+            ->select('branch_id', DB::raw('SUM(total_amount) as total_sales'), DB::raw('COUNT(*) as total_orders'))
+            ->groupBy('branch_id')
+            ->orderByDesc('total_sales')
             ->first();
 
-        $bestDayVes = $bestDay ? $bestDay->daily_total * $exchangeRate : null;
+        if ($topBranch && $exchangeRate) {
+            $topBranch->total_sales_ves = $topBranch->total_sales * $exchangeRate;
+        }
+
+        $largestSaleQuery = Sale::with(['client', 'ally', 'branch'])
+            ->whereBetween('sale_date', [$startDate, $endDate])
+            ->where('status', 'completed');
+
+        // Aplicar filtros
+        $largestSaleQuery = $this->applyFilters($largestSaleQuery, $userRole, $allyId, $selectedAllyId, $selectedZone);
+
+        $largestSale = $largestSaleQuery->orderByDesc('total_amount')->first();
+        $largestSaleVes = $exchangeRate && $largestSale ? $largestSale->total_amount * $exchangeRate : null;
+
+        $bestDayQuery = Sale::whereBetween('sale_date', [$startDate, $endDate])
+            ->where('status', 'completed');
+
+        // Aplicar filtros
+        $bestDayQuery = $this->applyFilters($bestDayQuery, $userRole, $allyId, $selectedAllyId, $selectedZone);
+
+        $bestDay = $bestDayQuery
+            ->select(
+                DB::raw('DATE(sale_date) as date'),
+                DB::raw('SUM(total_amount) as daily_sales'),
+                DB::raw('COUNT(*) as daily_orders')
+            )
+            ->groupBy('date')
+            ->orderByDesc('daily_sales')
+            ->first();
+
+        $bestDayVes = $exchangeRate && $bestDay ? $bestDay->daily_sales * $exchangeRate : null;
+
+        $paymentMethodQuery = Sale::whereBetween('sale_date', [$startDate, $endDate])
+            ->where('status', 'completed');
+
+        // Aplicar filtros
+        $paymentMethodQuery = $this->applyFilters($paymentMethodQuery, $userRole, $allyId, $selectedAllyId, $selectedZone);
+
+        $topPaymentMethod = $paymentMethodQuery
+            ->select('payment_method', DB::raw('COUNT(*) as count'))
+            ->groupBy('payment_method')
+            ->orderByDesc('count')
+            ->first();
+
+        $currentAllyInfo = null;
+        if (!$isAdmin && $allyId) {
+            $currentAllyInfo = Ally::find($allyId);
+        }
 
         return [
             'top_ally' => $topAlly,
-            'largest_transaction' => $largestTransaction,
-            'largest_transaction_ves' => $largestTransactionVes,
+            'top_branch' => $topBranch,
+            'largest_sale' => $largestSale,
+            'largest_sale_ves' => $largestSaleVes,
             'best_day' => $bestDay,
             'best_day_ves' => $bestDayVes,
-            'exchange_rate' => $exchangeRate,
-            'is_admin' => $isAdmin
+            'top_payment_method' => $topPaymentMethod,
+            'current_ally_info' => $currentAllyInfo,
+            'is_admin' => $isAdmin,
+            'exchange_rate' => $exchangeRate
         ];
     }
 
     /**
-     * Endpoint para datos AJAX del gráfico de transacciones
-     */
-    public function transactionsData(Request $request)
-    {
-        $startDate = $request->input('startDate', now()->startOfMonth()->format('Y-m-d'));
-        $endDate = $request->input('endDate', now()->format('Y-m-d'));
-        $reportType = $request->input('reportType', 'monthly');
-        $selectedAllyId = $request->input('ally_id');
-        $selectedZone = $request->input('zone_id');
-        $selectedStatus = $request->input('status', 'all');
-        $selectedPaymentMethod = $request->input('payment_method', 'all');
-
-        $startDate = Carbon::parse($startDate)->startOfDay();
-        $endDate = Carbon::parse($endDate)->endOfDay();
-
-        $user = auth()->user();
-        $userRole = $user->role;
-        $allyId = $this->getUserAllyId($user);
-
-        $exchangeRateVes = $this->getExchangeRate();
-
-        $transactionChartData = $this->getTransactionChartData($startDate, $endDate, $reportType, $userRole, $allyId, $selectedAllyId, $selectedZone, $selectedStatus, $selectedPaymentMethod);
-        $transactionStats = $this->getTransactionStats($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone, $selectedStatus, $selectedPaymentMethod);
-
-        return response()->json([
-            'success' => true,
-            'chart' => $transactionChartData,
-            'stats' => $transactionStats,
-            'exchange_rate' => $exchangeRateVes,
-            'date_range' => [
-                'start' => $startDate->format('Y-m-d'),
-                'end' => $endDate->format('Y-m-d'),
-                'report_type' => $reportType
-            ]
-        ]);
-    }
-
-    /**
-     * Endpoint para datos de ventas (Sales)
+     * Endpoint para datos AJAX del gráfico
      */
     public function salesData(Request $request)
     {
@@ -693,25 +502,96 @@ class ReportController extends Controller
         $allyId = $this->getUserAllyId($user);
 
         $exchangeRateVes = $this->getExchangeRate();
-
-        $salesChartData = $this->getSalesChartData($startDate, $endDate, $reportType, $userRole, $allyId, $selectedAllyId, $selectedZone);
-        $salesStats = $this->getSalesStats($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone);
+        $chartData = $this->getChartData($startDate, $endDate, $reportType, $userRole, $allyId, $selectedAllyId, $selectedZone);
+        $stats = $this->getSalesStats($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone);
 
         return response()->json([
             'success' => true,
-            'chart' => $salesChartData,
-            'stats' => $salesStats,
-            'exchange_rate' => $exchangeRateVes
+            'chart' => [
+                'labels' => $chartData['labels'],
+                'data' => $chartData['data'],
+                'orders' => $chartData['orders'],
+                'total_orders' => $chartData['total_orders']
+            ],
+            'stats' => $stats,
+            'exchange_rate' => $exchangeRateVes,
+            'date_range' => [
+                'start' => $startDate->format('Y-m-d'),
+                'end' => $endDate->format('Y-m-d'),
+                'report_type' => $reportType
+            ]
         ]);
     }
 
     /**
-     * Endpoint para datos de payouts
+     * Exporta reporte a PDF usando DomPDF
      */
-    public function payoutsData(Request $request)
+    public function exportSales(Request $request)
+    {
+        try {
+            $startDate = $request->input('startDate', now()->startOfMonth()->format('Y-m-d'));
+            $endDate = $request->input('endDate', now()->format('Y-m-d'));
+            $reportType = $request->input('reportType', 'monthly');
+            $selectedAllyId = $request->input('ally_id');
+            $selectedZone = $request->input('zone_id');
+
+            $startDate = Carbon::parse($startDate)->startOfDay();
+            $endDate = Carbon::parse($endDate)->endOfDay();
+
+            if ($endDate->gt(now())) {
+                $endDate = now();
+            }
+
+            $user = auth()->user();
+            $userRole = $user->role;
+            $allyId = $this->getUserAllyId($user);
+
+            $exchangeRateVes = $this->getExchangeRate();
+            $chartData = $this->getChartData($startDate, $endDate, $reportType, $userRole, $allyId, $selectedAllyId, $selectedZone);
+            $stats = $this->getSalesStats($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone);
+            $metrics = $this->getAdditionalMetrics($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone);
+            $dailySales = $this->getDailySalesForPdf($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone);
+
+            $pdf = app('dompdf.wrapper');
+            $pdf->setPaper('A4', 'landscape');
+
+            $pdf->loadView('Admin.reportes.pdf.sales-pdf', compact(
+                'startDate',
+                'endDate',
+                'reportType',
+                'chartData',
+                'stats',
+                'exchangeRateVes',
+                'metrics',
+                'dailySales',
+                'userRole',
+                'allyId',
+                'selectedAllyId',
+                'selectedZone'
+            ));
+
+            if ($this->isAdmin($userRole)) {
+                $filename = "reporte_ventas_{$startDate->format('Y-m-d')}_a_{$endDate->format('Y-m-d')}.pdf";
+            } else {
+                $allyName = $user->ally ? str_replace(' ', '_', $user->ally->company_name) : 'aliado';
+                $filename = "reporte_ventas_{$allyName}_{$startDate->format('Y-m-d')}_a_{$endDate->format('Y-m-d')}.pdf";
+            }
+
+            return $pdf->download($filename);
+        } catch (\Exception $e) {
+            Log::error('Error generando PDF: ' . $e->getMessage());
+            return response()->json(['error' => 'Error al generar el PDF'], 500);
+        }
+    }
+
+    /**
+     * Exporta reporte a PDF con opción de vista previa
+     */
+    public function exportSalesPreview(Request $request)
     {
         $startDate = $request->input('startDate', now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->input('endDate', now()->format('Y-m-d'));
+        $reportType = $request->input('reportType', 'monthly');
         $selectedAllyId = $request->input('ally_id');
         $selectedZone = $request->input('zone_id');
 
@@ -723,15 +603,105 @@ class ReportController extends Controller
         $allyId = $this->getUserAllyId($user);
 
         $exchangeRateVes = $this->getExchangeRate();
+        $chartData = $this->getChartData($startDate, $endDate, $reportType, $userRole, $allyId, $selectedAllyId, $selectedZone);
+        $stats = $this->getSalesStats($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone);
+        $metrics = $this->getAdditionalMetrics($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone);
+        $dailySales = $this->getDailySalesForPdf($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone);
 
-        $payoutStats = $this->getPayoutStats($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone);
-        $pendingPayouts = $this->getPendingPayouts($userRole, $allyId, $selectedAllyId, $selectedZone);
+        $pdf = app('dompdf.wrapper');
+        $pdf->loadView('Admin.reportes.pdf.sales-pdf', compact(
+            'startDate',
+            'endDate',
+            'reportType',
+            'chartData',
+            'stats',
+            'exchangeRateVes',
+            'metrics',
+            'dailySales',
+            'userRole',
+            'allyId',
+            'selectedAllyId',
+            'selectedZone'
+        ));
+
+        return $pdf->stream();
+    }
+
+    /**
+     * Obtiene datos diarios para el PDF
+     */
+    private function getDailySalesForPdf($startDate, $endDate, $userRole = null, $allyId = null, $exchangeRate = null, $selectedAllyId = null, $selectedZone = null)
+    {
+        $query = Sale::whereBetween('sale_date', [$startDate, $endDate])
+            ->where('status', 'completed');
+
+        // Aplicar filtros
+        $query = $this->applyFilters($query, $userRole, $allyId, $selectedAllyId, $selectedZone);
+
+        return $query
+            ->select(
+                DB::raw('DATE(sale_date) as date'),
+                DB::raw('SUM(total_amount) as sales_usd'),
+                DB::raw('COUNT(*) as orders'),
+                DB::raw('AVG(total_amount) as average')
+            )
+            ->groupBy('date')
+            ->orderBy('date')
+            ->get()
+            ->map(function ($item) use ($exchangeRate) {
+                return [
+                    'date' => Carbon::parse($item->date),
+                    'sales_usd' => (float) $item->sales_usd,
+                    'sales_ves' => (float) $item->sales_usd * $exchangeRate,
+                    'orders' => $item->orders,
+                    'average' => (float) $item->average,
+                    'average_ves' => (float) $item->average * $exchangeRate
+                ];
+            });
+    }
+
+    /**
+     * Endpoint para obtener datos en tiempo real (últimas ventas)
+     */
+    public function recentSales(Request $request)
+    {
+        $limit = $request->input('limit', 10);
+        $selectedAllyId = $request->input('ally_id');
+        $selectedZone = $request->input('zone_id');
+
+        $user = auth()->user();
+        $userRole = $user->role;
+        $allyId = $this->getUserAllyId($user);
+
+        $query = Sale::with(['client', 'ally', 'branch'])
+            ->where('status', 'completed')
+            ->orderBy('sale_date', 'desc')
+            ->limit($limit);
+
+        // Aplicar filtros
+        $query = $this->applyFilters($query, $userRole, $allyId, $selectedAllyId, $selectedZone);
+
+        $exchangeRate = $this->getExchangeRate();
+
+        $recentSales = $query->get()
+            ->map(function ($sale) use ($exchangeRate) {
+                return [
+                    'id' => $sale->id,
+                    'client' => $sale->client->name ?? 'Cliente no identificado',
+                    'ally' => $sale->ally->company_name ?? 'Aliado no identificado',
+                    'branch' => $sale->branch->name ?? 'Sucursal no identificada',
+                    'amount' => $sale->total_amount,
+                    'amount_ves' => $sale->total_amount * $exchangeRate,
+                    'date' => $sale->sale_date->format('d/m/Y H:i'),
+                    'payment_method' => $sale->payment_method,
+                    'exchange_rate' => $exchangeRate
+                ];
+            });
 
         return response()->json([
             'success' => true,
-            'stats' => $payoutStats,
-            'pending' => $pendingPayouts,
-            'exchange_rate' => $exchangeRateVes
+            'recent_sales' => $recentSales,
+            'exchange_rate' => $exchangeRate
         ]);
     }
 
@@ -751,61 +721,35 @@ class ReportController extends Controller
         $userRole = $user->role;
         $allyId = $this->getUserAllyId($user);
 
-        $exchangeRate = $this->getExchangeRate();
-
-        // Función para aplicar filtros
-        $applyFilters = function ($query) use ($userRole, $allyId, $selectedAllyId, $selectedZone) {
-            if (!$this->isAdmin($userRole) && $allyId) {
-                $query->where('ally_id', $allyId);
-            } elseif ($this->isAdmin($userRole) && $selectedAllyId) {
-                $query->where('ally_id', $selectedAllyId);
-            }
-
-            if ($selectedZone) {
-                $query->whereHas('ally', function ($q) use ($selectedZone) {
-                    $q->where('company_address', $selectedZone);
-                });
-            }
-
-            return $query;
+        $applyFilters = function($query) use ($userRole, $allyId, $selectedAllyId, $selectedZone) {
+            return $this->applyFilters($query, $userRole, $allyId, $selectedAllyId, $selectedZone);
         };
 
-        // Ventas hoy
+        $exchangeRate = $this->getExchangeRate();
+
         $todaySales = $applyFilters(Sale::whereDate('sale_date', $today)
             ->where('status', 'completed'))->sum('total_amount');
         $todaySalesVes = $todaySales * $exchangeRate;
 
-        // Ventas ayer
         $yesterdaySales = $applyFilters(Sale::whereDate('sale_date', $yesterday)
             ->where('status', 'completed'))->sum('total_amount');
         $yesterdaySalesVes = $yesterdaySales * $exchangeRate;
 
-        // Crecimiento diario
         $dailyGrowth = $yesterdaySales > 0 ?
             (($todaySales - $yesterdaySales) / $yesterdaySales) * 100 : 0;
 
-        // Ventas del mes
         $monthSales = $applyFilters(Sale::whereBetween('sale_date', [$thisMonth, $today])
             ->where('status', 'completed'))->sum('total_amount');
         $monthSalesVes = $monthSales * $exchangeRate;
 
-        // Ventas mes anterior
         $lastMonthSales = $applyFilters(Sale::whereBetween('sale_date', [
             $lastMonth,
             $thisMonth->copy()->subDay()
         ])->where('status', 'completed'))->sum('total_amount');
         $lastMonthSalesVes = $lastMonthSales * $exchangeRate;
 
-        // Crecimiento mensual
         $monthlyGrowth = $lastMonthSales > 0 ?
             (($monthSales - $lastMonthSales) / $lastMonthSales) * 100 : 0;
-
-        // Transacciones hoy
-        $todayTransactions = $applyFilters(PaymentTransaction::whereDate('created_at', $today))->count();
-
-        // Payouts pendientes
-        $pendingPayouts = $applyFilters(Payout::where('status', 'pending'))->sum('net_amount');
-        $pendingPayoutsVes = $pendingPayouts * $exchangeRate;
 
         return response()->json([
             'success' => true,
@@ -820,208 +764,9 @@ class ReportController extends Controller
                 'last_month_sales' => $lastMonthSales,
                 'last_month_sales_ves' => $lastMonthSalesVes,
                 'monthly_growth' => $monthlyGrowth,
-                'today_transactions' => $todayTransactions,
-                'pending_payouts' => $pendingPayouts,
-                'pending_payouts_ves' => $pendingPayoutsVes,
                 'exchange_rate' => $exchangeRate,
                 'user_role' => $userRole
             ]
         ]);
-    }
-
-    /**
-     * Exporta reporte a PDF
-     */
-    public function exportTransactions(Request $request)
-    {
-        try {
-            $startDate = $request->input('startDate', now()->startOfMonth()->format('Y-m-d'));
-            $endDate = $request->input('endDate', now()->format('Y-m-d'));
-            $reportType = $request->input('reportType', 'monthly');
-            $selectedAllyId = $request->input('ally_id');
-            $selectedZone = $request->input('zone_id');
-            $selectedStatus = $request->input('status', 'all');
-            $selectedPaymentMethod = $request->input('payment_method', 'all');
-
-            $startDate = Carbon::parse($startDate)->startOfDay();
-            $endDate = Carbon::parse($endDate)->endOfDay();
-
-            $user = auth()->user();
-            $userRole = $user->role;
-            $allyId = $this->getUserAllyId($user);
-
-            $exchangeRateVes = $this->getExchangeRate();
-
-            $transactionChartData = $this->getTransactionChartData($startDate, $endDate, $reportType, $userRole, $allyId, $selectedAllyId, $selectedZone, $selectedStatus, $selectedPaymentMethod);
-            $transactionStats = $this->getTransactionStats($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone, $selectedStatus, $selectedPaymentMethod);
-            $salesStats = $this->getSalesStats($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone);
-            $transactions = $this->getTransactionsList($startDate, $endDate, $userRole, $allyId, $selectedAllyId, $selectedZone, $selectedStatus, $selectedPaymentMethod);
-
-            $pdf = app('dompdf.wrapper');
-            $pdf->setPaper('A4', 'landscape');
-
-            $pdf->loadView('Admin.reportes.pdf.transactions-pdf', compact(
-                'startDate',
-                'endDate',
-                'reportType',
-                'transactionChartData',
-                'transactionStats',
-                'salesStats',
-                'exchangeRateVes',
-                'transactions',
-                'userRole',
-                'allyId',
-                'selectedAllyId',
-                'selectedZone',
-                'selectedStatus',
-                'selectedPaymentMethod'
-            ));
-
-            $filename = "reporte_transacciones_{$startDate->format('Y-m-d')}_a_{$endDate->format('Y-m-d')}.pdf";
-
-            return $pdf->download($filename);
-        } catch (\Exception $e) {
-            Log::error('Error generando PDF: ' . $e->getMessage());
-            return response()->json(['error' => 'Error al generar el PDF'], 500);
-        }
-    }
-
-    /**
-     * Vista previa del PDF
-     */
-    public function previewTransactions(Request $request)
-    {
-        try {
-            $startDate = $request->input('startDate', now()->startOfMonth()->format('Y-m-d'));
-            $endDate = $request->input('endDate', now()->format('Y-m-d'));
-            $reportType = $request->input('reportType', 'monthly');
-            $selectedAllyId = $request->input('ally_id');
-            $selectedZone = $request->input('zone_id');
-            $selectedStatus = $request->input('status', 'all');
-            $selectedPaymentMethod = $request->input('payment_method', 'all');
-
-            $startDate = Carbon::parse($startDate)->startOfDay();
-            $endDate = Carbon::parse($endDate)->endOfDay();
-
-            $user = auth()->user();
-            $userRole = $user->role;
-            $allyId = $this->getUserAllyId($user);
-
-            $exchangeRateVes = $this->getExchangeRate();
-
-            $transactionChartData = $this->getTransactionChartData($startDate, $endDate, $reportType, $userRole, $allyId, $selectedAllyId, $selectedZone, $selectedStatus, $selectedPaymentMethod);
-            $transactionStats = $this->getTransactionStats($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone, $selectedStatus, $selectedPaymentMethod);
-            $salesStats = $this->getSalesStats($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone);
-            $transactions = $this->getTransactionsList($startDate, $endDate, $userRole, $allyId, $selectedAllyId, $selectedZone, $selectedStatus, $selectedPaymentMethod);
-
-            $pdf = app('dompdf.wrapper');
-            $pdf->setPaper('A4', 'landscape');
-
-            $pdf->loadView('Admin.reportes.pdf.transactions-pdf', compact(
-                'startDate',
-                'endDate',
-                'reportType',
-                'transactionChartData',
-                'transactionStats',
-                'salesStats',
-                'exchangeRateVes',
-                'transactions',
-                'userRole',
-                'allyId',
-                'selectedAllyId',
-                'selectedZone',
-                'selectedStatus',
-                'selectedPaymentMethod'
-            ));
-
-            return $pdf->stream();
-        } catch (\Exception $e) {
-            Log::error('Error generando vista previa PDF: ' . $e->getMessage());
-            return response()->json(['error' => 'Error al generar la vista previa'], 500);
-        }
-    }
-
-    /**
-     * Endpoint para obtener datos en tiempo real (últimas transacciones)
-     */
-    public function recentTransactions(Request $request)
-    {
-        $limit = $request->input('limit', 10);
-        $selectedAllyId = $request->input('ally_id');
-        $selectedZone = $request->input('zone_id');
-
-        $user = auth()->user();
-        $userRole = $user->role;
-        $allyId = $this->getUserAllyId($user);
-
-        $query = PaymentTransaction::with(['user', 'ally'])
-            ->orderBy('created_at', 'desc')
-            ->limit($limit);
-
-        // Aplicar filtros
-        if (!$this->isAdmin($userRole) && $allyId) {
-            $query->where('ally_id', $allyId);
-        } elseif ($this->isAdmin($userRole) && $selectedAllyId) {
-            $query->where('ally_id', $selectedAllyId);
-        }
-
-        if ($selectedZone) {
-            $query->whereHas('ally', function ($q) use ($selectedZone) {
-                $q->where('company_address', $selectedZone);
-            });
-        }
-
-        $exchangeRate = $this->getExchangeRate();
-
-        $recentTransactions = $query->get()
-            ->map(function ($transaction) use ($exchangeRate) {
-                return [
-                    'id' => $transaction->id,
-                    'reference' => $transaction->reference_code,
-                    'user' => $transaction->user->name ?? 'N/A',
-                    'ally' => $transaction->ally->company_name ?? 'Pago Directo',
-                    'amount' => $transaction->amount_to_ally,
-                    'amount_ves' => $transaction->amount_to_ally * $exchangeRate,
-                    'date' => $transaction->created_at->format('d/m/Y H:i'),
-                    'payment_method' => $this->formatPaymentMethod($transaction->payment_method),
-                    'status' => $this->formatStatus($transaction->status),
-                    'exchange_rate' => $exchangeRate
-                ];
-            });
-
-        return response()->json([
-            'success' => true,
-            'recent_transactions' => $recentTransactions,
-            'exchange_rate' => $exchangeRate
-        ]);
-    }
-
-    /**
-     * Formatea método de pago
-     */
-    private function formatPaymentMethod($method)
-    {
-        return match ($method) {
-            'pago_movil' => '📱 Pago Móvil',
-            'tarjeta_credito' => '💳 Tarjeta de Crédito',
-            'debito_inmediato' => '🏦 Débito Inmediato',
-            default => $method ?? 'N/A'
-        };
-    }
-
-    /**
-     * Formatea estado
-     */
-    private function formatStatus($status)
-    {
-        return match ($status) {
-            'confirmed' => '✅ Confirmada',
-            'awaiting_review' => '⏳ En Revisión',
-            'pending_manual_confirmation' => '⌛ Pendiente',
-            'pending_sms' => '📱 Esperando SMS',
-            'pending_confirmation' => '⏰ Por Confirmar',
-            'failed' => '❌ Fallida',
-            default => $status ?? 'N/A'
-        };
     }
 }
