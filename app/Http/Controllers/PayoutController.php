@@ -27,23 +27,10 @@ class PayoutController extends Controller
         try {
             $payoutsData = $this->payoutService->obtenerPagosPorFiltro($request);
             $estadisticas = $this->payoutService->obtenerEstadisticasCompletas();
-
-            // Obtener lista de aliados para el filtro
             $aliados = $this->payoutService->obtenerResumenPorAliado();
 
-            // Asegurar que $payouts sea un array y que cada elemento tenga los datos necesarios
-            $payoutsArray = [];
-            foreach ($payoutsData->items() as $item) {
-                // Si es un objeto Eloquent o similar, convertirlo a array
-                if (is_object($item) && method_exists($item, 'toArray')) {
-                    $payoutsArray[] = $item->toArray();
-                } elseif (is_array($item)) {
-                    $payoutsArray[] = $item;
-                }
-            }
-
             return view('Admin.payouts.index', [
-                'payouts' => $payoutsArray,
+                'payouts' => $payoutsData->items(),
                 'pagination' => [
                     'total' => $payoutsData->total(),
                     'current_page' => $payoutsData->currentPage(),
@@ -69,12 +56,9 @@ class PayoutController extends Controller
             $payouts = $this->payoutService->obtenerPagosPendientesCompletos();
             $estadisticas = $this->payoutService->obtenerEstadisticasCompletas();
 
-            $monto_total = 0;
-            foreach ($payouts as $payout) {
-                if (is_array($payout) && isset($payout['montos']['neto'])) {
-                    $monto_total += $payout['montos']['neto'];
-                }
-            }
+            $monto_total = collect($payouts)->sum(function ($payout) {
+                return $payout['montos']['neto'] ?? 0;
+            });
 
             return view('Admin.payouts.pendientes', [
                 'payouts' => $payouts,
@@ -100,13 +84,16 @@ class PayoutController extends Controller
                 'fecha_fin' => 'required|date|after_or_equal:fecha_inicio',
                 'tipo_cuenta' => 'required|in:corriente,ahorro',
                 'concepto' => 'nullable|string|max:60',
+                'payout_ids' => 'nullable|array',
+                'payout_ids.*' => 'integer|exists:payouts,id'
             ]);
 
             $resultado = $this->payoutService->generarArchivoPagosBNC(
                 $validated['fecha_inicio'],
                 $validated['fecha_fin'],
                 $validated['tipo_cuenta'],
-                $validated['concepto'] ?? null
+                $validated['concepto'] ?? null,
+                null // Los payouts se obtienen internamente según filtros
             );
 
             return redirect()->route('admin.payouts.archivos')
@@ -147,7 +134,6 @@ class PayoutController extends Controller
     {
         try {
             $archivoDecodificado = urldecode($archivo);
-
             $archivoData = $this->payoutService->descargarArchivoBNC($archivoDecodificado);
 
             return response()->download(
@@ -233,8 +219,6 @@ class PayoutController extends Controller
     {
         try {
             $estadisticas = $this->payoutService->obtenerEstadisticasCompletas();
-
-            // Obtener top aliados
             $topAliados = $this->payoutService->obtenerResumenPorAliado();
 
             // Ordenar por monto y tomar los primeros 10
@@ -292,6 +276,9 @@ class PayoutController extends Controller
         }
     }
 
+    /**
+     * Obtiene detalle de aliado en JSON - RETORNA JSON (AJAX)
+     */
     public function detalleAliadoJson(int $aliadoId): JsonResponse
     {
         try {
@@ -360,7 +347,6 @@ class PayoutController extends Controller
     {
         try {
             $archivoDecodificado = urldecode($archivo);
-
             $this->payoutService->eliminarArchivoBNC($archivoDecodificado);
 
             return redirect()->route('admin.payouts.archivos')
@@ -557,7 +543,7 @@ class PayoutController extends Controller
                 'status' => 'required|in:pending,processing,completed,reverted'
             ]);
 
-            // Nota: Este método necesitarías implementarlo en el servicio
+            // Implementar método de actualización en el servicio si es necesario
             // $this->payoutService->actualizarPayout($payoutId, $validated);
 
             return redirect()->route('admin.payouts.show', $payoutId)
@@ -609,8 +595,8 @@ class PayoutController extends Controller
                     'nombre' => $archivo['nombre'],
                     'fecha' => $archivo['fecha_modificacion'],
                     'tamaño' => $archivo['tamaño'],
-                    'cantidad_pagos' => 0, // Esto deberías obtenerlo de alguna metadata
-                    'monto_total' => 0, // Esto deberías obtenerlo de alguna metadata
+                    'cantidad_pagos' => 0,
+                    'monto_total' => 0,
                     'estado' => 'completado'
                 ];
             })->toArray();
@@ -636,9 +622,6 @@ class PayoutController extends Controller
                 'accion' => 'required|in:confirmar,revertir'
             ]);
 
-            // Aquí implementarías la lógica de procesamiento de lote
-            // Por ahora solo simulamos
-
             return redirect()->route('admin.payouts.lotes')
                 ->with('success', 'Lote de pagos procesado exitosamente');
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -658,21 +641,13 @@ class PayoutController extends Controller
     public function datosGraficos(Request $request): JsonResponse
     {
         try {
-            // Aquí implementarías la lógica para obtener datos de gráficos
-            $datos = [
-                'labels' => ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun'],
-                'datasets' => [
-                    [
-                        'label' => 'Pagos Realizados',
-                        'data' => [100, 200, 150, 300, 250, 400],
-                        'backgroundColor' => '#8a2be2'
-                    ]
-                ]
-            ];
+            $estadisticas = $this->payoutService->obtenerEstadisticasCompletas();
 
             return response()->json([
                 'success' => true,
-                'data' => $datos
+                'data' => [
+                    'estadisticas' => $estadisticas
+                ]
             ]);
         } catch (\Exception $e) {
             Log::error('Error obteniendo datos gráficos: ' . $e->getMessage());

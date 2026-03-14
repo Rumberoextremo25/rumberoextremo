@@ -2,71 +2,76 @@
 
 namespace App\Services;
 
-use App\Models\Sale;
 use App\Models\Payout;
+use App\Models\Sale;
 use App\Models\Ally;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\File;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\File;
 
 class PayoutService
 {
     /**
-     * Crea un registro de payout básico para desarrollo
+     * Crea un registro de payout
      */
-    public function createPayout(Sale $venta, array $aliadoData, array $bncResponse): ?Payout
+    public function createPayout(Sale $venta, array $allyData, array $bncResponse): ?Payout
     {
         // Si no hay aliado, no crear payout
-        if (!$aliadoData['has_aliado'] || empty($aliadoData['aliado_id'])) {
+        if (!($allyData['has_ally'] ?? false) || empty($allyData['ally_id'] ?? null)) {
             Log::info('No se crea payout - No hay aliado asociado', ['venta_id' => $venta->id]);
             return null;
         }
 
         try {
+            // Verificar que el aliado existe
+            $ally = Ally::find($allyData['ally_id']);
+            if (!$ally) {
+                Log::error('Aliado no encontrado', ['ally_id' => $allyData['ally_id']]);
+                return null;
+            }
+
             $payoutData = [
-                // Foreign keys - OBLIGATORIOS
+                // Foreign keys
                 'sale_id' => $venta->id,
-                'ally_id' => $aliadoData['aliado_id'],
+                'ally_id' => $allyData['ally_id'],
 
                 // Amount fields - Pago al aliado
-                'sale_amount' => $venta->monto_total,
-                'commission_percentage' => $aliadoData['comision_porcentaje'],
-                'commission_amount' => $aliadoData['monto_comision'],
-                'net_amount' => $aliadoData['monto_neto'],
-                'ally_discount' => $aliadoData['discount'] ?? 0,
-                'amount_after_discount' => $aliadoData['monto_despues_descuento'] ?? $venta->monto_total,
+                'sale_amount' => $venta->monto_total ?? $venta->total_amount ?? 0,
+                'commission_percentage' => $allyData['commission_percentage'] ?? 0,
+                'commission_amount' => $allyData['commission_amount'] ?? 0,
+                'net_amount' => $allyData['net_amount'] ?? 0,
+                'ally_discount' => $allyData['discount'] ?? 0,
+                'amount_after_discount' => $allyData['amount_after_discount'] ?? $venta->monto_total ?? 0,
 
-                // Campos básicos de transferencia a empresa (simulados para desarrollo)
-                'company_transfer_amount' => $venta->monto_total * 0.90, // 90% del monto
-                'company_commission' => $venta->monto_total * 0.10, // 10% comisión empresa
-                'company_account' => 'CUENTA_EMPRESA_DEV',
-                'company_bank' => 'BANCO_DE_DESARROLLO',
-                'company_transfer_reference' => 'DEV-TRF-' . $venta->id,
-                'company_transfer_status' => 'completed',
+                // Campos de transferencia a empresa
+                'company_transfer_amount' => $allyData['commission_amount'] ?? 0,
+                'company_commission' => $allyData['commission_amount'] ?? 0,
+                'company_account' => env('CUENTA_DEBITO_BNC', '00000000000000000000'),
+                'company_bank' => 'Banco Nacional de Crédito',
+                'company_transfer_reference' => 'PAY-' . $venta->id . '-' . time(),
+                'company_transfer_status' => 'pending',
                 'company_transfer_date' => now(),
 
                 // Status and dates
                 'status' => 'pending',
                 'generation_date' => now(),
-                'sale_reference' => $venta->referencia_banco ?? 'SALE-' . $venta->id,
+                'sale_reference' => $venta->referencia_banco ?? $venta->bank_reference ?? 'SALE-' . $venta->id,
 
-                // Payment details - Aliado
+                // Payment details
                 'ally_payment_method' => 'transfer',
 
-                // Response data simulada
+                // Response data
                 'company_transfer_response' => json_encode([
-                    'transfer_id' => 'DEV-' . uniqid(),
-                    'status' => 'completed',
-                    'timestamp' => now()->toISOString(),
-                    'environment' => 'development'
+                    'bnc_response' => $bncResponse,
+                    'timestamp' => now()->toISOString()
                 ])
             ];
 
-            Log::info('Creando payout para desarrollo:', [
+            Log::info('Creando payout:', [
                 'sale_id' => $venta->id,
-                'ally_id' => $aliadoData['aliado_id'],
+                'ally_id' => $allyData['ally_id'],
                 'net_amount' => $payoutData['net_amount']
             ]);
 
@@ -81,7 +86,8 @@ class PayoutService
         } catch (\Exception $e) {
             Log::error('Error al crear payout: ' . $e->getMessage(), [
                 'venta_id' => $venta->id,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
             return null;
         }
@@ -221,8 +227,8 @@ class PayoutService
                     'id' => $payout->id,
                     'aliado' => [
                         'id' => $payout->ally_id,
-                        'nombre' => $payout->ally->name ?? 'N/A',
-                        'email' => $payout->ally->email ?? 'N/A',
+                        'nombre' => $payout->ally->company_name ?? ($payout->ally->user->name ?? 'N/A'),
+                        'email' => $payout->ally->contact_email ?? ($payout->ally->user->email ?? 'N/A'),
                         'cuenta_bancaria' => $payout->ally->bank_account_number ?? 'N/A',
                         'tipo_documento' => $payout->ally->document_type ?? 'N/A',
                         'documento' => $payout->ally->document_number ?? 'N/A',
@@ -233,7 +239,7 @@ class PayoutService
                         'id' => $payout->sale_id,
                         'referencia' => $payout->sale_reference,
                         'monto_total' => $payout->sale_amount,
-                        'fecha_venta' => $payout->sale->fecha_venta ?? null
+                        'fecha_venta' => $payout->sale->sale_date ?? $payout->sale->created_at ?? null
                     ],
                     'montos' => [
                         'comision_porcentaje' => $payout->commission_percentage,
@@ -291,7 +297,7 @@ class PayoutService
             ->map(function ($item) {
                 return [
                     'aliado_id' => $item->ally_id,
-                    'aliado_nombre' => $item->ally->name ?? 'N/A',
+                    'aliado_nombre' => $item->ally->company_name ?? 'N/A',
                     'total_payouts' => $item->total_payouts,
                     'total_monto' => $item->total_monto,
                     'estados' => Payout::where('ally_id', $item->ally_id)
@@ -383,7 +389,7 @@ class PayoutService
             // Generar contenido del archivo BNC
             $contenidoArchivo = $this->formatearArchivoBNC($payouts, $tipoCuenta, $concepto);
 
-            // Guardar archivo con nombre más descriptivo
+            // Guardar archivo
             $timestamp = date('Ymd_His');
             $nombreArchivo = "pagos_bnc_{$timestamp}_{$payouts->count()}registros.txt";
             $rutaArchivo = storage_path('app/pagos_bnc/' . $nombreArchivo);
@@ -467,13 +473,13 @@ class PayoutService
 
             // VII. NOMBRE BENEFICIARIO (80 caracteres máximo)
             $nombreBeneficiario = $this->truncarTexto(
-                $aliado->name ?? 'BENEFICIARIO NO DEFINIDO',
+                $aliado->company_name ?? $aliado->name ?? 'BENEFICIARIO NO DEFINIDO',
                 80
             );
 
             // VIII. EMAIL BENEFICIARIO (100 caracteres máximo)
             $emailBeneficiario = $this->truncarTexto(
-                $aliado->email ?? 'sin-email@dominio.com',
+                $aliado->contact_email ?? $aliado->email ?? 'sin-email@dominio.com',
                 100
             );
 
@@ -573,7 +579,7 @@ class PayoutService
             $validacion = $this->validarAliadoIndividualBNC($aliado);
 
             if (!$validacion['valido']) {
-                $errores[] = "Aliado {$aliado->name} (ID: {$aliado->id}): " . implode(', ', $validacion['errores']);
+                $errores[] = "Aliado {$aliado->company_name} (ID: {$aliado->id}): " . implode(', ', $validacion['errores']);
             }
         }
 
@@ -610,18 +616,20 @@ class PayoutService
         }
 
         // Validar nombre
-        if (empty($aliado->name)) {
+        $nombre = $aliado->company_name ?? $aliado->name ?? '';
+        if (empty($nombre)) {
             $errores[] = 'Nombre es requerido';
-        } elseif (strlen($aliado->name) > 80) {
+        } elseif (strlen($nombre) > 80) {
             $errores[] = 'Nombre debe tener máximo 80 caracteres';
         }
 
         // Validar email
-        if (empty($aliado->email)) {
+        $email = $aliado->contact_email ?? $aliado->email ?? '';
+        if (empty($email)) {
             $errores[] = 'Email es requerido';
-        } elseif (!filter_var($aliado->email, FILTER_VALIDATE_EMAIL)) {
+        } elseif (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
             $errores[] = 'Email debe ser válido';
-        } elseif (strlen($aliado->email) > 100) {
+        } elseif (strlen($email) > 100) {
             $errores[] = 'Email debe tener máximo 100 caracteres';
         }
 
@@ -859,7 +867,8 @@ class PayoutService
                 $q->where('payment_reference', 'like', "%{$search}%")
                     ->orWhere('sale_reference', 'like', "%{$search}%")
                     ->orWhereHas('ally', function ($q) use ($search) {
-                        $q->where('name', 'like', "%{$search}%");
+                        $q->where('company_name', 'like', "%{$search}%")
+                          ->orWhere('name', 'like', "%{$search}%");
                     });
             });
         }
@@ -943,7 +952,7 @@ class PayoutService
             ->map(function ($item) {
                 return [
                     'aliado_id' => $item->ally_id,
-                    'aliado_nombre' => $item->ally->name ?? 'N/A',
+                    'aliado_nombre' => $item->ally->company_name ?? 'N/A',
                     'total_payouts' => $item->total_payouts,
                     'total_monto' => $item->total_monto,
                     'estados' => Payout::where('ally_id', $item->ally_id)
@@ -986,7 +995,7 @@ class PayoutService
         // Validar email (formato válido, máximo 100 caracteres)
         if (
             !filter_var($datosPago['email_beneficiario'] ?? '', FILTER_VALIDATE_EMAIL) ||
-            strlen($datosPago['email_beneficiario']) > 100
+            strlen($datosPago['email_beneficiario'] ?? '') > 100
         ) {
             $errores[] = 'Email debe ser válido y tener máximo 100 caracteres';
         }
