@@ -15,6 +15,13 @@ use App\Http\Controllers\Controller;
 
 class ReportController extends Controller
 {
+
+    protected BankController $bankController;
+
+    public function __construct(BankController $bankController)
+    {
+        $this->bankController = $bankController;
+    }
     /**
      * Determina si el usuario actual es administrador
      */
@@ -45,44 +52,31 @@ class ReportController extends Controller
     private function getExchangeRate()
     {
         try {
-            // Crear una instancia del request (puede estar vacío)
             $request = new \Illuminate\Http\Request();
+            $response = $this->bankController->getDailyDollarRate($request);
 
-            // Llamar al método del BankController
-            $bankController = app()->make(BankController::class);
-            $response = $bankController->getDailyDollarRate($request);
+            if (!$response) {
+                return $this->getCurrentRate();
+            }
 
-            // Obtener el contenido de la respuesta
-            $data = $response->getData(true); // true para obtener array asociativo
+            $data = $response->getData(true);
 
             Log::info('Respuesta de BankController:', $data);
 
-            // Verificar estructura de la respuesta
             if (isset($data['success']) && $data['success'] === true) {
+                $rate = $data['data']['PriceRateBCV'] ??
+                    $data['data']['rate'] ??
+                    $data['data']['value'] ??
+                    (is_numeric($data['data']) ? $data['data'] : null);
 
-                // Intentar diferentes formatos de tasa
-                $rate = null;
-
-                if (isset($data['data']['PriceRateBCV'])) {
-                    $rate = (float) $data['data']['PriceRateBCV'];
-                } elseif (isset($data['data']['rate'])) {
-                    $rate = (float) $data['data']['rate'];
-                } elseif (isset($data['data']['value'])) {
-                    $rate = (float) $data['data']['value'];
-                } elseif (is_numeric($data['data'])) {
-                    $rate = (float) $data['data'];
-                }
-
-                // Validar que la tasa sea razonable
                 if ($rate && $rate > 100 && $rate < 1000) {
-                    return $rate;
+                    return (float) $rate;
                 }
             }
 
-            // Si falla, usar tasa manual
             return $this->getCurrentRate();
         } catch (\Exception $e) {
-            Log::error('Error obteniendo tasa del dólar desde BankController: ' . $e->getMessage());
+            Log::error('Error obteniendo tasa: ' . $e->getMessage());
             return $this->getCurrentRate();
         }
     }
