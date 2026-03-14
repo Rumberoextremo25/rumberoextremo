@@ -6,13 +6,11 @@ use App\Models\Sale;
 use App\Models\PaymentTransaction;
 use App\Models\Payout;
 use App\Models\Ally;
-use App\Models\User;
-use App\Models\Client;
+use App\Http\Controllers\Api\BankController;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Http;
 use App\Http\Controllers\Controller;
 
 class ReportController extends Controller
@@ -42,31 +40,49 @@ class ReportController extends Controller
     }
 
     /**
-     * Obtiene tasa de cambio desde el endpoint interno /api/banks/daily-dollar-rate
+     * Obtiene tasa de cambio consultando al BankController
      */
     private function getExchangeRate()
     {
         try {
-            $response = Http::timeout(10)->get(url('/api/banks/daily-dollar-rate'));
-            
-            if ($response->successful()) {
-                $data = $response->json();
-                
-                if (isset($data['success']) && $data['success'] === true && isset($data['data']['PriceRateBCV'])) {
+            // Crear una instancia del request (puede estar vacío)
+            $request = new \Illuminate\Http\Request();
+
+            // Llamar al método del BankController
+            $bankController = app()->make(BankController::class);
+            $response = $bankController->getDailyDollarRate($request);
+
+            // Obtener el contenido de la respuesta
+            $data = $response->getData(true); // true para obtener array asociativo
+
+            Log::info('Respuesta de BankController:', $data);
+
+            // Verificar estructura de la respuesta
+            if (isset($data['success']) && $data['success'] === true) {
+
+                // Intentar diferentes formatos de tasa
+                $rate = null;
+
+                if (isset($data['data']['PriceRateBCV'])) {
                     $rate = (float) $data['data']['PriceRateBCV'];
-                    
-                    // Validar que la tasa sea razonable
-                    if ($rate > 100 && $rate < 1000) {
-                        return $rate;
-                    }
+                } elseif (isset($data['data']['rate'])) {
+                    $rate = (float) $data['data']['rate'];
+                } elseif (isset($data['data']['value'])) {
+                    $rate = (float) $data['data']['value'];
+                } elseif (is_numeric($data['data'])) {
+                    $rate = (float) $data['data'];
+                }
+
+                // Validar que la tasa sea razonable
+                if ($rate && $rate > 100 && $rate < 1000) {
+                    return $rate;
                 }
             }
-            
-            // Si el API falla, usar tasa actualizada manualmente
+
+            // Si falla, usar tasa manual
             return $this->getCurrentRate();
-            
         } catch (\Exception $e) {
-            Log::error('Error obteniendo tasa del dólar: ' . $e->getMessage());
+            Log::error('Error obteniendo tasa del dólar desde BankController: ' . $e->getMessage());
             return $this->getCurrentRate();
         }
     }
@@ -81,7 +97,7 @@ class ReportController extends Controller
             '2026-03' => 233.05,  // Tasa actual del BCV
             '2026-04' => 235.50,  // Proyección
         ];
-        
+
         $currentMonth = now()->format('Y-m');
         return $currentRates[$currentMonth] ?? 233.05;
     }
@@ -130,18 +146,18 @@ class ReportController extends Controller
         $allyId = $this->getUserAllyId($user);
 
         $exchangeRateVes = $this->getExchangeRate();
-        
+
         // Obtener datos de PaymentTransaction
         $transactionChartData = $this->getTransactionChartData($startDate, $endDate, $reportType, $userRole, $allyId, $selectedAllyId, $selectedZone, $selectedStatus, $selectedPaymentMethod);
         $transactionStats = $this->getTransactionStats($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone, $selectedStatus, $selectedPaymentMethod);
-        
+
         // Obtener lista de transacciones
         $transactions = $this->getTransactionsList($startDate, $endDate, $userRole, $allyId, $selectedAllyId, $selectedZone, $selectedStatus, $selectedPaymentMethod);
-        
+
         // Obtener datos de ventas (Sales)
         $salesStats = $this->getSalesStats($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone);
         $salesChartData = $this->getSalesChartData($startDate, $endDate, $reportType, $userRole, $allyId, $selectedAllyId, $selectedZone);
-        
+
         // Obtener datos de payouts
         $payoutStats = $this->getPayoutStats($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone);
         $pendingPayouts = $this->getPendingPayouts($userRole, $allyId, $selectedAllyId, $selectedZone);
@@ -326,7 +342,7 @@ class ReportController extends Controller
         switch ($reportType) {
             case 'daily':
                 $period = new \DatePeriod($startDate, new \DateInterval('P1D'), $endDate);
-                
+
                 $data = $query->select(
                     DB::raw('DATE(created_at) as date'),
                     DB::raw('SUM(' . $amountField . ') as total'),
@@ -419,7 +435,7 @@ class ReportController extends Controller
         $totalAmount = $query->sum('amount_to_ally');
         $totalCommission = $query->sum('platform_commission');
         $totalCount = $query->count();
-        
+
         $confirmedQuery = clone $query;
         $confirmedAmount = $confirmedQuery->where('status', 'confirmed')->sum('amount_to_ally');
         $confirmedCount = $confirmedQuery->where('status', 'confirmed')->count();
@@ -503,10 +519,10 @@ class ReportController extends Controller
 
         $totalPayouts = $query->sum('net_amount');
         $totalCount = $query->count();
-        
+
         $pendingAmount = (clone $query)->where('status', 'pending')->sum('net_amount');
         $pendingCount = (clone $query)->where('status', 'pending')->count();
-        
+
         $completedAmount = (clone $query)->where('status', 'completed')->sum('net_amount');
         $completedCount = (clone $query)->where('status', 'completed')->count();
 
@@ -606,9 +622,9 @@ class ReportController extends Controller
         $bestDayQuery = $this->applyTransactionFilters($bestDayQuery, $userRole, $allyId, $selectedAllyId, $selectedZone, $selectedStatus, $selectedPaymentMethod);
 
         $bestDay = $bestDayQuery->select(
-                DB::raw('DATE(created_at) as date'),
-                DB::raw('SUM(amount_to_ally) as daily_total')
-            )
+            DB::raw('DATE(created_at) as date'),
+            DB::raw('SUM(amount_to_ally) as daily_total')
+        )
             ->groupBy('date')
             ->orderByDesc('daily_total')
             ->first();
@@ -647,7 +663,7 @@ class ReportController extends Controller
         $allyId = $this->getUserAllyId($user);
 
         $exchangeRateVes = $this->getExchangeRate();
-        
+
         $transactionChartData = $this->getTransactionChartData($startDate, $endDate, $reportType, $userRole, $allyId, $selectedAllyId, $selectedZone, $selectedStatus, $selectedPaymentMethod);
         $transactionStats = $this->getTransactionStats($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone, $selectedStatus, $selectedPaymentMethod);
 
@@ -683,7 +699,7 @@ class ReportController extends Controller
         $allyId = $this->getUserAllyId($user);
 
         $exchangeRateVes = $this->getExchangeRate();
-        
+
         $salesChartData = $this->getSalesChartData($startDate, $endDate, $reportType, $userRole, $allyId, $selectedAllyId, $selectedZone);
         $salesStats = $this->getSalesStats($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone);
 
@@ -713,7 +729,7 @@ class ReportController extends Controller
         $allyId = $this->getUserAllyId($user);
 
         $exchangeRateVes = $this->getExchangeRate();
-        
+
         $payoutStats = $this->getPayoutStats($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone);
         $pendingPayouts = $this->getPendingPayouts($userRole, $allyId, $selectedAllyId, $selectedZone);
 
@@ -744,7 +760,7 @@ class ReportController extends Controller
         $exchangeRate = $this->getExchangeRate();
 
         // Función para aplicar filtros
-        $applyFilters = function($query) use ($userRole, $allyId, $selectedAllyId, $selectedZone) {
+        $applyFilters = function ($query) use ($userRole, $allyId, $selectedAllyId, $selectedZone) {
             if (!$this->isAdmin($userRole) && $allyId) {
                 $query->where('ally_id', $allyId);
             } elseif ($this->isAdmin($userRole) && $selectedAllyId) {
@@ -792,7 +808,7 @@ class ReportController extends Controller
 
         // Transacciones hoy
         $todayTransactions = $applyFilters(PaymentTransaction::whereDate('created_at', $today))->count();
-        
+
         // Payouts pendientes
         $pendingPayouts = $applyFilters(Payout::where('status', 'pending'))->sum('net_amount');
         $pendingPayoutsVes = $pendingPayouts * $exchangeRate;
@@ -841,7 +857,7 @@ class ReportController extends Controller
             $allyId = $this->getUserAllyId($user);
 
             $exchangeRateVes = $this->getExchangeRate();
-            
+
             $transactionChartData = $this->getTransactionChartData($startDate, $endDate, $reportType, $userRole, $allyId, $selectedAllyId, $selectedZone, $selectedStatus, $selectedPaymentMethod);
             $transactionStats = $this->getTransactionStats($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone, $selectedStatus, $selectedPaymentMethod);
             $salesStats = $this->getSalesStats($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone);
@@ -898,7 +914,7 @@ class ReportController extends Controller
             $allyId = $this->getUserAllyId($user);
 
             $exchangeRateVes = $this->getExchangeRate();
-            
+
             $transactionChartData = $this->getTransactionChartData($startDate, $endDate, $reportType, $userRole, $allyId, $selectedAllyId, $selectedZone, $selectedStatus, $selectedPaymentMethod);
             $transactionStats = $this->getTransactionStats($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone, $selectedStatus, $selectedPaymentMethod);
             $salesStats = $this->getSalesStats($startDate, $endDate, $userRole, $allyId, $exchangeRateVes, $selectedAllyId, $selectedZone);
