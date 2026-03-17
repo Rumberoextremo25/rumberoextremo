@@ -5,14 +5,14 @@ namespace App\Services;
 use App\Models\Ally;
 use App\Models\Order;
 use App\Models\Payment;
-use App\Models\PaymentTransaction;
-use App\Models\Sale;
 use App\Models\Payout;
+use App\Models\Sale;
+use App\Models\PaymentTransaction;
 use App\Services\BncApiService;
 use App\Services\PayoutService;
 use App\Helpers\JsonHelper;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
@@ -50,14 +50,34 @@ class PaymentProcessorService
             $bankValidatedData = $request->validate($bankValidationRules);
 
             // 2. Validar datos del sistema
-            $systemValidatedData = $request->validate([
+            $systemRules = [
                 'user_id' => 'nullable|integer|exists:allies,user_id',
                 'descripcion' => 'nullable|string|max:255',
-                'codigo_sms' => 'required_if:paymentType,debito_emitir|string|size:6',
                 'request_id' => 'nullable|string|max:50',
-            ]);
+            ];
+
+            // El código SMS es de 8 dígitos para débito inmediato
+            if ($paymentType === 'debito_emitir') {
+                $systemRules['codigo_sms'] = 'required|string|size:8';
+            }
+
+            $systemValidatedData = $request->validate($systemRules);
 
             $validatedData = array_merge($bankValidatedData, $systemValidatedData);
+
+            // Detectar tipo de débito (cuenta o teléfono)
+            $tipoDebito = $this->detectarTipoDebito($validatedData);
+            if ($tipoDebito) {
+                Log::info("📱 Tipo de débito detectado: {$tipoDebito}", [
+                    'DebtorAccountType' => $validatedData['DebtorAccountType'] ?? $validatedData['DebtorAccType'] ?? null,
+                    'DebtorAccount' => $this->maskAccountNumber($validatedData['DebtorAccount'] ?? '')
+                ]);
+            }
+
+            // Validar formato de teléfono si aplica
+            if ($tipoDebito === 'TELÉFONO') {
+                $this->validarFormatoTelefono($validatedData['DebtorAccount']);
+            }
 
             // 3. Obtener usuario autenticado
             $authUser = auth()->user();
@@ -112,13 +132,15 @@ class PaymentProcessorService
                 $clientUserId,
                 $allyData,
                 $payment->id,
-                $order->id
+                $order->id,
+                $tipoDebito
             );
             Log::info("✅ PaymentTransaction creada", [
                 'transaction_id' => $transaction->id,
                 'reference' => $transaction->reference_code,
                 'client_user_id' => $transaction->user_id,
-                'ally_id' => $transaction->ally_id
+                'ally_id' => $transaction->ally_id,
+                'tipo_debito' => $tipoDebito
             ]);
 
             // 10. Ejecutar pago en BNC
@@ -144,7 +166,8 @@ class PaymentProcessorService
                 $allyData,
                 $transaction,
                 $order,
-                $payment
+                $payment,
+                $tipoDebito
             );
 
             // 15. Crear payout si aplica (comisión para el aliado)
@@ -176,7 +199,8 @@ class PaymentProcessorService
             Log::info("🎉 Pago completado exitosamente", [
                 'payment_type' => $paymentType,
                 'transaction_id' => $transaction->id,
-                'reference' => $transaction->reference_code
+                'reference' => $transaction->reference_code,
+                'tipo_debito' => $tipoDebito
             ]);
 
             return response()->json([
@@ -189,7 +213,8 @@ class PaymentProcessorService
                     $allyData,
                     $transaction,
                     $order,
-                    $payment
+                    $payment,
+                    $tipoDebito
                 )
             ], 200);
             
@@ -224,6 +249,50 @@ class PaymentProcessorService
     }
 
     /**
+     * Detectar si es débito a cuenta o teléfono
+     */
+    private function detectarTipoDebito(array $data): ?string
+    {
+        // Verificar si es un débito inmediato
+        $esDebito = isset($data['DebtorAccountType']) || isset($data['DebtorAccType']);
+        
+        if (!$esDebito) {
+            return null;
+        }
+
+        $tipoCuenta = $data['DebtorAccountType'] ?? $data['DebtorAccType'] ?? null;
+        
+        if ($tipoCuenta === 'TLF' || $tipoCuenta === 'CELE') {
+            return 'TELÉFONO';
+        }
+        
+        return 'CUENTA';
+    }
+
+    /**
+     * Validar formato de teléfono venezolano
+     */
+    private function validarFormatoTelefono(string $telefono): void
+    {
+        // Formatos válidos: 04141234567, 04241234567, etc.
+        if (!preg_match('/^(0412|0414|0416|0424|0426)[0-9]{7}$/', $telefono)) {
+            Log::warning('⚠️ Formato de teléfono inválido', ['telefono' => $telefono]);
+            throw new \Exception('Formato de teléfono inválido. Debe ser un número venezolano válido (ej: 04141234567)');
+        }
+    }
+
+    /**
+     * Enmascarar número de cuenta/teléfono para logs
+     */
+    private function maskAccountNumber(string $number): string
+    {
+        if (strlen($number) <= 8) {
+            return '****';
+        }
+        return substr($number, 0, 4) . '****' . substr($number, -4);
+    }
+
+    /**
      * Obtener mensaje de éxito según tipo de pago
      */
     private function getSuccessMessage(string $paymentType): string
@@ -247,7 +316,8 @@ class PaymentProcessorService
         ?int $clientUserId,
         array $allyData,
         int $paymentId,
-        int $orderId
+        int $orderId,
+        ?string $tipoDebito = null
     ): PaymentTransaction {
         $amount = $validatedData['Amount'] ?? $validatedData['monto'] ?? 0;
         
@@ -260,6 +330,12 @@ class PaymentProcessorService
             'created_at' => now()->toDateTimeString()
         ];
 
+        // Agregar tipo de débito si aplica
+        if ($tipoDebito) {
+            $confirmationData['tipo_debito'] = $tipoDebito;
+            $confirmationData['debtor_account_masked'] = $this->maskAccountNumber($validatedData['DebtorAccount'] ?? '');
+        }
+
         $status = match ($paymentType) {
             'debito_solicitar' => 'pending_sms',
             'debito_emitir' => 'pending_confirmation',
@@ -267,8 +343,8 @@ class PaymentProcessorService
         };
 
         return PaymentTransaction::create([
-            'user_id' => $clientUserId,                    // Quién pagó (cliente)
-            'ally_id' => $allyData['ally_id'] ?? null,     // A quién va el pago (aliado)
+            'user_id' => $clientUserId,
+            'ally_id' => $allyData['ally_id'] ?? null,
             'original_amount' => $amount,
             'discount_percentage' => $allyData['discount'] ?? 0,
             'amount_to_ally' => $allyData['net_amount'] ?? $amount,
@@ -383,8 +459,10 @@ class PaymentProcessorService
 
             Log::info("🔵 RESPUESTA DE BNC - {$paymentType}", [
                 'response' => $response,
-                'has_reference' => isset($response['Reference']) ? 'SI' : 'NO',
-                'has_status' => isset($response['Status']) ? 'SI' : 'NO',
+                'has_status' => isset($response['status']) ? 'SI' : 'NO',
+                'status_value' => $response['status'] ?? null,
+                'has_message' => isset($response['message']) ? 'SI' : 'NO',
+                'has_validation' => isset($response['validation']) ? 'SI' : 'NO',
             ]);
 
             return $response;
@@ -459,8 +537,8 @@ class PaymentProcessorService
 
                     if ($ally->isActive()) {
                         $allyData['has_ally'] = true;
-                        $allyData['ally_id'] = $ally->id;           // ID en tabla allies (5)
-                        $allyData['user_id'] = $ally->user_id;       // ID en tabla users (8)
+                        $allyData['ally_id'] = $ally->id;
+                        $allyData['user_id'] = $ally->user_id;
                         $allyData['ally_name'] = $ally->company_name ?? $ally->user->name ?? 'Aliado';
                         $allyData['ally_status'] = $ally->status;
                         $allyData['ally_valid'] = true;
@@ -561,16 +639,28 @@ class PaymentProcessorService
         array $allyData,
         PaymentTransaction $transaction,
         Order $order,
-        Payment $payment
+        Payment $payment,
+        ?string $tipoDebito = null
     ): Sale {
         $amount = $validatedData['Amount'] ?? $validatedData['monto'] ?? 0;
         
+        // Extraer datos de la respuesta del banco según su estructura
+        $bankReference = $bncResponse['validation'] ?? $bncResponse['Reference'] ?? $bncResponse['reference'] ?? null;
+        $transactionId = $bncResponse['value'] ?? $bncResponse['TransactionId'] ?? $bncResponse['transactionId'] ?? null;
+        
+        // Si es débito_emitir, intentar extraer del mensaje
+        if ($paymentType === 'debito_emitir' && isset($bncResponse['message'])) {
+            if (preg_match('/:\s*(\d+)/', $bncResponse['message'], $matches)) {
+                $transactionId = $matches[1];
+            }
+        }
+
         $baseData = [
             'ally_id' => $allyData['ally_id'] ?? null,
             'total_amount' => $amount,
             'paid_amount' => $amount,
-            'bank_reference' => $bncResponse['Reference'] ?? $bncResponse['reference'] ?? null,
-            'transaction_id' => $bncResponse['TransactionIdentifier'] ?? $bncResponse['transactionId'] ?? null,
+            'bank_reference' => $bankReference,
+            'transaction_id' => $transactionId,
             'status' => 'completed',
             'sale_date' => now(),
             'payment_date' => now(),
@@ -597,6 +687,10 @@ class PaymentProcessorService
                 'account_last_digits' => isset($validatedData['DebtorAccount']) ? substr($validatedData['DebtorAccount'], -4) : null,
                 'client_id_number' => $validatedData['DebtorID'] ?? null,
                 'sms_code' => $validatedData['codigo_sms'] ?? null,
+                'debtor_account_type' => $validatedData['DebtorAccountType'] ?? $validatedData['DebtorAccType'] ?? null,
+                'tipo_debito' => $tipoDebito,
+                'bank_status' => $bncResponse['status'] ?? null,
+                'bank_message' => $bncResponse['message'] ?? null,
             ],
             default => ['payment_method' => $paymentType]
         };
@@ -611,72 +705,45 @@ class PaymentProcessorService
     {
         Log::debug("Validando respuesta BNC para: {$paymentType}", ['response' => $bncResponse]);
 
-        // Primero verificar si hay error explícito
-        if (isset($bncResponse['Status']) && $bncResponse['Status'] !== 'OK') {
-            Log::warning("🔴 BNC respondió con Status: {$bncResponse['Status']}");
-            return false;
+        // NUEVO: Validar estructura del banco (status = "OK")
+        if (isset($bncResponse['status']) && $bncResponse['status'] === 'OK') {
+            Log::info("✅ Respuesta exitosa del banco (status=OK)");
+            return true;
         }
 
-        if (isset($bncResponse['success']) && $bncResponse['success'] === false) {
-            Log::warning("🔴 BNC respondió con success: false");
-            return false;
+        // Mantener validaciones anteriores como fallback
+        if (isset($bncResponse['Status']) && $bncResponse['Status'] === 'OK') {
+            Log::info("✅ Respuesta exitosa (Status=OK)");
+            return true;
         }
 
-        // Validaciones por tipo de pago
+        if (isset($bncResponse['success']) && $bncResponse['success'] === true) {
+            Log::info("✅ Respuesta exitosa (success=true)");
+            return true;
+        }
+
+        if (isset($bncResponse['CodigoRespuesta']) && $bncResponse['CodigoRespuesta'] === '00') {
+            Log::info("✅ Respuesta exitosa (CodigoRespuesta=00)");
+            return true;
+        }
+
+        // Validaciones específicas por tipo de pago
         $validations = [
-            'c2p' => function ($response) {
-                return isset($response['Reference']) && !empty($response['Reference']);
-            },
-            'card' => function ($response) {
-                return isset($response['TransactionIdentifier']) && !empty($response['TransactionIdentifier']) &&
-                       isset($response['Reference']) && !empty($response['Reference']);
-            },
             'debito_solicitar' => function ($response) {
-                $hasRequestId = isset($response['requestId']) || 
-                               isset($response['data']['requestId']) ||
-                               isset($response['RequestId']);
-                $statusOk = isset($response['Status']) && $response['Status'] === 'OK';
-                
-                return $hasRequestId || $statusOk;
+                return isset($response['validation']) && !empty($response['validation']);
             },
             'debito_emitir' => function ($response) {
-                $hasTransactionId = isset($response['transactionId']) ||
-                                   isset($response['data']['transactionId']) ||
-                                   isset($response['TransactionId']);
-                $hasReference = isset($response['reference']) ||
-                               isset($response['data']['reference']) ||
-                               isset($response['Reference']);
-                $statusOk = isset($response['Status']) && $response['Status'] === 'OK';
-                
-                return ($hasTransactionId && $hasReference) || $statusOk;
+                return isset($response['message']) && str_contains($response['message'] ?? '', 'iniciado');
             },
             'debito_reenviar' => function ($response) {
-                return isset($response['success']) && $response['success'] === true;
+                return isset($response['status']) && $response['status'] === 'OK';
             }
         ];
 
         if ($paymentType && isset($validations[$paymentType])) {
             $isValid = $validations[$paymentType]($bncResponse);
             if ($isValid) {
-                Log::info("✅ Validación {$paymentType} exitosa");
-                return true;
-            } else {
-                Log::warning("🔴 Validación específica para {$paymentType} falló");
-            }
-        }
-
-        // Validaciones genéricas como fallback
-        $genericValidations = [
-            'has_reference' => isset($bncResponse['Reference']) && !empty($bncResponse['Reference']),
-            'has_request_id' => isset($bncResponse['requestId']) || isset($bncResponse['RequestId']),
-            'has_transaction_id' => isset($bncResponse['transactionId']) || isset($bncResponse['TransactionId']),
-            'has_status_ok' => isset($bncResponse['Status']) && $bncResponse['Status'] === 'OK',
-            'has_success_true' => isset($bncResponse['success']) && $bncResponse['success'] === true,
-        ];
-
-        foreach ($genericValidations as $validationName => $validation) {
-            if ($validation) {
-                Log::info("✅ Validación genérica exitosa: {$validationName}");
+                Log::info("✅ Validación específica {$paymentType} exitosa");
                 return true;
             }
         }
@@ -695,7 +762,8 @@ class PaymentProcessorService
         array $allyData,
         PaymentTransaction $transaction,
         Order $order,
-        Payment $payment
+        Payment $payment,
+        ?string $tipoDebito = null
     ): array {
         $response = [
             'sale' => [
@@ -727,12 +795,17 @@ class PaymentProcessorService
                 'created_at' => $payment->created_at->format('Y-m-d H:i:s'),
             ],
             'bnc_response' => [
-                'Reference' => $bncResponse['Reference'] ?? null,
-                'Status' => $bncResponse['Status'] ?? null,
-                'requestId' => $bncResponse['requestId'] ?? null,
-                'transactionId' => $bncResponse['transactionId'] ?? null,
+                'status' => $bncResponse['status'] ?? null,
+                'message' => $bncResponse['message'] ?? null,
+                'validation' => $bncResponse['validation'] ?? null,
+                'value' => $bncResponse['value'] ?? null,
             ]
         ];
+
+        // Agregar información de tipo de débito si aplica
+        if ($tipoDebito) {
+            $response['tipo_debito'] = $tipoDebito;
+        }
 
         if ($allyData['has_ally']) {
             $response['ally'] = [
