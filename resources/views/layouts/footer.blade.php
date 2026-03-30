@@ -138,4 +138,93 @@
         <p>&copy; {{ date('Y') }} Rumbero Extremo. Todos los derechos reservados.</p>
         <p>Hecho con ❤️ en Venezuela.</p>
     </div>
+
+    <script>
+        // Función para mostrar notificaciones modernas
+        function showToast(message, type = 'success') {
+            // Remover toasts existentes
+            const existingToasts = document.querySelectorAll('.toast-notification');
+            existingToasts.forEach(toast => toast.remove());
+
+            // Crear el elemento toast
+            const toast = document.createElement('div');
+            toast.className = `toast-notification ${type}`;
+
+            // Configurar iconos
+            const icons = {
+                success: '✓',
+                error: '✗',
+                info: 'ℹ'
+            };
+
+            const icon = icons[type] || '✓';
+
+            // Estructura del toast
+            toast.innerHTML = `
+            <div class="toast-icon">${icon}</div>
+            <div class="toast-content">${message}</div>
+            <div class="toast-close">×</div>
+        `;
+
+            // Agregar al body
+            document.body.appendChild(toast);
+
+            // Función para cerrar
+            const closeToast = () => {
+                toast.classList.add('hide');
+                setTimeout(() => toast.remove(), 300);
+            };
+
+            // Evento para cerrar con el botón
+            const closeBtn = toast.querySelector('.toast-close');
+            closeBtn.addEventListener('click', closeToast);
+
+            // Auto cerrar después de 5 segundos
+            setTimeout(closeToast, 5000);
+
+            // Cerrar al hacer clic en el toast (opcional)
+            toast.addEventListener('click', (e) => {
+                if (e.target !== closeBtn) {
+                    closeToast();
+                }
+            });
+        }
+
+        // Cuando el DOM esté listo
+        document.addEventListener('DOMContentLoaded', function() {
+            // Manejar el envío del formulario de newsletter
+            const newsletterForm = document.querySelector('.newsletter-form');
+
+            if (newsletterForm) {
+                newsletterForm.addEventListener('submit', function(e) {
+                    console.log('Formulario enviado');
+                });
+            }
+
+            // Mostrar notificaciones de sesión con el estilo moderno
+            @if (session('newsletter_success'))
+                showToast('{{ session('newsletter_success') }}', 'success');
+            @endif
+
+            @if (session('newsletter_error'))
+                showToast('{{ session('newsletter_error') }}', 'error');
+            @endif
+
+            @if ($errors->any())
+                @php
+                    $errorMessages = implode('\n', $errors->all());
+                @endphp
+                showToast('{{ $errorMessages }}', 'error');
+            @endif
+
+            // También mostrar notificaciones flash normales (por si hay otros mensajes)
+            @if (session('success'))
+                showToast('{{ session('success') }}', 'success');
+            @endif
+
+            @if (session('error'))
+                showToast('{{ session('error') }}', 'error');
+            @endif
+        });
+    </script>
 </footer>

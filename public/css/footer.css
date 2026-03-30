@@ -403,7 +403,172 @@
 }
 
 /* =====================================================
-   8. SECCIÓN DE COPYRIGHT
+   NOTIFICACIONES TOAST - ESTILO SUAVE Y TRANSPARENTE
+   ===================================================== */
+.toast-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    z-index: 9999;
+    min-width: 300px;
+    max-width: 400px;
+    padding: 14px 18px;
+    border-radius: 12px;
+    backdrop-filter: blur(20px);
+    background: rgba(0, 0, 0, 0.75);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    animation: slideInRight 0.3s ease-out;
+    font-family: 'Roboto Condensed', Arial, sans-serif;
+    border: none;
+    transition: all 0.3s ease;
+}
+
+.toast-notification.success {
+    background: rgba(76, 175, 80, 0.85);
+    backdrop-filter: blur(20px);
+}
+
+.toast-notification.error {
+    background: rgba(244, 67, 54, 0.85);
+    backdrop-filter: blur(20px);
+}
+
+.toast-notification.info {
+    background: rgba(33, 150, 243, 0.85);
+    backdrop-filter: blur(20px);
+}
+
+.toast-icon {
+    font-size: 22px;
+    flex-shrink: 0;
+    opacity: 0.9;
+}
+
+.toast-content {
+    flex: 1;
+    font-size: 13px;
+    line-height: 1.4;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    color: #ffffff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.toast-close {
+    cursor: pointer;
+    font-size: 18px;
+    font-weight: normal;
+    opacity: 0.6;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    color: #ffffff;
+}
+
+.toast-close:hover {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.15);
+    transform: scale(1.05);
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(calc(100% + 20px));
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    to {
+        transform: translateX(calc(100% + 20px));
+        opacity: 0;
+    }
+}
+
+.toast-notification.hide {
+    animation: slideOutRight 0.3s ease-out forwards;
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+    .toast-notification {
+        top: 15px;
+        right: 15px;
+        left: 15px;
+        min-width: auto;
+        max-width: none;
+        padding: 12px 16px;
+    }
+
+    .toast-icon {
+        font-size: 20px;
+    }
+
+    .toast-content {
+        font-size: 12px;
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes slideOutRight {
+    from {
+        transform: translateX(0);
+        opacity: 1;
+    }
+
+    to {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+}
+
+.toast-notification.hide {
+    animation: slideOutRight 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+    .toast-notification {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        min-width: auto;
+        max-width: none;
+        padding: 14px 16px;
+    }
+}
+
+/* =====================================================
+   9. SECCIÓN DE COPYRIGHT
    ===================================================== */
 .footer-bottom {
     text-align: center;
@@ -419,7 +584,7 @@
 }
 
 /* =====================================================
-   9. UTILIDADES
+   10. UTILIDADES
    ===================================================== */
 /* Asegurar que los iconos de Font Awesome se vean bien */
 .fas {
@@ -430,7 +595,7 @@
 }
 
 /* =====================================================
-   10. MEDIA QUERIES - RESPONSIVIDAD
+   11. MEDIA QUERIES - RESPONSIVIDAD
    ===================================================== */
 
 /* Tablets y pantallas medianas (1024px y menores) */
@@ -481,18 +646,18 @@
         font-size: 0.9em;
         padding: 10px 0;
     }
-    
+
     /* Ajustes para badges en móvil */
     .store-badges-container {
         justify-content: center;
         margin-top: 10px;
     }
-    
+
     .store-badge {
         padding: 5px 10px;
         font-size: 0.8em;
     }
-    
+
     .store-badge i {
         font-size: 14px;
         margin-right: 5px;
@@ -505,16 +670,16 @@
         width: 50px;
         height: 50px;
     }
-    
+
     .social-icons-connect img {
         width: 50px;
         height: 50px;
     }
-    
+
     .store-badges-container {
         gap: 8px;
     }
-    
+
     .store-badge {
         padding: 4px 8px;
         font-size: 0.75em;

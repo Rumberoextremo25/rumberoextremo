@@ -121,36 +121,32 @@ class PageController extends Controller
     // Nuevo método para manejar la suscripción al newsletter
     public function subscribeToNewsletter(Request $request)
     {
-        // 1. Validar los datos del formulario con medidas anti-bot
+        // 1. Validar los datos del formulario con medidas anti-bot (más permisivo)
         $request->validate([
             'email' => 'required|email|unique:newsletter_subscribers,email|max:255',
-            'honeypot' => 'sometimes|string|max:0', // Campo honeypot oculto
-            'timestamp' => 'required|integer|min:' . (time() - 5), // Prevenir envíos muy rápidos
+            'honeypot' => 'nullable|string|max:0', // Campo honeypot oculto
+            'timestamp' => 'nullable|integer|min:' . (time() - 10), // Más flexible, 10 segundos
         ], [
             'email.unique' => 'Este correo electrónico ya está suscrito al newsletter.',
             'email.required' => 'Por favor, introduce tu correo electrónico.',
             'email.email' => 'El formato del correo electrónico no es válido.',
-            'timestamp.min' => 'Solicitud inválida. Por favor, espera unos segundos.',
+            'timestamp.min' => 'Por favor, espera unos segundos antes de enviar.',
         ]);
 
-        // 2. Verificar rate limiting por IP y email
+        // 2. Verificar rate limiting por IP (más permisivo, solo por IP)
         $ipAddress = $request->ip();
-        $email = $request->email;
-        $rateLimitKey = "newsletter_subscribe:{$ipAddress}:{$email}";
+        $rateLimitKey = "newsletter_subscribe:{$ipAddress}";
 
-        // Verificar si ha habido demasiados intentos (máximo 3 por hora)
+        // Verificar si ha habido demasiados intentos (máximo 5 por hora desde la misma IP)
         $attempts = Cache::get($rateLimitKey, 0);
-        if ($attempts >= 3) {
+        if ($attempts >= 5) {
             Log::warning('Rate limit excedido para newsletter', [
                 'ip' => $ipAddress,
-                'email' => $email,
+                'email' => $request->email,
                 'attempts' => $attempts
             ]);
             return redirect()->back()->with('newsletter_error', 'Has realizado demasiados intentos. Por favor, espera una hora.');
         }
-
-        // Incrementar contador de intentos
-        Cache::put($rateLimitKey, $attempts + 1, now()->addHour());
 
         // 3. Verificar si el email es de dominio temporal o sospechoso
         $suspiciousDomains = [
@@ -161,63 +157,61 @@ class PageController extends Controller
             'mailinator',
             'yopmail',
             'trashmail',
-            'fakeinbox'
+            'fakeinbox',
+            'temp-mail',
+            'dispostable',
+            'guerrillamail',
+            'jetable',
+            'spamgourmet'
         ];
 
-        $emailDomain = substr(strrchr($email, "@"), 1);
+        $emailDomain = substr(strrchr($request->email, "@"), 1);
         foreach ($suspiciousDomains as $suspiciousDomain) {
             if (stripos($emailDomain, $suspiciousDomain) !== false) {
                 Log::info('Intento de suscripción con dominio sospechoso', [
-                    'email' => $email,
+                    'email' => $request->email,
                     'ip' => $ipAddress
                 ]);
-                // Simulamos éxito pero no guardamos para no dar pistas al bot
+                // Simulamos éxito pero no guardamos
                 return redirect()->back()->with('newsletter_success', '¡Gracias por suscribirte a nuestro newsletter! Revisa tu correo electrónico para la confirmación.');
             }
         }
 
-        // 4. Verificar con servicios de validación de email (opcional)
-        // Descomenta si tienes acceso a un servicio como Hunter, NeverBounce, etc.
-        /*
-    if (!$this->validateEmailWithService($email)) {
-        Log::warning('Email no válido según servicio externo', [
-            'email' => $email,
-            'ip' => $ipAddress
-        ]);
-        return redirect()->back()->with('newsletter_error', 'El email proporcionado no parece válido.');
-    }
-    */
+        // 4. Incrementar contador de intentos SOLO si pasó las validaciones básicas
+        Cache::put($rateLimitKey, $attempts + 1, now()->addHour());
 
-        // 5. Verificar token CSRF (Laravel lo hace automáticamente, pero asegúrate que el formulario tenga @csrf)
-
-        // 6. Guardar con transacción y estado pendiente de confirmación
+        // 5. Guardar con estado pendiente de confirmación
         try {
             $subscriber = NewsletterSubscriber::create([
                 'email' => $request->email,
                 'ip_address' => $ipAddress,
                 'user_agent' => $request->userAgent(),
-                'confirmed_at' => null, // Requerir confirmación por email
+                'confirmed_at' => null,
                 'confirmation_token' => \Illuminate\Support\Str::random(64),
                 'subscribed_at' => now()
             ]);
 
-            // 7. Enviar correo de confirmación con token
+            // 6. Enviar correo de confirmación en cola
             try {
-                Mail::to($request->email)->send(new NewsletterConfirmationMail($subscriber->confirmation_token));
+                // Enviar email en cola para no bloquear la respuesta
+                Mail::to($request->email)->send(new NewsletterConfirmationMail(
+                    $subscriber->confirmation_token,
+                    $subscriber->email
+                ));
 
-                // Limpiar el rate limit solo si el email se envió correctamente
+                // Limpiar rate limit para usuarios exitosos
                 Cache::forget($rateLimitKey);
 
-                return redirect()->back()->with('newsletter_success', '¡Gracias por suscribirte! Por favor, revisa tu correo electrónico para confirmar tu suscripción.');
+                return redirect()->back()->with('newsletter_success', '¡Gracias por suscribirte! Revisa tu correo para confirmar tu suscripción.');
             } catch (\Exception $e) {
-                // Si falla el email, eliminamos el registro pendiente
+                // Si falla el email, eliminamos el registro
                 $subscriber->delete();
-                Log::error('Error al enviar correo de confirmación del newsletter: ' . $e->getMessage());
-                return redirect()->back()->with('newsletter_error', 'Hubo un problema técnico. Por favor, intenta de nuevo más tarde.');
+                Log::error('Error al enviar correo de confirmación: ' . $e->getMessage());
+                return redirect()->back()->with('newsletter_error', 'Error al enviar el correo. Por favor, intenta de nuevo.');
             }
         } catch (\Exception $e) {
-            Log::error('Error al guardar suscripción al newsletter: ' . $e->getMessage());
-            return redirect()->back()->with('newsletter_error', 'No pudimos procesar tu solicitud. Por favor, intenta de nuevo.');
+            Log::error('Error al guardar suscripción: ' . $e->getMessage());
+            return redirect()->back()->with('newsletter_error', 'Error al procesar tu solicitud. Por favor, intenta de nuevo.');
         }
     }
 
