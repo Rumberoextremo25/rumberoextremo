@@ -10,11 +10,13 @@ use App\Models\ContactMessage;
 use App\Models\NewsletterSubscriber;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Str;
 use Illuminate\Support\Facades\Mail;
 
 class PageController extends Controller
 {
-    public function index() 
+    public function index()
     {
         return view('welcome');
     }
@@ -33,7 +35,7 @@ class PageController extends Controller
     {
         return view('contact');
     }
-    
+
     public function storeContactMessage(Request $request)
     {
         $validatedData = $request->validate([
@@ -54,7 +56,6 @@ class PageController extends Controller
         } catch (\Exception $e) {
             // Log the error, but don't prevent the user from seeing a success message
             Log::error('Error sending contact confirmation email: ' . $e->getMessage());
-
         }
 
         return redirect()->route('welcome')->with('success', '¡Tu mensaje ha sido recibido con éxito! Te responderemos a la brevedad posible.');
@@ -120,40 +121,122 @@ class PageController extends Controller
     // Nuevo método para manejar la suscripción al newsletter
     public function subscribeToNewsletter(Request $request)
     {
-        // 1. Validar los datos del formulario
+        // 1. Validar los datos del formulario con medidas anti-bot
         $request->validate([
             'email' => 'required|email|unique:newsletter_subscribers,email|max:255',
+            'honeypot' => 'sometimes|string|max:0', // Campo honeypot oculto
+            'timestamp' => 'required|integer|min:' . (time() - 5), // Prevenir envíos muy rápidos
         ], [
             'email.unique' => 'Este correo electrónico ya está suscrito al newsletter.',
             'email.required' => 'Por favor, introduce tu correo electrónico.',
             'email.email' => 'El formato del correo electrónico no es válido.',
+            'timestamp.min' => 'Solicitud inválida. Por favor, espera unos segundos.',
         ]);
 
-        // 2. Guardar el correo en la base de datos
-        NewsletterSubscriber::create(['email' => $request->email]);
+        // 2. Verificar rate limiting por IP y email
+        $ipAddress = $request->ip();
+        $email = $request->email;
+        $rateLimitKey = "newsletter_subscribe:{$ipAddress}:{$email}";
 
-        // 3. Enviar el correo de confirmación al usuario
-        try {
-            Mail::to($request->email)->send(new NewsletterConfirmationMail($request->email));
-        } catch (\Exception $e) {
-            // Registra el error, pero no impidas que el usuario vea el mensaje de éxito en la web
-            Log::error('Error al enviar correo de confirmación del newsletter: ' . $e->getMessage());
-            // Opcional: podrías añadir un mensaje flash diferente si el correo falló, aunque la suscripción sí se realizó.
-            // return redirect()->back()->with('newsletter_warning', '¡Gracias por suscribirte! Hubo un problema al enviar el correo de confirmación.');
+        // Verificar si ha habido demasiados intentos (máximo 3 por hora)
+        $attempts = Cache::get($rateLimitKey, 0);
+        if ($attempts >= 3) {
+            Log::warning('Rate limit excedido para newsletter', [
+                'ip' => $ipAddress,
+                'email' => $email,
+                'attempts' => $attempts
+            ]);
+            return redirect()->back()->with('newsletter_error', 'Has realizado demasiados intentos. Por favor, espera una hora.');
         }
 
-        // 4. Redirigir de vuelta a la página actual con un mensaje de éxito
-        return redirect()->back()->with('newsletter_success', '¡Gracias por suscribirte a nuestro newsletter! Revisa tu correo electrónico para la confirmación.');
+        // Incrementar contador de intentos
+        Cache::put($rateLimitKey, $attempts + 1, now()->addHour());
+
+        // 3. Verificar si el email es de dominio temporal o sospechoso
+        $suspiciousDomains = [
+            'tempmail',
+            '10minutemail',
+            'guerrillamail',
+            'throwaway',
+            'mailinator',
+            'yopmail',
+            'trashmail',
+            'fakeinbox'
+        ];
+
+        $emailDomain = substr(strrchr($email, "@"), 1);
+        foreach ($suspiciousDomains as $suspiciousDomain) {
+            if (stripos($emailDomain, $suspiciousDomain) !== false) {
+                Log::info('Intento de suscripción con dominio sospechoso', [
+                    'email' => $email,
+                    'ip' => $ipAddress
+                ]);
+                // Simulamos éxito pero no guardamos para no dar pistas al bot
+                return redirect()->back()->with('newsletter_success', '¡Gracias por suscribirte a nuestro newsletter! Revisa tu correo electrónico para la confirmación.');
+            }
+        }
+
+        // 4. Verificar con servicios de validación de email (opcional)
+        // Descomenta si tienes acceso a un servicio como Hunter, NeverBounce, etc.
+        /*
+    if (!$this->validateEmailWithService($email)) {
+        Log::warning('Email no válido según servicio externo', [
+            'email' => $email,
+            'ip' => $ipAddress
+        ]);
+        return redirect()->back()->with('newsletter_error', 'El email proporcionado no parece válido.');
+    }
+    */
+
+        // 5. Verificar token CSRF (Laravel lo hace automáticamente, pero asegúrate que el formulario tenga @csrf)
+
+        // 6. Guardar con transacción y estado pendiente de confirmación
+        try {
+            $subscriber = NewsletterSubscriber::create([
+                'email' => $request->email,
+                'ip_address' => $ipAddress,
+                'user_agent' => $request->userAgent(),
+                'confirmed_at' => null, // Requerir confirmación por email
+                'confirmation_token' => \Illuminate\Support\Str::random(64),
+                'subscribed_at' => now()
+            ]);
+
+            // 7. Enviar correo de confirmación con token
+            try {
+                Mail::to($request->email)->send(new NewsletterConfirmationMail($subscriber->confirmation_token));
+
+                // Limpiar el rate limit solo si el email se envió correctamente
+                Cache::forget($rateLimitKey);
+
+                return redirect()->back()->with('newsletter_success', '¡Gracias por suscribirte! Por favor, revisa tu correo electrónico para confirmar tu suscripción.');
+            } catch (\Exception $e) {
+                // Si falla el email, eliminamos el registro pendiente
+                $subscriber->delete();
+                Log::error('Error al enviar correo de confirmación del newsletter: ' . $e->getMessage());
+                return redirect()->back()->with('newsletter_error', 'Hubo un problema técnico. Por favor, intenta de nuevo más tarde.');
+            }
+        } catch (\Exception $e) {
+            Log::error('Error al guardar suscripción al newsletter: ' . $e->getMessage());
+            return redirect()->back()->with('newsletter_error', 'No pudimos procesar tu solicitud. Por favor, intenta de nuevo.');
+        }
     }
 
-    public function terms ()
+    // Método auxiliar para validar email con servicios externos
+    private function validateEmailWithService($email)
     {
-        return view ('terms');
+        // Implementación de ejemplo para usar con algún servicio
+        // Retorna true si el email es válido, false si no
+        return true;
     }
 
-    public function privacy ()
+    public function terms()
     {
-        return view ('privacy');
+        return view('terms');
+    }
+
+    public function privacy()
+    {
+        return view('privacy');
     }
 
     public function faqs()

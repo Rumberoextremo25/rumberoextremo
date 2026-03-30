@@ -38,7 +38,7 @@
                     <i class="fab fa-google-play"></i>
                     <span class="badge-text">Próximamente</span>
                 </a>
-                
+
                 <!-- App Store Badge - Coming Soon -->
                 <a href="#" class="store-badge app-store-badge disabled">
                     <i class="fab fa-apple"></i>
@@ -91,18 +91,43 @@
             <p>En Rumbero Extremo las Noticias Vuelan.</p>
             <form action="{{ route('newsletter.subscribe') }}" method="POST" class="newsletter-form">
                 @csrf
+
+                {{-- Campo HONEYPOT - Oculto para humanos, visible para bots --}}
+                <div
+                    style="position: absolute; left: -9999px; top: -9999px; opacity: 0; height: 0; width: 0; overflow: hidden;">
+                    <input type="text" name="honeypot" id="honeypot" tabindex="-1" autocomplete="off">
+                </div>
+
+                {{-- Campo timestamp para prevenir envíos rápidos --}}
+                <input type="hidden" name="timestamp" value="{{ time() }}">
+
                 <div class="newsletter-input-group">
                     <input type="email" name="email" placeholder="Tu correo electrónico" required
                         value="{{ old('email') }}">
                     <button type="submit" class="subscribe-button">Suscribir</button>
                 </div>
+
                 @error('email')
                     <span class="error-message"
                         style="color: #ffcccc; font-size: 0.85em; display: block; margin-top: 8px;">{{ $message }}</span>
                 @enderror
+                @error('honeypot')
+                    <span class="error-message"
+                        style="color: #ffcccc; font-size: 0.85em; display: block; margin-top: 8px;">Solicitud inválida. Por
+                        favor, intenta de nuevo.</span>
+                @enderror
+                @error('timestamp')
+                    <span class="error-message"
+                        style="color: #ffcccc; font-size: 0.85em; display: block; margin-top: 8px;">Por favor, espera unos
+                        segundos antes de enviar.</span>
+                @enderror
                 @if (session('newsletter_success'))
                     <span class="success-message"
                         style="color: #ccffcc; font-size: 0.85em; display: block; margin-top: 8px;">{{ session('newsletter_success') }}</span>
+                @endif
+                @if (session('newsletter_error'))
+                    <span class="error-message"
+                        style="color: #ffcccc; font-size: 0.85em; display: block; margin-top: 8px;">{{ session('newsletter_error') }}</span>
                 @endif
             </form>
         </div>
