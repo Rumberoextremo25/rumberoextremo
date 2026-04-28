@@ -9,10 +9,6 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <link
         href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800&family=Poppins:wght@300;400;500;600&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/welcome.css') }}">
-@endpush
-
 @section('content')
     <section class="hero">
         <div class="container">
@@ -28,31 +24,17 @@
             <!-- Botón de registro -->
             <a href="{{ route('register') }}" class="cta-button-banner">¡Yo Soy Rumbero!</a>
 
-            <!-- Botón APK original (Android) -->
-            <a href="https://rumbero-extremo-descargas.s3.us-east-1.amazonaws.com/rumbero_extremo.apk"
-                class="play-store-btn">
-                <i class="fab fa-android"></i>
-                <div class="btn-content">
-                    <div class="btn-text">
-                        <span class="small-text">DESCARGALA YA</span>
-                        <span class="large-text">APP Oficial</span>
-                    </div>
-                </div>
-                <span class="version-badge">v2.0</span>
-            </a>
-
             <!-- Contenedor para botones de tiendas oficiales -->
             <div class="app-buttons-container">
-                <!-- Google Play Button - Coming Soon -->
-                <a href="#" class="store-btn google-play disabled">
+                <!-- Google Play Button -->
+                <a href="https://play.google.com/store/apps/details?id=com.sistema.rumberoextremooficial" class="store-btn google-play" target="_blank" rel="noopener noreferrer">
                     <i class="fab fa-google-play"></i>
                     <div class="btn-content">
                         <div class="btn-text">
-                            <span class="small-text">PRÓXIMAMENTE EN</span>
+                            <span class="small-text">DESCARGALA EN</span>
                             <span class="large-text">Google Play</span>
                         </div>
                     </div>
-                    <span class="status-badge soon">Próximamente</span>
                 </a>
 
                 <!-- App Store Button - Coming Soon -->
@@ -113,6 +95,7 @@
             <button class="carousel-nav-button next-button" onclick="moveSlide(1)">&#10095;</button>
         </div>
     </section>
+    
     <section class="testimonials-section">
         <div class="container">
             <h2>¡Ellos son Rumberos! Y Comparten sus Experiencias!</h2>

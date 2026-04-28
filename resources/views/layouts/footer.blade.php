@@ -18,28 +18,15 @@
                 Descubre los mejores eventos y lugares, conecta con amigos y vive la experiencia de ser un Rumbero
                 Extremo</p>
 
-            {{-- BOTÓN DE DESCARGA APK - NUEVA UBICACIÓN --}}
-            <div class="download-container">
-                <a href="https://rumbero-extremo-descargas.s3.us-east-1.amazonaws.com/rumbero_extremo.apk"
-                    class="download-btn-modern">
-                    <i class="fab fa-android"></i>
-                    <div class="btn-content">
-                        <span class="btn-sub">DESCARGALA YA</span>
-                        <span class="btn-main">APP Oficial</span>
-                    </div>
-                    <span class="btn-badge">NUEVA</span>
-                </a>
-            </div>
-
-            {{-- NUEVOS BOTONES DE TIENDAS (ambos con "Próximamente") --}}
+            {{-- BOTONES DE TIENDAS OFICIALES --}}
             <div class="store-badges-container">
-                <!-- Google Play Badge - Coming Soon -->
-                <a href="#" class="store-badge google-play-badge disabled">
+                <!-- Google Play Button -->
+                <a href="https://play.google.com/store/apps/details?id=com.sistema.rumberoextremooficial" class="store-badge google-play-badge" target="_blank" rel="noopener noreferrer">
                     <i class="fab fa-google-play"></i>
-                    <span class="badge-text">Próximamente</span>
+                    <span class="badge-text">Google Play</span>
                 </a>
 
-                <!-- App Store Badge - Coming Soon -->
+                <!-- App Store Button - Coming Soon -->
                 <a href="#" class="store-badge app-store-badge disabled">
                     <i class="fab fa-apple"></i>
                     <span class="badge-text">Próximamente</span>
