@@ -12,45 +12,46 @@ use Illuminate\Support\Facades\Log;
 
 class HomeController extends Controller
 {
-    /**
-     * Obtiene todos los datos necesarios para la pantalla de inicio (Home):
-     * Banners, Aliados Comerciales y Promociones.
-     *
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function index(): JsonResponse
     {
         try {
+            Log::info('===> HomeController - Iniciando carga de datos');
+
             // ========== BANNERS ==========
-            // ✅ Usar display_order en BD, pero enviar como 'order' a la app
             $banners = Banner::where('is_active', true)
                 ->orderBy('display_order', 'asc')
-                ->get()
-                ->map(function($banner) {
-                    return [
-                        'id' => $banner->id,
-                        'title' => $banner->title,
-                        'image_url' => ApiImageHelper::getImageUrl($banner->image_url),
-                        'target_url' => $banner->target_url,
-                        'order' => $banner->display_order,  // ✅ Enviar como 'order' para la app
-                    ];
-                });
+                ->get();
+
+            Log::info('Banners encontrados: ' . $banners->count());
+
+            $banners = $banners->map(function($banner) {
+                return [
+                    'id' => $banner->id,
+                    'title' => $banner->title,
+                    'image_url' => ApiImageHelper::getImageUrl($banner->image_url),
+                    'target_url' => $banner->target_url,
+                    'order' => $banner->display_order,
+                ];
+            });
 
             // ========== ALIADOS COMERCIALES ==========
             $commercialAllies = CommercialAlly::where('is_active', true)
                 ->orderBy('name', 'asc')
-                ->get()
-                ->map(function($ally) {
-                    return [
-                        'id' => $ally->id,
-                        'name' => $ally->name,
-                        'logo_url' => ApiImageHelper::getImageUrl($ally->logo_url),
-                        'rating' => $ally->rating,
-                        'description' => $ally->description,
-                        'website_url' => $ally->website_url,
-                        'is_active' => $ally->is_active,
-                    ];
-                });
+                ->get();
+
+            Log::info('Aliados comerciales encontrados: ' . $commercialAllies->count());
+
+            $commercialAllies = $commercialAllies->map(function($ally) {
+                return [
+                    'id' => $ally->id,
+                    'name' => $ally->name,
+                    'logo_url' => ApiImageHelper::getImageUrl($ally->logo_url),
+                    'rating' => $ally->rating,
+                    'description' => $ally->description,
+                    'website_url' => $ally->website_url,
+                    'is_active' => $ally->is_active,
+                ];
+            });
 
             // ========== PROMOCIONES ==========
             $promotions = Promotion::with('ally')
@@ -61,29 +62,35 @@ class HomeController extends Controller
                 })
                 ->orderBy('is_featured', 'desc')
                 ->orderBy('created_at', 'desc')
-                ->get()
-                ->map(function($promotion) {
-                    return [
-                        'id' => $promotion->id,
-                        'title' => $promotion->title,
-                        'image_url' => ApiImageHelper::getImageUrl($promotion->image_url),
-                        'discount' => $promotion->discount,
-                        'price' => $promotion->price,
-                        'description' => $promotion->description,
-                        'expires_at' => $promotion->expires_at?->format('Y-m-d'),
-                        'is_featured' => $promotion->is_featured,
-                        'ally_name' => $promotion->ally?->company_name ?? $promotion->ally?->name,
-                        'ally_id' => $promotion->ally_id,
-                    ];
-                });
+                ->get();
 
-            // Devolver los datos procesados
-            return response()->json([
+            Log::info('Promociones encontradas: ' . $promotions->count());
+
+            $promotions = $promotions->map(function($promotion) {
+                return [
+                    'id' => $promotion->id,
+                    'title' => $promotion->title,
+                    'image_url' => ApiImageHelper::getImageUrl($promotion->image_url),
+                    'discount' => $promotion->discount,
+                    'price' => $promotion->price,
+                    'description' => $promotion->description,
+                    'expires_at' => $promotion->expires_at?->format('Y-m-d'),
+                    'is_featured' => $promotion->is_featured,
+                    'ally_name' => $promotion->ally?->company_name ?? $promotion->ally?->name,
+                    'ally_id' => $promotion->ally_id,
+                ];
+            });
+
+            $response = response()->json([
                 'success' => true,
                 'banners' => $banners,
                 'commercial_allies' => $commercialAllies,
                 'promotions' => $promotions,
             ]);
+
+            Log::info('===> HomeController - Respuesta generada exitosamente');
+            
+            return $response;
 
         } catch (\Exception $e) {
             Log::error('Error en HomeController: ' . $e->getMessage(), [
@@ -92,7 +99,7 @@ class HomeController extends Controller
 
             return response()->json([
                 'success' => false,
-                'message' => 'Error al cargar los datos del home'
+                'message' => 'Error al cargar los datos del home: ' . $e->getMessage()
             ], 500);
         }
     }
