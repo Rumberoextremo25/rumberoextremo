@@ -39,6 +39,6 @@ class SalesStatsController extends Controller
             'average_ticket' => Sale::whereIn('status', ['completed', 'completado'])->avg('total_amount'),
         ];
 
-        return view('admin.sales-stats', compact('salesByDay', 'salesByAlly', 'summary'));
+        return view('Admin.sales-stats', compact('salesByDay', 'salesByAlly', 'summary'));
     }
 }
