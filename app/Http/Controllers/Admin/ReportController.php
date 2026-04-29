@@ -2,13 +2,13 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Controller;
 use App\Models\Sale;
 use App\Models\Ally;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use App\Http\Controllers\Controller;
 
 class ReportController extends Controller
 {
@@ -121,10 +121,10 @@ class ReportController extends Controller
             case 'daily':
                 return $this->getDailyData($query, $startDate, $endDate);
             case 'weekly':
-                return $this->getWeeklyData($query, $startDate, $endDate);
+                return $this->getWeeklyData($query);
             case 'monthly':
             default:
-                return $this->getMonthlyData($query, $startDate, $endDate);
+                return $this->getMonthlyData($query);
         }
     }
 
@@ -157,7 +157,7 @@ class ReportController extends Controller
      */
     private function getDailyData($query, $startDate, $endDate)
     {
-        $period = new \DatePeriod($startDate, new \DateInterval('P1D'), $endDate);
+        $period = new \DatePeriod($startDate, new \DateInterval('P1D'), $endDate->_endExclusive ? $endDate : $endDate->copy()->addDay());
 
         $data = $query->select(
             DB::raw('DATE(sale_date) as date'),
@@ -201,11 +201,11 @@ class ReportController extends Controller
     /**
      * Datos para vista semanal
      */
-    private function getWeeklyData($query, $startDate, $endDate)
+    private function getWeeklyData($query)
     {
         $data = $query->select(
-            DB::raw('YEAR(sale_date) as year'),
-            DB::raw('WEEK(sale_date, 1) as week'),
+            DB::raw('EXTRACT(YEAR FROM sale_date) as year'),
+            DB::raw('EXTRACT(WEEK FROM sale_date) as week'),
             DB::raw('MIN(sale_date) as week_start'),
             DB::raw('SUM(total_amount) as total_sales'),
             DB::raw('COUNT(*) as total_orders')
@@ -237,11 +237,11 @@ class ReportController extends Controller
     /**
      * Datos para vista mensual
      */
-    private function getMonthlyData($query, $startDate, $endDate)
+    private function getMonthlyData($query)
     {
         $data = $query->select(
-            DB::raw('YEAR(sale_date) as year'),
-            DB::raw('MONTH(sale_date) as month'),
+            DB::raw('EXTRACT(YEAR FROM sale_date) as year'),
+            DB::raw('EXTRACT(MONTH FROM sale_date) as month'),
             DB::raw('SUM(total_amount) as total_sales'),
             DB::raw('COUNT(*) as total_orders')
         )

@@ -93,7 +93,7 @@ class PayoutController extends Controller
                 $validated['fecha_fin'],
                 $validated['tipo_cuenta'],
                 $validated['concepto'] ?? null,
-                null // Los payouts se obtienen internamente según filtros
+                null
             );
 
             return redirect()->route('admin.payouts.archivos')
@@ -221,7 +221,6 @@ class PayoutController extends Controller
             $estadisticas = $this->payoutService->obtenerEstadisticasCompletas();
             $topAliados = $this->payoutService->obtenerResumenPorAliado();
 
-            // Ordenar por monto y tomar los primeros 10
             usort($topAliados, function ($a, $b) {
                 return $b['total_monto'] <=> $a['total_monto'];
             });
@@ -282,7 +281,6 @@ class PayoutController extends Controller
     public function detalleAliadoJson(int $aliadoId): JsonResponse
     {
         try {
-            // Obtener datos del aliado
             $resumen = $this->payoutService->obtenerResumenPorAliado();
             $aliadoData = collect($resumen)->firstWhere('aliado_id', $aliadoId);
 
@@ -290,12 +288,10 @@ class PayoutController extends Controller
                 return response()->json(['error' => 'Aliado no encontrado'], 404);
             }
 
-            // Obtener pagos recientes
             $request = new Request();
             $request->merge(['ally_id' => $aliadoId, 'per_page' => 5]);
             $pagosRecientes = $this->payoutService->obtenerPagosPorFiltro($request);
 
-            // Preparar datos para gráficas
             $evolucionMensual = $this->payoutService->obtenerEvolucionMensualAliado($aliadoId, 6);
 
             return response()->json([
@@ -366,7 +362,6 @@ class PayoutController extends Controller
         try {
             $payout = $this->payoutService->obtenerPayoutCompleto($payoutId);
 
-            // Verificar que el payout esté en estado processing
             if ($payout->status !== 'processing') {
                 return redirect()->route('admin.payouts.show', $payoutId)
                     ->with('error', 'Este pago no está en estado de procesamiento');
@@ -454,19 +449,17 @@ class PayoutController extends Controller
         try {
             $estadisticas = $this->payoutService->obtenerEstadisticasCompletas();
 
-            // Obtener pagos recientes (últimos 10)
             $request = new Request();
             $request->merge(['per_page' => 10, 'sort_by' => 'created_at', 'sort_order' => 'desc']);
             $pagosRecientes = $this->payoutService->obtenerPagosPorFiltro($request);
 
-            // Obtener top aliados
             $topAliados = $this->payoutService->obtenerResumenPorAliado();
             usort($topAliados, function ($a, $b) {
                 return $b['total_monto'] <=> $a['total_monto'];
             });
             $topAliados = array_slice($topAliados, 0, 5);
 
-            return view('Admin.payouts.dashboard', [
+            return view('admin.payouts.dashboard', [
                 'estadisticas' => $estadisticas,
                 'pagosRecientes' => $pagosRecientes->items(),
                 'topAliados' => $topAliados,
@@ -490,7 +483,6 @@ class PayoutController extends Controller
 
             $payouts = $this->payoutService->obtenerPagosPorFiltro($request);
 
-            // Obtener estadísticas específicas del aliado
             $resumen = $this->payoutService->obtenerResumenPorAliado();
             $estadisticasAliado = collect($resumen)->firstWhere('aliado_id', $aliadoId);
 
@@ -543,9 +535,6 @@ class PayoutController extends Controller
                 'status' => 'required|in:pending,processing,completed,reverted'
             ]);
 
-            // Implementar método de actualización en el servicio si es necesario
-            // $this->payoutService->actualizarPayout($payoutId, $validated);
-
             return redirect()->route('admin.payouts.show', $payoutId)
                 ->with('success', 'Pago actualizado exitosamente');
         } catch (\Illuminate\Validation\ValidationException $e) {
@@ -585,10 +574,8 @@ class PayoutController extends Controller
     public function lotes(): View|RedirectResponse
     {
         try {
-            // Obtener archivos generados como "lotes"
             $archivos = $this->payoutService->obtenerArchivosGenerados();
 
-            // Transformar para mostrar como lotes
             $lotes = collect($archivos)->map(function ($archivo) {
                 return [
                     'id' => md5($archivo['nombre']),
