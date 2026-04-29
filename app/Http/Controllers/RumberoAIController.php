@@ -2,84 +2,260 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
+use App\Models\ChatMessage;
 use App\Models\Promotion;
 use App\Models\DiscountActivation;
-use App\Services\AIService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class RumberoAIController extends Controller
 {
-    protected $aiService;
-
     /**
-     * Constructor: Inyectamos el servicio de IA
+     * Obtener o crear sesión de chat
      */
-    public function __construct(AIService $aiService)
+    protected function getSessionId(Request $request)
     {
-        $this->aiService = $aiService;
+        $sessionId = $request->header('X-Chat-Session');
+        
+        if (!$sessionId) {
+            $sessionId = $request->input('session_id');
+        }
+        
+        if (!$sessionId) {
+            $sessionId = Str::random(32);
+        }
+        
+        return $sessionId;
     }
 
     /**
-     * Endpoint principal del chat - ¡AHORA CON RESPUESTAS REALES!
+     * Endpoint principal del chat - Usuario envía mensaje
      */
     public function chat(Request $request)
     {
         $request->validate([
             'mensaje' => 'required|string|max:1000',
-            'ubicacion' => 'sometimes|array',
-            'ubicacion.lat' => 'required_with:ubicacion|numeric',
-            'ubicacion.lng' => 'required_with:ubicacion|numeric',
-            'categoria' => 'sometimes|string|nullable',
-            'ia_preferida' => 'sometimes|in:deepseek,gemini'
         ]);
 
         try {
             $usuario = $request->user();
-            $iaPreferida = $request->ia_preferida ?? 'gemini';
+            $sessionId = $this->getSessionId($request);
 
-            Log::info('🎉 Chat RumberoAI - Mensaje recibido', [
+            Log::info('💬 Chat - Mensaje recibido', [
                 'usuario' => $usuario?->id,
-                'ia_preferida' => $iaPreferida,
+                'session_id' => $sessionId,
                 'mensaje' => $request->mensaje
             ]);
 
-            // Procesar mensaje con AIService
-            $respuesta = $this->aiService->chat(
-                $request->mensaje,
-                $usuario ? $usuario->id : null,
-                $request->ubicacion,
-                $request->categoria,
-                $iaPreferida
-            );
+            // Guardar mensaje del usuario
+            $userMessage = ChatMessage::create([
+                'user_id' => $usuario?->id,
+                'session_id' => $sessionId,
+                'message' => $request->mensaje,
+                'sender' => 'user',
+                'status' => 'pending'
+            ]);
 
-            Log::info('✅ Respuesta generada', [
-                'ia_utilizada' => $respuesta['ia_utilizada'] ?? 'gemini'
+            // Respuesta automática
+            $respuestaAuto = "📱 *Mensaje recibido!*\n\nUn asesor Rumbero Extremo te responderá en breve.\n\n*Tu consulta:*\n\"" . substr($request->mensaje, 0, 100) . (strlen($request->mensaje) > 100 ? '...' : '') . "\"\n\n⏰ Tiempo estimado de respuesta: menos de 5 minutos.";
+
+            return response()->json([
+                'success' => true,
+                'data' => [
+                    'respuesta' => $respuestaAuto,
+                    'message_id' => $userMessage->id,
+                    'session_id' => $sessionId,
+                    'status' => 'pending'
+                ],
+                'message' => 'Mensaje enviado. Un asesor te responderá pronto.'
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('❌ Error en chat: ' . $e->getMessage());
+            
+            return response()->json([
+                'success' => false,
+                'message' => 'Error al enviar el mensaje. Intenta de nuevo.'
+            ], 500);
+        }
+    }
+
+    /**
+     * ADMIN: Obtener TODAS las conversaciones (sin filtrar por estado)
+     */
+    public function mensajesPendientes(Request $request)
+    {
+        // Verificar admin
+        if (!Auth::user() || Auth::user()->role !== 'admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'No autorizado'
+            ], 403);
+        }
+
+        // Obtener TODOS los mensajes de usuarios, agrupados por session_id
+        // Traer el último mensaje de cada conversación
+        $conversaciones = ChatMessage::where('sender', 'user')
+            ->select('session_id', 
+                     DB::raw('MAX(created_at) as last_message_time'),
+                     DB::raw('COUNT(*) as total_messages'))
+            ->groupBy('session_id')
+            ->orderBy('last_message_time', 'desc')
+            ->get();
+
+        $resultados = [];
+        
+        foreach ($conversaciones as $conv) {
+            // Obtener el último mensaje de esta conversación
+            $ultimoMensaje = ChatMessage::where('session_id', $conv->session_id)
+                ->where('sender', 'user')
+                ->latest()
+                ->first();
+            
+            // Obtener información del usuario si existe
+            $userInfo = ChatMessage::where('session_id', $conv->session_id)
+                ->whereNotNull('user_id')
+                ->first();
+            
+            $userName = 'Usuario invitado';
+            $userEmail = 'No registrado';
+            
+            if ($userInfo && $userInfo->user) {
+                $userName = $userInfo->user->name ?? 'Usuario invitado';
+                $userEmail = $userInfo->user->email ?? 'No registrado';
+            }
+            
+            $resultados[] = [
+                'id' => $ultimoMensaje->id,
+                'session_id' => $conv->session_id,
+                'message' => $ultimoMensaje->message,
+                'user_name' => $userName,
+                'user_email' => $userEmail,
+                'total_messages' => $conv->total_messages,
+                'created_at' => $ultimoMensaje->created_at->format('Y-m-d H:i:s'),
+                'time_ago' => $ultimoMensaje->created_at->diffForHumans(),
+            ];
+        }
+
+        Log::info('📋 Admin consultó conversaciones', [
+            'total_conversaciones' => count($resultados),
+            'admin_id' => Auth::id()
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'data' => $resultados
+        ]);
+    }
+
+    /**
+     * ADMIN: Responder mensaje
+     */
+    public function adminResponder(Request $request)
+    {
+        // Verificar admin
+        if (!Auth::user() || Auth::user()->role !== 'admin') {
+            return response()->json([
+                'success' => false,
+                'message' => 'No autorizado'
+            ], 403);
+        }
+
+        $request->validate([
+            'session_id' => 'required|string',
+            'respuesta' => 'required|string|max:2000'
+        ]);
+
+        try {
+            // Buscar un mensaje de usuario de esta sesión para obtener user_id
+            $userMessage = ChatMessage::where('session_id', $request->session_id)
+                ->where('sender', 'user')
+                ->first();
+            
+            if (!$userMessage) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'No se encontró la conversación'
+                ], 404);
+            }
+
+            // Guardar respuesta del admin
+            $adminResponse = ChatMessage::create([
+                'user_id' => $userMessage->user_id,
+                'session_id' => $request->session_id,
+                'message' => $request->respuesta,
+                'sender' => 'admin',
+                'status' => 'answered',
+                'answered_by' => Auth::id(),
+                'answered_at' => now()
+            ]);
+
+            Log::info('✅ Admin respondió mensaje', [
+                'admin_id' => Auth::id(),
+                'session_id' => $request->session_id,
+                'response_id' => $adminResponse->id
             ]);
 
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'respuesta' => $respuesta['respuesta'] ?? $respuesta,
-                    'ia_utilizada' => $respuesta['ia_utilizada'] ?? 'gemini',
-                    'promociones' => $respuesta['promociones'] ?? null
-                ],
-                'message' => 'Respuesta generada correctamente'
+                    'response_id' => $adminResponse->id,
+                    'message' => 'Respuesta enviada exitosamente'
+                ]
             ]);
 
         } catch (\Exception $e) {
-            Log::error('❌ Error en chat: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
-            ]);
+            Log::error('Error al responder: ' . $e->getMessage());
             
             return response()->json([
                 'success' => false,
-                'message' => '¡Ay parce! Algo salió mal. Intenta de nuevo.',
-                'error' => $e->getMessage()
+                'message' => 'Error al enviar la respuesta'
             ], 500);
         }
+    }
+
+    /**
+     * Obtener conversación completa por sesión
+     */
+    public function conversacion(Request $request)
+    {
+        $request->validate([
+            'session_id' => 'required|string'
+        ]);
+
+        $messages = ChatMessage::where('session_id', $request->session_id)
+            ->orderBy('created_at', 'asc')
+            ->get();
+
+        return response()->json([
+            'success' => true,
+            'data' => $messages->map(function($msg) {
+                return [
+                    'id' => $msg->id,
+                    'message' => $msg->message,
+                    'sender' => $msg->sender,
+                    'status' => $msg->status,
+                    'created_at' => $msg->created_at->format('Y-m-d H:i:s'),
+                    'is_admin' => $msg->sender === 'admin',
+                    'user_name' => $msg->user?->name ?? 'Usuario invitado'
+                ];
+            })
+        ]);
+    }
+
+    /**
+     * Mostrar la vista del panel de administración del chat
+     */
+    public function adminChatView()
+    {
+        if (!Auth::user() || Auth::user()->role !== 'admin') {
+            abort(403, 'No autorizado');
+        }
+        
+        return view('admin.chat');
     }
 
     /**
@@ -103,7 +279,6 @@ class RumberoAIController extends Controller
 
             $promocion = Promotion::with('ally')->findOrFail($request->promotion_id);
             
-            // Verificar disponibilidad
             if (!$promocion->isAvailable()) {
                 return response()->json([
                     'success' => false,
@@ -111,7 +286,6 @@ class RumberoAIController extends Controller
                 ], 400);
             }
 
-            // Verificar si ya activó esta promoción
             $activacionExistente = DiscountActivation::where('user_id', $usuario->id)
                 ->where('promotion_id', $promocion->id)
                 ->where('status', 'active')
@@ -131,10 +305,8 @@ class RumberoAIController extends Controller
                 ]);
             }
 
-            // Generar código único
             $codigo = 'RUM-' . strtoupper(substr(md5($usuario->id . $promocion->id . time()), 0, 8));
 
-            // Registrar activación
             $activacion = DiscountActivation::create([
                 'user_id' => $usuario->id,
                 'ally_id' => $promocion->ally_id,

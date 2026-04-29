@@ -141,68 +141,141 @@
     text-transform: uppercase;
 }
 
-/* ----- BADGES DE TIENDAS (AMBOS "PRÓXIMAMENTE") ----- */
+/* =====================================================
+   5. BOTONES DE TIENDAS OFICIALES (ESTILO MODERNO)
+   ===================================================== */
 .store-badges-container {
     display: flex;
-    gap: 10px;
-    margin-top: 15px;
+    gap: 12px;
+    margin-top: 20px;
     flex-wrap: wrap;
     justify-content: center;
 }
 
+/* Botón base para ambas tiendas */
 .store-badge {
     display: inline-flex;
     align-items: center;
-    padding: 6px 12px;
-    border-radius: 30px;
+    background: linear-gradient(135deg, #1a1f2e 0%, #2a3142 100%);
+    padding: 10px 20px;
+    border-radius: 100px;
     text-decoration: none;
-    color: #ffffff;
-    font-size: 0.85em;
-    transition: all 0.2s ease;
+    color: white;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     border: 1px solid rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(5px);
-    background: rgba(15, 23, 42, 0.8);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+    position: relative;
+    overflow: hidden;
+    gap: 10px;
 }
 
+/* Efecto de brillo deslizante */
+.store-badge::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.7s ease;
+}
+
+.store-badge:hover::before {
+    left: 100%;
+}
+
+.store-badge:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 15px 25px -8px rgba(52, 168, 83, 0.4);
+    background: linear-gradient(135deg, #232837 0%, #333b4f 100%);
+    border-color: rgba(52, 168, 83, 0.4);
+}
+
+/* Iconos de los botones */
 .store-badge i {
-    font-size: 16px;
-    margin-right: 6px;
+    font-size: 28px;
+    transition: transform 0.3s ease;
+    position: relative;
+    z-index: 2;
 }
 
+.store-badge:hover i {
+    transform: rotate(5deg) scale(1.1);
+}
+
+/* Google Play Badge - Icono con gradiente verde */
+.store-badge.google-play-badge i {
+    background: linear-gradient(135deg, #34a853, #2d8e47);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: #34a853;
+    filter: drop-shadow(0 3px 6px rgba(52, 168, 83, 0.4));
+}
+
+.store-badge.google-play-badge:hover i {
+    color: #38ef7d;
+}
+
+/* App Store Badge - Icono blanco */
+.store-badge.app-store-badge i {
+    color: #ffffff;
+    filter: drop-shadow(0 3px 6px rgba(255, 255, 255, 0.2));
+}
+
+.store-badge.app-store-badge:hover i {
+    color: #e2e8f0;
+}
+
+/* Badge Text */
 .store-badge .badge-text {
-    font-weight: 500;
-    letter-spacing: 0.3px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    font-size: 14px;
+    position: relative;
+    z-index: 2;
 }
 
-/* Estilo para badges deshabilitados (Próximamente) */
+/* =====================================================
+   6. ESTILO PARA BOTONES DESHABILITADOS (PRÓXIMAMENTE)
+   ===================================================== */
 .store-badge.disabled {
-    background: rgba(255, 255, 255, 0.05);
-    border-color: rgba(255, 255, 255, 0.1);
     opacity: 0.7;
     cursor: not-allowed;
     pointer-events: none;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
 }
 
 .store-badge.disabled i {
     color: #999;
+    filter: none;
+    background: none;
+    -webkit-background-clip: unset;
+    background-clip: unset;
 }
 
 .store-badge.disabled .badge-text {
     color: #aaa;
 }
 
-/* Google Play Badge específico */
-.store-badge.google-play-badge.disabled i {
-    color: #999;
+.store-badge.disabled:hover {
+    transform: none;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
-/* App Store Badge específico */
-.store-badge.app-store-badge.disabled i {
+.store-badge.disabled:hover::before {
+    left: -100%;
+}
+
+.store-badge.disabled:hover i {
+    transform: none;
     color: #999;
 }
 
 /* =====================================================
-   5. SECCIÓN 2 - ENLACES RÁPIDOS
+   7. SECCIÓN 2 - ENLACES RÁPIDOS
    ===================================================== */
 .footer-links ul {
     list-style: none;
@@ -248,7 +321,7 @@
 }
 
 /* =====================================================
-   6. SECCIÓN 3 - CONÉCTATE
+   8. SECCIÓN 3 - CONÉCTATE
    ===================================================== */
 .footer-connect .connect-icon-container {
     background-color: #e2dcdc;
@@ -312,7 +385,7 @@
 }
 
 /* =====================================================
-   7. SECCIÓN 4 - NEWSLETTER
+   9. SECCIÓN 4 - NEWSLETTER
    ===================================================== */
 .footer-section.footer-newsletter {
     padding: 20px;
@@ -403,7 +476,7 @@
 }
 
 /* =====================================================
-   NOTIFICACIONES TOAST - ESTILO SUAVE Y TRANSPARENTE
+   10. NOTIFICACIONES TOAST - ESTILO SUAVE Y TRANSPARENTE
    ===================================================== */
 .toast-notification {
     position: fixed;
@@ -527,48 +600,8 @@
     }
 }
 
-@keyframes slideInRight {
-    from {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-
-    to {
-        transform: translateX(0);
-        opacity: 1;
-    }
-}
-
-@keyframes slideOutRight {
-    from {
-        transform: translateX(0);
-        opacity: 1;
-    }
-
-    to {
-        transform: translateX(100%);
-        opacity: 0;
-    }
-}
-
-.toast-notification.hide {
-    animation: slideOutRight 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55) forwards;
-}
-
-/* Responsive para móviles */
-@media (max-width: 768px) {
-    .toast-notification {
-        top: 10px;
-        right: 10px;
-        left: 10px;
-        min-width: auto;
-        max-width: none;
-        padding: 14px 16px;
-    }
-}
-
 /* =====================================================
-   9. SECCIÓN DE COPYRIGHT
+   11. SECCIÓN DE COPYRIGHT
    ===================================================== */
 .footer-bottom {
     text-align: center;
@@ -584,7 +617,7 @@
 }
 
 /* =====================================================
-   10. UTILIDADES
+   12. UTILIDADES
    ===================================================== */
 /* Asegurar que los iconos de Font Awesome se vean bien */
 .fas {
@@ -595,7 +628,7 @@
 }
 
 /* =====================================================
-   11. MEDIA QUERIES - RESPONSIVIDAD
+   13. MEDIA QUERIES - RESPONSIVIDAD
    ===================================================== */
 
 /* Tablets y pantallas medianas (1024px y menores) */
@@ -650,17 +683,20 @@
     /* Ajustes para badges en móvil */
     .store-badges-container {
         justify-content: center;
-        margin-top: 10px;
+        margin-top: 15px;
+        gap: 10px;
     }
 
     .store-badge {
-        padding: 5px 10px;
-        font-size: 0.8em;
+        padding: 8px 16px;
     }
 
     .store-badge i {
-        font-size: 14px;
-        margin-right: 5px;
+        font-size: 24px;
+    }
+
+    .store-badge .badge-text {
+        font-size: 12px;
     }
 }
 
@@ -678,10 +714,12 @@
 
     .store-badges-container {
         gap: 8px;
+        flex-direction: column;
+        align-items: center;
     }
 
     .store-badge {
-        padding: 4px 8px;
-        font-size: 0.75em;
+        width: 200px;
+        justify-content: center;
     }
 }

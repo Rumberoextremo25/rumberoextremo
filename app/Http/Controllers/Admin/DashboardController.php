@@ -68,8 +68,8 @@ class DashboardController extends Controller
             // Usuarios registrados hoy
             $todayUsers = User::whereDate('created_at', Carbon::today())->count();
 
-            // Aliados registrados hoy
-            $todayAllies = Ally::where('user_id', 'user')
+            // ✅ CORREGIDO: Aliados registrados hoy (usando la relación correcta)
+            $todayAllies = User::where('user_type', 'aliado')
                 ->whereDate('created_at', Carbon::today())
                 ->count();
 
@@ -82,9 +82,13 @@ class DashboardController extends Controller
 
         } elseif ($role === 'aliado') {
             // El aliado ve datos relacionados a su negocio
+            
+            // Obtener el objeto Ally del usuario autenticado
+            $ally = Ally::where('user_id', $user->id)->first();
+            $allyId = $ally ? $ally->id : null;
 
             // Ventas del aliado (a través de la tabla sales con ally_id)
-            $todaySales = Sale::where('ally_id', $user->id)
+            $todaySales = Sale::where('ally_id', $allyId)
                 ->whereDate('created_at', Carbon::today())
                 ->whereIn('status', ['completed', 'completado'])
                 ->sum('total_amount');
@@ -197,9 +201,11 @@ class DashboardController extends Controller
         $allyGoal = 100;
         $salesGoal = 1000000;
 
-        $userProgress = min(round(($this->getDashboardData(Auth::user(), Auth::user()->user_type)['totalUsers'] / $userGoal) * 100, 0), 100);
-        $allyProgress = min(round(($this->getDashboardData(Auth::user(), Auth::user()->user_type)['totalAllies'] / $allyGoal) * 100, 0), 100);
-        $salesProgress = min(round(($this->getDashboardData(Auth::user(), Auth::user()->user_type)['totalSales'] / $salesGoal) * 100, 0), 100);
+        $dashboardData = $this->getDashboardData(Auth::user(), Auth::user()->user_type);
+        
+        $userProgress = min(round(($dashboardData['totalUsers'] / $userGoal) * 100, 0), 100);
+        $allyProgress = min(round(($dashboardData['totalAllies'] / $allyGoal) * 100, 0), 100);
+        $salesProgress = min(round(($dashboardData['totalSales'] / $salesGoal) * 100, 0), 100);
 
         return [
             'activeUsersToday' => $activeUsersToday,

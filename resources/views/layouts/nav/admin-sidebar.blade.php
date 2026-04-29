@@ -28,7 +28,27 @@
                     </a>
                 </li>
 
-                {{-- ===== NUEVO: GENERADOR DE QR (solo admin) ===== --}}
+                {{-- ===== NUEVO: CHAT DE SOPORTE (solo admin) ===== --}}
+                @if (Auth::user()->role === 'admin')
+                    <li class="sidebar-nav-item">
+                        <a href="{{ route('admin.chat') }}"
+                            class="sidebar-nav-link {{ request()->routeIs('admin.chat') ? 'active' : '' }}">
+                            <i class="fa-solid fa-headset"></i> <span class="sidebar-link-text">Chat de Soporte</span>
+                        </a>
+                    </li>
+                @endif
+
+                {{-- ===== NUEVO: ESTADÍSTICAS DE VENTAS (solo admin) ===== --}}
+                @if (Auth::user()->role === 'admin')
+                    <li class="sidebar-nav-item">
+                        <a href="{{ route('admin.sales.stats') }}"
+                            class="sidebar-nav-link {{ request()->routeIs('admin.sales.stats') ? 'active' : '' }}">
+                            <i class="fa-solid fa-chart-simple"></i> <span class="sidebar-link-text">Estadísticas de Ventas</span>
+                        </a>
+                    </li>
+                @endif
+
+                {{-- ===== GENERADOR DE QR (solo admin) ===== --}}
                 @if (Auth::user()->role === 'admin')
                     <li class="sidebar-nav-item">
                         <a href="{{ route('admin.qr.index') }}"
@@ -195,28 +215,30 @@
         font-size: 0.9rem;
     }
     
-    /* Asegurar que el icono de transacciones tenga el mismo estilo que los demás */
-    .sidebar-nav-link i.fa-money-bill-transfer {
+    /* Iconos */
+    .sidebar-nav-link i.fa-money-bill-transfer,
+    .sidebar-nav-link i.fa-qrcode,
+    .sidebar-nav-link i.fa-chart-simple,
+    .sidebar-nav-link i.fa-headset {
         font-size: 1.2rem;
         width: 20px;
         text-align: center;
     }
     
     /* Color cuando está activo */
-    .sidebar-nav-link.active i.fa-money-bill-transfer {
+    .sidebar-nav-link.active i.fa-money-bill-transfer,
+    .sidebar-nav-link.active i.fa-qrcode,
+    .sidebar-nav-link.active i.fa-chart-simple,
+    .sidebar-nav-link.active i.fa-headset {
         color: #ffffff !important;
     }
     
     /* Efecto hover */
-    .sidebar-nav-link:hover i.fa-money-bill-transfer {
+    .sidebar-nav-link:hover i.fa-money-bill-transfer,
+    .sidebar-nav-link:hover i.fa-qrcode,
+    .sidebar-nav-link:hover i.fa-chart-simple,
+    .sidebar-nav-link:hover i.fa-headset {
         color: #ffffff;
-    }
-    
-    /* Estilo específico para el icono de QR */
-    .sidebar-nav-link i.fa-qrcode {
-        font-size: 1.2rem;
-        width: 20px;
-        text-align: center;
     }
 </style>
 
@@ -262,7 +284,7 @@
             }
         });
         
-        // Debug: Mostrar la ruta actual en consola (opcional, quitar en producción)
+        // Debug: Mostrar la ruta actual en consola
         console.log('Ruta actual:', window.location.pathname);
     });
 </script>

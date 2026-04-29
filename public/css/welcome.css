@@ -311,7 +311,7 @@ h2 {
 
 /*
  * -----------------------------------------------------
- * Botones de Tiendas (AMBOS "PRÓXIMAMENTE")
+ * Botones de Tiendas (MEJORADOS)
  * -----------------------------------------------------
  */
 .store-btn {
@@ -343,12 +343,47 @@ h2 {
     transition: left 0.7s ease;
 }
 
+.store-btn:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 15px 25px -8px rgba(52, 168, 83, 0.4);
+    background: linear-gradient(135deg, #232837 0%, #333b4f 100%);
+    border-color: rgba(52, 168, 83, 0.4);
+}
+
+.store-btn:hover::before {
+    left: 100%;
+}
+
 .store-btn i {
     font-size: 36px;
-    filter: drop-shadow(0 3px 6px rgba(255, 255, 255, 0.2));
     transition: transform 0.3s ease;
     position: relative;
     z-index: 2;
+}
+
+/* Icono específico de Google Play */
+.store-btn.google-play i {
+    background: linear-gradient(135deg, #34a853, #2d8e47);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: #34a853;
+    filter: drop-shadow(0 3px 6px rgba(52, 168, 83, 0.4));
+}
+
+.store-btn.google-play:hover i {
+    transform: rotate(5deg) scale(1.1);
+    color: #38ef7d;
+}
+
+/* Icono específico de App Store */
+.store-btn.app-store i {
+    color: #ffffff;
+    filter: drop-shadow(0 3px 6px rgba(255, 255, 255, 0.2));
+}
+
+.store-btn.app-store:hover i {
+    transform: rotate(5deg) scale(1.1);
+    color: #e2e8f0;
 }
 
 .store-btn .btn-content {
@@ -380,8 +415,14 @@ h2 {
     letter-spacing: -0.2px;
 }
 
-/* Estilo para botones deshabilitados (Próximamente) */
-.store-btn.disabled {
+/* Botón de Google Play activo */
+.store-btn.google-play {
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+/* Estilo para botón de App Store deshabilitado (Próximamente) */
+.store-btn.app-store.disabled {
     opacity: 0.8;
     cursor: not-allowed;
     pointer-events: none;
@@ -389,41 +430,31 @@ h2 {
     background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
 }
 
-.store-btn.disabled i {
+.store-btn.app-store.disabled i {
     color: #999;
     filter: none;
 }
 
-.store-btn.disabled .btn-text {
+.store-btn.app-store.disabled .btn-text {
     opacity: 0.7;
 }
 
-.store-btn.disabled:hover {
+.store-btn.app-store.disabled:hover {
     transform: none;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
 }
 
-.store-btn.disabled:hover::before {
+.store-btn.app-store.disabled:hover::before {
     left: -100%;
 }
 
-.store-btn.disabled:hover i {
+.store-btn.app-store.disabled:hover i {
     transform: none;
-}
-
-/* Google Play Button - Deshabilitado */
-.store-btn.google-play.disabled i {
-    color: #999;
-}
-
-/* App Store Button - Deshabilitado */
-.store-btn.app-store.disabled i {
-    color: #999;
 }
 
 /*
  * -----------------------------------------------------
- * Badges de Estado (AMBOS "PRÓXIMAMENTE")
+ * Badges de Estado (PRÓXIMAMENTE)
  * -----------------------------------------------------
  */
 .status-badge {
@@ -442,12 +473,10 @@ h2 {
     z-index: 3;
 }
 
-/* Badge "Próximamente" (mismo estilo para ambos) */
+/* Badge "Próximamente" */
 .status-badge.soon {
     background: linear-gradient(135deg, #FF9800, #F57C00);
 }
-
-/* Eliminamos el badge de testing ya que ambos son "próximamente" */
 
 /*
  * -----------------------------------------------------

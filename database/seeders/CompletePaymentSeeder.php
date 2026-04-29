@@ -21,9 +21,22 @@ class CompletePaymentSeeder extends Seeder
      */
     public function run(): void
     {
+        // Detectar driver de base de datos
+        $driver = DB::connection()->getDriverName();
+        
         // Preguntar si quiere limpiar datos
         if ($this->command->confirm('¿Deseas ELIMINAR todos los datos existentes antes de crear nuevos?', false)) {
-            DB::statement('SET FOREIGN_KEY_CHECKS=0');
+            
+            // Deshabilitar constraints según el driver
+            if ($driver === 'pgsql') {
+                DB::statement('SET session_replication_role = replica;');
+                $this->command->info('🔧 Modo PostgreSQL: constraints deshabilitados');
+            } elseif ($driver === 'mysql') {
+                DB::statement('SET FOREIGN_KEY_CHECKS=0');
+                $this->command->info('🔧 Modo MySQL: foreign key checks deshabilitados');
+            }
+            
+            // Limpiar tablas en orden correcto (hijos primero)
             PaymentTransaction::truncate();
             Payout::truncate();
             Sale::truncate();
@@ -32,7 +45,14 @@ class CompletePaymentSeeder extends Seeder
             Ally::truncate();
             User::where('user_type', 'user')->delete();
             User::where('user_type', 'aliado')->delete();
-            DB::statement('SET FOREIGN_KEY_CHECKS=1');
+            
+            // Reactivar constraints
+            if ($driver === 'pgsql') {
+                DB::statement('SET session_replication_role = DEFAULT;');
+            } elseif ($driver === 'mysql') {
+                DB::statement('SET FOREIGN_KEY_CHECKS=1');
+            }
+            
             $this->command->info('🗑️ Todas las tablas limpiadas');
         }
 
@@ -264,17 +284,17 @@ class CompletePaymentSeeder extends Seeder
             
             // Crear venta con los campos correctos de la tabla sales
             Sale::create([
-                'ally_id' => $transaction->ally_id,           // ← CORREGIDO: ally_id (no aliado_id)
-                'branch_id' => null,                          // ← NUEVO: branch_id nullable
-                'client_id' => $transaction->user_id,         // ← NUEVO: client_id
-                'total_amount' => $monto,                     // ← CORREGIDO: total_amount
-                'paid_amount' => $monto,                      // ← CORREGIDO: paid_amount
-                'payment_method' => $transaction->payment_method, // ← CORREGIDO: payment_method
+                'ally_id' => $transaction->ally_id,
+                'branch_id' => null,
+                'client_id' => $transaction->user_id,
+                'total_amount' => $monto,
+                'paid_amount' => $monto,
+                'payment_method' => $transaction->payment_method,
                 'bank_reference' => 'REF-' . strtoupper(uniqid()),
                 'transaction_id' => 'TRX-' . strtoupper(uniqid()),
                 'status' => 'completed',
-                'sale_date' => $fecha,                        // ← CORREGIDO: sale_date
-                'payment_date' => $fecha,                      // ← CORREGIDO: payment_date
+                'sale_date' => $fecha,
+                'payment_date' => $fecha,
                 'terminal' => 'TERM-' . rand(100, 999),
                 'destination_bank' => rand(1, 10),
                 'client_phone' => '0412' . rand(1000000, 9999999),
@@ -299,13 +319,9 @@ class CompletePaymentSeeder extends Seeder
 
         foreach ($ventasConfirmadas as $sale) {
             if (rand(1, 100) <= 70) { // 70% probabilidad
-                $transaction = PaymentTransaction::find($sale->payment_transaction_id ?? 0);
-                if (!$transaction) {
-                    // Buscar por referencia si no hay relación directa
-                    $transaction = PaymentTransaction::where('original_amount', $sale->total_amount)
-                        ->where('ally_id', $sale->ally_id)
-                        ->first();
-                }
+                $transaction = PaymentTransaction::where('original_amount', $sale->total_amount)
+                    ->where('ally_id', $sale->ally_id)
+                    ->first();
                 
                 if (!$transaction) continue;
 
