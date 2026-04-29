@@ -241,9 +241,12 @@ class PayoutController extends Controller
     /**
      * Obtiene el historial de un payout específico - RETORNA VISTA
      */
-    public function show(int $payoutId): View|RedirectResponse
+    public function show(int|string $payoutId): View|RedirectResponse
     {
         try {
+            // ✅ Convertir a entero
+            $payoutId = (int) $payoutId;
+
             $historial = $this->payoutService->obtenerHistorialPayout($payoutId);
 
             return view('Admin.payouts.show', [
@@ -552,9 +555,19 @@ class PayoutController extends Controller
     /**
      * Muestra auditoría de cambios - RETORNA VISTA
      */
-    public function auditoria(int $payoutId): View|RedirectResponse
+    public function auditoria(int|string $payoutId): View|RedirectResponse
     {
         try {
+            $payoutId = (int) $payoutId;
+
+            // ✅ Verificar si el payout existe antes de continuar
+            $payoutExists = \App\Models\Payout::where('id', $payoutId)->exists();
+
+            if (!$payoutExists) {
+                return redirect()->route('admin.payouts.index')
+                    ->with('error', 'El payout #' . $payoutId . ' no existe');
+            }
+
             $historial = $this->payoutService->obtenerHistorialPayout($payoutId);
 
             return view('Admin.payouts.auditoria', [
@@ -562,9 +575,8 @@ class PayoutController extends Controller
                 'payoutId' => $payoutId
             ]);
         } catch (\Exception $e) {
-            Log::error('Error obteniendo auditoría: ' . $e->getMessage());
-            return redirect()->route('admin.payouts.show', $payoutId)
-                ->with('error', 'Error al obtener auditoría del pago');
+            return redirect()->route('admin.payouts.index')
+                ->with('error', 'Payout no encontrado: ' . $e->getMessage());
         }
     }
 
