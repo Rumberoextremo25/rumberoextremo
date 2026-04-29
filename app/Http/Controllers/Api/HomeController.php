@@ -21,9 +21,10 @@ class HomeController extends Controller
     public function index(): JsonResponse
     {
         try {
-            // ========== BANNERS (CORREGIDO) ==========
+            // ========== BANNERS ==========
+            // ✅ Usar display_order en BD, pero enviar como 'order' a la app
             $banners = Banner::where('is_active', true)
-                ->orderBy('display_order', 'asc')  // ✅ CORREGIDO: display_order en lugar de order
+                ->orderBy('display_order', 'asc')
                 ->get()
                 ->map(function($banner) {
                     return [
@@ -31,13 +32,13 @@ class HomeController extends Controller
                         'title' => $banner->title,
                         'image_url' => ApiImageHelper::getImageUrl($banner->image_url),
                         'target_url' => $banner->target_url,
-                        'display_order' => $banner->display_order,  // ✅ CORREGIDO
+                        'order' => $banner->display_order,  // ✅ Enviar como 'order' para la app
                     ];
                 });
 
             // ========== ALIADOS COMERCIALES ==========
             $commercialAllies = CommercialAlly::where('is_active', true)
-                ->orderBy('name', 'asc')  // ✅ Agregar ordenamiento
+                ->orderBy('name', 'asc')
                 ->get()
                 ->map(function($ally) {
                     return [
@@ -58,7 +59,7 @@ class HomeController extends Controller
                     $query->whereNull('expires_at')
                           ->orWhere('expires_at', '>', now());
                 })
-                ->orderBy('is_featured', 'desc')  // ✅ Destacadas primero
+                ->orderBy('is_featured', 'desc')
                 ->orderBy('created_at', 'desc')
                 ->get()
                 ->map(function($promotion) {
