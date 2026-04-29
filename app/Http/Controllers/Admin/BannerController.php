@@ -1,126 +1,127 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\Banner;
+use App\Models\Promotion;
+use App\Models\CommercialAlly;
+use App\Models\Category;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
 
-class BannerController extends Controller
+class HomeController extends Controller
 {
     /**
-     * Display a listing of the resource.
+     * Get all data for home screen (banners, promotions, allies)
      */
     public function index()
     {
-        // ✅ CORREGIDO: order -> display_order
-        $banners = Banner::orderBy('display_order')->get();
-        return view('Admin.banners.index', compact('banners'));
-    }
+        // ✅ CORREGIDO: Usar display_order en lugar de order
+        $banners = Banner::where('is_active', true)
+            ->orderBy('display_order', 'asc')
+            ->get()
+            ->map(function ($banner) {
+                return [
+                    'id' => $banner->id,
+                    'title' => $banner->title,
+                    'image_url' => $banner->image_url ? asset('storage/' . $banner->image_url) : null,
+                    'description' => $banner->description,
+                    'target_url' => $banner->target_url,
+                    'display_order' => $banner->display_order,  // ← Cambiado de 'order' a 'display_order'
+                ];
+            });
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        return view('Admin.banners.create');
-    }
+        // Promociones destacadas
+        $featuredPromotions = Promotion::where('is_featured', true)
+            ->where('status', 'active')
+            ->where(function ($query) {
+                $query->whereNull('expires_at')
+                    ->orWhere('expires_at', '>', now());
+            })
+            ->with('ally')
+            ->orderBy('created_at', 'desc')
+            ->take(10)
+            ->get()
+            ->map(function ($promotion) {
+                return [
+                    'id' => $promotion->id,
+                    'title' => $promotion->title,
+                    'discount' => $promotion->discount,
+                    'price' => $promotion->price,
+                    'image_url' => $promotion->image_url ? asset('storage/' . $promotion->image_url) : null,
+                    'ally_name' => $promotion->ally->company_name ?? null,
+                    'is_featured' => $promotion->is_featured,
+                ];
+            });
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        // ✅ CORREGIDO: order -> display_order
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'description' => 'nullable|string',
-            'target_url' => 'nullable|url',
-            'display_order' => 'integer|min:0',  // ← Cambiado
-            'is_active' => 'sometimes|boolean',
+        // Aliados comerciales
+        $commercialAllies = CommercialAlly::where('is_active', true)
+            ->orderBy('name', 'asc')
+            ->get()
+            ->map(function ($ally) {
+                return [
+                    'id' => $ally->id,
+                    'name' => $ally->name,
+                    'logo_url' => $ally->logo_url ? asset('storage/' . $ally->logo_url) : null,
+                    'rating' => $ally->rating,
+                    'description' => $ally->description,
+                    'website_url' => $ally->website_url,
+                ];
+            });
+
+        // Categorías
+        $categories = Category::with('subCategories')
+            ->get()
+            ->map(function ($category) {
+                return [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'slug' => $category->slug,
+                    'icon' => $category->icon ?? null,
+                    'subcategories' => $category->subCategories->map(function ($sub) {
+                        return [
+                            'id' => $sub->id,
+                            'name' => $sub->name,
+                            'slug' => $sub->slug,
+                        ];
+                    }),
+                ];
+            });
+
+        return response()->json([
+            'success' => true,
+            'data' => [
+                'banners' => $banners,
+                'featured_promotions' => $featuredPromotions,
+                'commercial_allies' => $commercialAllies,
+                'categories' => $categories,
+            ],
+            'message' => 'Datos cargados correctamente'
         ]);
-
-        $imagePath = null;
-        if ($request->hasFile('image')) {
-            // Guardar la imagen y obtener la ruta relativa
-            $imagePath = $request->file('image')->store('banners', 'public');
-        }
-
-        // ✅ CORREGIDO: order -> display_order
-        Banner::create([
-            'title' => $request->title,
-            'image_url' => $imagePath,
-            'description' => $request->description,
-            'target_url' => $request->target_url,
-            'display_order' => $request->display_order ?? 0,  // ← Cambiado
-            'is_active' => $request->has('is_active') ? true : false,
-        ]);
-
-        return redirect()->route('admin.banners.index')->with('success', '¡Banner creado exitosamente!');
     }
 
     /**
-     * Show the form for editing the specified resource.
+     * Get banners only (for app)
      */
-    public function edit(Banner $banner)
+    public function getBanners()
     {
-        return view('Admin.banners.edit', compact('banner'));
-    }
+        $banners = Banner::where('is_active', true)
+            ->orderBy('display_order', 'asc')  // ← CORREGIDO
+            ->get()
+            ->map(function ($banner) {
+                return [
+                    'id' => $banner->id,
+                    'title' => $banner->title,
+                    'image_url' => $banner->image_url ? asset('storage/' . $banner->image_url) : null,
+                    'description' => $banner->description,
+                    'target_url' => $banner->target_url,
+                    'display_order' => $banner->display_order,  // ← CORREGIDO
+                ];
+            });
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, Banner $banner)
-    {
-        // ✅ CORREGIDO: order -> display_order
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'description' => 'nullable|string',
-            'target_url' => 'nullable|url',
-            'display_order' => 'integer|min:0',  // ← Cambiado
-            'is_active' => 'sometimes|boolean',
+        return response()->json([
+            'success' => true,
+            'data' => $banners,
         ]);
-
-        $imagePathToSave = $banner->image_url; // Mantener la ruta existente por defecto
-
-        if ($request->hasFile('image')) {
-            // Eliminar la imagen anterior si existe
-            if ($banner->image_url) {
-                Storage::disk('public')->delete($banner->image_url);
-            }
-
-            // Guardar la nueva imagen (ruta relativa)
-            $imagePathToSave = $request->file('image')->store('banners', 'public');
-        }
-
-        // ✅ CORREGIDO: order -> display_order
-        $banner->update([
-            'title' => $request->title,
-            'image_url' => $imagePathToSave,
-            'description' => $request->description,
-            'target_url' => $request->target_url,
-            'display_order' => $request->display_order,  // ← Cambiado
-            'is_active' => $request->has('is_active') ? true : false,
-        ]);
-
-        return redirect()->route('admin.banners.index')->with('success', '¡Banner actualizado exitosamente!');
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Banner $banner)
-    {
-        // Eliminar la imagen asociada
-        if ($banner->image_url) {
-            Storage::disk('public')->delete($banner->image_url);
-        }
-        
-        $banner->delete();
-        
-        return redirect()->route('admin.banners.index')->with('success', 'Banner eliminado exitosamente.');
     }
 }
