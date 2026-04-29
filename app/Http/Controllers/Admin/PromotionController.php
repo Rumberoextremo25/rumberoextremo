@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Promotion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class PromotionController extends Controller
 {
@@ -15,7 +16,8 @@ class PromotionController extends Controller
      */
     public function index()
     {
-        $promotions = Promotion::with('ally')->latest()->get();
+        // ✅ CORREGIDO: Usar orderBy en lugar de latest() para evitar problemas
+        $promotions = Promotion::with('ally')->orderBy('created_at', 'desc')->get();
         return view('Admin.promotions.index', compact('promotions'));
     }
 
@@ -24,7 +26,6 @@ class PromotionController extends Controller
      */
     public function create()
     {
-        // ✅ Ya no necesitas obtener aliados
         return view('Admin.promotions.create');
     }
 
@@ -34,11 +35,10 @@ class PromotionController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            // ✅ ELIMINADO: 'ally_id' ya no es requerido
             'title' => 'required|string|max:255',
             'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'discount' => 'required|numeric|min:0|max:100',
-            'price' => 'required|numeric|min:0',
+            'discount' => 'required|string|max:50',  // ✅ CORREGIDO: string en lugar de numeric (permite "%", "2x1", etc.)
+            'price' => 'required|string|max:50',     // ✅ CORREGIDO: string en lugar de numeric
             'expires_at' => 'nullable|date|after_or_equal:today',
             'description' => 'nullable|string',
             'terms_conditions' => 'nullable|string',
@@ -51,12 +51,7 @@ class PromotionController extends Controller
             'image.mimes' => 'La imagen debe ser de tipo: jpeg, png, jpg, gif, svg.',
             'image.max' => 'La imagen no debe pesar más de 2MB.',
             'discount.required' => 'El descuento es obligatorio.',
-            'discount.numeric' => 'El descuento debe ser un número.',
-            'discount.min' => 'El descuento mínimo es 0%.',
-            'discount.max' => 'El descuento máximo es 100%.',
             'price.required' => 'El precio es obligatorio.',
-            'price.numeric' => 'El precio debe ser un número.',
-            'price.min' => 'El precio debe ser mayor o igual a 0.',
             'expires_at.after_or_equal' => 'La fecha de expiración debe ser hoy o una fecha futura.',
         ]);
 
@@ -66,9 +61,9 @@ class PromotionController extends Controller
             $imagePath = $request->file('image')->store('promotions', 'public');
         }
 
-        // ✅ Crear la promoción SIN aliado (ally_id será null)
+        // ✅ Crear la promoción
         Promotion::create([
-            'ally_id' => null,  // ← EXPLÍCITAMENTE null
+            'ally_id' => null,
             'title' => $request->title,
             'image_url' => $imagePath,
             'discount' => $request->discount,
@@ -76,7 +71,7 @@ class PromotionController extends Controller
             'description' => $request->description,
             'terms_conditions' => $request->terms_conditions,
             'expires_at' => $request->expires_at,
-            'max_uses' => $request->max_uses ?? 0,
+            'max_uses' => $request->max_uses ?? null,  // ✅ CORREGIDO: null en lugar de 0
             'current_uses' => 0,
             'status' => $request->has('is_active') ? 'active' : 'inactive',
             'is_featured' => $request->has('is_featured'),
@@ -92,7 +87,6 @@ class PromotionController extends Controller
      */
     public function edit(Promotion $promotion)
     {
-        // ✅ Ya no necesitas obtener aliados
         return view('Admin.promotions.edit', compact('promotion'));
     }
 
@@ -104,37 +98,25 @@ class PromotionController extends Controller
         $request->validate([
             'title' => 'required|string|max:255',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-            'discount' => 'required|numeric|min:0|max:100',
-            'price' => 'required|numeric|min:0',
-            'expires_at' => 'nullable|date',
+            'discount' => 'required|string|max:50',  // ✅ CORREGIDO: string
+            'price' => 'required|string|max:50',     // ✅ CORREGIDO: string
+            'expires_at' => 'nullable|date|after_or_equal:today',
             'description' => 'nullable|string',
             'terms_conditions' => 'nullable|string',
             'max_uses' => 'nullable|integer|min:0',
             'is_featured' => 'sometimes|boolean',
-        ], [
-            'title.required' => 'El título de la promoción es obligatorio.',
-            'image.image' => 'El archivo debe ser una imagen.',
-            'image.mimes' => 'La imagen debe ser de tipo: jpeg, png, jpg, gif, svg.',
-            'image.max' => 'La imagen no debe pesar más de 2MB.',
-            'discount.required' => 'El descuento es obligatorio.',
-            'discount.numeric' => 'El descuento debe ser un número.',
-            'discount.min' => 'El descuento mínimo es 0%.',
-            'discount.max' => 'El descuento máximo es 100%.',
-            'price.required' => 'El precio es obligatorio.',
-            'price.numeric' => 'El precio debe ser un número.',
-            'price.min' => 'El precio debe ser mayor o igual a 0.',
         ]);
 
         // Procesar la nueva imagen si se subió
         $imagePathToSave = $promotion->image_url;
         if ($request->hasFile('image')) {
-            if ($promotion->image_url) {
+            if ($promotion->image_url && Storage::disk('public')->exists($promotion->image_url)) {
                 Storage::disk('public')->delete($promotion->image_url);
             }
             $imagePathToSave = $request->file('image')->store('promotions', 'public');
         }
 
-        // ✅ Actualizar sin modificar el ally_id existente
+        // ✅ Actualizar la promoción
         $promotion->update([
             'title' => $request->title,
             'image_url' => $imagePathToSave,
@@ -143,10 +125,9 @@ class PromotionController extends Controller
             'description' => $request->description,
             'terms_conditions' => $request->terms_conditions,
             'expires_at' => $request->expires_at,
-            'max_uses' => $request->max_uses ?? 0,
+            'max_uses' => $request->max_uses ?? null,  // ✅ CORREGIDO: null en lugar de 0
             'status' => $request->has('is_active') ? 'active' : 'inactive',
             'is_featured' => $request->has('is_featured'),
-            // ✅ NO tocamos 'ally_id'
         ]);
 
         return redirect()
@@ -159,7 +140,8 @@ class PromotionController extends Controller
      */
     public function destroy(Promotion $promotion)
     {
-        if ($promotion->image_url) {
+        // ✅ Verificar que el archivo existe antes de eliminar
+        if ($promotion->image_url && Storage::disk('public')->exists($promotion->image_url)) {
             Storage::disk('public')->delete($promotion->image_url);
         }
         

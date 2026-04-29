@@ -14,7 +14,7 @@ class CommercialAllyController extends Controller
      */
     public function index()
     {
-        $allies = CommercialAlly::paginate(10);
+        $allies = CommercialAlly::orderBy('name')->paginate(10);
         return view('Admin.commercial_allies.index', compact('allies'));
     }
 
@@ -42,7 +42,7 @@ class CommercialAllyController extends Controller
 
         $logoPath = null;
         if ($request->hasFile('logo')) {
-            $logoPath = $request->file('logo')->store('logos', 'public');
+            $logoPath = $request->file('logo')->store('commercial-allies/logos', 'public');
         }
 
         CommercialAlly::create([
@@ -54,7 +54,8 @@ class CommercialAllyController extends Controller
             'is_active' => $request->has('is_active') ? true : false,
         ]);
 
-        return redirect()->route('admin.commercial-allies.index')->with('success', 'Aliado comercial creado exitosamente.');
+        return redirect()->route('admin.commercial-allies.index')
+            ->with('success', 'Aliado comercial creado exitosamente.');
     }
 
     /**
@@ -90,22 +91,24 @@ class CommercialAllyController extends Controller
         $logoPathToSave = $commercialAlly->logo_url;
 
         if ($request->hasFile('logo')) {
-            if ($commercialAlly->logo_url) {
+            // Eliminar logo anterior si existe
+            if ($commercialAlly->logo_url && Storage::disk('public')->exists($commercialAlly->logo_url)) {
                 Storage::disk('public')->delete($commercialAlly->logo_url);
             }
-            $logoPathToSave = $request->file('logo')->store('logos', 'public');
+            $logoPathToSave = $request->file('logo')->store('commercial-allies/logos', 'public');
         }
 
         $commercialAlly->update([
             'name' => $request->name,
             'logo_url' => $logoPathToSave,
-            'rating' => $request->rating,
+            'rating' => $request->rating ?? 0.0,
             'description' => $request->description,
             'website_url' => $request->website_url,
             'is_active' => $request->has('is_active') ? true : false,
         ]);
 
-        return redirect()->route('admin.commercial-allies.index')->with('success', 'Aliado comercial actualizado exitosamente.');
+        return redirect()->route('admin.commercial-allies.index')
+            ->with('success', 'Aliado comercial actualizado exitosamente.');
     }
 
     /**
@@ -113,10 +116,14 @@ class CommercialAllyController extends Controller
      */
     public function destroy(CommercialAlly $commercialAlly)
     {
-        if ($commercialAlly->logo_url) {
+        // Eliminar el logo si existe
+        if ($commercialAlly->logo_url && Storage::disk('public')->exists($commercialAlly->logo_url)) {
             Storage::disk('public')->delete($commercialAlly->logo_url);
         }
+        
         $commercialAlly->delete();
-        return redirect()->route('admin.commercial-allies.index')->with('success', 'Aliado comercial eliminado exitosamente.');
+        
+        return redirect()->route('admin.commercial-allies.index')
+            ->with('success', 'Aliado comercial eliminado exitosamente.');
     }
 }

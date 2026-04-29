@@ -14,7 +14,8 @@ class BannerController extends Controller
      */
     public function index()
     {
-        $banners = Banner::orderBy('order')->get();
+        // ✅ CORREGIDO: order -> display_order
+        $banners = Banner::orderBy('display_order')->get();
         return view('Admin.banners.index', compact('banners'));
     }
 
@@ -31,12 +32,13 @@ class BannerController extends Controller
      */
     public function store(Request $request)
     {
+        // ✅ CORREGIDO: order -> display_order
         $request->validate([
             'title' => 'required|string|max:255',
             'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'description' => 'nullable|string',
             'target_url' => 'nullable|url',
-            'order' => 'integer|min:0',
+            'display_order' => 'integer|min:0',  // ← Cambiado
             'is_active' => 'sometimes|boolean',
         ]);
 
@@ -46,12 +48,13 @@ class BannerController extends Controller
             $imagePath = $request->file('image')->store('banners', 'public');
         }
 
+        // ✅ CORREGIDO: order -> display_order
         Banner::create([
             'title' => $request->title,
-            'image_url' => $imagePath, // Guarda ruta relativa: "banners/nombre-imagen.jpg"
+            'image_url' => $imagePath,
             'description' => $request->description,
             'target_url' => $request->target_url,
-            'order' => $request->order ?? 0,
+            'display_order' => $request->display_order ?? 0,  // ← Cambiado
             'is_active' => $request->has('is_active') ? true : false,
         ]);
 
@@ -71,12 +74,13 @@ class BannerController extends Controller
      */
     public function update(Request $request, Banner $banner)
     {
+        // ✅ CORREGIDO: order -> display_order
         $request->validate([
             'title' => 'required|string|max:255',
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'description' => 'nullable|string',
             'target_url' => 'nullable|url',
-            'order' => 'integer|min:0',
+            'display_order' => 'integer|min:0',  // ← Cambiado
             'is_active' => 'sometimes|boolean',
         ]);
 
@@ -92,12 +96,13 @@ class BannerController extends Controller
             $imagePathToSave = $request->file('image')->store('banners', 'public');
         }
 
+        // ✅ CORREGIDO: order -> display_order
         $banner->update([
             'title' => $request->title,
             'image_url' => $imagePathToSave,
             'description' => $request->description,
             'target_url' => $request->target_url,
-            'order' => $request->order,
+            'display_order' => $request->display_order,  // ← Cambiado
             'is_active' => $request->has('is_active') ? true : false,
         ]);
 
