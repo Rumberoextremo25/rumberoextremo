@@ -285,10 +285,29 @@ class ReportController extends Controller
         $totalOrders = $query->count();
         $averageOrderValue = $totalOrders > 0 ? $totalSales / $totalOrders : 0;
 
-        // ✅ CORREGIDO: Obtener clientes únicos sin DISTINCT ON
-        $uniqueClients = $query->distinct('client_id')->count('client_id');
+        // ✅ CORREGIDO: Contar clientes únicos usando Query Builder directamente
+        $clientQuery = DB::table('sales')
+            ->whereBetween('sale_date', [$startDate, $endDate])
+            ->where('status', 'completed')
+            ->whereNotNull('client_id');
 
-        // ✅ CORREGIDO: Métodos de pago más usados - CORRECTO
+        // ✅ Aplicar filtros manualmente (sin usar Eloquent)
+        if (!$this->isAdmin($userRole) && $allyId) {
+            $clientQuery->where('ally_id', $allyId);
+        } elseif ($this->isAdmin($userRole) && $selectedAllyId) {
+            $clientQuery->where('ally_id', $selectedAllyId);
+        }
+
+        if ($selectedZone) {
+            $allyIds = Ally::where('company_address', $selectedZone)->pluck('id')->toArray();
+            if (!empty($allyIds)) {
+                $clientQuery->whereIn('ally_id', $allyIds);
+            }
+        }
+
+        $uniqueClients = $clientQuery->distinct('client_id')->count('client_id');
+
+        // Métodos de pago más usados
         $paymentMethods = $query->select('payment_method', DB::raw('COUNT(*) as count'))
             ->groupBy('payment_method')
             ->orderBy('count', 'desc')

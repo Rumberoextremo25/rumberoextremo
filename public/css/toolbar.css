@@ -1,214 +1,655 @@
-/*
- * ESTILOS CSS PARA EL TOOLBAR DEL DASHBOARD - Rediseño sin variables root
- * Archivo: admin.css
- * Un diseño moderno y minimalista, inspirado en tu tema.
- */
+dame los cambios aca porque quien agrega la opcion de solapar es la toolbar no la sidebar -- aca, dame los cambios aca -- /* ============================================
+   ADMIN TOOLBAR - MODERN STYLES
+   ============================================ */
 
-/* =========================================================================
-    Contenedor principal del toolbar
-    ========================================================================= */
-
+/* Toolbar principal */
 .admin-toolbar {
-    height: 70px;
-    background-color: #ffffff;
-    position: fixed;
-    top: 2rem;
-    /* Por defecto, el `left` se ajusta a pantallas de escritorio */
-    left: 290px;
-    right: 2rem;
-    z-index: 999;
-    padding: 0 2rem;
+    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+    border-bottom: 1px solid #e2e8f0;
+    padding: 0 28px;
+    height: 80px;
     display: flex;
+    align-items: center;
     justify-content: space-between;
-    align-items: center;
-    border-radius: 1.5rem;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-    transition: left 0.3s ease-in-out, right 0.3s ease-in-out;
+    position: sticky;
+    top: 0;
+    z-index: 99;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
-/* Cuando el sidebar está colapsado, ajustamos la posición izquierda del toolbar */
-.main-layout.sidebar-collapsed .admin-toolbar {
-    left: 80px;
-}
-
-/* =========================================================================
-    Sección izquierda (Título de la página)
-    ========================================================================= */
-
-.admin-toolbar .left-section {
+/* ========== SECCIÓN IZQUIERDA ========== */
+.toolbar-left {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: 24px;
 }
 
-.admin-toolbar .page-title-toolbar {
-    font-size: 1.8rem;
+/* Botón toggle del sidebar */
+.toolbar-toggle {
+    width: 44px;
+    height: 44px;
+    background: #f1f5f9;
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    color: #475569;
+}
+
+.toolbar-toggle:hover {
+    background: #e2e8f0;
+    color: #764ba2;
+    transform: translateY(-2px);
+}
+
+.toolbar-toggle i {
+    font-size: 18px;
+}
+
+/* Información de página */
+.page-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.page-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+}
+
+.breadcrumb-home {
+    color: #94a3b8;
+    transition: color 0.2s ease;
+}
+
+.breadcrumb-home i {
+    font-size: 12px;
+}
+
+.breadcrumb-separator {
+    color: #cbd5e1;
+    font-size: 10px;
+}
+
+.breadcrumb-current {
+    color: #764ba2;
+    font-weight: 500;
+    letter-spacing: 0.3px;
+}
+
+.page-title {
+    font-size: 20px;
     font-weight: 700;
-    color: #333333;
+    color: #1e293b;
     margin: 0;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    line-height: 1.3;
+    letter-spacing: -0.3px;
 }
 
-/* =========================================================================
-    Sección derecha (Búsqueda y perfil)
-    ========================================================================= */
-
-.admin-toolbar .right-section {
+/* ========== SECCIÓN DERECHA ========== */
+.toolbar-right {
     display: flex;
     align-items: center;
-    gap: 1.5rem;
+    gap: 16px;
 }
 
-/* Estilos de la caja de búsqueda */
-.search-box-container {
+/* ========== BÚSQUEDA MODERNA ========== */
+.search-modern {
     position: relative;
-    display: flex;
-    align-items: center;
+}
+
+.search-wrapper {
+    position: relative;
+    width: 320px;
 }
 
 .search-icon {
     position: absolute;
-    left: 1rem;
-    color: #999;
-    font-size: 1.1rem;
+    left: 16px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94a3b8;
+    font-size: 14px;
+    pointer-events: none;
 }
 
 .search-input {
-    width: 280px;
-    max-width: 100%;
-    padding: 0.9rem 1.5rem 0.9rem 3rem;
-    border: 1px solid transparent;
-    border-radius: 2rem;
-    background-color: #f0f2f5;
-    font-size: 1rem;
-    transition: all 0.3s ease-in-out;
-}
-
-.search-input::placeholder {
-    color: #999;
+    width: 100%;
+    height: 48px;
+    padding: 0 16px 0 44px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    font-size: 14px;
+    color: #1e293b;
+    transition: all 0.3s ease;
+    font-family: 'Inter', sans-serif;
 }
 
 .search-input:focus {
     outline: none;
-    border-color: #3004E1;
-    box-shadow: 0 0 0 4px rgba(48, 4, 225, 0.2);
+    border-color: #764ba2;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(118, 75, 162, 0.1);
+    width: 360px;
 }
 
-/* Estilos del perfil de usuario y avatar */
-.profile-section {
+.search-shortcut {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
     display: flex;
-    align-items: center;
-    gap: 1rem;
+    gap: 4px;
+    background: #e2e8f0;
+    padding: 4px 8px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    pointer-events: none;
 }
 
-.profile-link {
+/* Dropdown de búsqueda */
+.search-dropdown {
+    position: absolute;
+    top: 56px;
+    left: 0;
+    right: 0;
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.15);
+    border: 1px solid #e2e8f0;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.2s ease;
+    z-index: 1000;
+}
+
+.search-dropdown.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.search-suggestions {
+    padding: 12px;
+}
+
+.search-suggestion-group {
+    margin-bottom: 8px;
+}
+
+.group-title {
     display: flex;
     align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #94a3b8;
+}
+
+.group-title i {
+    font-size: 12px;
+}
+
+.suggestion-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    border-radius: 12px;
     text-decoration: none;
-    color: #333333;
-    transition: color 0.3s ease-in-out;
+    color: #1e293b;
+    transition: all 0.2s ease;
 }
 
-.profile-link:hover {
-    color: #3004E1;
+.suggestion-item:hover {
+    background: #f8fafc;
+    color: #764ba2;
+}
+
+.suggestion-item i {
+    width: 28px;
+    font-size: 14px;
+    color: #94a3b8;
+}
+
+.suggestion-item:hover i {
+    color: #764ba2;
+}
+
+/* ========== NOTIFICACIONES ========== */
+.notifications-modern {
+    position: relative;
+}
+
+.notifications-btn {
+    width: 48px;
+    height: 48px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    color: #475569;
+    position: relative;
+}
+
+.notifications-btn:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+    transform: translateY(-2px);
+}
+
+.notifications-btn i {
+    font-size: 20px;
+}
+
+.notification-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #ffffff;
+    font-size: 10px;
+    font-weight: 700;
+    width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #ffffff;
+}
+
+/* Dropdown de notificaciones */
+.notifications-dropdown {
+    position: absolute;
+    top: 56px;
+    right: 0;
+    width: 360px;
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.15);
+    border: 1px solid #e2e8f0;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.2s ease;
+    z-index: 1000;
+}
+
+.notifications-dropdown.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.dropdown-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 16px 20px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.dropdown-header h4 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0;
+}
+
+.dropdown-header a {
+    font-size: 12px;
+    color: #764ba2;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.notifications-list {
+    max-height: 360px;
+    overflow-y: auto;
+}
+
+.notification-item {
+    display: flex;
+    gap: 14px;
+    padding: 14px 20px;
+    transition: background 0.2s ease;
+    cursor: pointer;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.notification-item:hover {
+    background: #f8fafc;
+}
+
+.notification-item.unread {
+    background: #faf5ff;
+}
+
+.notification-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.notification-icon.warning {
+    background: #fff7ed;
+    color: #f97316;
+}
+
+.notification-icon.success {
+    background: #f0fdf4;
+    color: #22c55e;
+}
+
+.notification-icon.info {
+    background: #eff6ff;
+    color: #3b82f6;
+}
+
+.notification-content {
+    flex: 1;
+}
+
+.notification-content p {
+    font-size: 13px;
+    font-weight: 500;
+    color: #1e293b;
+    margin: 0 0 4px 0;
+}
+
+.notification-time {
+    font-size: 11px;
+    color: #94a3b8;
+}
+
+.dropdown-footer {
+    padding: 12px 20px;
+    border-top: 1px solid #e2e8f0;
+    text-align: center;
+}
+
+.view-all-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #764ba2;
+    text-decoration: none;
+    transition: gap 0.2s ease;
+}
+
+.view-all-link:hover {
+    gap: 12px;
+}
+
+/* ========== PERFIL DE USUARIO ========== */
+.user-profile-modern {
+    position: relative;
+}
+
+.user-trigger {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 60px;
+    padding: 6px 16px 6px 6px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.user-trigger:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #764ba2, #667eea);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.avatar-initials {
+    font-size: 16px;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.user-info {
+    text-align: left;
 }
 
 .user-name {
-    font-size: 1rem;
+    font-size: 14px;
     font-weight: 600;
-    margin: 0;
-    white-space: nowrap;
+    color: #1e293b;
+    display: block;
+    line-height: 1.3;
 }
 
-.avatar {
-    width: 50px;
-    height: 50px;
+.user-role {
+    font-size: 11px;
+    color: #94a3b8;
+    display: block;
+}
+
+.user-trigger i {
+    font-size: 12px;
+    color: #94a3b8;
+    margin-left: 4px;
+}
+
+/* Dropdown de usuario */
+.user-dropdown {
+    position: absolute;
+    top: 56px;
+    right: 0;
+    width: 320px;
+    background: #ffffff;
+    border-radius: 20px;
+    box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.15);
+    border: 1px solid #e2e8f0;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-10px);
+    transition: all 0.2s ease;
+    z-index: 1000;
+}
+
+.user-dropdown.show {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.user-avatar-large {
+    width: 56px;
+    height: 56px;
     border-radius: 50%;
+    background: linear-gradient(135deg, #764ba2, #667eea);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.user-avatar-large img {
+    width: 100%;
+    height: 100%;
     object-fit: cover;
-    border: 3px solid #E6E6E6;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s ease-in-out;
 }
 
-.profile-link:hover .avatar {
-    transform: scale(1.05);
-    border-color: #3004E1;
+.user-avatar-large span {
+    font-size: 24px;
+    font-weight: 600;
+    color: #ffffff;
 }
 
-/* =========================================================================
-    Responsividad: Adaptación a diferentes tamaños de pantalla
-    ========================================================================= */
+.user-details h4 {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1e293b;
+    margin: 0 0 4px 0;
+}
 
-/* Tablets y laptops pequeñas (hasta 1200px) */
-@media (max-width: 1200px) {
+.user-details p {
+    font-size: 12px;
+    color: #94a3b8;
+    margin: 0;
+}
+
+.dropdown-divider {
+    height: 1px;
+    background: #e2e8f0;
+    margin: 8px 0;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 20px;
+    text-decoration: none;
+    color: #1e293b;
+    font-size: 14px;
+    transition: background 0.2s ease;
+    width: 100%;
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.dropdown-item:hover {
+    background: #f8fafc;
+    color: #764ba2;
+}
+
+.dropdown-item i {
+    width: 20px;
+    font-size: 16px;
+    color: #94a3b8;
+}
+
+.dropdown-item:hover i {
+    color: #764ba2;
+}
+
+.logout-item {
+    color: #ef4444;
+}
+
+.logout-item i {
+    color: #ef4444;
+}
+
+/* ========== ANIMACIONES ========== */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ========== RESPONSIVE ========== */
+@media (max-width: 1024px) {
     .admin-toolbar {
-        left: 280px;
-        right: 1.5rem;
-        padding: 0 1.5rem;
+        padding: 0 20px;
     }
-    .search-input {
-        width: 200px;
+    
+    .search-wrapper {
+        width: 260px;
     }
-}
-
-/* Tablets pequeñas y móviles en horizontal (hasta 992px) */
-@media (max-width: 992px) {
-    .admin-toolbar {
-        height: 70px;
-        top: 1.5rem;
-        left: 1.5rem;
-        right: 1.5rem;
-        border-radius: 1.2rem;
+    
+    .user-info {
+        display: none;
     }
-    .main-layout.sidebar-collapsed .admin-toolbar {
-        left: 1.5rem; /* El sidebar no se ve, por lo tanto el toolbar se extiende */
-    }
-    .admin-toolbar .page-title-toolbar {
-        font-size: 1.5rem;
-    }
-    .search-input {
-        width: 180px;
-        padding: 0.8rem 1.5rem 0.8rem 2.5rem;
-    }
-    .search-icon {
-        left: 0.8rem;
-    }
-    .avatar {
-        width: 45px;
-        height: 45px;
+    
+    .user-trigger {
+        padding: 6px;
     }
 }
 
-/* Móviles (hasta 768px) */
 @media (max-width: 768px) {
     .admin-toolbar {
-        height: 60px;
-        top: 0.5rem;
-        left: 0.5rem;
-        right: 0.5rem;
-        padding: 0 1rem;
-        border-radius: 1rem;
-        justify-content: space-between;
+        height: 70px;
+        padding: 0 16px;
     }
-    .admin-toolbar .left-section {
-        gap: 1rem;
+    
+    .page-info {
+        display: none;
     }
-    .admin-toolbar .page-title-toolbar {
-        font-size: 1.2rem;
+    
+    .search-wrapper {
+        width: 200px;
     }
-    .search-box-container {
-        display: none; /* Oculta la barra de búsqueda para ahorrar espacio */
+    
+    .search-shortcut {
+        display: none;
     }
-    .profile-section {
-        gap: 0.5rem;
+    
+    .notifications-dropdown {
+        width: 320px;
+        right: -60px;
     }
-    .user-name {
-        display: none; /* Oculta el nombre de usuario en móviles */
+    
+    .user-dropdown {
+        width: 280px;
+        right: -20px;
     }
-    .avatar {
+}
+
+@media (max-width: 480px) {
+    .search-wrapper {
+        width: 160px;
+    }
+    
+    .notifications-btn {
         width: 40px;
         height: 40px;
+    }
+    
+    .notifications-dropdown {
+        width: 300px;
+        right: -80px;
     }
 }

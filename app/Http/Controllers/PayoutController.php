@@ -459,7 +459,7 @@ class PayoutController extends Controller
             });
             $topAliados = array_slice($topAliados, 0, 5);
 
-            return view('admin.payouts.dashboard', [
+            return view('Admin.payouts.dashboard', [
                 'estadisticas' => $estadisticas,
                 'pagosRecientes' => $pagosRecientes->items(),
                 'topAliados' => $topAliados,

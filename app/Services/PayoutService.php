@@ -2,9 +2,9 @@
 
 namespace App\Services;
 
-use App\Models\Payout;
 use App\Models\Sale;
 use App\Models\Ally;
+use App\Models\Payout;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\DB;
@@ -283,7 +283,7 @@ class PayoutService
     }
 
     /**
-     * Obtiene estadísticas completas de payouts
+     * Obtiene estadísticas completas de payouts - CORREGIDO PARA POSTGRESQL
      */
     public function obtenerEstadisticasCompletas(): array
     {
@@ -308,10 +308,10 @@ class PayoutService
                 ];
             });
 
-        // Estadísticas mensuales
+        // ✅ CORREGIDO PARA POSTGRESQL: Usar EXTRACT en lugar de YEAR/MONTH
         $estadisticasMensuales = Payout::select(
-            DB::raw('YEAR(created_at) as year'),
-            DB::raw('MONTH(created_at) as month'),
+            DB::raw('EXTRACT(YEAR FROM created_at) as year'),
+            DB::raw('EXTRACT(MONTH FROM created_at) as month'),
             DB::raw('COUNT(*) as total_payouts'),
             DB::raw('SUM(net_amount) as total_monto')
         )
@@ -660,7 +660,7 @@ class PayoutService
     }
 
     /**
-     * Obtiene la evolución mensual de pagos para un aliado específico
+     * Obtiene la evolución mensual de pagos para un aliado específico - CORREGIDO PARA POSTGRESQL
      */
     public function obtenerEvolucionMensualAliado(int $aliadoId, int $meses = 6): array
     {
@@ -668,12 +668,13 @@ class PayoutService
             $fechaInicio = now()->subMonths($meses - 1)->startOfMonth();
             $fechaFin = now()->endOfMonth();
 
+            // ✅ CORREGIDO PARA POSTGRESQL: Usar EXTRACT en lugar de YEAR/MONTH
             $pagos = Payout::where('ally_id', $aliadoId)
                 ->whereBetween('created_at', [$fechaInicio, $fechaFin])
                 ->where('status', 'completed')
                 ->select(
-                    DB::raw('YEAR(created_at) as year'),
-                    DB::raw('MONTH(created_at) as month'),
+                    DB::raw('EXTRACT(YEAR FROM created_at) as year'),
+                    DB::raw('EXTRACT(MONTH FROM created_at) as month'),
                     DB::raw('SUM(net_amount) as total_monto'),
                     DB::raw('COUNT(*) as total_pagos')
                 )
@@ -722,7 +723,8 @@ class PayoutService
         }
 
         return [
-            'content' => File::get($rutaArchivo),
+            'ruta' => $rutaArchivo,
+            'nombre' => $archivo,
             'headers' => [
                 'Content-Type' => 'text/plain',
                 'Content-Disposition' => 'attachment; filename="' . $archivo . '"',
@@ -941,7 +943,7 @@ class PayoutService
     }
 
     /**
-     * Obtiene resumen de payouts por aliado
+     * Obtiene resumen de payouts por aliado - CORREGIDO PARA POSTGRESQL
      */
     public function obtenerResumenPorAliado(): array
     {

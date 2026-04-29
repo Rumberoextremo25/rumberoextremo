@@ -43,7 +43,8 @@
                     <li class="sidebar-nav-item">
                         <a href="{{ route('admin.sales.stats') }}"
                             class="sidebar-nav-link {{ request()->routeIs('admin.sales.stats') ? 'active' : '' }}">
-                            <i class="fa-solid fa-chart-simple"></i> <span class="sidebar-link-text">Estadísticas de Ventas</span>
+                            <i class="fa-solid fa-chart-line"></i> <span class="sidebar-link-text">Estadísticas de
+                                Ventas</span>
                         </a>
                     </li>
                 @endif
@@ -63,7 +64,8 @@
                     <li class="sidebar-nav-item">
                         <a href="{{ route('transacciones.index') }}"
                             class="sidebar-nav-link {{ request()->routeIs('transacciones.*') ? 'active' : '' }}">
-                            <i class="fa-solid fa-right-left"></i>  <span class="sidebar-link-text">Mis Transacciones</span>
+                            <i class="fa-solid fa-right-left"></i> <span class="sidebar-link-text">Mis
+                                Transacciones</span>
                         </a>
                     </li>
                 @endif
@@ -157,7 +159,8 @@
                 @csrf
                 <a href="{{ route('logout') }}" onclick="event.preventDefault(); this.closest('form').submit();"
                     class="sidebar-logout-link">
-                    <i class="fa-solid fa-arrow-right-from-bracket"></i> <span class="sidebar-link-text">Cerrar Sesión</span>
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> <span class="sidebar-link-text">Cerrar
+                        Sesión</span>
                 </a>
             </form>
         </div>
@@ -172,16 +175,16 @@
         border-radius: 8px;
         box-shadow: 0 4px 10px rgba(166, 1, 179, 0.2);
     }
-    
+
     .sidebar-nav-link.active i {
         color: #ffffff !important;
     }
-    
+
     .sidebar-nav-link.active:hover {
         background: linear-gradient(135deg, #3004E1 0%, #A601B3 100%);
         box-shadow: 0 6px 15px rgba(166, 1, 179, 0.3);
     }
-    
+
     /* Estilo para el header de la sección */
     .sidebar-nav-header {
         padding: 0.8rem 1rem;
@@ -193,28 +196,28 @@
         align-items: center;
         gap: 0.5rem;
     }
-    
+
     .sidebar-nav-header i {
         color: #A601B3;
         font-size: 0.9rem;
     }
-    
+
     /* Submenú */
     .sidebar-nav-submenu {
         list-style: none;
         padding-left: 0.5rem !important;
         margin-top: 0.25rem;
     }
-    
+
     .sidebar-nav-subitem {
         margin: 0.25rem 0;
     }
-    
+
     .sidebar-nav-subitem .sidebar-nav-link {
         padding: 0.6rem 1rem 0.6rem 2rem !important;
         font-size: 0.9rem;
     }
-    
+
     /* Iconos */
     .sidebar-nav-link i.fa-money-bill-transfer,
     .sidebar-nav-link i.fa-qrcode,
@@ -224,7 +227,7 @@
         width: 20px;
         text-align: center;
     }
-    
+
     /* Color cuando está activo */
     .sidebar-nav-link.active i.fa-money-bill-transfer,
     .sidebar-nav-link.active i.fa-qrcode,
@@ -232,7 +235,7 @@
     .sidebar-nav-link.active i.fa-headset {
         color: #ffffff !important;
     }
-    
+
     /* Efecto hover */
     .sidebar-nav-link:hover i.fa-money-bill-transfer,
     .sidebar-nav-link:hover i.fa-qrcode,
@@ -283,7 +286,7 @@
                 toggleMenu();
             }
         });
-        
+
         // Debug: Mostrar la ruta actual en consola
         console.log('Ruta actual:', window.location.pathname);
     });
