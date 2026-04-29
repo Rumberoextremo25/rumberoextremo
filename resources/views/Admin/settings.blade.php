@@ -267,11 +267,17 @@
                                     @if ($user->two_factor_recovery_codes)
                                         @php
                                             $backupCodes = json_decode($user->two_factor_recovery_codes, true);
-                                            $unusedCodes = array_filter($backupCodes, fn($code) => !$code['used']);
+                                            // ✅ CORREGIDO: Verificar que $backupCodes sea un array antes de usar array_filter
+                                            $unusedCodes = is_array($backupCodes)
+                                                ? array_filter(
+                                                    $backupCodes,
+                                                    fn($code) => !isset($code['used']) || !$code['used'],
+                                                )
+                                                : [];
                                         @endphp
-                                        @if (count($unusedCodes) > 0)
+                                        @if (is_array($unusedCodes) && count($unusedCodes) > 0)
                                             @foreach (array_slice($unusedCodes, 0, 8) as $code)
-                                                <div class="code-chip">{{ $code['code'] }}</div>
+                                                <div class="code-chip">{{ $code['code'] ?? $code }}</div>
                                             @endforeach
                                         @else
                                             <p class="text-muted">No hay códigos disponibles</p>
@@ -388,7 +394,7 @@
                     twofaSection.style.display = 'block';
                 } else {
                     if (confirm(
-                        '¿Desactivar la autenticación en dos pasos? Tu cuenta será menos segura.')) {
+                            '¿Desactivar la autenticación en dos pasos? Tu cuenta será menos segura.')) {
                         toggleTwoFactor(false);
                     } else {
                         this.checked = true;

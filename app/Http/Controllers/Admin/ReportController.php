@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Sale;
 use App\Models\Ally;
+use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,7 +16,7 @@ class ReportController extends Controller
     /**
      * Determina si el usuario actual es administrador
      */
-    private function isAdmin($userRole)
+    private function isAdmin(string $userRole): bool
     {
         return $userRole === 'admin' || $userRole === 'administrador';
     }
@@ -23,7 +24,7 @@ class ReportController extends Controller
     /**
      * Determina si el usuario actual es aliado
      */
-    private function isAlly($user)
+    private function isAlly(User $user): bool
     {
         return $user->role === 'aliado' && $user->ally;
     }
@@ -31,7 +32,7 @@ class ReportController extends Controller
     /**
      * Obtiene el ID del aliado del usuario actual
      */
-    private function getUserAllyId($user)
+    private function getUserAllyId(User $user): ?int
     {
         return $this->isAlly($user) ? $user->ally->id : null;
     }
@@ -157,7 +158,7 @@ class ReportController extends Controller
      */
     private function getDailyData($query, $startDate, $endDate)
     {
-        $period = new \DatePeriod($startDate, new \DateInterval('P1D'), $endDate->_endExclusive ? $endDate : $endDate->copy()->addDay());
+        $period = new \DatePeriod($startDate, new \DateInterval('P1D'), $endDate->copy()->addDay());
 
         $data = $query->select(
             DB::raw('DATE(sale_date) as date'),
@@ -283,9 +284,11 @@ class ReportController extends Controller
         $totalSales = $query->sum('total_amount');
         $totalOrders = $query->count();
         $averageOrderValue = $totalOrders > 0 ? $totalSales / $totalOrders : 0;
+
+        // ✅ CORREGIDO: Obtener clientes únicos sin DISTINCT ON
         $uniqueClients = $query->distinct('client_id')->count('client_id');
 
-        // Métodos de pago más usados
+        // ✅ CORREGIDO: Métodos de pago más usados - CORRECTO
         $paymentMethods = $query->select('payment_method', DB::raw('COUNT(*) as count'))
             ->groupBy('payment_method')
             ->orderBy('count', 'desc')
@@ -324,7 +327,6 @@ class ReportController extends Controller
     {
         $isAdmin = $this->isAdmin($userRole);
 
-        // Top aliado por volumen de ventas
         $topAlly = null;
         if ($isAdmin) {
             $topAllyQuery = Sale::with('ally')
@@ -345,7 +347,6 @@ class ReportController extends Controller
             }
         }
 
-        // Top sucursal
         $branchQuery = Sale::with('branch')
             ->whereBetween('sale_date', [$startDate, $endDate])
             ->where('status', 'completed');
@@ -358,7 +359,6 @@ class ReportController extends Controller
             ->orderByDesc('total_sales')
             ->first();
 
-        // Venta más grande
         $largestSaleQuery = Sale::with(['client', 'ally', 'branch'])
             ->whereBetween('sale_date', [$startDate, $endDate])
             ->where('status', 'completed');
@@ -367,7 +367,6 @@ class ReportController extends Controller
 
         $largestSale = $largestSaleQuery->orderByDesc('total_amount')->first();
 
-        // Mejor día
         $bestDayQuery = Sale::whereBetween('sale_date', [$startDate, $endDate])
             ->where('status', 'completed');
 
@@ -383,7 +382,6 @@ class ReportController extends Controller
             ->orderByDesc('daily_sales')
             ->first();
 
-        // Método de pago más usado
         $paymentMethodQuery = Sale::whereBetween('sale_date', [$startDate, $endDate])
             ->where('status', 'completed');
 
@@ -395,7 +393,6 @@ class ReportController extends Controller
             ->orderByDesc('count')
             ->first();
 
-        // Información del aliado actual (para vista de aliado)
         $currentAllyInfo = null;
         if (!$isAdmin && $allyId) {
             $currentAllyInfo = Ally::find($allyId);
@@ -480,7 +477,6 @@ class ReportController extends Controller
 
             $pdf = app('dompdf.wrapper');
             $pdf->setPaper('A4', 'landscape');
-
             $pdf->loadView('Admin.reportes.pdf.sales-pdf', compact(
                 'startDate',
                 'endDate',
@@ -496,7 +492,6 @@ class ReportController extends Controller
             ));
 
             $filename = "reporte_ventas_{$startDate->format('Y-m-d')}_a_{$endDate->format('Y-m-d')}.pdf";
-
             return $pdf->download($filename);
         } catch (\Exception $e) {
             Log::error('Error generando PDF: ' . $e->getMessage());
@@ -556,13 +551,12 @@ class ReportController extends Controller
 
         $query = $this->applyFilters($query, $userRole, $allyId, $selectedAllyId, $selectedZone);
 
-        return $query
-            ->select(
-                DB::raw('DATE(sale_date) as date'),
-                DB::raw('SUM(total_amount) as sales'),
-                DB::raw('COUNT(*) as orders'),
-                DB::raw('AVG(total_amount) as average')
-            )
+        return $query->select(
+            DB::raw('DATE(sale_date) as date'),
+            DB::raw('SUM(total_amount) as sales'),
+            DB::raw('COUNT(*) as orders'),
+            DB::raw('AVG(total_amount) as average')
+        )
             ->groupBy('date')
             ->orderBy('date')
             ->get()
@@ -594,7 +588,6 @@ class ReportController extends Controller
             ->orderBy('sale_date', 'desc')
             ->limit($limit);
 
-        // Aplicar filtros
         if (!$this->isAdmin($userRole) && $allyId) {
             $query->where('ally_id', $allyId);
         } elseif ($this->isAdmin($userRole) && $selectedAllyId) {
@@ -607,18 +600,17 @@ class ReportController extends Controller
             });
         }
 
-        $recentSales = $query->get()
-            ->map(function ($sale) {
-                return [
-                    'id' => $sale->id,
-                    'client' => $sale->client->name ?? 'Cliente no identificado',
-                    'ally' => $sale->ally->company_name ?? 'Aliado no identificado',
-                    'branch' => $sale->branch->name ?? 'Sucursal no identificada',
-                    'amount' => $sale->total_amount,
-                    'date' => $sale->sale_date->format('d/m/Y H:i'),
-                    'payment_method' => $sale->payment_method,
-                ];
-            });
+        $recentSales = $query->get()->map(function ($sale) {
+            return [
+                'id' => $sale->id,
+                'client' => $sale->client->name ?? 'Cliente no identificado',
+                'ally' => $sale->ally->company_name ?? 'Aliado no identificado',
+                'branch' => $sale->branch->name ?? 'Sucursal no identificada',
+                'amount' => $sale->total_amount,
+                'date' => $sale->sale_date->format('d/m/Y H:i'),
+                'payment_method' => $sale->payment_method,
+            ];
+        });
 
         return response()->json([
             'success' => true,
@@ -642,48 +634,26 @@ class ReportController extends Controller
         $userRole = $user->role;
         $allyId = $this->getUserAllyId($user);
 
-        // Función para aplicar filtros
         $applyFilters = function ($query) use ($userRole, $allyId, $selectedAllyId, $selectedZone) {
             if (!$this->isAdmin($userRole) && $allyId) {
                 $query->where('ally_id', $allyId);
             } elseif ($this->isAdmin($userRole) && $selectedAllyId) {
                 $query->where('ally_id', $selectedAllyId);
             }
-
             if ($selectedZone) {
                 $query->whereHas('ally', function ($q) use ($selectedZone) {
                     $q->where('company_address', $selectedZone);
                 });
             }
-
             return $query;
         };
 
-        // Ventas hoy
-        $todaySales = $applyFilters(Sale::whereDate('sale_date', $today)
-            ->where('status', 'completed'))->sum('total_amount');
-
-        // Ventas ayer
-        $yesterdaySales = $applyFilters(Sale::whereDate('sale_date', $yesterday)
-            ->where('status', 'completed'))->sum('total_amount');
-
-        // Crecimiento diario
-        $dailyGrowth = $yesterdaySales > 0 ?
-            (($todaySales - $yesterdaySales) / $yesterdaySales) * 100 : 0;
-
-        // Ventas del mes
-        $monthSales = $applyFilters(Sale::whereBetween('sale_date', [$thisMonth, $today])
-            ->where('status', 'completed'))->sum('total_amount');
-
-        // Ventas mes anterior
-        $lastMonthSales = $applyFilters(Sale::whereBetween('sale_date', [
-            $lastMonth,
-            $thisMonth->copy()->subDay()
-        ])->where('status', 'completed'))->sum('total_amount');
-
-        // Crecimiento mensual
-        $monthlyGrowth = $lastMonthSales > 0 ?
-            (($monthSales - $lastMonthSales) / $lastMonthSales) * 100 : 0;
+        $todaySales = $applyFilters(Sale::whereDate('sale_date', $today)->where('status', 'completed'))->sum('total_amount');
+        $yesterdaySales = $applyFilters(Sale::whereDate('sale_date', $yesterday)->where('status', 'completed'))->sum('total_amount');
+        $dailyGrowth = $yesterdaySales > 0 ? (($todaySales - $yesterdaySales) / $yesterdaySales) * 100 : 0;
+        $monthSales = $applyFilters(Sale::whereBetween('sale_date', [$thisMonth, $today])->where('status', 'completed'))->sum('total_amount');
+        $lastMonthSales = $applyFilters(Sale::whereBetween('sale_date', [$lastMonth, $thisMonth->copy()->subDay()])->where('status', 'completed'))->sum('total_amount');
+        $monthlyGrowth = $lastMonthSales > 0 ? (($monthSales - $lastMonthSales) / $lastMonthSales) * 100 : 0;
 
         return response()->json([
             'success' => true,
