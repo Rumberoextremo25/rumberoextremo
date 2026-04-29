@@ -19,15 +19,15 @@ class RumberoAIController extends Controller
     protected function getSessionId(Request $request)
     {
         $sessionId = $request->header('X-Chat-Session');
-        
+
         if (!$sessionId) {
             $sessionId = $request->input('session_id');
         }
-        
+
         if (!$sessionId) {
             $sessionId = Str::random(32);
         }
-        
+
         return $sessionId;
     }
 
@@ -72,10 +72,9 @@ class RumberoAIController extends Controller
                 ],
                 'message' => 'Mensaje enviado. Un asesor te responderá pronto.'
             ]);
-
         } catch (\Exception $e) {
             Log::error('❌ Error en chat: ' . $e->getMessage());
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Error al enviar el mensaje. Intenta de nuevo.'
@@ -99,35 +98,37 @@ class RumberoAIController extends Controller
         // Obtener TODOS los mensajes de usuarios, agrupados por session_id
         // Traer el último mensaje de cada conversación
         $conversaciones = ChatMessage::where('sender', 'user')
-            ->select('session_id', 
-                     DB::raw('MAX(created_at) as last_message_time'),
-                     DB::raw('COUNT(*) as total_messages'))
+            ->select(
+                'session_id',
+                DB::raw('MAX(created_at) as last_message_time'),
+                DB::raw('COUNT(*) as total_messages')
+            )
             ->groupBy('session_id')
             ->orderBy('last_message_time', 'desc')
             ->get();
 
         $resultados = [];
-        
+
         foreach ($conversaciones as $conv) {
             // Obtener el último mensaje de esta conversación
             $ultimoMensaje = ChatMessage::where('session_id', $conv->session_id)
                 ->where('sender', 'user')
                 ->latest()
                 ->first();
-            
+
             // Obtener información del usuario si existe
             $userInfo = ChatMessage::where('session_id', $conv->session_id)
                 ->whereNotNull('user_id')
                 ->first();
-            
+
             $userName = 'Usuario invitado';
             $userEmail = 'No registrado';
-            
+
             if ($userInfo && $userInfo->user) {
                 $userName = $userInfo->user->name ?? 'Usuario invitado';
                 $userEmail = $userInfo->user->email ?? 'No registrado';
             }
-            
+
             $resultados[] = [
                 'id' => $ultimoMensaje->id,
                 'session_id' => $conv->session_id,
@@ -174,7 +175,7 @@ class RumberoAIController extends Controller
             $userMessage = ChatMessage::where('session_id', $request->session_id)
                 ->where('sender', 'user')
                 ->first();
-            
+
             if (!$userMessage) {
                 return response()->json([
                     'success' => false,
@@ -206,10 +207,9 @@ class RumberoAIController extends Controller
                     'message' => 'Respuesta enviada exitosamente'
                 ]
             ]);
-
         } catch (\Exception $e) {
             Log::error('Error al responder: ' . $e->getMessage());
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Error al enviar la respuesta'
@@ -232,7 +232,7 @@ class RumberoAIController extends Controller
 
         return response()->json([
             'success' => true,
-            'data' => $messages->map(function($msg) {
+            'data' => $messages->map(function ($msg) {
                 return [
                     'id' => $msg->id,
                     'message' => $msg->message,
@@ -254,8 +254,8 @@ class RumberoAIController extends Controller
         if (!Auth::user() || Auth::user()->role !== 'admin') {
             abort(403, 'No autorizado');
         }
-        
-        return view('admin.chat');
+
+        return view('Admin.chat');  // ← Debe ser exactamente 'admin.chat'
     }
 
     /**
@@ -269,7 +269,7 @@ class RumberoAIController extends Controller
 
         try {
             $usuario = $request->user();
-            
+
             if (!$usuario) {
                 return response()->json([
                     'success' => false,
@@ -278,7 +278,7 @@ class RumberoAIController extends Controller
             }
 
             $promocion = Promotion::with('ally')->findOrFail($request->promotion_id);
-            
+
             if (!$promocion->isAvailable()) {
                 return response()->json([
                     'success' => false,
@@ -334,10 +334,9 @@ class RumberoAIController extends Controller
                     'mensaje' => "🎉 ¡Promoción activada! Tu código: {$codigo}"
                 ]
             ]);
-
         } catch (\Exception $e) {
             Log::error('Error activando descuento: ' . $e->getMessage());
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Error activando el descuento. Intenta de nuevo.'
@@ -353,31 +352,31 @@ class RumberoAIController extends Controller
         try {
             $query = Promotion::with('ally')
                 ->where('status', 'active')
-                ->where(function($q) {
+                ->where(function ($q) {
                     $q->whereNull('expires_at')
-                      ->orWhere('expires_at', '>', now());
+                        ->orWhere('expires_at', '>', now());
                 });
 
             if ($request->has('categoria')) {
-                $query->whereHas('ally', function($q) use ($request) {
+                $query->whereHas('ally', function ($q) use ($request) {
                     $q->where('category', $request->categoria);
                 });
             }
 
             if ($request->has('search')) {
                 $search = $request->search;
-                $query->where(function($q) use ($search) {
+                $query->where(function ($q) use ($search) {
                     $q->where('title', 'LIKE', "%{$search}%")
-                      ->orWhere('description', 'LIKE', "%{$search}%")
-                      ->orWhereHas('ally', function($q2) use ($search) {
-                          $q2->where('company_name', 'LIKE', "%{$search}%");
-                      });
+                        ->orWhere('description', 'LIKE', "%{$search}%")
+                        ->orWhereHas('ally', function ($q2) use ($search) {
+                            $q2->where('company_name', 'LIKE', "%{$search}%");
+                        });
                 });
             }
 
             $promociones = $query->latest()
                 ->paginate($request->per_page ?? 10)
-                ->through(function($promocion) {
+                ->through(function ($promocion) {
                     return [
                         'id' => $promocion->id,
                         'title' => $promocion->title,
@@ -400,10 +399,9 @@ class RumberoAIController extends Controller
                 'success' => true,
                 'data' => $promociones
             ]);
-
         } catch (\Exception $e) {
             Log::error('Error listando promociones: ' . $e->getMessage());
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Error cargando promociones'
