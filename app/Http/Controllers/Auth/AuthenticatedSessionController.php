@@ -33,9 +33,6 @@ class AuthenticatedSessionController extends Controller
     /**
      * Handle an incoming authentication request.
      */
-    /**
-     * Handle an incoming authentication request.
-     */
     public function store(LoginRequest $request): RedirectResponse
     {
         // Validar credenciales
@@ -78,9 +75,6 @@ class AuthenticatedSessionController extends Controller
         return view('auth.two-factor');
     }
 
-    /**
-     * Verify 2FA code and complete login.
-     */
     /**
      * Verify 2FA code and complete login.
      */
@@ -129,29 +123,35 @@ class AuthenticatedSessionController extends Controller
 
         Log::info('Verifying 2FA code:', [
             'code' => $code,
-            'secret' => substr($user->two_factor_secret, 0, 10) . '...'
+            'secret' => isset($user->two_factor_secret) ? substr($user->two_factor_secret, 0, 10) . '...' : 'null'
         ]);
 
         // Verificar código de respaldo primero
         if ($user->two_factor_recovery_codes) {
             $backupCodes = json_decode($user->two_factor_recovery_codes, true);
-
-            foreach ($backupCodes as &$backupCode) {
-                if (!$backupCode['used'] && Hash::check($code, $backupCode['code'])) {
-                    $backupCode['used'] = true;
-                    $user->two_factor_recovery_codes = json_encode($backupCodes);
-                    $user->save();
-                    Log::info('Valid backup code used');
-                    return true;
+            
+            // ✅ CORREGIDO: Verificar que $backupCodes sea un array
+            if (is_array($backupCodes) && count($backupCodes) > 0) {
+                foreach ($backupCodes as &$backupCode) {
+                    if (isset($backupCode['used']) && !$backupCode['used'] && Hash::check($code, $backupCode['code'])) {
+                        $backupCode['used'] = true;
+                        $user->two_factor_recovery_codes = json_encode($backupCodes);
+                        $user->save();
+                        Log::info('Valid backup code used');
+                        return true;
+                    }
                 }
             }
         }
 
         // Verificar código TOTP
         try {
-            $valid = $this->google2fa->verifyKey($user->two_factor_secret, $code, 4);
-            Log::info('TOTP verification result: ' . ($valid ? 'valid' : 'invalid'));
-            return $valid;
+            if (isset($user->two_factor_secret) && $user->two_factor_secret) {
+                $valid = $this->google2fa->verifyKey($user->two_factor_secret, $code, 4);
+                Log::info('TOTP verification result: ' . ($valid ? 'valid' : 'invalid'));
+                return $valid;
+            }
+            return false;
         } catch (\Exception $e) {
             Log::error('Error verifying TOTP: ' . $e->getMessage());
             return false;
