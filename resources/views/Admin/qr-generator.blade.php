@@ -160,7 +160,8 @@ document.addEventListener('DOMContentLoaded', function() {
             // Agregar tipo por defecto si no existe en el backend
             formData.append('type', 'c2p');
             
-            const response = await fetch('{{ route("admin.qr.generate") }}', {
+            // CAMBIO 1: Forzar HTTPS en la URL
+            const response = await fetch('{{ route("admin.qr.generate", [], true) }}', {
                 method: 'POST',
                 body: formData,
                 headers: {
@@ -185,6 +186,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 alert('Error: ' + data.message);
             }
         } catch (error) {
+            console.error('Error detallado:', error);
             alert('Error al generar el QR: ' + error.message);
         } finally {
             btnGenerate.disabled = false;
@@ -203,7 +205,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function downloadQR(qrString, format) {
         try {
-            const response = await fetch('{{ route("admin.qr.download") }}', {
+            // CAMBIO 2: Forzar HTTPS en la URL de descarga
+            const response = await fetch('{{ route("admin.qr.download", [], true) }}', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -220,9 +223,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 a.download = `qr_${Date.now()}.${format}`;
                 a.click();
                 window.URL.revokeObjectURL(url);
+            } else {
+                const errorText = await response.text();
+                console.error('Error en descarga:', errorText);
+                alert('Error al descargar el QR');
             }
         } catch (error) {
-            alert('Error: ' + error.message);
+            console.error('Error detallado en descarga:', error);
+            alert('Error al descargar: ' + error.message);
         }
     }
 });
