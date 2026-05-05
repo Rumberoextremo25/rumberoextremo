@@ -157,11 +157,13 @@ document.addEventListener('DOMContentLoaded', function() {
 
         try {
             const formData = new FormData(form);
-            // Agregar tipo por defecto si no existe en el backend
             formData.append('type', 'c2p');
             
-            // CAMBIO 1: Forzar HTTPS en la URL
-            const response = await fetch('{{ route("admin.qr.generate", [], true) }}', {
+            // Obtener la URL base dinámicamente (respeta HTTP o HTTPS)
+            const baseUrl = window.location.origin;
+            const generateUrl = baseUrl + '/admin/qr/generate';
+            
+            const response = await fetch(generateUrl, {
                 method: 'POST',
                 body: formData,
                 headers: {
@@ -205,8 +207,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     async function downloadQR(qrString, format) {
         try {
-            // CAMBIO 2: Forzar HTTPS en la URL de descarga
-            const response = await fetch('{{ route("admin.qr.download", [], true) }}', {
+            // Obtener la URL base dinámicamente (respeta HTTP o HTTPS)
+            const baseUrl = window.location.origin;
+            const downloadUrl = baseUrl + '/admin/qr/download';
+            
+            const response = await fetch(downloadUrl, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
