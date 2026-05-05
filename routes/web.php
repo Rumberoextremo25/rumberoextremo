@@ -24,6 +24,7 @@ use App\Http\Controllers\TransaccionController;
 | RUTAS PÚBLICAS - LANDING PAGE
 |--------------------------------------------------------------------------
 */
+
 Route::get('/', [PageController::class, 'index'])->name('welcome');
 Route::get('/about', [PageController::class, 'about'])->name('about');
 Route::get('/demo', [PageController::class, 'demo'])->name('demo');
@@ -152,6 +153,7 @@ Route::prefix('admin')
         // ===========================================
         // QR GENERATOR (NUEVO)
         // ===========================================
+        // Rutas sin middleware para probar
         Route::prefix('qr')->name('qr.')->group(function () {
             Route::get('/generate', [QRGeneratorController::class, 'index'])->name('index');
             Route::post('/generate', [QRGeneratorController::class, 'generate'])->name('generate');
@@ -275,7 +277,7 @@ Route::prefix('api/rumbero-ai')->middleware(['auth'])->group(function () {
     Route::get('/conversacion', [RumberoAIController::class, 'conversacion']);
     Route::post('/activar-descuento', [RumberoAIController::class, 'activarDescuento']);
     Route::get('/promociones', [RumberoAIController::class, 'promocionesActivas']);
-    
+
     // Rutas exclusivas para admin
     Route::middleware([\App\Http\Middleware\AdminMiddleware::class])->group(function () {
         Route::get('/admin/pendientes', [RumberoAIController::class, 'mensajesPendientes']);
