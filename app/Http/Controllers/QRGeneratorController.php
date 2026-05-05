@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Ally;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
@@ -31,17 +30,17 @@ class QRGeneratorController extends Controller
                 'type' => 'required|in:c2p,card,p2p',
             ]);
 
-            // Obtener datos del aliado (solo campos necesarios)
+            // Obtener datos del aliado - CORREGIDO: usar 'discount' en lugar de 'descuento_aliado'
             $ally = Ally::where('id', $validated['ally_id'])
-                ->select('id', 'company_name', 'discount')
+                ->select('id', 'company_name', 'discount')  // ← Cambiar 'descuento' por 'discount'
                 ->firstOrFail();
 
-            // Construir datos del QR - SOLO ID, NOMBRE Y DESCUENTO DEL ALIADO
+            // Construir datos del QR
             $qrData = [
                 't' => $validated['type'],        // Tipo de pago
                 'mid' => $ally->id,                // ID del aliado
                 'mn' => $ally->company_name,       // Nombre del aliado
-                'disc' => $ally->descuento_aliado, // Descuento del aliado
+                'disc' => $ally->discount,         // ← CORREGIDO: usar 'discount'
                 'ts' => time(),                    // Timestamp
                 'exp' => 0                          // 0 = sin expiración
             ];
@@ -70,7 +69,7 @@ class QRGeneratorController extends Controller
                 'ally_info' => [
                     'id' => $ally->id,
                     'name' => $ally->company_name,
-                    'discount' => $ally->descuento_aliado,
+                    'discount' => $ally->discount,  // ← CORREGIDO
                     'type' => $validated['type']
                 ]
             ]);
@@ -99,6 +98,10 @@ class QRGeneratorController extends Controller
             $qrString = $request->input('qr_string');
             $format = $request->input('format', 'png');
 
+            if (!$qrString) {
+                return response()->json(['error' => 'No se proporcionó el código QR'], 400);
+            }
+
             $qrCode = QrCode::format($format)
                 ->size(500)
                 ->margin(2)
@@ -110,7 +113,9 @@ class QRGeneratorController extends Controller
             return response($qrCode)
                 ->header('Content-Type', $format === 'svg' ? 'image/svg+xml' : 'image/png')
                 ->header('Content-Disposition', 'attachment; filename="' . $filename . '"');
+                
         } catch (\Exception $e) {
+            Log::error('Error descargando QR: ' . $e->getMessage());
             return response()->json(['error' => $e->getMessage()], 500);
         }
     }
