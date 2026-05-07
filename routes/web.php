@@ -291,6 +291,12 @@ Route::middleware(['auth', \App\Http\Middleware\AdminMiddleware::class])->group(
 });
 
 
+Route::get('/test-bnc-services', function() {
+    $bnc = new \App\Services\BncApiService();
+    return response()->json($bnc->checkAvailableServices());
+});
+
+
 
 
 

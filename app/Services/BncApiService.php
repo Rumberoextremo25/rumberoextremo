@@ -823,4 +823,30 @@ class BncApiService
             return ['success' => false, 'error' => $e->getMessage()];
         }
     }
+
+    public function checkAvailableServices(): array
+    {
+        $results = [];
+
+        // 1. Probar autenticación
+        $results['auth'] = $this->testFullAuthFlow();
+
+        // 2. Probar obtener bancos (servicio básico)
+        try {
+            $banks = $this->getBanksFromBnc();
+            $results['banks'] = isset($banks['data']) ? 'OK - ' . count($banks['data']) . ' bancos' : 'FAILED';
+        } catch (Exception $e) {
+            $results['banks'] = 'ERROR: ' . $e->getMessage();
+        }
+
+        // 3. Probar obtener tasa (servicio básico)
+        try {
+            $rate = $this->getDailyRateFromBnc();
+            $results['rate'] = isset($rate['data']) ? 'OK' : 'FAILED';
+        } catch (Exception $e) {
+            $results['rate'] = 'ERROR: ' . $e->getMessage();
+        }
+
+        return $results;
+    }
 }
