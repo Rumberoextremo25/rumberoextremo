@@ -726,6 +726,18 @@ class PaymentProcessorService
             return true;
         }
 
+        // ✅ NUEVO: Validación para C2P (Pago Móvil)
+        if ($paymentType === 'c2p' && isset($bncResponse['IdTransaction']) && isset($bncResponse['Reference'])) {
+            Log::info("✅ Respuesta C2P exitosa - IdTransaction: {$bncResponse['IdTransaction']}, Reference: {$bncResponse['Reference']}");
+            return true;
+        }
+
+        // ✅ NUEVO: Validación para VPOS (Tarjeta)
+        if ($paymentType === 'card' && isset($bncResponse['TransactionId'])) {
+            Log::info("✅ Respuesta VPOS exitosa - TransactionId: {$bncResponse['TransactionId']}");
+            return true;
+        }
+
         $validations = [
             'debito_solicitar' => function ($response) {
                 return isset($response['validation']) && !empty($response['validation']);
