@@ -542,7 +542,8 @@ class PaymentProcessorService
                         'status' => $ally->status
                     ]);
 
-                    if ($ally->isActive()) {
+                    // ✅ CAMBIADO: isActive() por comparación directa de status
+                    if ($ally->status === 'activo') {
                         $allyData['has_ally'] = true;
                         $allyData['ally_id'] = $ally->id;
                         $allyData['user_id'] = $ally->user_id;
