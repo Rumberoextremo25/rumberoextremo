@@ -53,7 +53,7 @@ class Ally extends Model
     ];
 
     // Possible statuses
-    const STATUS_ACTIVE = 'active';
+    const STATUS_ACTIVE = 'activo';
     const STATUS_INACTIVE = 'inactive';
     const STATUS_SUSPENDED = 'suspended';
 
@@ -156,7 +156,7 @@ class Ally extends Model
     public function getStatusTextAttribute(): string
     {
         return match($this->status) {
-            self::STATUS_ACTIVE => 'Active',
+            self::STATUS_ACTIVE => 'Activo',
             self::STATUS_INACTIVE => 'Inactive',
             self::STATUS_SUSPENDED => 'Suspended',
             default => 'Unknown'

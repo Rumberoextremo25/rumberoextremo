@@ -17,7 +17,7 @@ class AllyController extends Controller
     {
         try {
             $allies = Ally::with(['category', 'subcategory'])
-                ->where('status', 'active') // Solo aliados activos
+                ->where('status', 'activo') // Solo aliados activos
                 ->get();
 
             $formattedAllies = $allies->map(function ($ally) {
@@ -65,7 +65,7 @@ class AllyController extends Controller
     {
         try {
             $ally = Ally::with(['category', 'subcategory', 'businessType'])
-                ->where('status', 'active')
+                ->where('status', 'activo')
                 ->find($id);
 
             if (!$ally) {
@@ -126,7 +126,7 @@ class AllyController extends Controller
     {
         try {
             $allies = Ally::with(['category', 'subcategory'])
-                ->where('status', 'active')
+                ->where('status', 'activo')
                 ->whereHas('category', function ($query) use ($categoryName) {
                     $query->where('name', 'LIKE', "%{$categoryName}%");
                 })
@@ -175,7 +175,7 @@ class AllyController extends Controller
     {
         try {
             $allies = Ally::with(['category', 'subcategory'])
-                ->where('status', 'active')
+                ->where('status', 'activo')
                 ->where(function($query) {
                     $query->where('recent', true)
                           ->orWhere('created_at', '>=', now()->subDays(30));
@@ -227,7 +227,7 @@ class AllyController extends Controller
     {
         try {
             $allies = Ally::with(['category', 'subcategory'])
-                ->where('status', 'active')
+                ->where('status', 'activo')
                 ->where(function($query) use ($term) {
                     $query->where('company_name', 'LIKE', "%{$term}%")
                           ->orWhere('description', 'LIKE', "%{$term}%")
