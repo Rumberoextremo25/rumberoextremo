@@ -28,7 +28,7 @@ class BncApiService
 
     public function __construct()
     {
-        // URLs de PRODUCCIÓN (puerto 16000)
+        // URLs de PRODUCCIÓN (puerto 16000) - Autenticación siempre en PROD
         $this->authApiUrl = env('BNC_AUTH_API_URL');
         $this->c2pApiUrl = env('BNC_C2P_API_URL');
         $this->vposApiUrl = env('BNC_VPOS_API_URL');
@@ -45,22 +45,17 @@ class BncApiService
         $this->useQaForDebito = env('BNC_DEBITO_USE_QA', false);
         
         if ($this->useQaForDebito) {
-            // Solo la autenticación usa QA (puerto 16500) para obtener WorkingKey correcto
-            $this->authApiUrl = env('BNC_AUTH_API_URL_QA', 'https://servicios.bncenlinea.com:16500/api/Auth/LogOn');
-            
-            // URLs de débito QA (puerto 16500)
+            // SOLO DÉBITO usa QA (puerto 16500) - Autenticación sigue en PROD
             $this->debitTokenRequestUrl = env('BNC_DEBITO_SOLICITAR_URL_QA', 'https://servicios.bncenlinea.com:16500/api/SIMF/DebitTokenRequest');
             $this->debitBeginnerUrl = env('BNC_DEBITO_EMITIR_URL_QA', 'https://servicios.bncenlinea.com:16500/api/SIMF/DebitBeginner');
             $this->debitReenviarUrl = env('BNC_DEBITO_REENVIAR_URL_QA', 'https://servicios.bncenlinea.com:16500/api/debito/reenviar-sms');
-            
-            Log::info('🔵 BNC Service - MODO QA (Auth y Débito en QA, otros servicios en PROD)');
+            Log::info('🔵 BNC Service - MODO HÍBRIDO (Auth en PROD, Débito en QA para certificación)');
         } else {
-            // Usar PRODUCCIÓN (puerto 16000) para todo
+            // Todo en PRODUCCIÓN (puerto 16000)
             $this->debitTokenRequestUrl = env('BNC_DEBITO_SOLICITAR_URL_PROD', 'https://servicios.bncenlinea.com:16000/api/SIMF/DebitTokenRequest');
             $this->debitBeginnerUrl = env('BNC_DEBITO_EMITIR_URL_PROD', 'https://servicios.bncenlinea.com:16000/api/SIMF/DebitBeginner');
             $this->debitReenviarUrl = env('BNC_DEBITO_REENVIAR_URL_PROD', 'https://servicios.bncenlinea.com:16000/api/debito/reenviar-sms');
-            
-            Log::info('🟢 BNC Service - MODO PRODUCCIÓN');
+            Log::info('🟢 BNC Service - MODO PRODUCCIÓN COMPLETO');
         }
 
         $this->dataCypher = new DataCypher($this->masterKey);
@@ -96,13 +91,13 @@ class BncApiService
                     "value" => $value,
                     "Validation" => $validation,
                     "Reference" => '',
-                    "swTestOperation" => $this->useQaForDebito
+                    "swTestOperation" => false  // Siempre false para autenticación en PROD
                 ];
 
                 Log::info('🔑 Solicitando token de sesión', [
                     'url' => $this->authApiUrl,
                     'client_guid' => $this->clientGuid,
-                    'swTestOperation' => $this->useQaForDebito
+                    'swTestOperation' => false
                 ]);
 
                 $response = Http::timeout(30)
@@ -114,7 +109,7 @@ class BncApiService
                     throw new Exception('Error HTTP: ' . $response->status());
                 }
 
-                $responseData = json_decode($response->body(), true);
+                $responseData = $response->json();
 
                 if (!isset($responseData['value'])) {
                     throw new Exception('Estructura de respuesta inválida');
