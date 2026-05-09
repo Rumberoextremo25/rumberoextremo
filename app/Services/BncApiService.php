@@ -22,21 +22,42 @@ class BncApiService
     private string $banksApiUrl;
     private string $ratesApiUrl;
     protected DataCypher $dataCypher;
+    
+    // 🔥 Flag para controlar si usamos QA para débito
+    private bool $useQaForDebito;
 
     public function __construct()
     {
+        // URLs de PRODUCCIÓN (puerto 16000)
         $this->authApiUrl = env('BNC_AUTH_API_URL');
-        $this->clientGuid = env('BNC_CLIENT_GUID');
-        $this->masterKey = env('BNC_MASTER_KEY');
-        $this->merchantId = env('BNC_MERCHANT_ID');
         $this->c2pApiUrl = env('BNC_C2P_API_URL');
         $this->vposApiUrl = env('BNC_VPOS_API_URL');
         $this->validationApiUrl = env('BNC_P2P_API_URL');
         $this->banksApiUrl = env('BNC_BANKS_API_URL');
         $this->ratesApiUrl = env('BNC_RATES_API_URL');
-        $this->debitTokenRequestUrl = env('BNC_DEBITO_SOLICITAR_URL');
-        $this->debitBeginnerUrl = env('BNC_DEBITO_EMITIR_URL');
-        $this->debitReenviarUrl = env('BNC_DEBITO_REENVIAR_URL');
+        
+        // Credenciales
+        $this->clientGuid = env('BNC_CLIENT_GUID');
+        $this->masterKey = env('BNC_MASTER_KEY');
+        $this->merchantId = env('BNC_MERCHANT_ID');
+        
+        // 🔥 Configuración para DÉBITO INMEDIATO
+        // Cambia esta variable a false cuando termines la certificación
+        $this->useQaForDebito = env('BNC_DEBITO_USE_QA', true);
+        
+        if ($this->useQaForDebito) {
+            // Usar QA (puerto 16500) para certificación
+            $this->debitTokenRequestUrl = env('BNC_DEBITO_SOLICITAR_URL_QA', 'https://servicios.bncenlinea.com:16500/api/SIMF/DebitTokenRequest');
+            $this->debitBeginnerUrl = env('BNC_DEBITO_EMITIR_URL_QA', 'https://servicios.bncenlinea.com:16500/api/SIMF/DebitBeginner');
+            $this->debitReenviarUrl = env('BNC_DEBITO_REENVIAR_URL_QA', 'https://servicios.bncenlinea.com:16500/api/debito/reenviar-sms');
+            Log::info('🔵 BNC Service - MODO QA para DÉBITO INMEDIATO (Certificación activa)');
+        } else {
+            // Usar PRODUCCIÓN (puerto 16000)
+            $this->debitTokenRequestUrl = env('BNC_DEBITO_SOLICITAR_URL_PROD', 'https://servicios.bncenlinea.com:16000/api/SIMF/DebitTokenRequest');
+            $this->debitBeginnerUrl = env('BNC_DEBITO_EMITIR_URL_PROD', 'https://servicios.bncenlinea.com:16000/api/SIMF/DebitBeginner');
+            $this->debitReenviarUrl = env('BNC_DEBITO_REENVIAR_URL_PROD', 'https://servicios.bncenlinea.com:16000/api/debito/reenviar-sms');
+            Log::info('🟢 BNC Service - MODO PRODUCCIÓN para DÉBITO INMEDIATO');
+        }
 
         $this->dataCypher = new DataCypher($this->masterKey);
 
@@ -44,6 +65,7 @@ class BncApiService
             'auth_url' => $this->authApiUrl,
             'debito_solicitar' => $this->debitTokenRequestUrl,
             'debito_emitir' => $this->debitBeginnerUrl,
+            'debito_qa_mode' => $this->useQaForDebito,
             'has_client_guid' => !empty($this->clientGuid),
             'has_master_key' => !empty($this->masterKey)
         ]);
@@ -70,12 +92,13 @@ class BncApiService
                     "value" => $value,
                     "Validation" => $validation,
                     "Reference" => '',
-                    "swTestOperation" => false
+                    "swTestOperation" => $this->useQaForDebito  // 🔥 true para QA, false para PROD
                 ];
 
                 Log::info('🔑 Solicitando token de sesión', [
                     'url' => $this->authApiUrl,
-                    'client_guid' => $this->clientGuid
+                    'client_guid' => $this->clientGuid,
+                    'swTestOperation' => $this->useQaForDebito
                 ]);
 
                 $response = Http::timeout(30)
@@ -143,9 +166,6 @@ class BncApiService
      * ==================== MÉTODOS PARA DÉBITO INMEDIATO ====================
      */
 
-    /**
-     * Helper para sanitizar datos sensibles
-     */
     private function sanitizeSensitiveData(array $data): array
     {
         $sanitized = [];
@@ -164,9 +184,6 @@ class BncApiService
         return $sanitized;
     }
 
-    /**
-     * Helper para extraer ID de transacción del mensaje
-     */
     private function extractTransactionId(string $message): ?string
     {
         if (preg_match('/:\s*(\d+)/', $message, $matches)) {
@@ -177,29 +194,26 @@ class BncApiService
 
     /**
      * PASO 1: SOLICITAR DÉBITO (envía SMS)
-     * Endpoint: /api/SIMF/DebitTokenRequest
      */
     public function solicitarDebito(array $data): ?array
     {
         Log::info('🔵 BNC - SOLICITAR DÉBITO', [
-            'data' => $this->sanitizeSensitiveData($data)
+            'data' => $this->sanitizeSensitiveData($data),
+            'modo_qa' => $this->useQaForDebito
         ]);
 
         try {
-            // Asegurar working key
             $workingKey = $this->ensureWorkingKey();
             if (!$workingKey) {
                 throw new Exception('No se pudo obtener WorkingKey');
             }
 
-            // Determinar el tipo de cuenta correcto
             $debtorAccountType = $data['DebtorAccountType'];
             if ($debtorAccountType === 'TLF') {
                 $debtorAccountType = 'CELE';
                 Log::info('📱 Detectado débito a teléfono, usando DebtorAccountType: CELE');
             }
 
-            // Preparar payload exacto que pide el banco
             $payload = [
                 "Amount" => (float)$data['Amount'],
                 "DebtorAccount" => $data['DebtorAccount'],
@@ -210,31 +224,30 @@ class BncApiService
 
             Log::info('📦 Payload a encriptar:', ['payload' => $payload]);
 
-            // Encriptar payload
             $jsonData = json_encode($payload);
             $encryptedValue = $this->dataCypher->encryptWithKey($jsonData, $workingKey);
             $validationHash = $this->dataCypher->encryptSHA256($jsonData);
 
-            // Construir wrapper
             $solicitud = [
                 "ClientGUID" => $this->clientGuid,
                 "value" => $encryptedValue,
                 "Validation" => $validationHash,
                 "Reference" => $this->generateDailyReference(),
-                "swTestOperation" => false
+                "swTestOperation" => $this->useQaForDebito  // 🔥 true para QA, false para PROD
             ];
 
             Log::info('📤 Enviando solicitud al BNC:', [
                 'url' => $this->debitTokenRequestUrl,
+                'modo_qa' => $this->useQaForDebito,
                 'wrapper' => [
                     'ClientGUID' => $solicitud['ClientGUID'],
                     'value_length' => strlen($solicitud['value']),
                     'validation' => substr($solicitud['Validation'], 0, 10) . '...',
-                    'Reference' => $solicitud['Reference']
+                    'Reference' => $solicitud['Reference'],
+                    'swTestOperation' => $solicitud['swTestOperation']
                 ]
             ]);
 
-            // Enviar request
             $response = Http::timeout(30)
                 ->retry(2, 100)
                 ->withHeaders(['Content-Type' => 'application/json'])
@@ -251,7 +264,6 @@ class BncApiService
 
             $responseData = $response->json();
 
-            // Procesar respuesta (viene en texto plano según ejemplos)
             if (isset($responseData['status']) && $responseData['status'] === 'OK') {
                 return [
                     'success' => true,
@@ -294,32 +306,26 @@ class BncApiService
 
     /**
      * PASO 2: EMITIR DÉBITO (confirma con código SMS)
-     * Endpoint: /api/SIMF/DebitBeginner
-     */
-    /**
-     * PASO 2: EMITIR DÉBITO (confirma con código SMS)
      */
     public function emitirDebito(array $data): ?array
     {
         Log::info('🔵 BNC - EMITIR DÉBITO', [
-            'data' => $this->sanitizeSensitiveData($data)
+            'data' => $this->sanitizeSensitiveData($data),
+            'modo_qa' => $this->useQaForDebito
         ]);
 
         try {
-            // Asegurar working key
             $workingKey = $this->ensureWorkingKey();
             if (!$workingKey) {
                 throw new Exception('No se pudo obtener WorkingKey');
             }
 
-            // Determinar el tipo de cuenta correcto y formatear número si es teléfono
             $debtorAccType = $data['DebtorAccType'];
             $debtorAccount = $data['DebtorAccount'];
 
             if ($debtorAccType === 'TLF' || $debtorAccType === 'CELE') {
                 Log::info('📱 Detectado débito a teléfono, usando DebtorAccType: CELE');
 
-                // Formatear número igual que en solicitar
                 $debtorAccount = preg_replace('/[^0-9]/', '', $debtorAccount);
                 if (str_starts_with($debtorAccount, '0')) {
                     $debtorAccount = '58' . substr($debtorAccount, 1);
@@ -328,22 +334,18 @@ class BncApiService
                 $debtorAccType = 'CELE';
             }
 
-            // Preparar payload EXACTO que pide el banco
             $payload = [
                 "DebtorBank" => $data['DebtorBank'],
                 "DebtorAccount" => $debtorAccount,
                 "DebtorAccType" => $debtorAccType,
                 "Concept" => $data['Concept'],
-                "AddtlInf" => $data['AddtlInf'], // Código SMS de 8 dígitos
+                "AddtlInf" => $data['AddtlInf'],
                 "DebtorID" => $data['DebtorID'],
                 "Amount" => (float)$data['Amount'],
                 "DebtorName" => $data['DebtorName'],
                 "ChildClientID" => $data['ChildClientID'] ?? "",
                 "BranchID" => $data['BranchID'] ?? ""
             ];
-
-            // NOTA: El requestId NO va en el payload, va en el wrapper como Reference
-            // Pero si el banco lo requiere en el payload, habría que agregarlo aquí
 
             Log::info('📦 Payload a encriptar:', [
                 'payload' => [
@@ -360,22 +362,21 @@ class BncApiService
                 ]
             ]);
 
-            // Encriptar payload
             $jsonData = json_encode($payload);
             $encryptedValue = $this->dataCypher->encryptWithKey($jsonData, $workingKey);
             $validationHash = $this->dataCypher->encryptSHA256($jsonData);
 
-            // Construir wrapper - ¡INCLUIR EL REQUESTID COMO REFERENCE!
             $solicitud = [
                 "ClientGUID" => $this->clientGuid,
                 "value" => $encryptedValue,
                 "Validation" => $validationHash,
-                "Reference" => $data['requestId'] ?? $this->generateDailyReference(), // Usar el requestId de solicitar
-                "swTestOperation" => true // ¡CAMBIAR A TRUE PARA DESARROLLO!
+                "Reference" => $data['requestId'] ?? $this->generateDailyReference(),
+                "swTestOperation" => $this->useQaForDebito  // 🔥 true para QA, false para PROD
             ];
 
             Log::info('📤 Enviando solicitud al BNC:', [
                 'url' => $this->debitBeginnerUrl,
+                'modo_qa' => $this->useQaForDebito,
                 'wrapper' => [
                     'ClientGUID' => $solicitud['ClientGUID'],
                     'value_length' => strlen($solicitud['value']),
@@ -385,7 +386,6 @@ class BncApiService
                 ]
             ]);
 
-            // Enviar request
             $response = Http::timeout(30)
                 ->retry(2, 100)
                 ->withHeaders(['Content-Type' => 'application/json'])
@@ -403,9 +403,7 @@ class BncApiService
 
             $responseData = $response->json();
 
-            // Procesar respuesta exitosa
             if (isset($responseData['status']) && $responseData['status'] === 'OK') {
-                // Extraer transactionId del mensaje
                 $transactionId = null;
                 if (isset($responseData['message'])) {
                     if (preg_match('/:\s*(\d+)/', $responseData['message'], $matches)) {
@@ -454,9 +452,6 @@ class BncApiService
         }
     }
 
-    /**
-     * Helper para enmascarar números de cuenta
-     */
     private function maskAccountNumber(string $number): string
     {
         if (strlen($number) <= 8) {
@@ -467,11 +462,13 @@ class BncApiService
 
     /**
      * PASO 3: REENVIAR CÓDIGO SMS
-     * Endpoint: /api/debito/reenviar-sms
      */
     public function reenviarSms(array $data): ?array
     {
-        Log::info('🔵 BNC - REENVIAR SMS', ['data' => $data]);
+        Log::info('🔵 BNC - REENVIAR SMS', [
+            'data' => $data,
+            'modo_qa' => $this->useQaForDebito
+        ]);
 
         try {
             $workingKey = $this->ensureWorkingKey();
@@ -493,7 +490,7 @@ class BncApiService
                 "value" => $encryptedValue,
                 "Validation" => $validationHash,
                 "Reference" => $this->generateDailyReference(),
-                "swTestOperation" => false
+                "swTestOperation" => $this->useQaForDebito  // 🔥 true para QA, false para PROD
             ];
 
             $response = Http::timeout(30)
@@ -691,7 +688,7 @@ class BncApiService
             "value" => $encryptedValue,
             "Validation" => $validationHash,
             "Reference" => $this->generateDailyReference(),
-            "swTestOperation" => false
+            "swTestOperation" => $this->useQaForDebito
         ];
 
         $response = Http::timeout(30)
@@ -828,10 +825,8 @@ class BncApiService
     {
         $results = [];
 
-        // 1. Probar autenticación
         $results['auth'] = $this->testFullAuthFlow();
 
-        // 2. Probar obtener bancos (servicio básico)
         try {
             $banks = $this->getBanksFromBnc();
             $results['banks'] = isset($banks['data']) ? 'OK - ' . count($banks['data']) . ' bancos' : 'FAILED';
@@ -839,7 +834,6 @@ class BncApiService
             $results['banks'] = 'ERROR: ' . $e->getMessage();
         }
 
-        // 3. Probar obtener tasa (servicio básico)
         try {
             $rate = $this->getDailyRateFromBnc();
             $results['rate'] = isset($rate['data']) ? 'OK' : 'FAILED';
