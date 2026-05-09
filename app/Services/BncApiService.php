@@ -23,7 +23,7 @@ class BncApiService
     private string $ratesApiUrl;
     protected DataCypher $dataCypher;
     
-    // 🔥 Flag para controlar si usamos QA para débito
+    // Flag para controlar si usamos QA para débito
     private bool $useQaForDebito;
 
     public function __construct()
@@ -41,22 +41,26 @@ class BncApiService
         $this->masterKey = env('BNC_MASTER_KEY');
         $this->merchantId = env('BNC_MERCHANT_ID');
         
-        // 🔥 Configuración para DÉBITO INMEDIATO
-        // Cambia esta variable a false cuando termines la certificación
-        $this->useQaForDebito = env('BNC_DEBITO_USE_QA', true);
+        // Configuración para DÉBITO INMEDIATO
+        $this->useQaForDebito = env('BNC_DEBITO_USE_QA', false);
         
         if ($this->useQaForDebito) {
-            // Usar QA (puerto 16500) para certificación
+            // Solo la autenticación usa QA (puerto 16500) para obtener WorkingKey correcto
+            $this->authApiUrl = env('BNC_AUTH_API_URL_QA', 'https://servicios.bncenlinea.com:16500/api/Auth/LogOn');
+            
+            // URLs de débito QA (puerto 16500)
             $this->debitTokenRequestUrl = env('BNC_DEBITO_SOLICITAR_URL_QA', 'https://servicios.bncenlinea.com:16500/api/SIMF/DebitTokenRequest');
             $this->debitBeginnerUrl = env('BNC_DEBITO_EMITIR_URL_QA', 'https://servicios.bncenlinea.com:16500/api/SIMF/DebitBeginner');
             $this->debitReenviarUrl = env('BNC_DEBITO_REENVIAR_URL_QA', 'https://servicios.bncenlinea.com:16500/api/debito/reenviar-sms');
-            Log::info('🔵 BNC Service - MODO QA para DÉBITO INMEDIATO (Certificación activa)');
+            
+            Log::info('🔵 BNC Service - MODO QA (Auth y Débito en QA, otros servicios en PROD)');
         } else {
-            // Usar PRODUCCIÓN (puerto 16000)
+            // Usar PRODUCCIÓN (puerto 16000) para todo
             $this->debitTokenRequestUrl = env('BNC_DEBITO_SOLICITAR_URL_PROD', 'https://servicios.bncenlinea.com:16000/api/SIMF/DebitTokenRequest');
             $this->debitBeginnerUrl = env('BNC_DEBITO_EMITIR_URL_PROD', 'https://servicios.bncenlinea.com:16000/api/SIMF/DebitBeginner');
             $this->debitReenviarUrl = env('BNC_DEBITO_REENVIAR_URL_PROD', 'https://servicios.bncenlinea.com:16000/api/debito/reenviar-sms');
-            Log::info('🟢 BNC Service - MODO PRODUCCIÓN para DÉBITO INMEDIATO');
+            
+            Log::info('🟢 BNC Service - MODO PRODUCCIÓN');
         }
 
         $this->dataCypher = new DataCypher($this->masterKey);
@@ -92,7 +96,7 @@ class BncApiService
                     "value" => $value,
                     "Validation" => $validation,
                     "Reference" => '',
-                    "swTestOperation" => $this->useQaForDebito  // 🔥 true para QA, false para PROD
+                    "swTestOperation" => $this->useQaForDebito
                 ];
 
                 Log::info('🔑 Solicitando token de sesión', [
@@ -233,7 +237,7 @@ class BncApiService
                 "value" => $encryptedValue,
                 "Validation" => $validationHash,
                 "Reference" => $this->generateDailyReference(),
-                "swTestOperation" => $this->useQaForDebito  // 🔥 true para QA, false para PROD
+                "swTestOperation" => $this->useQaForDebito
             ];
 
             Log::info('📤 Enviando solicitud al BNC:', [
@@ -371,7 +375,7 @@ class BncApiService
                 "value" => $encryptedValue,
                 "Validation" => $validationHash,
                 "Reference" => $data['requestId'] ?? $this->generateDailyReference(),
-                "swTestOperation" => $this->useQaForDebito  // 🔥 true para QA, false para PROD
+                "swTestOperation" => $this->useQaForDebito
             ];
 
             Log::info('📤 Enviando solicitud al BNC:', [
@@ -490,7 +494,7 @@ class BncApiService
                 "value" => $encryptedValue,
                 "Validation" => $validationHash,
                 "Reference" => $this->generateDailyReference(),
-                "swTestOperation" => $this->useQaForDebito  // 🔥 true para QA, false para PROD
+                "swTestOperation" => $this->useQaForDebito
             ];
 
             $response = Http::timeout(30)
