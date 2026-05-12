@@ -25,27 +25,32 @@ class BncApiService
 
     public function __construct()
     {
-        $this->authApiUrl = env('BNC_AUTH_API_URL');
+        // Determinar el puerto según el entorno
+        $port = app()->environment('production') ? '16000' : '16500';
+        $baseUrl = "https://servicios.bncenlinea.com:{$port}";
+
+        // Construir todas las URLs dinámicamente
+        $this->authApiUrl = "{$baseUrl}/api/Auth/LogOn";
+        $this->c2pApiUrl = "{$baseUrl}/api/MobPayment/SendC2P";
+        $this->vposApiUrl = "{$baseUrl}/api/Transaction/Send";
+        $this->validationApiUrl = "{$baseUrl}/api/Position/Validate";
+        $this->banksApiUrl = "{$baseUrl}/api/Services/Banks";
+        $this->ratesApiUrl = "{$baseUrl}/api/Services/BCVRates";
+        $this->debitTokenRequestUrl = "{$baseUrl}/api/SIMF/DebitTokenRequest";
+        $this->debitBeginnerUrl = "{$baseUrl}/api/SIMF/DebitBeginner";
+        $this->debitReenviarUrl = "{$baseUrl}/api/debito/reenviar-sms";
+
+        // Credenciales desde .env
         $this->clientGuid = env('BNC_CLIENT_GUID');
         $this->masterKey = env('BNC_MASTER_KEY');
         $this->merchantId = env('BNC_MERCHANT_ID');
-        $this->c2pApiUrl = env('BNC_C2P_API_URL');
-        $this->vposApiUrl = env('BNC_VPOS_API_URL');
-        $this->validationApiUrl = env('BNC_P2P_API_URL');
-        $this->banksApiUrl = env('BNC_BANKS_API_URL');
-        $this->ratesApiUrl = env('BNC_RATES_API_URL');
-        $this->debitTokenRequestUrl = env('BNC_DEBITO_SOLICITAR_URL');
-        $this->debitBeginnerUrl = env('BNC_DEBITO_EMITIR_URL');
-        $this->debitReenviarUrl = env('BNC_DEBITO_REENVIAR_URL');
 
         $this->dataCypher = new DataCypher($this->masterKey);
 
         Log::info('🔧 BNC Service inicializado', [
-            'auth_url' => $this->authApiUrl,
-            'debito_solicitar' => $this->debitTokenRequestUrl,
-            'debito_emitir' => $this->debitBeginnerUrl,
-            'has_client_guid' => !empty($this->clientGuid),
-            'has_master_key' => !empty($this->masterKey)
+            'environment' => app()->environment(),
+            'port' => $port,
+            'base_url' => $baseUrl
         ]);
     }
 
@@ -291,11 +296,6 @@ class BncApiService
             ];
         }
     }
-
-    /**
-     * PASO 2: EMITIR DÉBITO (confirma con código SMS)
-     * Endpoint: /api/SIMF/DebitBeginner
-     */
     /**
      * PASO 2: EMITIR DÉBITO (confirma con código SMS)
      */
@@ -306,44 +306,37 @@ class BncApiService
         ]);
 
         try {
-            // Asegurar working key
             $workingKey = $this->ensureWorkingKey();
             if (!$workingKey) {
                 throw new Exception('No se pudo obtener WorkingKey');
             }
 
-            // Determinar el tipo de cuenta correcto y formatear número si es teléfono
+            // Determinar el tipo de cuenta
             $debtorAccType = $data['DebtorAccType'];
             $debtorAccount = $data['DebtorAccount'];
 
-            if ($debtorAccType === 'TLF' || $debtorAccType === 'CELE') {
-                Log::info('📱 Detectado débito a teléfono, usando DebtorAccType: CELE');
-
-                // Formatear número igual que en solicitar
+            if ($debtorAccType === 'TLF') {
+                $debtorAccType = 'CELE';
+                // Formatear número de teléfono
                 $debtorAccount = preg_replace('/[^0-9]/', '', $debtorAccount);
-                if (str_starts_with($debtorAccount, '0')) {
+                if (strlen($debtorAccount) === 10 && substr($debtorAccount, 0, 1) === '0') {
                     $debtorAccount = '58' . substr($debtorAccount, 1);
                 }
-
-                $debtorAccType = 'CELE';
             }
 
-            // Preparar payload EXACTO que pide el banco
+            // ✅ CORREGIDO: Payload exacto que espera el API
             $payload = [
                 "DebtorBank" => $data['DebtorBank'],
                 "DebtorAccount" => $debtorAccount,
                 "DebtorAccType" => $debtorAccType,
                 "Concept" => $data['Concept'],
-                "AddtlInf" => $data['AddtlInf'], // Código SMS de 8 dígitos
+                "AddtlInf" => $data['AddtlInf'], // Código SMS
                 "DebtorID" => $data['DebtorID'],
                 "Amount" => (float)$data['Amount'],
                 "DebtorName" => $data['DebtorName'],
                 "ChildClientID" => $data['ChildClientID'] ?? "",
                 "BranchID" => $data['BranchID'] ?? ""
             ];
-
-            // NOTA: El requestId NO va en el payload, va en el wrapper como Reference
-            // Pero si el banco lo requiere en el payload, habría que agregarlo aquí
 
             Log::info('📦 Payload a encriptar:', [
                 'payload' => [
@@ -354,9 +347,7 @@ class BncApiService
                     'AddtlInf' => '****' . substr($payload['AddtlInf'], -4),
                     'DebtorID' => $payload['DebtorID'],
                     'Amount' => $payload['Amount'],
-                    'DebtorName' => $payload['DebtorName'],
-                    'ChildClientID' => $payload['ChildClientID'],
-                    'BranchID' => $payload['BranchID']
+                    'DebtorName' => $payload['DebtorName']
                 ]
             ]);
 
@@ -365,27 +356,20 @@ class BncApiService
             $encryptedValue = $this->dataCypher->encryptWithKey($jsonData, $workingKey);
             $validationHash = $this->dataCypher->encryptSHA256($jsonData);
 
-            // Construir wrapper - ¡INCLUIR EL REQUESTID COMO REFERENCE!
+            // ✅ CORREGIDO: El requestId debe ir como Reference
             $solicitud = [
                 "ClientGUID" => $this->clientGuid,
                 "value" => $encryptedValue,
                 "Validation" => $validationHash,
-                "Reference" => $data['requestId'] ?? $this->generateDailyReference(), // Usar el requestId de solicitar
-                "swTestOperation" => true // ¡CAMBIAR A TRUE PARA DESARROLLO!
+                "Reference" => $data['requestId'], // ✅ Usar el requestId de solicitarDebito
+                "swTestOperation" => false // Cambiar a false en producción
             ];
 
             Log::info('📤 Enviando solicitud al BNC:', [
                 'url' => $this->debitBeginnerUrl,
-                'wrapper' => [
-                    'ClientGUID' => $solicitud['ClientGUID'],
-                    'value_length' => strlen($solicitud['value']),
-                    'validation' => substr($solicitud['Validation'], 0, 10) . '...',
-                    'Reference' => $solicitud['Reference'],
-                    'swTestOperation' => $solicitud['swTestOperation']
-                ]
+                'Reference' => $solicitud['Reference']
             ]);
 
-            // Enviar request
             $response = Http::timeout(30)
                 ->retry(2, 100)
                 ->withHeaders(['Content-Type' => 'application/json'])
@@ -396,49 +380,14 @@ class BncApiService
                 'body' => $response->body()
             ]);
 
-            if (!$response->successful()) {
-                $responseData = $response->json();
-                throw new Exception("Error HTTP {$response->status()}: " . json_encode($responseData));
+            if (!$response->successful() && $response->status() !== 202) {
+                throw new Exception("Error HTTP: " . $response->status());
             }
 
             $responseData = $response->json();
 
-            // Procesar respuesta exitosa
-            if (isset($responseData['status']) && $responseData['status'] === 'OK') {
-                // Extraer transactionId del mensaje
-                $transactionId = null;
-                if (isset($responseData['message'])) {
-                    if (preg_match('/:\s*(\d+)/', $responseData['message'], $matches)) {
-                        $transactionId = $matches[1];
-                    }
-                }
-
-                return [
-                    'success' => true,
-                    'status' => 'OK',
-                    'Status' => 'OK',
-                    'TransactionId' => $transactionId,
-                    'IdTransaccion' => $transactionId,
-                    'Reference' => $responseData['validation'] ?? null,
-                    'Referencia' => $responseData['validation'] ?? null,
-                    'message' => $responseData['message'] ?? 'Débito procesado exitosamente',
-                    'validation' => $responseData['validation'] ?? null,
-                    'value' => $responseData['value'] ?? null,
-                    'data' => [
-                        'transactionId' => $transactionId,
-                        'reference' => $responseData['validation'] ?? null,
-                        'message' => $responseData['message'] ?? null
-                    ]
-                ];
-            }
-
-            return [
-                'success' => false,
-                'status' => 'ERROR',
-                'Status' => 'ERROR',
-                'message' => $responseData['message'] ?? 'Error al emitir débito',
-                'data' => $responseData
-            ];
+            // ✅ Devolver la respuesta en el formato esperado por el controlador
+            return $responseData;
         } catch (\Exception $e) {
             Log::error('❌ Error en emitirDebito:', [
                 'error' => $e->getMessage(),
@@ -446,9 +395,7 @@ class BncApiService
             ]);
 
             return [
-                'success' => false,
                 'status' => 'ERROR',
-                'Status' => 'ERROR',
                 'message' => $e->getMessage()
             ];
         }

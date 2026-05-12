@@ -95,6 +95,7 @@ class PaymentController extends Controller
             ];
         });
     }
+
     /**
      * PASO 1: SOLICITAR DÉBITO (solicita código SMS)
      */
@@ -111,44 +112,28 @@ class PaymentController extends Controller
         Log::info('📤 SOLICITAR DÉBITO - Request:', $validated);
 
         try {
-            // Log para identificar el tipo de débito
             $tipoDebito = $validated['DebtorAccountType'] === 'TLF' ? 'TELÉFONO' : 'CUENTA';
             Log::info("📱 Tipo de débito: {$tipoDebito}");
 
-            // Llamar al servicio BNC
             $result = $this->bncApiService->solicitarDebito($validated);
 
             Log::info('📦 SOLICITAR DÉBITO - Respuesta BNC:', $result);
 
-            // Procesar respuesta según la estructura del banco
+            // ✅ CORREGIDO: Procesar respuesta según la estructura real del API
             $success = false;
             $message = 'Error en la solicitud';
             $requestId = null;
 
-            // Verificar si la respuesta fue exitosa (campo 'status' del banco)
+            // La respuesta exitosa del API tiene status = "OK"
             if (isset($result['status']) && $result['status'] === 'OK') {
                 $success = true;
                 $message = $result['message'] ?? 'Código SMS enviado';
-                $requestId = $result['validation'] ?? $result['requestId'] ?? null;
-            }
-            // Mantener compatibilidad con otros formatos
-            elseif (isset($result['success']) && $result['success'] === true) {
-                $success = true;
-                $message = $result['message'] ?? 'Código SMS enviado';
-                $requestId = $result['requestId'] ?? $result['data']['requestId'] ?? null;
+                // ✅ El requestId es el campo 'validation' de la respuesta
+                $requestId = $result['validation'] ?? $result['value'] ?? null;
             } elseif (isset($result['Status']) && $result['Status'] === 'OK') {
                 $success = true;
-                $message = $result['message'] ?? 'Código SMS enviado';
-                $requestId = $result['RequestId'] ?? $result['TransactionId'] ?? $result['validation'] ?? null;
-            } elseif (isset($result['CodigoRespuesta']) && $result['CodigoRespuesta'] === '00') {
-                $success = true;
-                $message = $result['message'] ?? 'Código SMS enviado';
-                $requestId = $result['IdSolicitud'] ?? $result['validation'] ?? null;
-            }
-
-            // Si no hay requestId pero la respuesta fue exitosa, usar validation
-            if ($success && !$requestId && isset($result['validation'])) {
-                $requestId = $result['validation'];
+                $message = $result['Message'] ?? $result['message'] ?? 'Código SMS enviado';
+                $requestId = $result['RequestId'] ?? $result['TransactionId'] ?? null;
             }
 
             return response()->json([
@@ -158,7 +143,7 @@ class PaymentController extends Controller
                     'requestId' => $requestId,
                     'expiresIn' => 300,
                     'tipoDebito' => $tipoDebito,
-                    'raw_response' => app()->environment('local') ? $result : null // Solo para debug en local
+                    'raw_response' => app()->environment('local') ? $result : null
                 ]
             ]);
         } catch (\Exception $e) {
@@ -179,9 +164,6 @@ class PaymentController extends Controller
     /**
      * PASO 2: EMITIR DÉBITO (confirma con código SMS)
      */
-    /**
-     * PASO 2: EMITIR DÉBITO (confirma con código SMS)
-     */
     public function emitirDebito(Request $request): JsonResponse
     {
         $validated = $request->validate([
@@ -193,22 +175,30 @@ class PaymentController extends Controller
             'DebtorID' => 'required|string|max:15',
             'Amount' => 'required|numeric|min:0.01|max:999999.99',
             'DebtorName' => 'required|string|max:100',
-            'requestId' => 'required|string', // ¡IMPORTANTE! El requestId de solicitar
+            'requestId' => 'required|string', // ✅ El requestId de solicitarDebito
             'ChildClientID' => 'nullable|string|max:50',
             'BranchID' => 'nullable|string|max:50',
         ]);
 
-        Log::info('📤 EMITIR DÉBITO - Request:', $validated);
+        Log::info('📤 EMITIR DÉBITO - Request:', [
+            'DebtorBank' => $validated['DebtorBank'],
+            'DebtorAccount' => $this->maskAccountNumber($validated['DebtorAccount']),
+            'DebtorAccType' => $validated['DebtorAccType'],
+            'Concept' => $validated['Concept'],
+            'AddtlInf' => '****' . substr($validated['AddtlInf'], -4),
+            'DebtorID' => $validated['DebtorID'],
+            'Amount' => $validated['Amount'],
+            'DebtorName' => $validated['DebtorName'],
+            'requestId' => $validated['requestId']
+        ]);
 
         try {
-            // Log para identificar el tipo de débito
             $tipoDebito = $validated['DebtorAccType'] === 'TLF' ? 'TELÉFONO' : 'CUENTA';
             Log::info("📱 Tipo de débito: {$tipoDebito}");
 
-            // Validaciones adicionales según el tipo
+            // Validación adicional para teléfono
             if ($tipoDebito === 'TELÉFONO') {
                 if (!preg_match('/^(0412|0414|0416|0424|0426)[0-9]{7}$/', $validated['DebtorAccount'])) {
-                    Log::warning('⚠️ Formato de teléfono inválido:', ['telefono' => $validated['DebtorAccount']]);
                     return response()->json([
                         'success' => false,
                         'message' => 'Formato de teléfono inválido. Debe ser un número venezolano válido',
@@ -222,23 +212,23 @@ class PaymentController extends Controller
 
             Log::info('📦 EMITIR DÉBITO - Respuesta BNC:', $result);
 
-            // Procesar respuesta
+            // ✅ CORREGIDO: Procesar respuesta
             $success = false;
             $message = 'Error al emitir el débito';
             $transactionId = null;
             $reference = null;
 
-            // Verificar respuesta exitosa
+            // La respuesta exitosa tiene status = "OK"
             if (isset($result['status']) && $result['status'] === 'OK') {
                 $success = true;
                 $message = $result['message'] ?? 'Débito procesado exitosamente';
-                $transactionId = $result['TransactionId'] ?? $result['IdTransaccion'] ?? null;
-                $reference = $result['Reference'] ?? $result['Referencia'] ?? $result['validation'] ?? null;
-            } elseif (isset($result['success']) && $result['success'] === true) {
+                $transactionId = $result['validation'] ?? $result['value'] ?? null;
+                $reference = $result['validation'] ?? null;
+            } elseif (isset($result['Status']) && $result['Status'] === 'OK') {
                 $success = true;
-                $message = $result['message'] ?? 'Débito procesado exitosamente';
-                $transactionId = $result['transactionId'] ?? $result['TransactionId'] ?? null;
-                $reference = $result['reference'] ?? $result['Reference'] ?? null;
+                $message = $result['Message'] ?? $result['message'] ?? 'Débito procesado exitosamente';
+                $transactionId = $result['TransactionId'] ?? $result['RequestId'] ?? null;
+                $reference = $result['Reference'] ?? null;
             }
 
             return response()->json([
@@ -266,6 +256,17 @@ class PaymentController extends Controller
                 ]
             ], 500);
         }
+    }
+
+    /**
+     * Helper para enmascarar número de cuenta en logs
+     */
+    private function maskAccountNumber(string $number): string
+    {
+        if (strlen($number) <= 8) {
+            return '****';
+        }
+        return substr($number, 0, 4) . '****' . substr($number, -4);
     }
 
     /**
