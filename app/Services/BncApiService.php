@@ -198,17 +198,17 @@ class BncApiService
             }
 
             // Determinar el tipo de cuenta correcto
-            $debtorAccountType = $data['DebtorAccountType'];
-            if ($debtorAccountType === 'TLF') {
-                $debtorAccountType = 'CELE';
-                Log::info('📱 Detectado débito a teléfono, usando DebtorAccountType: CELE');
+            $debtorAccType = $data['DebtorAccountType'];
+            if ($debtorAccType === 'TLF') {
+                $debtorAccType = 'CELE';
+                Log::info('📱 Detectado débito a teléfono, usando DebtorAccType: CELE');
             }
 
-            // Preparar payload exacto que pide el banco
+            // ✅ CORREGIDO: usar DebtorAccType (no DebtorAccountType)
             $payload = [
                 "Amount" => (float)$data['Amount'],
                 "DebtorAccount" => $data['DebtorAccount'],
-                "DebtorAccountType" => $debtorAccountType,
+                "DebtorAccType" => $debtorAccType,  // ← CAMBIADO
                 "DebtorBank" => $data['DebtorBank'],
                 "DebtorID" => $data['DebtorID']
             ];
@@ -256,7 +256,7 @@ class BncApiService
 
             $responseData = $response->json();
 
-            // Procesar respuesta (viene en texto plano según ejemplos)
+            // Procesar respuesta
             if (isset($responseData['status']) && $responseData['status'] === 'OK') {
                 return [
                     'success' => true,
@@ -282,7 +282,7 @@ class BncApiService
                 'message' => $responseData['message'] ?? 'Error en la solicitud',
                 'data' => $responseData
             ];
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::error('❌ Error en solicitarDebito:', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
