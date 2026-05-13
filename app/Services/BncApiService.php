@@ -40,17 +40,24 @@ class BncApiService
         $this->debitBeginnerUrl = "{$baseUrl}/api/SIMF/DebitBeginner";
         $this->debitReenviarUrl = "{$baseUrl}/api/debito/reenviar-sms";
 
-        // Credenciales desde .env
-        $this->clientGuid = env('BNC_CLIENT_GUID');
-        $this->masterKey = env('BNC_MASTER_KEY');
-        $this->merchantId = env('BNC_MERCHANT_ID');
+        // ✅ Credenciales según el entorno
+        if (app()->environment('production')) {
+            $this->clientGuid = env('BNC_PRODUCTION_CLIENT_GUID');
+            $this->masterKey = env('BNC_PRODUCTION_MASTER_KEY');
+            $this->merchantId = env('BNC_PRODUCTION_MERCHANT_ID');
+        } else {
+            $this->clientGuid = env('BNC_QA_CLIENT_GUID');
+            $this->masterKey = env('BNC_QA_MASTER_KEY');
+            $this->merchantId = env('BNC_QA_MERCHANT_ID');
+        }
 
         $this->dataCypher = new DataCypher($this->masterKey);
 
         Log::info('🔧 BNC Service inicializado', [
             'environment' => app()->environment(),
             'port' => $port,
-            'base_url' => $baseUrl
+            'base_url' => $baseUrl,
+            'has_client_guid' => !empty($this->clientGuid)
         ]);
     }
 
