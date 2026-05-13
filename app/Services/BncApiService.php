@@ -191,15 +191,43 @@ class BncApiService
      */
     public function solicitarDebito(array $data): ?array
     {
-        Log::info('🔵 BNC - SOLICITAR DÉBITO', [
+        Log::info('🔵 BNC - SOLICITAR DÉBITO - INICIO', [
             'data' => $this->sanitizeSensitiveData($data)
         ]);
 
         try {
+            // ✅ LOG 1: URL que se va a usar
+            Log::info('📍 [1] URL DE DÉBITO EN PRODUCCIÓN', [
+                'debitTokenRequestUrl' => $this->debitTokenRequestUrl,
+                'environment' => app()->environment()
+            ]);
+
+            // ✅ LOG 2: WorkingKey antes de obtener
+            Log::info('🔑 [2] OBTENIENDO WORKING KEY', [
+                'has_existing_working_key' => !empty($this->getWorkingKey())
+            ]);
+
             $workingKey = $this->ensureWorkingKey();
+
+            // ✅ LOG 3: WorkingKey obtenido
+            Log::info('🔑 [3] WORKING KEY OBTENIDO', [
+                'has_working_key' => !empty($workingKey),
+                'working_key_length' => strlen($workingKey ?? ''),
+                'working_key_first_10' => substr($workingKey ?? '', 0, 10)
+            ]);
+
             if (!$workingKey) {
                 throw new Exception('No se pudo obtener WorkingKey');
             }
+
+            // ✅ LOG 4: Datos recibidos
+            Log::info('📦 [4] DATOS RECIBIDOS', [
+                'Amount' => $data['Amount'] ?? 'missing',
+                'DebtorAccount' => isset($data['DebtorAccount']) ? substr($data['DebtorAccount'], 0, 4) . '****' : 'missing',
+                'DebtorAccountType' => $data['DebtorAccountType'] ?? $data['DebtorAccType'] ?? 'missing',
+                'DebtorBank' => $data['DebtorBank'] ?? 'missing',
+                'DebtorID' => $data['DebtorID'] ?? 'missing'
+            ]);
 
             $debtorAccType = $data['DebtorAccountType'] ?? $data['DebtorAccType'] ?? null;
 
@@ -212,20 +240,31 @@ class BncApiService
                 Log::info('📱 Detectado débito a teléfono, usando DebtorAccountType: CELE');
             }
 
-            // ✅ CORREGIDO: usar DebtorAccountType (como espera el banco)
+            // ✅ LOG 5: Payload antes de encriptar
             $payload = [
                 "Amount" => (float)$data['Amount'],
                 "DebtorAccount" => $data['DebtorAccount'],
-                "DebtorAccountType" => $debtorAccType,  // ← CAMBIADO
+                "DebtorAccountType" => $debtorAccType,
                 "DebtorBank" => $data['DebtorBank'],
                 "DebtorID" => $data['DebtorID']
             ];
 
-            Log::info('📦 Payload a encriptar:', ['payload' => $payload]);
+            Log::info('📦 [5] PAYLOAD A ENCRIPTAR', [
+                'payload' => $payload,
+                'payload_json' => json_encode($payload)
+            ]);
 
             $jsonData = json_encode($payload);
             $encryptedValue = $this->dataCypher->encryptWithKey($jsonData, $workingKey);
             $validationHash = $this->dataCypher->encryptSHA256($jsonData);
+
+            // ✅ LOG 6: Datos encriptados
+            Log::info('🔐 [6] DATOS ENCRIPTADOS', [
+                'jsonData_length' => strlen($jsonData),
+                'encryptedValue_length' => strlen($encryptedValue),
+                'encryptedValue_preview' => substr($encryptedValue, 0, 20) . '...',
+                'validationHash' => $validationHash
+            ]);
 
             $solicitud = [
                 "ClientGUID" => $this->clientGuid,
@@ -235,33 +274,60 @@ class BncApiService
                 "swTestOperation" => false
             ];
 
-            Log::info('📤 Enviando solicitud al BNC:', [
+            // ✅ LOG 7: Wrapper a enviar
+            Log::info('📤 [7] ENVIANDO SOLICITUD AL BNC', [
                 'url' => $this->debitTokenRequestUrl,
+                'method' => 'POST',
                 'wrapper' => [
                     'ClientGUID' => $solicitud['ClientGUID'],
                     'value_length' => strlen($solicitud['value']),
                     'validation' => substr($solicitud['Validation'], 0, 10) . '...',
-                    'Reference' => $solicitud['Reference']
+                    'Reference' => $solicitud['Reference'],
+                    'swTestOperation' => $solicitud['swTestOperation']
                 ]
             ]);
+
+            $startTime = microtime(true);
 
             $response = Http::timeout(30)
                 ->retry(2, 100)
                 ->withHeaders(['Content-Type' => 'application/json'])
                 ->post($this->debitTokenRequestUrl, $solicitud);
 
-            Log::info('📥 Respuesta del BNC:', [
+            $executionTime = round((microtime(true) - $startTime) * 1000, 2);
+
+            // ✅ LOG 8: Respuesta del BNC
+            Log::info('📥 [8] RESPUESTA DEL BNC', [
                 'status' => $response->status(),
-                'body' => $response->body()
+                'execution_time_ms' => $executionTime,
+                'body' => $response->body(),
+                'successful' => $response->successful()
             ]);
 
             if (!$response->successful()) {
+                Log::error('❌ [9] RESPUESTA NO EXITOSA', [
+                    'status' => $response->status(),
+                    'body' => $response->body()
+                ]);
                 throw new Exception("Error HTTP: " . $response->status() . " - " . $response->body());
             }
 
             $responseData = $response->json();
 
+            // ✅ LOG 9: Respuesta parseada
+            Log::info('📊 [9] RESPUESTA PARSEADA', [
+                'has_status' => isset($responseData['status']),
+                'status_value' => $responseData['status'] ?? null,
+                'has_validation' => isset($responseData['validation']),
+                'has_message' => isset($responseData['message'])
+            ]);
+
             if (isset($responseData['status']) && $responseData['status'] === 'OK') {
+                Log::info('✅ [10] SOLICITUD EXITOSA', [
+                    'requestId' => $responseData['validation'] ?? null,
+                    'message' => $responseData['message'] ?? null
+                ]);
+
                 return [
                     'success' => true,
                     'status' => 'OK',
@@ -279,6 +345,10 @@ class BncApiService
                 ];
             }
 
+            Log::warning('⚠️ [11] RESPUESTA NO OK DEL BANCO', [
+                'response' => $responseData
+            ]);
+
             return [
                 'success' => false,
                 'status' => 'ERROR',
@@ -287,9 +357,11 @@ class BncApiService
                 'data' => $responseData
             ];
         } catch (Exception $e) {
-            Log::error('❌ Error en solicitarDebito:', [
+            Log::error('❌ [12] ERROR EN solicitarDebito:', [
                 'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
+                'trace' => $e->getTraceAsString(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
             ]);
 
             return [
