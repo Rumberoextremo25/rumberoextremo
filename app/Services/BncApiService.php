@@ -196,36 +196,37 @@ class BncApiService
         ]);
 
         try {
-            // Asegurar working key
             $workingKey = $this->ensureWorkingKey();
             if (!$workingKey) {
                 throw new Exception('No se pudo obtener WorkingKey');
             }
 
-            // Determinar el tipo de cuenta correcto
-            $debtorAccType = $data['DebtorAccountType'];
-            if ($debtorAccType === 'TLF') {
-                $debtorAccType = 'CELE';
-                Log::info('📱 Detectado débito a teléfono, usando DebtorAccType: CELE');
+            $debtorAccType = $data['DebtorAccountType'] ?? $data['DebtorAccType'] ?? null;
+
+            if (!$debtorAccType) {
+                throw new Exception('No se encontró DebtorAccountType o DebtorAccType');
             }
 
-            // ✅ CORREGIDO: usar DebtorAccType (no DebtorAccountType)
+            if ($debtorAccType === 'TLF') {
+                $debtorAccType = 'CELE';
+                Log::info('📱 Detectado débito a teléfono, usando DebtorAccountType: CELE');
+            }
+
+            // ✅ CORREGIDO: usar DebtorAccountType (como espera el banco)
             $payload = [
                 "Amount" => (float)$data['Amount'],
                 "DebtorAccount" => $data['DebtorAccount'],
-                "DebtorAccType" => $debtorAccType,  // ← CAMBIADO
+                "DebtorAccountType" => $debtorAccType,  // ← CAMBIADO
                 "DebtorBank" => $data['DebtorBank'],
                 "DebtorID" => $data['DebtorID']
             ];
 
             Log::info('📦 Payload a encriptar:', ['payload' => $payload]);
 
-            // Encriptar payload
             $jsonData = json_encode($payload);
             $encryptedValue = $this->dataCypher->encryptWithKey($jsonData, $workingKey);
             $validationHash = $this->dataCypher->encryptSHA256($jsonData);
 
-            // Construir wrapper
             $solicitud = [
                 "ClientGUID" => $this->clientGuid,
                 "value" => $encryptedValue,
@@ -244,7 +245,6 @@ class BncApiService
                 ]
             ]);
 
-            // Enviar request
             $response = Http::timeout(30)
                 ->retry(2, 100)
                 ->withHeaders(['Content-Type' => 'application/json'])
@@ -261,7 +261,6 @@ class BncApiService
 
             $responseData = $response->json();
 
-            // Procesar respuesta
             if (isset($responseData['status']) && $responseData['status'] === 'OK') {
                 return [
                     'success' => true,

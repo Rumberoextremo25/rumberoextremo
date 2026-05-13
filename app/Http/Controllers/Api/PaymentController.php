@@ -99,15 +99,47 @@ class PaymentController extends Controller
     /**
      * PASO 1: SOLICITAR DÉBITO (solicita código SMS)
      */
+    /**
+     * PASO 1: SOLICITAR DÉBITO (solicita código SMS)
+     */
     public function solicitarDebito(Request $request): JsonResponse
     {
+        // ✅ Aceptar DebtorAccountType o DebtorAccType (para compatibilidad)
+        $accountType = $request->input('DebtorAccountType') ?? $request->input('DebtorAccType');
+
+        // Validar campos obligatorios
         $validated = $request->validate([
             'Amount' => 'required|numeric|min:0.01|max:999999.99',
             'DebtorAccount' => 'required|string|max:20',
-            'DebtorAccountType' => 'required|string|in:CNTA,CELE,CTAH,CTAV,AHORROS,CORRIENTE,TLF',
             'DebtorBank' => 'required|string|size:4',
             'DebtorID' => 'required|string|max:15',
         ]);
+
+        // Validar que el tipo de cuenta esté presente
+        if (empty($accountType)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'El campo DebtorAccountType o DebtorAccType es obligatorio',
+                'data' => [
+                    'tipoDebito' => 'CUENTA'
+                ]
+            ], 422);
+        }
+
+        // Validar que el tipo de cuenta sea válido
+        $validTypes = ['CNTA', 'CELE', 'CTAH', 'CTAV', 'AHORROS', 'CORRIENTE', 'TLF'];
+        if (!in_array($accountType, $validTypes)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Tipo de cuenta inválido. Debe ser: ' . implode(', ', $validTypes),
+                'data' => [
+                    'tipoDebito' => 'CUENTA'
+                ]
+            ], 422);
+        }
+
+        // Agregar el tipo de cuenta al array validado
+        $validated['DebtorAccountType'] = $accountType;
 
         Log::info('📤 SOLICITAR DÉBITO - Request:', $validated);
 
@@ -119,7 +151,7 @@ class PaymentController extends Controller
 
             Log::info('📦 SOLICITAR DÉBITO - Respuesta BNC:', $result);
 
-            // ✅ CORREGIDO: Procesar respuesta según la estructura real del API
+            // Procesar respuesta según la estructura real del API
             $success = false;
             $message = 'Error en la solicitud';
             $requestId = null;
@@ -128,7 +160,7 @@ class PaymentController extends Controller
             if (isset($result['status']) && $result['status'] === 'OK') {
                 $success = true;
                 $message = $result['message'] ?? 'Código SMS enviado';
-                // ✅ El requestId es el campo 'validation' de la respuesta
+                // El requestId es el campo 'validation' de la respuesta
                 $requestId = $result['validation'] ?? $result['value'] ?? null;
             } elseif (isset($result['Status']) && $result['Status'] === 'OK') {
                 $success = true;
