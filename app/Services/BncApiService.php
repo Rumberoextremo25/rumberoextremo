@@ -25,26 +25,26 @@ class BncApiService
 
     public function __construct()
     {
-        // Puerto para servicios principales (C2P, tarjeta, bancos, tasas)
-        $port = app()->environment('production') ? '16000' : '16500';
-        $baseUrl = "https://servicios.bncenlinea.com:{$port}";
+        // ✅ PARA DÉBITO: TODO usa QA (autenticación + débito)
+        $qaBaseUrl = "https://servicios.bncenlinea.com:16500";
 
-        // Servicios principales (usan puerto según entorno)
-        $this->authApiUrl = "{$baseUrl}/api/Auth/LogOn";
-        $this->c2pApiUrl = "{$baseUrl}/api/MobPayment/SendC2P";
-        $this->vposApiUrl = "{$baseUrl}/api/Transaction/Send";
-        $this->validationApiUrl = "{$baseUrl}/api/Position/Validate";
-        $this->banksApiUrl = "{$baseUrl}/api/Services/Banks";
-        $this->ratesApiUrl = "{$baseUrl}/api/Services/BCVRates";
+        // Autenticación para débito (debe usar QA)
+        $this->authApiUrl = "{$qaBaseUrl}/api/Auth/LogOn";
 
-        // ✅ DÉBITO: SIEMPRE USAR QA (puerto 16500)
-        // Esto aplica incluso en producción
-        $debitoBaseUrl = "https://servicios.bncenlinea.com:16500";
-        $this->debitTokenRequestUrl = "{$debitoBaseUrl}/api/SIMF/DebitTokenRequest";
-        $this->debitBeginnerUrl = "{$debitoBaseUrl}/api/SIMF/DebitBeginner";
-        $this->debitReenviarUrl = "{$debitoBaseUrl}/api/debito/reenviar-sms";
+        // URLs de débito
+        $this->debitTokenRequestUrl = "{$qaBaseUrl}/api/SIMF/DebitTokenRequest";
+        $this->debitBeginnerUrl = "{$qaBaseUrl}/api/SIMF/DebitBeginner";
+        $this->debitReenviarUrl = "{$qaBaseUrl}/api/debito/reenviar-sms";
 
-        // Credenciales desde .env
+        // ✅ PARA OTROS SERVICIOS (C2P, tarjeta) usar producción
+        $prodBaseUrl = "https://servicios.bncenlinea.com:16000";
+        $this->c2pApiUrl = "{$prodBaseUrl}/api/MobPayment/SendC2P";
+        $this->vposApiUrl = "{$prodBaseUrl}/api/Transaction/Send";
+        $this->validationApiUrl = "{$prodBaseUrl}/api/Position/Validate";
+        $this->banksApiUrl = "{$prodBaseUrl}/api/Services/Banks";
+        $this->ratesApiUrl = "{$prodBaseUrl}/api/Services/BCVRates";
+
+        // Credenciales desde .env (deben ser QA)
         $this->clientGuid = env('BNC_CLIENT_GUID');
         $this->masterKey = env('BNC_MASTER_KEY');
         $this->merchantId = env('BNC_MERCHANT_ID');
@@ -53,9 +53,9 @@ class BncApiService
 
         Log::info('🔧 BNC Service inicializado', [
             'environment' => app()->environment(),
-            'servicios_port' => $port,
-            'debito_port' => 16500,
-            'debito_url' => $this->debitTokenRequestUrl
+            'auth_url' => $this->authApiUrl,
+            'debito_url' => $this->debitTokenRequestUrl,
+            'c2p_url' => $this->c2pApiUrl
         ]);
     }
 
