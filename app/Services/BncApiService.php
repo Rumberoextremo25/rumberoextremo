@@ -25,36 +25,35 @@ class BncApiService
 
     public function __construct()
     {
-        // Base de URL oficial para todos los servicios en Producción
-        $prodBaseUrl = "https://servicios.bncenlinea.com:16000";
+        // URLs extraídas individualmente desde el .env
+        $this->authApiUrl = env('BNC_AUTH_API_URL');
 
-        // Autenticación General (Producción)
-        $this->authApiUrl = "{$prodBaseUrl}/api/Auth/LogOn";
+        // URLs de débito
+        $this->debitTokenRequestUrl = env('BNC_DEBITO_SOLICITAR_URL');
+        $this->debitBeginnerUrl = env('BNC_DEBITO_EMITIR_URL');
+        $this->debitReenviarUrl = env('BNC_DEBITO_REENVIAR_URL');
 
-        // URLs de Débito (Producción)
-        $this->debitTokenRequestUrl = "{$prodBaseUrl}/api/SIMF/DebitTokenRequest";
-        $this->debitBeginnerUrl = "{$prodBaseUrl}/api/SIMF/DebitBeginner";
-        $this->debitReenviarUrl = "{$prodBaseUrl}/api/debito/reenviar-sms";
+        // URLs de otros servicios (C2P, VPOS, Consultas)
+        $this->c2pApiUrl = env('BNC_C2P_API_URL');
+        $this->vposApiUrl = env('BNC_VPOS_API_URL');
+        $this->validationApiUrl = env('BNC_P2P_API_URL'); // Mapea BNC_P2P_API_URL a $this->validationApiUrl
+        $this->banksApiUrl = env('BNC_BANKS_API_URL');
+        $this->ratesApiUrl = env('BNC_RATES_API_URL');
 
-        // URLs de Otros Servicios (C2P, VPOS, Consultas)
-        $this->c2pApiUrl = "{$prodBaseUrl}/api/MobPayment/SendC2P";
-        $this->vposApiUrl = "{$prodBaseUrl}/api/Transaction/Send";
-        $this->validationApiUrl = "{$prodBaseUrl}/api/Position/Validate";
-        $this->banksApiUrl = "{$prodBaseUrl}/api/Services/Banks";
-        $this->ratesApiUrl = "{$prodBaseUrl}/api/Services/BCVRates";
+        // Si usas la url legacy en algún método, puedes mapearla también:
+        // $this->legacyLoginUrl = env('BNC_LEGACY_LOGIN_URL');
 
-        // Credenciales de producción desde el archivo .env
+        // Credenciales desde .env
         $this->clientGuid = env('BNC_CLIENT_GUID');
         $this->masterKey = env('BNC_MASTER_KEY');
         $this->merchantId = env('BNC_MERCHANT_ID');
 
         $this->dataCypher = new DataCypher($this->masterKey);
 
-        Log::info('🚀 BNC Service inicializado en PRODUCCIÓN', [
+        Log::info('🚀 BNC Service inicializado en PRODUCCIÓN desde variables de entorno', [
             'environment' => app()->environment(),
             'auth_url' => $this->authApiUrl,
-            'debito_url' => $this->debitTokenRequestUrl,
-            'c2p_url' => $this->c2pApiUrl
+            'debito_url' => $this->debitTokenRequestUrl
         ]);
     }
 
