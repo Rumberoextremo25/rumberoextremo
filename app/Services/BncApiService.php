@@ -25,33 +25,32 @@ class BncApiService
 
     public function __construct()
     {
-        // ✅ PARA DÉBITO: TODO usa QA (autenticación + débito)
-        $qaBaseUrl = "https://servicios.bncenlinea.com:16500";
-
-        // Autenticación para débito (debe usar QA)
-        $this->authApiUrl = "{$qaBaseUrl}/api/Auth/LogOn";
-
-        // URLs de débito
-        $this->debitTokenRequestUrl = "{$qaBaseUrl}/api/SIMF/DebitTokenRequest";
-        $this->debitBeginnerUrl = "{$qaBaseUrl}/api/SIMF/DebitBeginner";
-        $this->debitReenviarUrl = "{$qaBaseUrl}/api/debito/reenviar-sms";
-
-        // ✅ PARA OTROS SERVICIOS (C2P, tarjeta) usar producción
+        // Base de URL oficial para todos los servicios en Producción
         $prodBaseUrl = "https://servicios.bncenlinea.com:16000";
+
+        // Autenticación General (Producción)
+        $this->authApiUrl = "{$prodBaseUrl}/api/Auth/LogOn";
+
+        // URLs de Débito (Producción)
+        $this->debitTokenRequestUrl = "{$prodBaseUrl}/api/SIMF/DebitTokenRequest";
+        $this->debitBeginnerUrl = "{$prodBaseUrl}/api/SIMF/DebitBeginner";
+        $this->debitReenviarUrl = "{$prodBaseUrl}/api/debito/reenviar-sms";
+
+        // URLs de Otros Servicios (C2P, VPOS, Consultas)
         $this->c2pApiUrl = "{$prodBaseUrl}/api/MobPayment/SendC2P";
         $this->vposApiUrl = "{$prodBaseUrl}/api/Transaction/Send";
         $this->validationApiUrl = "{$prodBaseUrl}/api/Position/Validate";
         $this->banksApiUrl = "{$prodBaseUrl}/api/Services/Banks";
         $this->ratesApiUrl = "{$prodBaseUrl}/api/Services/BCVRates";
 
-        // Credenciales desde .env (deben ser QA)
+        // Credenciales de producción desde el archivo .env
         $this->clientGuid = env('BNC_CLIENT_GUID');
         $this->masterKey = env('BNC_MASTER_KEY');
         $this->merchantId = env('BNC_MERCHANT_ID');
 
         $this->dataCypher = new DataCypher($this->masterKey);
 
-        Log::info('🔧 BNC Service inicializado', [
+        Log::info('🚀 BNC Service inicializado en PRODUCCIÓN', [
             'environment' => app()->environment(),
             'auth_url' => $this->authApiUrl,
             'debito_url' => $this->debitTokenRequestUrl,
