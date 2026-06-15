@@ -34,10 +34,21 @@
                 {{ session('status') }}
             </div>
         @endif
+
+        {{-- Mensaje de error general --}}
+        @if ($errors->any())
+            <div class="alert-modern alert-error">
+                <svg class="alert-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                    <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                {{ $errors->first() }}
+            </div>
+        @endif
         
-        {{-- Formulario de login --}}
-        <form method="POST" action="{{ route('login') }}" class="form-modern">
+        {{-- Formulario de login - CAMBIADO a url('/login') --}}
+        <form method="POST" action="{{ url('/login') }}" class="form-modern">
             @csrf
+            <input type="hidden" name="web_request" value="1">
             
             {{-- Campo Email --}}
             <div class="form-group-modern">
@@ -141,4 +152,28 @@ function togglePassword() {
     setTimeout(() => button.classList.remove('active'), 200);
 }
 </script>
+
+<style>
+.alert-modern.alert-error {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    border: none;
+}
+
+.alert-modern {
+    padding: 12px 20px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-weight: 500;
+}
+
+.alert-icon {
+    width: 20px;
+    height: 20px;
+    stroke-width: 2;
+}
+</style>
 @endsection
