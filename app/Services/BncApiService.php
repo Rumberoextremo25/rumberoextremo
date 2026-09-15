@@ -23,8 +23,10 @@ class BncApiService
     private string $ratesApiUrl;
     protected DataCypher $dataCypher;
 
-    public function __construct() //Nuevos cambios en el services
+    public function __construct(DataCypher $dataCypher)
     {
+        $this->dataCypher = $dataCypher;
+
         $this->authApiUrl = config('bnc.auth_api_url');
         $this->c2pApiUrl = config('bnc.c2p_api_url');
         $this->vposApiUrl = config('bnc.vpos_api_url');
