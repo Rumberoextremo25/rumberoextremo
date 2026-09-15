@@ -25,36 +25,19 @@ class BncApiService
 
     public function __construct()
     {
-        // URLs extraídas individualmente desde el .env
-        $this->authApiUrl = env('BNC_AUTH_API_URL');
+        $this->authApiUrl = config('bnc.auth_api_url');
+        $this->c2pApiUrl = config('bnc.c2p_api_url');
+        $this->vposApiUrl = config('bnc.vpos_api_url');
+        $this->validationApiUrl = config('bnc.validation_api_url');
+        $this->banksApiUrl = config('bnc.banks_api_url');
+        $this->ratesApiUrl = config('bnc.rates_api_url');
+        $this->debitTokenRequestUrl = config('bnc.debit_token_request_url');
+        $this->debitBeginnerUrl = config('bnc.debit_beginner_url');
+        $this->debitReenviarUrl = config('bnc.debit_reenviar_url');
 
-        // URLs de débito
-        $this->debitTokenRequestUrl = env('BNC_DEBITO_SOLICITAR_URL');
-        $this->debitBeginnerUrl = env('BNC_DEBITO_EMITIR_URL');
-        $this->debitReenviarUrl = env('BNC_DEBITO_REENVIAR_URL');
-
-        // URLs de otros servicios (C2P, VPOS, Consultas)
-        $this->c2pApiUrl = env('BNC_C2P_API_URL');
-        $this->vposApiUrl = env('BNC_VPOS_API_URL');
-        $this->validationApiUrl = env('BNC_P2P_API_URL'); // Mapea BNC_P2P_API_URL a $this->validationApiUrl
-        $this->banksApiUrl = env('BNC_BANKS_API_URL');
-        $this->ratesApiUrl = env('BNC_RATES_API_URL');
-
-        // Si usas la url legacy en algún método, puedes mapearla también:
-        // $this->legacyLoginUrl = env('BNC_LEGACY_LOGIN_URL');
-
-        // Credenciales desde .env
-        $this->clientGuid = env('BNC_CLIENT_GUID');
-        $this->masterKey = env('BNC_MASTER_KEY');
-        $this->merchantId = env('BNC_MERCHANT_ID');
-
-        $this->dataCypher = new DataCypher($this->masterKey);
-
-        Log::info('🚀 BNC Service inicializado en PRODUCCIÓN desde variables de entorno', [
-            'environment' => app()->environment(),
-            'auth_url' => $this->authApiUrl,
-            'debito_url' => $this->debitTokenRequestUrl
-        ]);
+        $this->clientGuid = config('bnc.client_guid');
+        $this->masterKey = config('bnc.master_key');
+        $this->merchantId = config('bnc.merchant_id');
     }
 
     /**
@@ -159,7 +142,7 @@ class BncApiService
         $sanitized = [];
         foreach ($data as $key => $value) {
             if (in_array($key, ['DebtorAccount', 'CardNumber', 'CVV', 'CardPIN', 'Token'])) {
-                $value = (string)$value;
+                $value = (string) $value;
                 $sanitized[$key] = strlen($value) > 8
                     ? substr($value, 0, 4) . '****' . substr($value, -4)
                     : '****';
@@ -240,7 +223,7 @@ class BncApiService
 
             // ✅ LOG 5: Payload antes de encriptar
             $payload = [
-                "Amount" => (float)$data['Amount'],
+                "Amount" => (float) $data['Amount'],
                 "DebtorAccount" => $data['DebtorAccount'],
                 "DebtorAccountType" => $debtorAccType,
                 "DebtorBank" => $data['DebtorBank'],
@@ -406,7 +389,7 @@ class BncApiService
                 "Concept" => $data['Concept'],
                 "AddtlInf" => $data['AddtlInf'], // Código SMS
                 "DebtorID" => $data['DebtorID'],
-                "Amount" => (float)$data['Amount'],
+                "Amount" => (float) $data['Amount'],
                 "DebtorName" => $data['DebtorName'],
                 "ChildClientID" => $data['ChildClientID'] ?? "",
                 "BranchID" => $data['BranchID'] ?? ""
@@ -582,10 +565,10 @@ class BncApiService
             'Terminal'
         ], function ($data) {
             return [
-                "DebtorBankCode" => (int)$data['DebtorBankCode'],
+                "DebtorBankCode" => (int) $data['DebtorBankCode'],
                 "DebtorCellPhone" => $data['DebtorCellPhone'],
                 "DebtorID" => $data['DebtorID'],
-                "Amount" => (float)$data['Amount'],
+                "Amount" => (float) $data['Amount'],
                 "Token" => $data['Token'],
                 "Terminal" => $data['Terminal'],
                 "ChildClientID" => $data['ChildClientID'] ?? "",
@@ -612,16 +595,16 @@ class BncApiService
         ], function ($data) {
             return [
                 "TransactionIdentifier" => $data['TransactionIdentifier'],
-                "Amount" => (float)$data['Amount'],
-                "idCardType" => (int)$data['idCardType'],
-                "CardNumber" => (string)$data['CardNumber'],
-                "dtExpiration" => (int)$data['dtExpiration'],
+                "Amount" => (float) $data['Amount'],
+                "idCardType" => (int) $data['idCardType'],
+                "CardNumber" => (string) $data['CardNumber'],
+                "dtExpiration" => (int) $data['dtExpiration'],
                 "CardHolderName" => $data['CardHolderName'],
-                "AccountType" => (int)$data['AccountType'],
-                "CVV" => (int)$data['CVV'],
-                "CardPIN" => (int)$data['CardPIN'],
-                "CardHolderID" => (int)$data['CardHolderID'],
-                "AffiliationNumber" => (int)$data['AffiliationNumber'],
+                "AccountType" => (int) $data['AccountType'],
+                "CVV" => (int) $data['CVV'],
+                "CardPIN" => (int) $data['CardPIN'],
+                "CardHolderID" => (int) $data['CardHolderID'],
+                "AffiliationNumber" => (int) $data['AffiliationNumber'],
                 "OperationRef" => $data['OperationRef'],
                 "ChildClientID" => $data['ChildClientID'] ?? "",
                 "BranchID" => $data['BranchID'] ?? ""
