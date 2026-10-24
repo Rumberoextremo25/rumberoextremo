@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\ChatMessage;
+use App\Models\Category;
 use App\Models\Promotion;
 use App\Models\DiscountActivation;
 use Illuminate\Http\Request;
@@ -72,6 +73,53 @@ class RumberoAIController extends Controller
             return response()->json([
                 'success' => false,
                 'message' => 'Error al enviar el mensaje. Intenta de nuevo.',
+            ], 500);
+        }
+    }
+
+    /**
+     * Categorías y subcategorías públicas para el chat / catálogo.
+     *
+     * Devuelve solo datos necesarios (sin modelos completos) e incluye el
+     * número de aliados activos por categoría.
+     */
+    public function getCategorias()
+    {
+        try {
+            $categories = Category::query()
+                ->with(['subCategories:id,category_id,name,slug'])
+                ->withCount([
+                    'allies' => fn ($query) => $query->where('status', 'activo'),
+                ])
+                ->orderBy('name')
+                ->get()
+                ->map(fn (Category $category) => [
+                    'id' => $category->id,
+                    'name' => $category->name,
+                    'slug' => $category->slug,
+                    'description' => $category->description,
+                    'allies_count' => (int) $category->allies_count,
+                    'subcategories' => $category->subCategories
+                        ->map(fn ($subcategory) => [
+                            'id' => $subcategory->id,
+                            'name' => $subcategory->name,
+                            'slug' => $subcategory->slug,
+                        ])
+                        ->values(),
+                ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Categorías obtenidas correctamente.',
+                'data' => $categories,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Error al obtener categorías: ' . $e->getMessage());
+
+            return response()->json([
+                'success' => false,
+                'message' => 'No se pudieron obtener las categorías.',
+                'data' => [],
             ], 500);
         }
     }
