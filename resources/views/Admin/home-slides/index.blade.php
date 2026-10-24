@@ -100,7 +100,7 @@
 
                             <form method="POST" action="{{ route('admin.home-slides.toggle', $slide) }}">
                                 @csrf
-                                <button type="submit" class="cm-btn">
+                                <button type="submit" class="cm-btn {{ $slide->is_active ? 'cm-btn--warning' : 'cm-btn--success' }}">
                                     <i class="fa-solid {{ $slide->is_active ? 'fa-eye-slash' : 'fa-eye' }}" aria-hidden="true"></i>
                                     {{ $slide->is_active ? 'Ocultar' : 'Mostrar' }}
                                 </button>

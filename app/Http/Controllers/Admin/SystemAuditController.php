@@ -17,7 +17,9 @@ class SystemAuditController extends Controller
     {
         $this->authorizeAuditor();
 
-        $result = $this->audit->last() ?? $this->audit->run();
+        // Se ejecuta en cada visita para que el panel muestre el estado
+        // actual y no un informe viejo guardado en disco.
+        $result = $this->audit->run();
         $history = $this->audit->history();
         $user = auth()->user();
 
@@ -37,8 +39,8 @@ class SystemAuditController extends Controller
     {
         $this->authorizeAuditor();
 
-        $this->audit->run();
-
+        // El index vuelve a ejecutar la auditoría al cargar; no hace falta
+        // ejecutarla dos veces (una aquí y otra al redirigir).
         return redirect()
             ->route('admin.system-audit.index')
             ->with('audit_success', 'Auditoría ejecutada. Revisa el estado actual del sistema.');
@@ -54,9 +56,7 @@ class SystemAuditController extends Controller
 
         $result = $this->audit->fix($data['action']);
 
-        // Refrescar el informe después de la acción.
-        $this->audit->run();
-
+        // El index refresca el informe al cargar después del redirect.
         return redirect()
             ->route('admin.system-audit.index')
             ->with(
@@ -114,7 +114,9 @@ class SystemAuditController extends Controller
     {
         $this->authorizeAuditor();
 
-        $result = $this->audit->last() ?? $this->audit->run();
+        // Se ejecuta en cada visita para que el panel muestre el estado
+        // actual y no un informe viejo guardado en disco.
+        $result = $this->audit->run();
         $filename = 'auditoria-sistema-' . now()->format('Y-m-d-His') . '.json';
 
         return response()->streamDownload(function () use ($result) {

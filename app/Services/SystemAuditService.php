@@ -25,6 +25,8 @@ use Throwable;
  */
 class SystemAuditService
 {
+    private ?Carbon $previousRunAt = null;
+
     public const FIX_ACTIONS = [
         'optimize_clear' => [
             'label' => 'Limpiar todas las cachés',
@@ -70,6 +72,17 @@ class SystemAuditService
 
     public function run(): array
     {
+        $previous = $this->last();
+        $this->previousRunAt = null;
+
+        if ($previous && ! empty($previous['generated_at'])) {
+            try {
+                $this->previousRunAt = Carbon::parse($previous['generated_at']);
+            } catch (Throwable) {
+                // Si la fecha guardada no es válida, se usa la ventana de 24 h.
+            }
+        }
+
         $checks = [];
         $methods = [
             'checkEnvironment',
@@ -1272,31 +1285,86 @@ class SystemAuditService
                 : 'El tamaño del log es razonable.',
             $size > 100 * 1024 * 1024 ? 'Rota o limpia el log y configura LOG_DAILY.' : null,
             null,
-            $size > 100 * 1024 * 1024 ? 'php artisan log:clear' : null
+            $size > 100 * 1024 * 1024 ? 'truncate -s 0 storage/logs/laravel.log' : null
         );
 
         $tail = $this->tail($logPath, max(32, (int) config('system_audit.log_tail_kb', 256)) * 1024);
-        $errors = preg_match_all('/\.(ERROR|CRITICAL|ALERT|EMERGENCY):/i', $tail);
-        $errors = $errors === false ? 0 : $errors;
-        $lastError = null;
 
-        if (preg_match('/^\[(.*?)\].*?\.(ERROR|CRITICAL|ALERT|EMERGENCY): (.*)$/mi', $tail, $match)) {
-            $lastError = $match[1] . ' · ' . Str::limit(trim($match[3]), 120);
+        preg_match_all(
+            '/^\[(\d{4}-\d{2}-\d{2}[ T]\d{2}:\d{2}:\d{2})\].*?\.(ERROR|CRITICAL|ALERT|EMERGENCY):/mi',
+            $tail,
+            $matches,
+            PREG_SET_ORDER
+        );
+
+        $timestamps = [];
+        $lastErrorAt = null;
+        $lastErrorLine = null;
+
+        foreach ($matches as $match) {
+            try {
+                $timestamp = Carbon::parse($match[1]);
+            } catch (Throwable) {
+                continue;
+            }
+
+            $timestamps[] = $timestamp;
+
+            if ($lastErrorAt === null || $timestamp->greaterThan($lastErrorAt)) {
+                $lastErrorAt = $timestamp;
+            }
+        }
+
+        $errors = count($matches);
+        $lastError = $lastErrorAt
+            ? $lastErrorAt->format('d/m/Y H:i:s') . ' (' . $lastErrorAt->diffForHumans() . ')'
+            : null;
+
+        if ($errors > 0 && preg_match('/^\[.*?\].*?\.(ERROR|CRITICAL|ALERT|EMERGENCY): (.*)$/mi', $tail, $lineMatch)) {
+            $lastErrorLine = Str::limit(trim($lineMatch[2]), 140);
+        }
+
+        $since = $this->previousRunAt ?? now()->subDay();
+        $newErrors = 0;
+        $last24h = 0;
+
+        foreach ($timestamps as $timestamp) {
+            if ($timestamp->greaterThanOrEqualTo($since)) {
+                $newErrors++;
+            }
+
+            if ($timestamp->greaterThanOrEqualTo(now()->subDay())) {
+                $last24h++;
+            }
+        }
+
+        $status = $newErrors === 0 ? 'ok' : ($newErrors > 20 ? 'critical' : 'warning');
+
+        $detail = $newErrors === 0
+            ? 'No hay errores nuevos desde la última ejecución. Los errores anteriores siguen en el archivo, pero ya no cuentan como nuevos.'
+            : $newErrors . ' error(es) nuevo(s) desde la última ejecución.';
+
+        if ($lastError) {
+            $detail .= ($newErrors === 0 ? ' Último error histórico: ' : ' Último error del archivo: ') . $lastError . '.';
+        }
+
+        if ($lastErrorLine) {
+            $detail .= ' ' . $lastErrorLine;
         }
 
         $this->add(
             $checks,
             'logs.errors',
             'Registros',
-            'Errores recientes',
-            $errors === 0 ? 'ok' : ($errors > 20 ? 'critical' : 'warning'),
-            $errors . ' en la cola reciente',
-            $errors === 0
-                ? 'No se ven errores en la parte final del log.'
-                : 'Hay errores recientes en el log' . ($lastError ? ': ' . $lastError : '.'),
-            $errors === 0 ? null : 'Revisa el stack trace completo en storage/logs/laravel.log.',
+            'Errores nuevos',
+            $status,
+            $newErrors . ' nuevos · ' . $last24h . ' en 24 h · ' . $errors . ' en el archivo',
+            $detail,
+            $status === 'ok'
+                ? null
+                : 'Revisa el stack trace completo en storage/logs/laravel.log.',
             null,
-            $errors === 0 ? null : 'tail -n 200 storage/logs/laravel.log'
+            $status === 'ok' ? null : 'tail -n 200 storage/logs/laravel.log'
         );
 
         $this->add(

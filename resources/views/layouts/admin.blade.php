@@ -105,6 +105,9 @@
     {{-- Capa 6: auditoría del sistema (se carga al final para sus estados) --}}
     <link rel="stylesheet" href="{{ asset('css/admin/system-audit.css') }}?v={{ $assetVersion('css/admin/system-audit.css') }}">
 
+    {{-- Acciones de las tarjetas de videos e imágenes del Home --}}
+    <link rel="stylesheet" href="{{ asset('css/admin/content-actions.css') }}?v={{ $assetVersion('css/admin/content-actions.css') }}">
+
     {{-- Comportamiento del shell (drawer, dropdowns, tablas, foco) --}}
     <script src="{{ asset('js/admin-shell.js') }}?v={{ $assetVersion('js/admin-shell.js') }}" defer></script>
 </head>

@@ -1,0 +1,130 @@
+/* ==========================================================================
+   RUMBERO EXTREMO · Acciones de tarjetas de contenido
+   Botones editar / ocultar / eliminar de los carruseles administrables.
+   ========================================================================== */
+
+.dv-card__actions .cm-btn,
+.hs-card__actions .cm-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    width: 100%;
+    min-height: 36px;
+    padding: 0.35rem 0.5rem;
+    border: 1px solid var(--rx-line);
+    border-radius: 10px;
+    background: var(--rx-surface-2);
+    color: var(--rx-text);
+    font-family: inherit;
+    font-size: 0.74rem;
+    font-weight: 700;
+    line-height: 1.2;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition:
+        background var(--rx-dur) ease,
+        border-color var(--rx-dur) ease,
+        color var(--rx-dur) ease,
+        transform var(--rx-dur) ease;
+}
+
+.dv-card__actions .cm-btn:hover,
+.hs-card__actions .cm-btn:hover {
+    background: #fff;
+    border-color: var(--rx-primary-ring);
+    color: var(--rx-primary);
+    transform: translateY(-1px);
+}
+
+.dv-card__actions .cm-btn:focus-visible,
+.hs-card__actions .cm-btn:focus-visible {
+    outline: 2px solid var(--rx-primary);
+    outline-offset: 2px;
+}
+
+.dv-card__actions .cm-btn i,
+.hs-card__actions .cm-btn i {
+    font-size: 0.72rem;
+}
+
+/* Ocultar / mostrar */
+.dv-card__actions .cm-btn--warning,
+.hs-card__actions .cm-btn--warning {
+    background: var(--rx-warning-soft);
+    border-color: #fde68a;
+    color: #92400e;
+}
+
+.dv-card__actions .cm-btn--warning:hover,
+.hs-card__actions .cm-btn--warning:hover {
+    background: #fef3c7;
+    border-color: #f59e0b;
+    color: #78350f;
+}
+
+.dv-card__actions .cm-btn--success,
+.hs-card__actions .cm-btn--success {
+    background: var(--rx-success-soft);
+    border-color: #bbf7d0;
+    color: var(--rx-success-dark);
+}
+
+.dv-card__actions .cm-btn--success:hover,
+.hs-card__actions .cm-btn--success:hover {
+    background: #dcfce7;
+    border-color: #34d399;
+    color: #065f46;
+}
+
+/* Eliminar */
+.dv-card__actions .cm-btn--danger,
+.hs-card__actions .cm-btn--danger {
+    background: var(--rx-danger-soft);
+    border-color: #fecaca;
+    color: var(--rx-danger-dark);
+}
+
+.dv-card__actions .cm-btn--danger:hover,
+.hs-card__actions .cm-btn--danger:hover {
+    background: #fee2e2;
+    border-color: #fca5a5;
+    color: #991b1b;
+}
+
+/* Modo oscuro */
+.dark-mode .dv-card__actions .cm-btn,
+.dark-mode .hs-card__actions .cm-btn {
+    background: #0f172a;
+    border-color: #334155;
+    color: #cbd5e1;
+}
+
+.dark-mode .dv-card__actions .cm-btn:hover,
+.dark-mode .hs-card__actions .cm-btn:hover {
+    background: #1e293b;
+    border-color: #7c3aed;
+    color: #e9d5ff;
+}
+
+.dark-mode .dv-card__actions .cm-btn--warning,
+.dark-mode .hs-card__actions .cm-btn--warning {
+    background: rgba(245, 158, 11, 0.14);
+    border-color: rgba(245, 158, 11, 0.35);
+    color: #fbbf24;
+}
+
+.dark-mode .dv-card__actions .cm-btn--success,
+.dark-mode .hs-card__actions .cm-btn--success {
+    background: rgba(16, 185, 129, 0.14);
+    border-color: rgba(16, 185, 129, 0.35);
+    color: #6ee7b7;
+}
+
+.dark-mode .dv-card__actions .cm-btn--danger,
+.dark-mode .hs-card__actions .cm-btn--danger {
+    background: rgba(239, 68, 68, 0.14);
+    border-color: rgba(239, 68, 68, 0.35);
+    color: #fca5a5;
+}

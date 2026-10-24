@@ -125,7 +125,7 @@
 
                             <form method="POST" action="{{ route('admin.demo-videos.toggle', $video) }}">
                                 @csrf
-                                <button type="submit" class="cm-btn">
+                                <button type="submit" class="cm-btn {{ $video->is_active ? 'cm-btn--warning' : 'cm-btn--success' }}">
                                     <i class="fa-solid {{ $video->is_active ? 'fa-eye-slash' : 'fa-eye' }}" aria-hidden="true"></i>
                                     {{ $video->is_active ? 'Ocultar' : 'Mostrar' }}
                                 </button>
