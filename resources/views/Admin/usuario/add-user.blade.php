@@ -1,486 +1,323 @@
 @extends('layouts.admin')
 
-@section('page_title_toolbar', 'Añadir Nuevo Usuario')
+@section('title', 'Nuevo usuario')
 
-@push('styles')
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/admin/user-add.css') }}">
-@endpush
+@section('page_title_toolbar', 'Nuevo usuario')
 
 @section('content')
-    <div class="user-add-wrapper">
-        {{-- Header con bienvenida --}}
-        <div class="add-header-bar">
-            <div class="header-content">
-                <h1 class="page-title">
-                    <span class="title-main">Añadir Nuevo</span>
-                    <span class="title-accent">Usuario</span>
-                </h1>
+    <div class="cm-page cf-page">
+
+        {{-- ============================ CABECERA ============================ --}}
+        <div class="page-header-block">
+            <div>
+                <h1 class="title-main">Nuevo <span class="title-accent">usuario</span></h1>
                 <p class="page-subtitle">
-                    <i class="fas fa-user-plus"></i>
-                    Completa la información para registrar un nuevo usuario
+                    Crea una cuenta, define su rol y su estado de acceso al panel.
                 </p>
             </div>
-            <div class="header-actions">
-                <div class="user-greeting">
-                    <span>Creando nuevo,</span>
-                    <strong>{{ Auth::user()->name }}</strong>
-                </div>
-                <div class="avatar-circle">
-                    <span>{{ substr(Auth::user()->name, 0, 1) }}</span>
-                </div>
-            </div>
+
+            <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i> Volver al listado
+            </a>
         </div>
 
-        {{-- Tarjeta principal del formulario --}}
-        <div class="form-main-card">
-            {{-- Cabecera del formulario --}}
-            <div class="form-header">
-                <div class="header-icon">
-                    <i class="fas fa-user-plus"></i>
-                </div>
-                <div class="header-title">
-                    <h2>Información del Nuevo Usuario</h2>
-                    <p>Todos los campos marcados con <span class="required-star">*</span> son obligatorios</p>
+        {{-- ============================== AVISOS ============================== --}}
+        @if ($errors->any())
+            <div class="alert alert-error">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <div class="alert-content">
+                    <strong>Revisa los siguientes campos:</strong>
+                    <ul style="margin:.35rem 0 0;padding-left:1.1rem;">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
                 </div>
             </div>
+        @endif
 
-            <div class="form-divider"></div>
+        {{-- ============================== FORM ============================== --}}
+        <form id="addUserForm" action="{{ route('admin.users.store') }}" method="POST" class="cf-editor"
+            data-uf-form="create" autocomplete="off">
+            @csrf
 
-            {{-- Formulario --}}
-            <form id="addUserForm" action="{{ route('admin.users.store') }}" method="POST" class="modern-form">
-                @csrf
+            <div class="cf-form">
 
-                {{-- Sección de Información Personal --}}
-                <div class="form-section">
-                    <div class="section-header">
-                        <div class="section-icon">
-                            <i class="fas fa-user"></i>
-                        </div>
-                        <div>
-                            <h3>Información Personal</h3>
-                            <p>Datos básicos de identificación del usuario</p>
-                        </div>
-                    </div>
+                {{-- ------------------------- Columna principal ------------------------- --}}
+                <div class="cf-col">
 
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="firstname">
-                                <i class="fas fa-user-tag"></i>
-                                Nombre <span class="required-star">*</span>
-                            </label>
-                            <input type="text" id="firstname" name="firstname" 
-                                   placeholder="Ej: Juan" 
-                                   value="{{ old('firstname') }}" 
-                                   required>
-                            @error('firstname') <div class="error-message">{{ $message }}</div> @enderror
+                    {{-- Datos personales --}}
+                    <section class="cf-card">
+                        <div class="cf-card__head">
+                            <span class="cf-card__icon"><i class="fa-solid fa-user"></i></span>
+                            <div class="cf-card__head-text">
+                                <h2>Datos personales</h2>
+                                <p>Nombre, correo y teléfono de contacto.</p>
+                            </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="lastname">
-                                <i class="fas fa-user-tag"></i>
-                                Apellido <span class="required-star">*</span>
-                            </label>
-                            <input type="text" id="lastname" name="lastname" 
-                                   placeholder="Ej: Pérez" 
-                                   value="{{ old('lastname') }}" 
-                                   required>
-                            @error('lastname') <div class="error-message">{{ $message }}</div> @enderror
+                        <div class="cf-card__body">
+                            <div class="cf-grid">
+                                <div class="form-group">
+                                    <label for="firstname">Nombre <span class="required-star">*</span></label>
+                                    <input type="text" id="firstname" name="firstname" maxlength="255"
+                                        class="form-control @error('firstname') is-invalid @enderror"
+                                        placeholder="Ej: Juan" value="{{ old('firstname') }}" required>
+                                    @error('firstname')
+                                        <span class="error-message">
+                                            <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
+                                        </span>
+                                    @enderror
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="lastname">Apellido <span class="required-star">*</span></label>
+                                    <input type="text" id="lastname" name="lastname" maxlength="255"
+                                        class="form-control @error('lastname') is-invalid @enderror"
+                                        placeholder="Ej: Pérez" value="{{ old('lastname') }}" required>
+                                    @error('lastname')
+                                        <span class="error-message">
+                                            <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
+                                        </span>
+                                    @enderror
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="email">Correo electrónico <span class="required-star">*</span></label>
+                                    <input type="email" id="email" name="email" maxlength="255"
+                                        class="form-control @error('email') is-invalid @enderror"
+                                        placeholder="ejemplo@dominio.com" value="{{ old('email') }}" required>
+                                    @error('email')
+                                        <span class="error-message">
+                                            <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
+                                        </span>
+                                    @enderror
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="phone1">Teléfono</label>
+                                    <input type="tel" id="phone1" name="phone1" maxlength="20"
+                                        class="form-control @error('phone1') is-invalid @enderror"
+                                        placeholder="Ej: +58 412 1234567" value="{{ old('phone1') }}">
+                                    @error('phone1')
+                                        <span class="error-message">
+                                            <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
+                                        </span>
+                                    @enderror
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    {{-- Seguridad --}}
+                    <section class="cf-card">
+                        <div class="cf-card__head">
+                            <span class="cf-card__icon"><i class="fa-solid fa-lock"></i></span>
+                            <div class="cf-card__head-text">
+                                <h2>Seguridad</h2>
+                                <p>La contraseña debe tener al menos 8 caracteres.</p>
+                            </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="email">
-                                <i class="fas fa-envelope"></i>
-                                Correo Electrónico <span class="required-star">*</span>
-                            </label>
-                            <input type="email" id="email" name="email" 
-                                   placeholder="ejemplo@dominio.com" 
-                                   value="{{ old('email') }}" 
-                                   required>
-                            @error('email') <div class="error-message">{{ $message }}</div> @enderror
+                        <div class="cf-card__body">
+                            <div class="cf-grid">
+                                <div class="form-group" id="passwordGroup">
+                                    <label for="password">Contraseña <span class="required-star">*</span></label>
+                                    <div class="uf-pass">
+                                        <input type="password" id="password" name="password" minlength="8"
+                                            class="form-control @error('password') is-invalid @enderror"
+                                            placeholder="Mínimo 8 caracteres" autocomplete="new-password" required>
+                                        <button type="button" class="uf-pass__toggle" data-target="password"
+                                            aria-label="Mostrar contraseña">
+                                            <i class="fa-solid fa-eye"></i>
+                                        </button>
+                                    </div>
+
+                                    <div class="uf-strength">
+                                        <span class="uf-strength__track">
+                                            <span class="uf-strength__bar" data-uf-strength></span>
+                                        </span>
+                                        <span class="uf-strength__label" data-uf-strength-label>Sin contraseña</span>
+                                    </div>
+
+                                    <ul class="uf-rules">
+                                        <li class="uf-rule" data-uf-rule="length"><i class="fa-solid fa-circle"></i> Mínimo 8 caracteres</li>
+                                        <li class="uf-rule" data-uf-rule="upper"><i class="fa-solid fa-circle"></i> Una mayúscula</li>
+                                        <li class="uf-rule" data-uf-rule="lower"><i class="fa-solid fa-circle"></i> Una minúscula</li>
+                                        <li class="uf-rule" data-uf-rule="number"><i class="fa-solid fa-circle"></i> Un número</li>
+                                        <li class="uf-rule" data-uf-rule="special"><i class="fa-solid fa-circle"></i> Un carácter especial (!@#$%^&*)</li>
+                                    </ul>
+
+                                    @error('password')
+                                        <span class="error-message">
+                                            <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
+                                        </span>
+                                    @enderror
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="password_confirmation">Repetir contraseña <span class="required-star">*</span></label>
+                                    <div class="uf-pass">
+                                        <input type="password" id="password_confirmation" name="password_confirmation"
+                                            class="form-control" placeholder="Repite la contraseña"
+                                            autocomplete="new-password" required>
+                                        <button type="button" class="uf-pass__toggle"
+                                            data-target="password_confirmation" aria-label="Mostrar contraseña">
+                                            <i class="fa-solid fa-eye"></i>
+                                        </button>
+                                    </div>
+
+                                    <div class="uf-match" data-uf-match>
+                                        <i class="fa-solid fa-circle"></i> Repite la contraseña
+                                    </div>
+
+                                    <p class="field-hint" style="margin-top:.6rem;">
+                                        <i class="fa-solid fa-circle-info"></i>
+                                        Las mayúsculas, números y símbolos son recomendaciones, no obligatorios.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+                    {{-- Cuenta --}}
+                    <section class="cf-card">
+                        <div class="cf-card__head">
+                            <span class="cf-card__icon"><i class="fa-solid fa-user-gear"></i></span>
+                            <div class="cf-card__head-text">
+                                <h2>Cuenta y acceso</h2>
+                                <p>Rol, estado y fecha de registro.</p>
+                            </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="phone1">
-                                <i class="fas fa-phone-alt"></i>
-                                Teléfono (Opcional)
-                            </label>
-                            <input type="tel" id="phone1" name="phone1" 
-                                   placeholder="Ej: +58 412 1234567" 
-                                   value="{{ old('phone1') }}">
-                            @error('phone1') <div class="error-message">{{ $message }}</div> @enderror
+                        <div class="cf-card__body">
+                            <div class="cf-grid">
+                                <div class="form-group">
+                                    <label for="user_type">Tipo de usuario <span class="required-star">*</span></label>
+                                    <select id="user_type" name="user_type"
+                                        class="form-control @error('user_type') is-invalid @enderror" required>
+                                        <option value="">Selecciona un rol</option>
+                                        <option value="comun" @selected(old('user_type') === 'comun')>Común</option>
+                                        <option value="aliado" @selected(old('user_type') === 'aliado')>Aliado</option>
+                                        <option value="afiliado" @selected(old('user_type') === 'afiliado')>Afiliado</option>
+                                        <option value="admin" @selected(old('user_type') === 'admin')>Administrador</option>
+                                    </select>
+                                    @error('user_type')
+                                        <span class="error-message">
+                                            <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
+                                        </span>
+                                    @enderror
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="status">Estado <span class="required-star">*</span></label>
+                                    <select id="status" name="status"
+                                        class="form-control @error('status') is-invalid @enderror" required>
+                                        <option value="activo" @selected(old('status', 'activo') === 'activo')>Activo</option>
+                                        <option value="pendiente" @selected(old('status') === 'pendiente')>Pendiente</option>
+                                        <option value="inactivo" @selected(old('status') === 'inactivo')>Inactivo</option>
+                                    </select>
+                                    <span class="field-hint">
+                                        <i class="fa-solid fa-circle-info"></i> Los usuarios inactivos no pueden entrar.
+                                    </span>
+                                    @error('status')
+                                        <span class="error-message">
+                                            <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
+                                        </span>
+                                    @enderror
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="registrationDate">Fecha de registro <span class="required-star">*</span></label>
+                                    <input type="date" id="registrationDate" name="registrationDate"
+                                        class="form-control @error('registrationDate') is-invalid @enderror"
+                                        value="{{ old('registrationDate', \Carbon\Carbon::now()->format('Y-m-d')) }}"
+                                        required>
+                                    @error('registrationDate')
+                                        <span class="error-message">
+                                            <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
+                                        </span>
+                                    @enderror
+                                </div>
+
+                                <div class="form-group cf-span">
+                                    <label for="notes">Notas internas</label>
+                                    <textarea id="notes" name="notes" rows="3"
+                                        class="form-control @error('notes') is-invalid @enderror"
+                                        placeholder="Información adicional solo visible para el equipo…">{{ old('notes') }}</textarea>
+                                    @error('notes')
+                                        <span class="error-message">
+                                            <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
+                                        </span>
+                                    @enderror
+                                </div>
+                            </div>
                         </div>
-                    </div>
+                    </section>
                 </div>
 
-                <div class="form-divider"></div>
+                {{-- ----------------------------- Aside ------------------------------ --}}
+                <aside class="cf-aside">
 
-                {{-- Sección de Seguridad --}}
-                <div class="form-section">
-                    <div class="section-header">
-                        <div class="section-icon">
-                            <i class="fas fa-lock"></i>
-                        </div>
-                        <div>
-                            <h3>Seguridad</h3>
-                            <p>Establece la contraseña del nuevo usuario</p>
-                        </div>
-                    </div>
-
-                    <div class="form-grid">
-                        <div class="form-group password-group" id="passwordGroup">
-                            <label for="password">
-                                <i class="fas fa-key"></i>
-                                Contraseña <span class="required-star">*</span>
-                            </label>
-                            <div class="input-wrapper">
-                                <input type="password" id="password" name="password" 
-                                       placeholder="Mínimo 8 caracteres" 
-                                       required minlength="8">
-                                <button type="button" class="toggle-password" data-target="password">
-                                    <i class="fas fa-eye"></i>
-                                </button>
+                    <div class="cf-card" data-uf-preview>
+                        <div class="cf-card__head">
+                            <span class="cf-card__icon"><i class="fa-regular fa-address-card"></i></span>
+                            <div class="cf-card__head-text">
+                                <h2>Vista previa</h2>
+                                <p>Así se verá la cuenta en el listado.</p>
                             </div>
-                            
-                            {{-- Medidor de fortaleza --}}
-                            <div class="password-strength-container">
-                                <div class="strength-meter">
-                                    <div class="strength-fill" id="passwordStrengthFill"></div>
-                                </div>
-                                <span class="strength-label" id="strengthLabel">Muy débil</span>
-                            </div>
-
-                            {{-- Lista de validación --}}
-                            <div class="validation-list" id="passwordValidationList">
-                                <div class="validation-item pending" id="validationLength">
-                                    <i class="fas fa-circle"></i>
-                                    <span>Mínimo 8 caracteres</span>
-                                </div>
-                                <div class="validation-item pending" id="validationUppercase">
-                                    <i class="fas fa-circle"></i>
-                                    <span>Una letra mayúscula</span>
-                                </div>
-                                <div class="validation-item pending" id="validationLowercase">
-                                    <i class="fas fa-circle"></i>
-                                    <span>Una letra minúscula</span>
-                                </div>
-                                <div class="validation-item pending" id="validationNumber">
-                                    <i class="fas fa-circle"></i>
-                                    <span>Un número</span>
-                                </div>
-                                <div class="validation-item pending" id="validationSpecial">
-                                    <i class="fas fa-circle"></i>
-                                    <span>Un carácter especial (!@#$%^&*)</span>
-                                </div>
-                            </div>
-                            @error('password') <div class="error-message">{{ $message }}</div> @enderror
                         </div>
 
-                        <div class="form-group confirm-password-group" id="confirmPasswordGroup">
-                            <label for="password_confirmation">
-                                <i class="fas fa-check-circle"></i>
-                                Confirmar Contraseña <span class="required-star">*</span>
-                            </label>
-                            <div class="input-wrapper">
-                                <input type="password" id="password_confirmation" name="password_confirmation" 
-                                       placeholder="Repite la contraseña" 
-                                       required>
-                                <button type="button" class="toggle-password" data-target="password_confirmation">
-                                    <i class="fas fa-eye"></i>
-                                </button>
+                        <div class="uf-preview__body">
+                            <div class="uf-avatar"><span data-uf-initial>?</span></div>
+                            <h3 class="uf-name" data-uf-name>Nombre del usuario</h3>
+                            <p class="uf-email" data-uf-email>correo@ejemplo.com</p>
+
+                            <div class="uf-chips">
+                                <span class="badge badge-neutral" data-uf-role>Sin rol</span>
+                                <span class="badge badge-neutral" data-uf-status>Sin estado</span>
                             </div>
-                            <div class="password-match-feedback pending" id="passwordMatch">
-                                <i class="fas fa-circle"></i>
-                                <span>Las contraseñas deben coincidir</span>
+
+                            <div class="uf-facts">
+                                <span class="uf-fact"><i class="fa-solid fa-phone"></i><span data-uf-phone>Sin teléfono</span></span>
+                                <span class="uf-fact"><i class="fa-regular fa-calendar"></i><span data-uf-date>Sin fecha de registro</span></span>
                             </div>
                         </div>
                     </div>
-                </div>
 
-                <div class="form-divider"></div>
-
-                {{-- Sección de Configuración de Cuenta --}}
-                <div class="form-section">
-                    <div class="section-header">
-                        <div class="section-icon">
-                            <i class="fas fa-cog"></i>
-                        </div>
-                        <div>
-                            <h3>Configuración de Cuenta</h3>
-                            <p>Tipo de usuario, estado y fechas</p>
-                        </div>
-                    </div>
-
-                    <div class="form-grid">
-                        <div class="form-group">
-                            <label for="user_type">
-                                <i class="fas fa-user-tag"></i>
-                                Tipo de Usuario <span class="required-star">*</span>
-                            </label>
-                            <div class="select-wrapper">
-                                <select id="user_type" name="user_type" required>
-                                    <option value="">Seleccione un tipo</option>
-                                    <option value="comun" {{ old('user_type') == 'comun' ? 'selected' : '' }}>Común</option>
-                                    <option value="aliado" {{ old('user_type') == 'aliado' ? 'selected' : '' }}>Aliado</option>
-                                    <option value="afiliado" {{ old('user_type') == 'afiliado' ? 'selected' : '' }}>Afiliado</option>
-                                    <option value="admin" {{ old('user_type') == 'admin' ? 'selected' : '' }}>Administrador</option>
-                                </select>
-                                <i class="fas fa-chevron-down"></i>
+                    <div class="cf-card">
+                        <div class="cf-card__head">
+                            <span class="cf-card__icon"><i class="fa-solid fa-lightbulb"></i></span>
+                            <div class="cf-card__head-text">
+                                <h2>Buenas prácticas</h2>
                             </div>
-                            @error('user_type') <div class="error-message">{{ $message }}</div> @enderror
                         </div>
 
-                        <div class="form-group">
-                            <label for="status">
-                                <i class="fas fa-toggle-on"></i>
-                                Estado <span class="required-star">*</span>
-                            </label>
-                            <div class="select-wrapper">
-                                <select id="status" name="status" required>
-                                    <option value="activo" {{ old('status') == 'activo' ? 'selected' : '' }}>Activo</option>
-                                    <option value="inactivo" {{ old('status') == 'inactivo' ? 'selected' : '' }}>Inactivo</option>
-                                    <option value="pendiente" {{ old('status') == 'pendiente' ? 'selected' : '' }}>Pendiente</option>
-                                </select>
-                                <i class="fas fa-chevron-down"></i>
-                            </div>
-                            @error('status') <div class="error-message">{{ $message }}</div> @enderror
-                        </div>
-
-                        <div class="form-group">
-                            <label for="registrationDate">
-                                <i class="fas fa-calendar-alt"></i>
-                                Fecha de Registro <span class="required-star">*</span>
-                            </label>
-                            <input type="date" id="registrationDate" name="registrationDate" 
-                                   value="{{ old('registrationDate', \Carbon\Carbon::now()->format('Y-m-d')) }}" 
-                                   required>
-                            @error('registrationDate') <div class="error-message">{{ $message }}</div> @enderror
+                        <div class="cf-tips">
+                            <ul>
+                                <li><i class="fa-solid fa-check"></i> Usa una contraseña distinta a la del correo.</li>
+                                <li><i class="fa-solid fa-check"></i> Deja el estado «Pendiente» si aún no debe entrar.</li>
+                                <li><i class="fa-solid fa-check"></i> El rol define qué secciones verá en el panel.</li>
+                                <li><i class="fa-solid fa-check"></i> Las notas internas no las ve el usuario.</li>
+                            </ul>
                         </div>
                     </div>
-                </div>
+                </aside>
+            </div>
 
-                <div class="form-divider"></div>
-
-                {{-- Sección de Notas --}}
-                <div class="form-section">
-                    <div class="section-header">
-                        <div class="section-icon">
-                            <i class="fas fa-clipboard-list"></i>
-                        </div>
-                        <div>
-                            <h3>Notas Internas</h3>
-                            <p>Información adicional sobre el usuario (opcional)</p>
-                        </div>
-                    </div>
-
-                    <div class="form-group full-width">
-                        <textarea id="notes" name="notes" 
-                                  placeholder="Escribe aquí información adicional sobre el usuario..." 
-                                  rows="4">{{ old('notes') }}</textarea>
-                        @error('notes') <div class="error-message">{{ $message }}</div> @enderror
-                    </div>
-                </div>
-
-                {{-- Botones de acción --}}
-                <div class="form-actions">
-                    <button type="button" class="btn-cancel" id="cancelAddUser">
-                        <i class="fas fa-times"></i>
-                        Cancelar
-                    </button>
-                    <button type="submit" class="btn-submit" id="submitBtn">
-                        <i class="fas fa-user-plus"></i>
-                        Añadir Usuario
-                    </button>
-                </div>
-            </form>
-        </div>
+            {{-- ------------------------------ Acciones ------------------------------ --}}
+            <div class="cf-actions">
+                <a href="{{ route('admin.users.index') }}" class="btn btn-secondary">
+                    <i class="fa-solid fa-xmark"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary" data-uf-submit>
+                    <i class="fa-solid fa-user-plus"></i> Crear usuario
+                </button>
+            </div>
+        </form>
     </div>
 @endsection
 
 @push('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // ========== TOGGLE DE VISIBILIDAD DE CONTRASEÑA ==========
-        document.querySelectorAll('.toggle-password').forEach(button => {
-            button.addEventListener('click', function() {
-                const targetId = this.dataset.target;
-                const input = document.getElementById(targetId);
-                const icon = this.querySelector('i');
-                
-                if (input.type === 'password') {
-                    input.type = 'text';
-                    icon.className = 'fas fa-eye-slash';
-                } else {
-                    input.type = 'password';
-                    icon.className = 'fas fa-eye';
-                }
-            });
-        });
-
-        const passwordInput = document.getElementById('password');
-        const confirmPasswordInput = document.getElementById('password_confirmation');
-        const passwordMatch = document.getElementById('passwordMatch');
-        const passwordStrengthFill = document.getElementById('passwordStrengthFill');
-        const strengthLabel = document.getElementById('strengthLabel');
-        const submitBtn = document.getElementById('submitBtn');
-        const passwordGroup = document.getElementById('passwordGroup');
-        const confirmPasswordGroup = document.getElementById('confirmPasswordGroup');
-
-        // Elementos de validación
-        const validationElements = {
-            length: document.getElementById('validationLength'),
-            uppercase: document.getElementById('validationUppercase'),
-            lowercase: document.getElementById('validationLowercase'),
-            number: document.getElementById('validationNumber'),
-            special: document.getElementById('validationSpecial')
-        };
-
-        // Expresiones regulares para validación
-        const patterns = {
-            uppercase: /[A-Z]/,
-            lowercase: /[a-z]/,
-            number: /[0-9]/,
-            special: /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/
-        };
-
-        // Función para validar la contraseña
-        function validatePassword(password) {
-            const validations = {
-                length: password.length >= 8,
-                uppercase: patterns.uppercase.test(password),
-                lowercase: patterns.lowercase.test(password),
-                number: patterns.number.test(password),
-                special: patterns.special.test(password)
-            };
-
-            return validations;
-        }
-
-        // Función para actualizar la interfaz de validación
-        function updatePasswordValidation(validations) {
-            let validCount = 0;
-            const totalValidations = Object.keys(validations).length;
-
-            Object.keys(validations).forEach(key => {
-                const isValid = validations[key];
-                const element = validationElements[key];
-
-                if (isValid) {
-                    element.classList.remove('pending', 'invalid');
-                    element.classList.add('valid');
-                    element.innerHTML = '<i class="fas fa-check-circle"></i><span>' + element.querySelector('span').textContent + '</span>';
-                    validCount++;
-                } else {
-                    element.classList.remove('pending', 'valid');
-                    element.classList.add('invalid');
-                    element.innerHTML = '<i class="fas fa-times-circle"></i><span>' + element.querySelector('span').textContent + '</span>';
-                }
-            });
-
-            // Actualizar medidor de fuerza
-            updateStrengthMeter(validCount, totalValidations);
-        }
-
-        // Función para actualizar el medidor de fuerza
-        function updateStrengthMeter(validCount, totalValidations) {
-            const percentage = (validCount / totalValidations) * 100;
-            
-            // Actualizar barra
-            passwordStrengthFill.style.width = percentage + '%';
-            
-            // Actualizar clase y etiqueta
-            passwordStrengthFill.className = 'strength-fill';
-            
-            if (percentage <= 20) {
-                passwordStrengthFill.classList.add('strength-weak');
-                strengthLabel.textContent = 'Muy débil';
-                strengthLabel.style.color = '#ef4444';
-            } else if (percentage <= 40) {
-                passwordStrengthFill.classList.add('strength-fair');
-                strengthLabel.textContent = 'Débil';
-                strengthLabel.style.color = '#f59e0b';
-            } else if (percentage <= 60) {
-                passwordStrengthFill.classList.add('strength-good');
-                strengthLabel.textContent = 'Buena';
-                strengthLabel.style.color = '#3b82f6';
-            } else if (percentage <= 80) {
-                passwordStrengthFill.classList.add('strong');
-                strengthLabel.textContent = 'Fuerte';
-                strengthLabel.style.color = '#10b981';
-            } else {
-                passwordStrengthFill.classList.add('very-strong');
-                strengthLabel.textContent = 'Muy fuerte';
-                strengthLabel.style.color = '#10b981';
-            }
-        }
-
-        // Función para validar coincidencia de contraseñas
-        function validatePasswordMatch() {
-            const password = passwordInput.value;
-            const confirmPassword = confirmPasswordInput.value;
-
-            if (password === '' && confirmPassword === '') {
-                passwordMatch.classList.remove('valid', 'invalid');
-                passwordMatch.classList.add('pending');
-                passwordMatch.innerHTML = '<i class="fas fa-circle"></i><span>Las contraseñas deben coincidir</span>';
-                confirmPasswordGroup.classList.remove('password-valid', 'password-invalid');
-            } else if (password === confirmPassword && password !== '') {
-                passwordMatch.classList.remove('pending', 'invalid');
-                passwordMatch.classList.add('valid');
-                passwordMatch.innerHTML = '<i class="fas fa-check-circle"></i><span>Las contraseñas coinciden</span>';
-                confirmPasswordGroup.classList.remove('password-invalid');
-                confirmPasswordGroup.classList.add('password-valid');
-            } else {
-                passwordMatch.classList.remove('pending', 'valid');
-                passwordMatch.classList.add('invalid');
-                passwordMatch.innerHTML = '<i class="fas fa-times-circle"></i><span>Las contraseñas no coinciden</span>';
-                confirmPasswordGroup.classList.remove('password-valid');
-                confirmPasswordGroup.classList.add('password-invalid');
-            }
-        }
-
-        // Función para validar el formulario completo
-        function validateForm() {
-            const password = passwordInput.value;
-            const confirmPassword = confirmPasswordInput.value;
-            const validations = validatePassword(password);
-            const allValid = Object.values(validations).every(v => v) && password === confirmPassword && password !== '';
-            
-            submitBtn.disabled = !allValid;
-            return allValid;
-        }
-
-        // Event listeners
-        passwordInput.addEventListener('input', function() {
-            const validations = validatePassword(this.value);
-            updatePasswordValidation(validations);
-            validatePasswordMatch();
-            validateForm();
-        });
-
-        confirmPasswordInput.addEventListener('input', function() {
-            validatePasswordMatch();
-            validateForm();
-        });
-
-        // Validar al enviar el formulario
-        document.getElementById('addUserForm').addEventListener('submit', function(e) {
-            if (!validateForm()) {
-                e.preventDefault();
-                alert('Por favor, complete todos los campos requeridos y asegúrese de que la contraseña cumple con todos los criterios.');
-            }
-        });
-
-        // Botón cancelar
-        document.getElementById('cancelAddUser').addEventListener('click', function() {
-            if (confirm('¿Estás seguro de cancelar? Los datos ingresados se perderán.')) {
-                history.back();
-            }
-        });
-
-        // Validación inicial
-        validateForm();
-    });
-</script>
+    <script src="{{ asset('js/admin-forms.js') }}"></script>
 @endpush

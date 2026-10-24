@@ -5,84 +5,172 @@
 @section('title', 'Sobre Nosotros - Rumbero Extremo App')
 
 @push('styles')
-    {{-- Agregamos el CSS específico de esta vista --}}
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Play:wght@400;700&display=swap"
-        rel="stylesheet">
-
-    <link rel="stylesheet" href="{{ asset('css/about.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/public-modern.css') }}?v={{ filemtime(public_path('css/public-modern.css')) }}">
 @endpush
 
 @section('content')
-    <main class="main-content">
-        <section class="hero-about">
-            <div class="container">
-                <h1>Conoce la Esencia de Rumbero Extremo</h1>
-                <p>Somos tu planificador de recreación y entretenimiento, que cubre tus necesidades para divertirte y
-                    disfrutar de las actividades, productos y servicios en el sitio que tu desees de manera interactiva,
-                    disfrutando de los beneficios que nuestros Aliados Comerciales tienen para ti.
-                </p>
-            </div>
-        </section>
+    <div class="px-page">
 
-        <section class="container purpose-section">
-            <h2>Nuestro Propósito</h2>
-            <p class="purpose-description">Ofrecer a los usuarios afiliados una opción interactiva que reúne los locales y
-                lugares en tendencia, ofreciendo recreación y entretenimiento con beneficios que solo un Rumbero puede
-                disfrutar. </p>
-            <div class="purpose-cards-grid">
-                <div class="purpose-card">
-                    <i class="fa-solid fa-bullseye"></i>
-                    <h3>Nuestra Misión</h3>
-                    <p>Brindar una plataforma que facilite la búsqueda de lugares para salir, conocer y comprar,
-                        transformando la experiencia del recreación y entretenimiento al conectar a los Rumberos con los
-                        mejores eventos, lugares, productos y servicios de la ciudad.</p>
+        {{-- ============================== HERO ============================== --}}
+        <section class="px-hero">
+            <div class="px-container px-hero__inner">
+                <div>
+                    <span class="px-hero__kicker">
+                        <i class="fa-solid fa-fire"></i> Sobre nosotros
+                    </span>
+
+                    <h1 class="px-hero__title">
+                        Conoce la esencia de <span>Rumbero Extremo</span>
+                    </h1>
+
+                    <p class="px-hero__text">
+                        Somos tu planificador de recreación y entretenimiento: reunimos los lugares, productos y
+                        servicios que buscas, con los beneficios que nuestros aliados comerciales tienen para ti.
+                    </p>
+
+                    <div class="px-hero__actions">
+                        <a href="{{ route('register') }}" class="px-btn px-btn--primary">
+                            <i class="fa-solid fa-user-plus"></i> Quiero ser Rumbero
+                        </a>
+                        <a href="{{ route('demo.aliado') }}" class="px-btn px-btn--ghost">
+                            <i class="fa-solid fa-handshake"></i> Soy un local
+                        </a>
+                    </div>
                 </div>
-                <div class="purpose-card">
-                    <i class="fa-solid fa-eye"></i>
-                    <h3>Nuestra Visión</h3>
-                    <p>Aspiramos a ser la aplicación líder en entretenimiento recreación, fomentando una comunidad vibrante
-                        y activa, que promueve locales y espacios más exclusivos y brindando diferentes alternativas en
-                        actividades, productos y servicios con atractivos beneficios.</p>
-                </div>
-                <div class="purpose-card">
-                    <i class="fa-solid fa-handshake"></i>
-                    <h3>¿Qué Ofrecemos?</h3>
-                    <p><strong>Para locales Comerciales:</strong> Incremento en la captación del público y mayor afluencia
-                        referido por Rumbero Extremo.</p>
-                    <p><strong>Para afiliados:</strong> Uso de la app para optar por atractivos beneficios mediante la
-                        aplicación en los diferentes Aliados Comerciales. </p>
+
+                <div class="px-hero__card">
+                    <h3><i class="fa-solid fa-heart"></i> Lo que nos mueve</h3>
+                    <ul class="px-hero__list">
+                        <li><i class="fa-solid fa-circle-check"></i> Recreación y entretenimiento con beneficios reales</li>
+                        <li><i class="fa-solid fa-circle-check"></i> Impulso a los locales y emprendimientos de la ciudad</li>
+                        <li><i class="fa-solid fa-circle-check"></i> Una comunidad activa que disfruta y recomienda</li>
+                    </ul>
                 </div>
             </div>
         </section>
 
-        <section class="container team-section">
-            <h2>La Fuerza Detrás de Nuestro Éxito</h2>
-            <p class="team-description">
-                En el corazón de nuestra organización reside un equipo de profesionales dedicados y apasionados, cuyo
-                talento y compromiso son la
-                base de todo lo que logramos. Cada miembro aporta una riqueza de experiencia, habilidades diversas y una
-                visión unificada para
-                superar expectativas y entregar resultados excepcionales.
-            </p>
-            <br>
-            <div class="team-members-grid">
-                <p>Creemos firmemente que la colaboración, la innovación y el deseo constante de aprender y mejorar son los
-                    pilares que nos impulsan
-                    hacia adelante.</p>
+        {{-- ============================ PROPÓSITO ============================ --}}
+        <section class="px-section">
+            <div class="px-container">
+                <div class="px-head">
+                    <span class="px-head__eyebrow">Nuestro propósito</span>
+                    <h2 class="px-head__title">Conectamos ganas de salir con los mejores lugares</h2>
+                    <p class="px-head__text">
+                        Ofrecer a los usuarios afiliados una opción interactiva que reúne los locales y lugares en
+                        tendencia, con recreación, entretenimiento y beneficios que solo un Rumbero puede disfrutar.
+                    </p>
+                </div>
+
+                <div class="px-grid">
+                    <article class="px-card">
+                        <span class="px-card__icon"><i class="fa-solid fa-bullseye"></i></span>
+                        <h3 class="px-card__title">Nuestra misión</h3>
+                        <p class="px-card__text">
+                            Facilitar la búsqueda de lugares para salir, conocer y comprar, transformando la
+                            experiencia de recreación al conectar a los Rumberos con los mejores eventos, locales,
+                            productos y servicios de la ciudad.
+                        </p>
+                    </article>
+
+                    <article class="px-card">
+                        <span class="px-card__icon"><i class="fa-solid fa-eye"></i></span>
+                        <h3 class="px-card__title">Nuestra visión</h3>
+                        <p class="px-card__text">
+                            Ser la aplicación líder en entretenimiento y recreación, fomentando una comunidad vibrante
+                            que promueve locales y espacios más exclusivos, con alternativas atractivas en actividades,
+                            productos y servicios.
+                        </p>
+                    </article>
+
+                    <article class="px-card">
+                        <span class="px-card__icon px-card__icon--gold"><i class="fa-solid fa-gift"></i></span>
+                        <h3 class="px-card__title">¿Qué ofrecemos?</h3>
+                        <p class="px-card__text">
+                            <strong>Para locales comerciales:</strong> mayor captación de público y afluencia
+                            referida por Rumbero Extremo.
+                        </p>
+                        <p class="px-card__text">
+                            <strong>Para afiliados:</strong> una app para acceder a beneficios atractivos en los
+                            distintos aliados comerciales.
+                        </p>
+                    </article>
+                </div>
             </div>
-            <br>
-            <p>Es la sinergia de nuestro equipo lo que nos permite abordar desafíos complejos, desarrollar soluciones
-                creativas y, en última instancia,
-                ofrecer un valor inigualable a nuestros usuarios y aliados.</p>
-            </p>
         </section>
-    </main>
+
+        {{-- ============================ EL EQUIPO ============================ --}}
+        <section class="px-section px-section--muted">
+            <div class="px-container">
+                <div class="px-hero__inner" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr);">
+                    <div>
+                        <div class="px-head px-head--left" style="margin-bottom:1rem;">
+                            <span class="px-head__eyebrow">Nuestro equipo</span>
+                            <h2 class="px-head__title">La fuerza detrás de nuestro éxito</h2>
+                        </div>
+
+                        <p class="px-hero__text" style="color:var(--px-muted);margin-bottom:.9rem;">
+                            En el corazón de la organización hay un equipo de profesionales dedicados y apasionados,
+                            cuyo talento y compromiso son la base de todo lo que logramos.
+                        </p>
+
+                        <p class="px-hero__text" style="color:var(--px-muted);margin-bottom:.9rem;">
+                            Creemos firmemente que la colaboración, la innovación y el deseo constante de aprender
+                            son los pilares que nos impulsan hacia adelante.
+                        </p>
+
+                        <p class="px-hero__text" style="color:var(--px-muted);">
+                            Es la sinergia de nuestro equipo lo que nos permite abordar desafíos complejos y ofrecer
+                            un valor inigualable a nuestros usuarios y aliados.
+                        </p>
+                    </div>
+
+                    <div class="px-grid" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,150px),1fr));">
+                        <article class="px-card">
+                            <span class="px-card__icon"><i class="fa-solid fa-users"></i></span>
+                            <h3 class="px-card__title">Equipo</h3>
+                            <p class="px-card__text">Talento diverso con una visión unificada.</p>
+                        </article>
+
+                        <article class="px-card">
+                            <span class="px-card__icon"><i class="fa-solid fa-lightbulb"></i></span>
+                            <h3 class="px-card__title">Innovación</h3>
+                            <p class="px-card__text">Soluciones creativas para desafíos reales.</p>
+                        </article>
+
+                        <article class="px-card">
+                            <span class="px-card__icon"><i class="fa-solid fa-handshake-angle"></i></span>
+                            <h3 class="px-card__title">Colaboración</h3>
+                            <p class="px-card__text">Crecemos junto a nuestros aliados.</p>
+                        </article>
+
+                        <article class="px-card">
+                            <span class="px-card__icon"><i class="fa-solid fa-star"></i></span>
+                            <h3 class="px-card__title">Excelencia</h3>
+                            <p class="px-card__text">Superamos expectativas en cada detalle.</p>
+                        </article>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        {{-- =============================== CTA =============================== --}}
+        <section class="px-section">
+            <div class="px-container">
+                <div class="px-cta">
+                    <h2>Sé parte de la comunidad Rumbera</h2>
+                    <p>
+                        Descubre lugares, activa descuentos y vive la ciudad con beneficios que solo un Rumbero
+                        puede disfrutar.
+                    </p>
+                    <a href="{{ route('register') }}" class="px-btn px-btn--gold">
+                        <i class="fa-solid fa-rocket"></i> Crear mi cuenta
+                    </a>
+                </div>
+            </div>
+        </section>
+    </div>
 @endsection
 
 @push('scripts')
-    {{-- Agregamos el JS específico de esta vista --}}
     <script src="{{ asset('js/about.js') }}"></script>
 @endpush

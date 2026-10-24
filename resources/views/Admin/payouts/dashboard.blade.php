@@ -2,6 +2,8 @@
 
 @section('title', 'Dashboard de Payouts')
 
+@section('page_title_toolbar', 'Dashboard de Pagos')
+
 @section('content')
 <div class="container-fluid">
     <div class="row">

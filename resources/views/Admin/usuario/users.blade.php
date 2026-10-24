@@ -1,237 +1,263 @@
 @extends('layouts.admin')
 
-@section('page_title_toolbar', 'Gestión de Usuarios')
+@section('title', 'Usuarios')
 
-@push('styles')
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/admin/users.css') }}">
-@endpush
+@section('page_title_toolbar', 'Gestión de usuarios')
 
 @section('content')
-    <div class="users-wrapper">
-        {{-- Header con bienvenida --}}
-        <div class="users-header-bar">
-            <div class="header-content">
-                <h1 class="page-title">
-                    <span class="title-main">Gestión de</span>
-                    <span class="title-accent">Usuarios</span>
-                </h1>
+    @php
+        $roleMeta = [
+            'admin' => ['label' => 'Administrador', 'badge' => 'badge-primary', 'icon' => 'fa-user-shield'],
+            'aliado' => ['label' => 'Aliado', 'badge' => 'badge-info', 'icon' => 'fa-store'],
+            'afiliado' => ['label' => 'Afiliado', 'badge' => 'badge-warning', 'icon' => 'fa-user-group'],
+            'comun' => ['label' => 'Común', 'badge' => 'badge-neutral', 'icon' => 'fa-user'],
+            'user' => ['label' => 'Rumbero', 'badge' => 'badge-neutral', 'icon' => 'fa-user'],
+        ];
+        $statusMeta = [
+            'activo' => ['label' => 'Activo', 'badge' => 'badge-success', 'icon' => 'fa-circle-check'],
+            'pendiente' => ['label' => 'Pendiente', 'badge' => 'badge-warning', 'icon' => 'fa-clock'],
+            'inactivo' => ['label' => 'Inactivo', 'badge' => 'badge-neutral', 'icon' => 'fa-circle-pause'],
+        ];
+        $hasFilters = $q !== '' || in_array($rol, ['admin', 'aliado', 'afiliado', 'comun'], true) || in_array($estado, ['activo', 'inactivo', 'pendiente'], true);
+    @endphp
+
+    <div class="cm-page">
+
+        {{-- ============================ CABECERA ============================ --}}
+        <div class="page-header-block">
+            <div>
+                <h1 class="title-main">Gestión de <span class="title-accent">usuarios</span></h1>
                 <p class="page-subtitle">
-                    <i class="fas fa-users-cog"></i>
-                    Administra todos los usuarios de la plataforma
+                    Administra las cuentas del panel: roles, estado de acceso y datos de contacto.
                 </p>
             </div>
-            <div class="header-actions">
-                <div class="user-greeting">
-                    <span>Bienvenido,</span>
-                    <strong>{{ Auth::user()->name }}</strong>
-                </div>
-                <div class="avatar-circle">
-                    <span>{{ substr(Auth::user()->name, 0, 1) }}</span>
-                </div>
-            </div>
+
+            <a href="{{ route('admin.users.create') }}" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Nuevo usuario
+            </a>
         </div>
 
-        {{-- Mensajes de alerta --}}
-        @if(session('success'))
+        {{-- ============================== AVISOS ============================== --}}
+        @if (session('success'))
             <div class="alert alert-success">
-                <i class="fas fa-check-circle"></i>
-                <span>{{ session('success') }}</span>
-                <button type="button" class="alert-close">&times;</button>
+                <i class="fa-solid fa-circle-check"></i>
+                <div class="alert-content">{{ session('success') }}</div>
             </div>
         @endif
 
-        @if(session('error'))
+        @if (session('error'))
             <div class="alert alert-error">
-                <i class="fas fa-exclamation-circle"></i>
-                <span>{{ session('error') }}</span>
-                <button type="button" class="alert-close">&times;</button>
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <div class="alert-content">{{ session('error') }}</div>
             </div>
         @endif
 
-        {{-- Tarjetas de estadísticas --}}
-        <div class="stats-grid">
-            <div class="stat-card" data-color="purple">
-                <div class="stat-icon">
-                    <i class="fas fa-users"></i>
-                </div>
-                <div class="stat-content">
-                    <span class="stat-value">{{ number_format($totalUsersCount ?? $users->total()) }}</span>
-                    <span class="stat-label">Total Usuarios</span>
-                </div>
+        {{-- ============================= MÉTRICAS ============================= --}}
+        <div class="cm-stats">
+            <div class="cm-stat">
+                <span class="cm-stat__icon"><i class="fa-solid fa-users"></i></span>
+                <span class="cm-stat__body">
+                    <span class="cm-stat__value">{{ number_format($stats['total']) }}</span>
+                    <span class="cm-stat__label">Total</span>
+                </span>
             </div>
 
-            <div class="stat-card" data-color="green">
-                <div class="stat-icon">
-                    <i class="fas fa-user-check"></i>
-                </div>
-                <div class="stat-content">
-                    <span class="stat-value">{{ number_format($activeUsersCount ?? $users->where('status', 'activo')->count()) }}</span>
-                    <span class="stat-label">Activos</span>
-                </div>
+            <div class="cm-stat">
+                <span class="cm-stat__icon cm-stat__icon--green"><i class="fa-solid fa-user-check"></i></span>
+                <span class="cm-stat__body">
+                    <span class="cm-stat__value">{{ number_format($stats['active']) }}</span>
+                    <span class="cm-stat__label">Activos</span>
+                </span>
             </div>
 
-            <div class="stat-card" data-color="orange">
-                <div class="stat-icon">
-                    <i class="fas fa-user-clock"></i>
-                </div>
-                <div class="stat-content">
-                    <span class="stat-value">{{ number_format($pendingUsersCount ?? $users->where('status', 'pendiente')->count()) }}</span>
-                    <span class="stat-label">Pendientes</span>
-                </div>
+            <div class="cm-stat">
+                <span class="cm-stat__icon cm-stat__icon--gold"><i class="fa-solid fa-user-clock"></i></span>
+                <span class="cm-stat__body">
+                    <span class="cm-stat__value">{{ number_format($stats['pending']) }}</span>
+                    <span class="cm-stat__label">Pendientes</span>
+                </span>
             </div>
 
-            <div class="stat-card" data-color="red">
-                <div class="stat-icon">
-                    <i class="fas fa-user-slash"></i>
-                </div>
-                <div class="stat-content">
-                    <span class="stat-value">{{ number_format($inactiveUsersCount ?? $users->where('status', 'inactivo')->count()) }}</span>
-                    <span class="stat-label">Inactivos</span>
-                </div>
+            <div class="cm-stat">
+                <span class="cm-stat__icon cm-stat__icon--red"><i class="fa-solid fa-user-slash"></i></span>
+                <span class="cm-stat__body">
+                    <span class="cm-stat__value">{{ number_format($stats['inactive']) }}</span>
+                    <span class="cm-stat__label">Inactivos</span>
+                </span>
             </div>
         </div>
 
-        {{-- Barra de acciones --}}
-        <div class="actions-bar">
-            <div class="actions-left">
+        {{-- ============================= FILTROS ============================= --}}
+        <div class="cm-filters">
+            <form method="GET" action="{{ route('admin.users.index') }}" data-cm-filters>
                 <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="searchUsers" placeholder="Buscar usuarios...">
-                </div>
-                
-                <div class="filter-dropdown">
-                    <select id="filterRole" class="filter-select">
-                        <option value="">Todos los tipos</option>
-                        <option value="admin">Administradores</option>
-                        <option value="aliado">Aliados</option>
-                        <option value="afiliado">Afiliados</option>
-                        <option value="comun">Comunes</option>
-                    </select>
-                    <i class="fas fa-chevron-down"></i>
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="search" name="q" value="{{ $q }}"
+                        placeholder="Buscar por nombre, correo o teléfono…" aria-label="Buscar usuarios">
                 </div>
 
-                <div class="filter-dropdown">
-                    <select id="filterStatus" class="filter-select">
-                        <option value="">Todos los estados</option>
-                        <option value="activo">Activos</option>
-                        <option value="inactivo">Inactivos</option>
-                        <option value="pendiente">Pendientes</option>
-                    </select>
-                    <i class="fas fa-chevron-down"></i>
-                </div>
-            </div>
+                <select name="rol" class="filter-select" aria-label="Filtrar por rol">
+                    <option value="">Todos los roles</option>
+                    <option value="admin" @selected($rol === 'admin')>Administradores</option>
+                    <option value="aliado" @selected($rol === 'aliado')>Aliados</option>
+                    <option value="afiliado" @selected($rol === 'afiliado')>Afiliados</option>
+                    <option value="comun" @selected($rol === 'comun')>Comunes</option>
+                </select>
 
-            <div class="actions-right">
-                <a href="{{ route('admin.users.create') }}" class="btn-add">
-                    <i class="fas fa-plus-circle"></i>
-                    Añadir Usuario
-                </a>
-            </div>
+                <select name="estado" class="filter-select" aria-label="Filtrar por estado">
+                    <option value="">Todos los estados</option>
+                    <option value="activo" @selected($estado === 'activo')>Activos</option>
+                    <option value="pendiente" @selected($estado === 'pendiente')>Pendientes</option>
+                    <option value="inactivo" @selected($estado === 'inactivo')>Inactivos</option>
+                </select>
+
+                <noscript>
+                    <button type="submit" class="btn btn-secondary btn-sm">
+                        <i class="fa-solid fa-filter"></i> Filtrar
+                    </button>
+                </noscript>
+
+                @if ($hasFilters)
+                    <a href="{{ route('admin.users.index') }}" class="btn btn-secondary btn-sm">
+                        <i class="fa-solid fa-xmark"></i> Limpiar
+                    </a>
+                @endif
+            </form>
+
+            <span class="cm-filters__count">
+                {{ $users->total() }} {{ $users->total() === 1 ? 'usuario' : 'usuarios' }}
+            </span>
         </div>
 
-        {{-- Tabla de usuarios --}}
-        @if ($users->isEmpty())
-            <div class="empty-state">
-                <i class="fas fa-user-slash"></i>
-                <h3>No hay usuarios registrados</h3>
-                <p>Comienza añadiendo tu primer usuario a la plataforma.</p>
-                <a href="{{ route('admin.users.create') }}" class="btn-add">
-                    <i class="fas fa-plus-circle"></i>
-                    Añadir Usuario
-                </a>
-            </div>
-        @else
-            <div class="table-container">
-                <div class="table-responsive">
-                    <table class="data-table">
+        {{-- ============================== TABLA ============================== --}}
+        <div class="cm-table-card">
+            @if ($users->isEmpty())
+                <div class="cm-empty">
+                    <i class="fa-solid fa-users-slash"></i>
+                    @if ($hasFilters)
+                        <h3>Sin resultados</h3>
+                        <p>No hay usuarios que coincidan con la búsqueda o los filtros.</p>
+                        <a href="{{ route('admin.users.index') }}" class="btn btn-secondary btn-sm">
+                            <i class="fa-solid fa-xmark"></i> Quitar filtros
+                        </a>
+                    @else
+                        <h3>Todavía no hay usuarios</h3>
+                        <p>Crea la primera cuenta para empezar a gestionar el acceso al panel.</p>
+                        <a href="{{ route('admin.users.create') }}" class="btn btn-primary" style="margin-top:.5rem;">
+                            <i class="fa-solid fa-plus"></i> Crear usuario
+                        </a>
+                    @endif
+                </div>
+            @else
+                <div class="rx-table-scroll">
+                    <table class="rx-stack-table">
                         <thead>
                             <tr>
-                                <th>ID</th>
                                 <th>Usuario</th>
-                                <th>Contacto</th>
+                                <th class="hide-mobile">Contacto</th>
                                 <th>Tipo</th>
                                 <th>Estado</th>
-                                <th>Registro</th>
-                                <th>Acciones</th>
+                                <th class="hide-mobile">Registro</th>
+                                <th style="text-align:right;">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody id="usersTableBody">
+                        <tbody>
                             @foreach ($users as $user)
-                                <tr class="user-row" data-role="{{ strtolower($user->role ?? $user->user_type) }}" data-status="{{ strtolower($user->status) }}">
-                                    <td>
-                                        <span class="user-id">#{{ $user->id }}</span>
-                                    </td>
-                                    <td>
-                                        <div class="user-info">
-                                            <div class="user-avatar">
-                                                {{ substr($user->firstname ?? $user->name, 0, 1) }}
+                                @php
+                                    $roleKey = $user->role ?: 'comun';
+                                    $role = $roleMeta[$roleKey] ?? ['label' => ucfirst($roleKey), 'badge' => 'badge-neutral', 'icon' => 'fa-user'];
+                                    $statusKey = $user->status ?: 'activo';
+                                    $status = $statusMeta[$statusKey] ?? ['label' => ucfirst($statusKey), 'badge' => 'badge-neutral', 'icon' => 'fa-circle'];
+                                    $registered = $user->registration_date ? \Carbon\Carbon::parse($user->registration_date) : $user->created_at;
+                                    $name = trim(($user->firstname ?: $user->name) . ' ' . ($user->lastname ?: ''));
+                                    $isSelf = auth()->id() === $user->id;
+                                    $hasPhoto = $user->profile_photo_path && \Illuminate\Support\Facades\Storage::disk('public')->exists($user->profile_photo_path);
+                                @endphp
+                                <tr>
+                                    <td data-label="Usuario">
+                                        <div class="cm-user">
+                                            <div class="cm-user__avatar">
+                                                <span>{{ mb_strtoupper(mb_substr($user->firstname ?: $user->name, 0, 1)) }}</span>
+                                                @if ($hasPhoto)
+                                                    <img src="{{ asset('storage/' . ltrim($user->profile_photo_path, '/')) }}"
+                                                        alt="Foto de {{ $name }}" loading="lazy" data-img>
+                                                @endif
                                             </div>
-                                            <div class="user-details">
-                                                <span class="user-name">{{ $user->firstname ?? $user->name }} {{ $user->lastname ?? '' }}</span>
-                                                <span class="user-email">{{ $user->email }}</span>
+
+                                            <div class="cm-user__text">
+                                                <span class="cm-user__name">
+                                                    {{ $name ?: 'Sin nombre' }}
+                                                    @if ($isSelf)
+                                                        <span class="cm-user__self">Tú</span>
+                                                    @endif
+                                                </span>
+                                                <span class="cm-user__email">{{ $user->email }}</span>
                                             </div>
                                         </div>
                                     </td>
-                                    <td>
-                                        <div class="contact-info">
-                                            <span><i class="fas fa-phone"></i> {{ $user->phone ?? $user->phone1 ?? 'N/A' }}</span>
-                                        </div>
-                                    </td>
-                                    <td>
-                                        @php
-                                            $role = strtolower($user->role ?? $user->user_type);
-                                            $roleText = match($role) {
-                                                'admin' => 'Administrador',
-                                                'aliado' => 'Aliado',
-                                                'afiliado' => 'Afiliado',
-                                                'user', 'comun' => 'Común',
-                                                default => $role
-                                            };
-                                        @endphp
-                                        <span class="badge badge-role-{{ $role }}">
-                                            {{ $roleText }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        @php
-                                            $status = strtolower($user->status);
-                                            $statusText = ucfirst($status);
-                                        @endphp
-                                        <span class="badge badge-status-{{ $status }}">
-                                            <i class="fas fa-circle"></i>
-                                            {{ $statusText }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <div class="date-info">
-                                            @if($user->created_at)
-                                                <span>{{ $user->created_at->format('d/m/Y') }}</span>
-                                                <small>{{ $user->created_at->format('H:i') }}</small>
-                                            @elseif($user->registration_date)
-                                                <span>{{ \Carbon\Carbon::parse($user->registration_date)->format('d/m/Y') }}</span>
+
+                                    <td class="hide-mobile" data-label="Contacto">
+                                        <span class="cm-ally__link">
+                                            @if ($user->phone1)
+                                                <i class="fa-solid fa-phone"></i> {{ $user->phone1 }}
                                             @else
-                                                <span class="text-muted">N/A</span>
+                                                Sin teléfono
                                             @endif
-                                        </div>
+                                        </span>
                                     </td>
-                                    <td>
-                                        <div class="action-buttons">
-                                            <a href="{{ route('admin.users.show', $user->id) }}" class="action-btn view" title="Ver detalles">
-                                                <i class="fas fa-eye"></i>
+
+                                    <td data-label="Tipo">
+                                        <span class="badge {{ $role['badge'] }}">
+                                            <i class="fa-solid {{ $role['icon'] }}"></i> {{ $role['label'] }}
+                                        </span>
+                                    </td>
+
+                                    <td data-label="Estado">
+                                        <span class="badge {{ $status['badge'] }}">
+                                            <i class="fa-solid {{ $status['icon'] }}"></i> {{ $status['label'] }}
+                                        </span>
+                                    </td>
+
+                                    <td class="hide-mobile" data-label="Registro">
+                                        <span class="cm-date">
+                                            {{ $registered ? $registered->format('d/m/Y') : '—' }}
+                                            <small>{{ $registered ? $registered->diffForHumans() : '' }}</small>
+                                        </span>
+                                    </td>
+
+                                    <td data-label="Acciones">
+                                        <div class="cm-actions">
+                                            <a href="{{ route('admin.users.show', $user->id) }}" class="cm-icon-btn"
+                                                title="Ver detalle" aria-label="Ver detalle de {{ $name }}">
+                                                <i class="fa-solid fa-eye"></i>
                                             </a>
-                                            <a href="{{ route('admin.users.edit', $user->id) }}" class="action-btn edit" title="Editar usuario">
-                                                <i class="fas fa-edit"></i>
+
+                                            <a href="{{ route('admin.users.edit', $user->id) }}" class="cm-icon-btn"
+                                                title="Editar usuario" aria-label="Editar {{ $name }}">
+                                                <i class="fa-solid fa-pen"></i>
                                             </a>
-                                            <form action="{{ route('admin.users.destroy', $user->id) }}" method="POST" class="delete-form" 
-                                                  onsubmit="return confirm('¿Estás seguro de eliminar a {{ $user->firstname ?? $user->name }} {{ $user->lastname ?? '' }}? Esta acción no se puede deshacer.');">
-                                                @csrf
-                                                @method('DELETE')
-                                                <button type="submit" class="action-btn delete" title="Eliminar usuario">
-                                                    <i class="fas fa-trash-alt"></i>
+
+                                            @if ($isSelf)
+                                                <button type="button" class="cm-icon-btn" disabled
+                                                    title="No puedes eliminar tu propia cuenta"
+                                                    aria-label="No puedes eliminar tu propia cuenta">
+                                                    <i class="fa-solid fa-lock"></i>
                                                 </button>
-                                            </form>
+                                            @else
+                                                <button type="button" class="cm-icon-btn cm-icon-btn--danger"
+                                                    title="Eliminar usuario" aria-label="Eliminar {{ $name }}"
+                                                    data-delete-trigger data-delete-id="{{ $user->id }}"
+                                                    data-delete-name="{{ $name }}">
+                                                    <i class="fa-solid fa-trash-can"></i>
+                                                </button>
+
+                                                <form id="delete-form-{{ $user->id }}"
+                                                    action="{{ route('admin.users.destroy', $user->id) }}"
+                                                    method="POST" hidden>
+                                                    @csrf
+                                                    @method('DELETE')
+                                                </form>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>
@@ -239,114 +265,45 @@
                         </tbody>
                     </table>
                 </div>
+
+                @if ($users->hasPages())
+                    <div class="cm-pagination">
+                        <span class="cm-pagination__info">
+                            Mostrando <strong>{{ $users->firstItem() }}</strong>–<strong>{{ $users->lastItem() }}</strong>
+                            de <strong>{{ $users->total() }}</strong>
+                        </span>
+
+                        {{ $users->onEachSide(1)->links('pagination::bootstrap-4') }}
+                    </div>
+                @endif
+            @endif
+        </div>
+    </div>
+
+    {{-- ====================== MODAL DE CONFIRMACIÓN ====================== --}}
+    <div class="modal cf-modal" id="deleteModal" hidden>
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="deleteTitle">
+            <div class="modal-body">
+                <div class="cf-confirm">
+                    <span class="cf-confirm__icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                    <h2 id="deleteTitle">Eliminar usuario</h2>
+                    <p>¿Seguro que quieres eliminar a <span class="cf-confirm__name" data-delete-name></span>?</p>
+                    <p>Se borrará su cuenta y no se puede deshacer.</p>
+                </div>
             </div>
 
-            {{-- Paginación --}}
-            @if ($users->hasPages())
-                <div class="pagination-wrapper">
-                    <div class="pagination-info">
-                        <i class="fas fa-list-ul"></i>
-                        Mostrando {{ $users->firstItem() ?? 0 }} - {{ $users->lastItem() ?? 0 }} de {{ $users->total() }} usuarios
-                    </div>
-
-                    <div class="pagination">
-                        @if ($users->onFirstPage())
-                            <span class="page-link disabled">
-                                <i class="fas fa-chevron-left"></i>
-                            </span>
-                        @else
-                            <a href="{{ $users->previousPageUrl() }}" class="page-link">
-                                <i class="fas fa-chevron-left"></i>
-                            </a>
-                        @endif
-
-                        @foreach ($users->getUrlRange(1, $users->lastPage()) as $page => $url)
-                            @if ($page == $users->currentPage())
-                                <span class="page-link active">{{ $page }}</span>
-                            @else
-                                <a href="{{ $url }}" class="page-link">{{ $page }}</a>
-                            @endif
-                        @endforeach
-
-                        @if ($users->hasMorePages())
-                            <a href="{{ $users->nextPageUrl() }}" class="page-link">
-                                <i class="fas fa-chevron-right"></i>
-                            </a>
-                        @else
-                            <span class="page-link disabled">
-                                <i class="fas fa-chevron-right"></i>
-                            </span>
-                        @endif
-                    </div>
-                </div>
-            @endif
-        @endif
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-delete-cancel>
+                    <i class="fa-solid fa-xmark"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-danger" data-delete-confirm>
+                    <i class="fa-solid fa-trash-can"></i> Sí, eliminar
+                </button>
+            </div>
+        </div>
     </div>
 @endsection
 
 @push('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // ========== CERRAR ALERTAS ==========
-        document.querySelectorAll('.alert-close').forEach(button => {
-            button.addEventListener('click', function() {
-                this.closest('.alert').style.display = 'none';
-            });
-        });
-
-        // Auto-cerrar alertas después de 5 segundos
-        setTimeout(() => {
-            document.querySelectorAll('.alert').forEach(alert => {
-                alert.style.opacity = '0';
-                setTimeout(() => alert.style.display = 'none', 300);
-            });
-        }, 5000);
-
-        // ========== FILTROS EN TIEMPO REAL ==========
-        const searchInput = document.getElementById('searchUsers');
-        const filterRole = document.getElementById('filterRole');
-        const filterStatus = document.getElementById('filterStatus');
-        const userRows = document.querySelectorAll('.user-row');
-
-        function filterUsers() {
-            const searchTerm = searchInput.value.toLowerCase();
-            const roleFilter = filterRole.value.toLowerCase();
-            const statusFilter = filterStatus.value.toLowerCase();
-
-            userRows.forEach(row => {
-                const userRole = row.dataset.role;
-                const userStatus = row.dataset.status;
-                const userName = row.querySelector('.user-name').textContent.toLowerCase();
-                const userEmail = row.querySelector('.user-email').textContent.toLowerCase();
-                
-                const matchesSearch = userName.includes(searchTerm) || userEmail.includes(searchTerm);
-                const matchesRole = !roleFilter || userRole === roleFilter;
-                const matchesStatus = !statusFilter || userStatus === statusFilter;
-
-                if (matchesSearch && matchesRole && matchesStatus) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-        }
-
-        searchInput.addEventListener('input', filterUsers);
-        filterRole.addEventListener('change', filterUsers);
-        filterStatus.addEventListener('change', filterUsers);
-
-        // ========== ANIMACIONES EN LAS FILAS ==========
-        userRows.forEach(row => {
-            row.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-2px)';
-                this.style.boxShadow = '0 10px 25px -5px rgba(166, 1, 179, 0.15)';
-            });
-
-            row.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0)';
-                this.style.boxShadow = 'none';
-            });
-        });
-    });
-</script>
+    <script src="{{ asset('js/admin-forms.js') }}"></script>
 @endpush

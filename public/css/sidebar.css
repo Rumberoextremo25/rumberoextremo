@@ -1,70 +1,172 @@
-body {
-    background-color: #f0f2f5;
-    padding: 1rem 2.2rem;
-}
+/* ==========================================================================
+   RUMBERO EXTREMO · PANEL ADMIN
+   sidebar.css  ·  Capa 2 de 3 (piel del sidebar / drawer)
+   --------------------------------------------------------------------------
+   Colores 100% de la paleta original: #1A123C, #A601B3, #3004E1.
+   Estados: normal, hover, activo, colapsado (escritorio), abierto (móvil).
+   ========================================================================== */
 
+/* ==========================================================================
+   1. CONTENEDOR
+   ========================================================================== */
 .admin-sidebar {
-    width: 260px; /* Un poco más ancha para mejor legibilidad */
-    height: calc(80vh - 3rem);
-    background: linear-gradient(180deg, #1f1f3a 0%, #2a2a4a 100%); /* Gradiente sutil */
-    padding: 1.5rem;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15); /* Sombra más pronunciada */
-    border-radius: 20px;
-    margin-top: 100px;
-    position: fixed;
-    top: 1.5rem;
-    left: 1.5rem;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
-    transition: all 0.3s ease;
-    z-index: 999;
-    border: 1px solid rgba(255, 255, 255, 0.1); /* Borde sutil */
+    background-color: #1a123c;
+    background-image: var(--rx-gradient-sidebar);
+    color: #e2e8f0;
+    border-inline-end: 1px solid rgba(255, 255, 255, 0.08);
+    /* Safe areas iOS (notch en horizontal / home indicator) */
+    padding-top: var(--rx-safe-top);
+    padding-bottom: var(--rx-safe-bottom);
+    padding-left: max(0.75rem, var(--rx-safe-left));
+    padding-right: 0.75rem;
+    overflow: hidden;
+    isolation: isolate;
 }
 
-/* Header de la sidebar mejorado */
+/* Halo decorativo muy sutil en la parte superior (misma paleta) */
+.admin-sidebar::before {
+    content: '';
+    position: absolute;
+    inset-block-start: -140px;
+    inset-inline-start: -80px;
+    width: 320px;
+    height: 320px;
+    background: radial-gradient(circle, rgba(166, 1, 179, 0.35) 0%, rgba(166, 1, 179, 0) 68%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+.admin-sidebar::after {
+    content: '';
+    position: absolute;
+    inset-block-end: -120px;
+    inset-inline-end: -60px;
+    width: 260px;
+    height: 260px;
+    background: radial-gradient(circle, rgba(48, 4, 225, 0.3) 0%, rgba(48, 4, 225, 0) 70%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+/* ==========================================================================
+   2. CABECERA (logo + marca + botón cerrar)
+   ========================================================================== */
 .sidebar-header {
-    text-align: center;
-    padding: 1.5rem 0 2.5rem 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    margin-bottom: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1.15rem 0.85rem 1.15rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.09);
+    margin-bottom: 0.85rem;
+    min-height: calc(var(--rx-toolbar-h) - 8px);
+    flex-shrink: 0;
 }
 
+.sidebar-logo-link {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    min-width: 0;
+    text-decoration: none;
+    color: inherit;
+}
+
+.logo-image,
 .sidebar-logo {
-    max-width: 70%;
-    height: auto;
-    filter: brightness(0) invert(1); /* Logo blanco */
-    transition: transform 0.3s ease;
+    width: auto;
+    max-width: 100%;
+    height: 34px;
+    max-height: 34px;
+    object-fit: contain;
+    margin: 0;
+    flex-shrink: 0;
+    /* Logo en blanco puro: resalta sobre el fondo oscuro del sidebar */
+    filter: brightness(0) invert(1) drop-shadow(0 2px 6px rgba(0, 0, 0, 0.45));
+    transition: height var(--rx-dur-slow) var(--rx-ease);
 }
 
-.sidebar-logo:hover {
-    transform: scale(1.05);
+.sidebar-brand {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.15;
+    overflow: hidden;
+    white-space: nowrap;
+    transition: opacity var(--rx-dur) var(--rx-ease), width var(--rx-dur-slow) var(--rx-ease);
 }
 
-/* Navegación mejorada */
+.sidebar-brand-name {
+    font-family: var(--rx-font-display);
+    font-size: 0.95rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #fff;
+}
+
+.sidebar-brand-tag {
+    font-size: 0.64rem;
+    font-weight: 600;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #c084fc;
+}
+
+/* Botón cerrar (solo móvil) */
+.sidebar-close {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    margin-inline-start: auto;
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: var(--rx-radius-sm);
+    background: rgba(255, 255, 255, 0.06);
+    color: #fff;
+    transition: background var(--rx-dur) var(--rx-ease), border-color var(--rx-dur) var(--rx-ease);
+}
+
+.sidebar-close:hover {
+    background: rgba(255, 255, 255, 0.14);
+    border-color: rgba(255, 255, 255, 0.28);
+}
+
+/* ==========================================================================
+   3. NAVEGACIÓN
+   ========================================================================== */
 .sidebar-nav {
-    flex-grow: 1;
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
     overflow-y: auto;
-    padding-right: 10px;
+    overflow-x: hidden;
+    padding: 0.15rem 0.15rem 0.5rem;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(166, 1, 179, 0.55) transparent;
 }
 
-/* Scrollbar personalizado */
 .sidebar-nav::-webkit-scrollbar {
     width: 6px;
 }
 
 .sidebar-nav::-webkit-scrollbar-track {
-    background: rgba(255, 255, 255, 0.05);
-    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.04);
+    border-radius: var(--rx-radius-pill);
 }
 
 .sidebar-nav::-webkit-scrollbar-thumb {
-    background: rgba(166, 1, 179, 0.5);
-    border-radius: 10px;
+    background: rgba(166, 1, 179, 0.55);
+    border-radius: var(--rx-radius-pill);
 }
 
 .sidebar-nav::-webkit-scrollbar-thumb:hover {
-    background: rgba(166, 1, 179, 0.8);
+    background: rgba(166, 1, 179, 0.85);
 }
 
 .sidebar-nav ul {
@@ -74,275 +176,534 @@ body {
 }
 
 .sidebar-nav-item {
-    margin-bottom: 0.4rem;
     position: relative;
+    margin-bottom: 0.2rem;
 }
 
-/* Enlaces mejorados */
-.sidebar-nav-link,
-.sidebar-logout-link {
+/* Etiquetas de sección */
+.sidebar-section-title {
     display: flex;
     align-items: center;
-    gap: 1.25rem;
-    padding: 1rem 1.25rem;
-    color: #e0e0e0;
-    text-decoration: none;
-    border-radius: 12px;
-    transition: all 0.3s ease;
-    position: relative;
+    gap: 0.5rem;
+    padding: 0.9rem 0.85rem 0.4rem;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #94a3b8;
+    white-space: nowrap;
     overflow: hidden;
+    transition: opacity var(--rx-dur) var(--rx-ease);
 }
 
-.sidebar-nav-link::before,
-.sidebar-logout-link::before {
+.sidebar-section-title::after {
     content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
+    flex: 1;
+    height: 1px;
+    background: linear-gradient(90deg, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0));
+}
+
+/* Enlaces */
+.sidebar-nav-link,
+.sidebar-logout-link {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
     width: 100%;
-    height: 100%;
-    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
-    transition: left 0.5s ease;
+    padding: 0.7rem 0.8rem;
+    min-height: 44px;
+    /* Target táctil accesible */
+    border-radius: var(--rx-radius-md);
+    color: #d7dbe7;
+    font-size: 0.9rem;
+    font-weight: 500;
+    line-height: 1.25;
+    text-decoration: none;
+    border: 1px solid transparent;
+    transition: background var(--rx-dur) var(--rx-ease),
+        color var(--rx-dur) var(--rx-ease),
+        transform var(--rx-dur) var(--rx-ease),
+        box-shadow var(--rx-dur) var(--rx-ease);
+    -webkit-tap-highlight-color: transparent;
 }
 
-.sidebar-nav-link:hover::before,
-.sidebar-logout-link:hover::before {
-    left: 100%;
-}
-
-.sidebar-nav-link:hover,
-.sidebar-logout-link:hover {
-    background: linear-gradient(135deg, #3004E1 0%, #4a08ff 100%);
-    color: #ffffff;
-    transform: translateX(5px);
-    box-shadow: 0 4px 12px rgba(48, 4, 225, 0.3);
-}
-
-.sidebar-nav-link.active {
-    background: linear-gradient(135deg, #A601B3 0%, #c004d4 100%);
-    color: #ffffff;
-    font-weight: 600;
-    box-shadow: 0 4px 12px rgba(166, 1, 179, 0.4);
-    transform: translateX(5px);
-}
-
-/* Íconos mejorados */
+/* Icono: "chip" consistente */
 .sidebar-nav-link i,
 .sidebar-logout-link i,
-.sidebar-nav-link img {
-    font-size: 1.4rem;
-    width: 24px;
-    height: 24px;
-    text-align: center;
-    color: #A601B3;
-    transition: all 0.3s ease;
+.sidebar-nav-link img.sidebar-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
     flex-shrink: 0;
+    font-size: 0.95rem;
+    border-radius: var(--rx-radius-xs);
+    color: #c084fc;
+    background: rgba(255, 255, 255, 0.06);
+    transition: color var(--rx-dur) var(--rx-ease),
+        background var(--rx-dur) var(--rx-ease),
+        transform var(--rx-dur) var(--rx-ease);
+}
+
+.sidebar-nav-link img.sidebar-icon {
+    padding: 6px;
+    object-fit: contain;
+    filter: invert(72%) sepia(48%) saturate(1200%) hue-rotate(248deg) brightness(105%);
+}
+
+.sidebar-link-text {
+    flex: 1 1 auto;
+    min-width: 0;
+    line-height: 1.25;
+    /* Se permite el salto de línea: una etiqueta larga nunca se corta */
+    white-space: normal;
+    overflow-wrap: break-word;
+    transition: opacity var(--rx-dur) var(--rx-ease);
+}
+
+/* Hover */
+.sidebar-nav-link:hover,
+.sidebar-logout-link:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #ffffff;
+    text-decoration: none;
 }
 
 .sidebar-nav-link:hover i,
-.sidebar-logout-link:hover i,
-.sidebar-nav-link:hover img {
+.sidebar-logout-link:hover i {
+    background: rgba(255, 255, 255, 0.14);
     color: #ffffff;
-    transform: scale(1.1);
+    transform: translateY(-1px);
 }
 
-.sidebar-nav-link.active i,
-.sidebar-nav-link.active img {
-    color: #ffffff;
-    transform: scale(1.1);
+.sidebar-nav-link:hover img.sidebar-icon {
+    filter: brightness(0) invert(1);
 }
 
-/* Filtros para imágenes */
-.sidebar-nav-link img {
-    filter: brightness(0) saturate(100%) invert(43%) sepia(90%) saturate(1900%) hue-rotate(264deg) brightness(83%) contrast(100%);
+/* Activo: píldora con el gradiente de marca */
+.sidebar-nav-link.active {
+    background: var(--rx-gradient);
+    color: #ffffff !important;
+    font-weight: 600;
+    box-shadow: 0 8px 20px -10px rgba(166, 1, 179, 0.75);
 }
 
-.sidebar-nav-link:hover img,
-.sidebar-nav-link.active img {
-    filter: brightness(0) saturate(100%) invert(100%) sepia(1%) saturate(7499%) hue-rotate(274deg) brightness(119%) contrast(100%);
+.sidebar-nav-link.active i {
+    background: rgba(255, 255, 255, 0.18);
+    color: #ffffff !important;
 }
 
-/* Texto de enlaces */
-.sidebar-link-text {
-    font-size: 1rem;
-    letter-spacing: 0.3px;
-    font-weight: 500;
-    transition: all 0.3s ease;
+.sidebar-nav-link.active img.sidebar-icon {
+    filter: brightness(0) invert(1);
 }
 
-/* Sección de logout mejorada */
+.sidebar-nav-link.active::before {
+    content: '';
+    position: absolute;
+    inset-inline-start: -0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 3px;
+    height: 22px;
+    border-radius: var(--rx-radius-pill);
+    background: #ffb800;
+}
+
+/* Foco por teclado */
+.sidebar-nav-link:focus-visible,
+.sidebar-logout-link:focus-visible {
+    outline: 2px solid #c084fc;
+    outline-offset: 2px;
+}
+
+/* ==========================================================================
+   4. SUBMENÚ (Gestión de contenido)
+   ========================================================================== */
+.sidebar-parent-item {
+    margin-bottom: 0.2rem;
+}
+
+.sidebar-nav-header {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    width: 100%;
+    padding: 0.7rem 0.8rem;
+    min-height: 44px;
+    border-radius: var(--rx-radius-md);
+    color: #e2e8f0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    background: transparent;
+    border: 1px solid transparent;
+    text-align: start;
+    transition: background var(--rx-dur) var(--rx-ease), color var(--rx-dur) var(--rx-ease);
+}
+
+.sidebar-nav-header:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: #fff;
+}
+
+.sidebar-nav-header > i:first-child {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    flex-shrink: 0;
+    font-size: 0.95rem;
+    border-radius: var(--rx-radius-xs);
+    color: #c084fc;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.sidebar-nav-header .sidebar-caret {
+    margin-inline-start: auto;
+    width: auto;
+    height: auto;
+    font-size: 0.7rem;
+    color: #94a3b8;
+    background: none;
+    transition: transform var(--rx-dur) var(--rx-ease);
+}
+
+.sidebar-parent-item.is-open > .sidebar-nav-header .sidebar-caret {
+    transform: rotate(180deg);
+}
+
+.sidebar-parent-item.is-open > .sidebar-nav-header {
+    color: #fff;
+    background: rgba(255, 255, 255, 0.06);
+}
+
+/* Submenú plegable */
+.sidebar-nav-submenu {
+    list-style: none;
+    padding: 0.15rem 0 0.15rem 0;
+    margin: 0 0 0.25rem;
+    display: none;
+    position: relative;
+}
+
+.sidebar-parent-item.is-open > .sidebar-nav-submenu {
+    display: block;
+    animation: rxSubmenuIn var(--rx-dur-slow) var(--rx-ease-out);
+}
+
+/* Línea guía */
+.sidebar-nav-submenu::before {
+    content: '';
+    position: absolute;
+    inset-block: 0.35rem;
+    inset-inline-start: 1.45rem;
+    width: 1px;
+    background: rgba(255, 255, 255, 0.14);
+}
+
+.sidebar-nav-subitem {
+    margin: 0.1rem 0;
+}
+
+.sidebar-nav-subitem .sidebar-nav-link {
+    padding: 0.55rem 0.8rem 0.55rem 2.6rem;
+    min-height: 40px;
+    font-size: 0.845rem;
+    color: #cbd5e1;
+}
+
+.sidebar-nav-subitem .sidebar-nav-link i {
+    width: 22px;
+    height: 22px;
+    font-size: 0.78rem;
+    background: transparent;
+}
+
+.sidebar-nav-subitem .sidebar-nav-link.active::before {
+    display: none;
+}
+
+@keyframes rxSubmenuIn {
+    from {
+        opacity: 0;
+        transform: translateY(-4px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* ==========================================================================
+   5. PIE: CERRAR SESIÓN
+   ========================================================================== */
 .logout-container {
+    flex-shrink: 0;
     margin-top: auto;
-    padding-top: 1.5rem;
-    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.09);
+}
+
+.logout-container form {
+    margin: 0;
+    width: 100%;
+    display: block;
 }
 
 .sidebar-logout-link {
-    background: rgba(220, 53, 69, 0.1);
-    border: 1px solid rgba(220, 53, 69, 0.2);
-}
-
-.sidebar-logout-link:hover {
-    background: linear-gradient(135deg, #dc3545 0%, #e74c3c 100%);
-    border-color: transparent;
+    color: #fecaca;
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.18);
+    cursor: pointer;
 }
 
 .sidebar-logout-link i {
-    color: #dc3545;
+    color: #fca5a5;
+    background: rgba(239, 68, 68, 0.16);
+}
+
+.sidebar-logout-link:hover {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    border-color: transparent;
+    color: #fff;
 }
 
 .sidebar-logout-link:hover i {
-    color: #ffffff;
+    background: rgba(255, 255, 255, 0.18);
+    color: #fff;
 }
 
-/* Badge para notificaciones */
+/* ==========================================================================
+   6. BADGE / INDICADOR
+   ========================================================================== */
 .sidebar-badge {
-    position: absolute;
-    right: 1rem;
-    top: 50%;
-    transform: translateY(-50%);
-    background: #e74c3c;
-    color: white;
-    border-radius: 50%;
-    width: 20px;
+    position: static;
+    margin-inline-start: auto;
+    min-width: 20px;
     height: 20px;
-    display: flex;
+    padding: 0 6px;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.7rem;
-    font-weight: bold;
+    font-size: 0.68rem;
+    font-weight: 700;
+    border-radius: var(--rx-radius-pill);
+    background: #ef4444;
+    color: #fff;
+    flex-shrink: 0;
 }
 
-/* Tooltip para sidebar colapsada */
-.sidebar-tooltip {
-    position: absolute;
-    left: calc(100% + 10px);
-    top: 50%;
-    transform: translateY(-50%);
-    background: #2a2a4a;
-    color: white;
-    padding: 0.5rem 0.75rem;
-    border-radius: 6px;
-    font-size: 0.85rem;
-    white-space: nowrap;
+/* ==========================================================================
+   7. OVERLAY (móvil)
+   ========================================================================== */
+.sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: var(--rx-z-overlay);
+    background: rgba(15, 23, 42, 0.55);
+    -webkit-backdrop-filter: blur(3px);
+    backdrop-filter: blur(3px);
     opacity: 0;
     visibility: hidden;
-    transition: all 0.3s ease;
-    z-index: 1000;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    transition: opacity var(--rx-dur-slow) var(--rx-ease),
+        visibility var(--rx-dur-slow) var(--rx-ease);
 }
 
-.sidebar-tooltip::before {
-    content: '';
-    position: absolute;
-    left: -5px;
-    top: 50%;
-    transform: translateY(-50%);
-    border-right: 5px solid #2a2a4a;
-    border-top: 5px solid transparent;
-    border-bottom: 5px solid transparent;
-}
-
-.sidebar-nav-link:hover .sidebar-tooltip {
+.sidebar-overlay.active {
     opacity: 1;
     visibility: visible;
 }
 
-/* Botón toggle mejorado */
+@media (min-width: 1024px) {
+    .sidebar-overlay {
+        display: none;
+    }
+}
+
+/* Botón hamburguesa heredado (la acción vive ahora en la toolbar) */
 .menu-toggle {
     display: none;
-    position: fixed;
-    top: 1.5rem;
-    left: 1.5rem;
-    background: linear-gradient(135deg, #A601B3 0%, #c004d4 100%);
-    color: #fff;
-    border: none;
-    padding: 0.75rem 1rem;
-    border-radius: 12px;
-    z-index: 1001;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 12px rgba(166, 1, 179, 0.3);
 }
 
-.menu-toggle:hover {
-    transform: scale(1.05);
-    box-shadow: 0 6px 16px rgba(166, 1, 179, 0.4);
-}
-
-/* Estados para sidebar colapsada */
-.admin-sidebar.collapsed {
-    width: 80px;
-}
-
-.admin-sidebar.collapsed .sidebar-link-text,
-.admin-sidebar.collapsed .sidebar-header {
-    opacity: 0;
-    visibility: hidden;
-}
-
-.admin-sidebar.collapsed .sidebar-nav-link,
-.admin-sidebar.collapsed .sidebar-logout-link {
-    justify-content: center;
-    padding: 1rem;
-}
-
-.admin-sidebar.collapsed .sidebar-nav-link:hover .sidebar-tooltip {
-    opacity: 1;
-    visibility: visible;
-}
-
-/* Responsive mejorado */
-@media (max-width: 768px) {
-    .admin-sidebar {
-        height: 100vh;
-        width: 0;
-        padding: 0;
-        transform: translateX(-100%);
-        left: 0;
-        top: 0;
-        border-radius: 0;
+/* ==========================================================================
+   8. MODO COLAPSADO (escritorio): solo iconos + tooltip
+   ========================================================================== */
+@media (min-width: 1024px) {
+    .rx-sidebar-collapsed .admin-sidebar {
+        padding-inline: 0.6rem;
     }
 
-    .admin-sidebar.open {
-        width: 280px;
-        transform: translateX(0);
-        padding: 1.5rem;
+    .rx-sidebar-collapsed .sidebar-header {
+        justify-content: center;
+        padding-inline: 0;
     }
 
-    .sidebar-link-text {
+    .rx-sidebar-collapsed .sidebar-brand,
+    .rx-sidebar-collapsed .sidebar-section-title span,
+    .rx-sidebar-collapsed .sidebar-link-text,
+    .rx-sidebar-collapsed .sidebar-nav-header .sidebar-link-text,
+    .rx-sidebar-collapsed .sidebar-badge {
+        display: none;
+    }
+
+    .rx-sidebar-collapsed .logo-image,
+    .rx-sidebar-collapsed .sidebar-logo {
+        height: 30px;
+        margin-inline: auto;
+    }
+
+    .rx-sidebar-collapsed .sidebar-section-title {
+        padding: 0.8rem 0 0.3rem;
+        justify-content: center;
+    }
+
+    .rx-sidebar-collapsed .sidebar-section-title::after {
+        display: none;
+    }
+
+    .rx-sidebar-collapsed .sidebar-nav-link,
+    .rx-sidebar-collapsed .sidebar-logout-link,
+    .rx-sidebar-collapsed .sidebar-nav-header {
+        justify-content: center;
+        padding-inline: 0.35rem;
+        gap: 0;
+    }
+
+    .rx-sidebar-collapsed .sidebar-nav-submenu,
+    .rx-sidebar-collapsed .sidebar-nav-header .sidebar-caret {
+        display: none !important;
+    }
+
+    .rx-sidebar-collapsed .sidebar-nav-link.active::before {
+        inset-inline-start: -0.6rem;
+    }
+
+    /* Tooltip accesible por hover/focus (usa data-tooltip) */
+    .rx-sidebar-collapsed .sidebar-nav-link::after,
+    .rx-sidebar-collapsed .sidebar-logout-link::after,
+    .rx-sidebar-collapsed .sidebar-nav-header::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        inset-inline-start: calc(100% + 12px);
+        top: 50%;
+        transform: translateY(-50%) scale(0.96);
+        padding: 0.45rem 0.7rem;
+        background: #0f172a;
+        color: #fff;
+        font-size: 0.78rem;
+        font-weight: 600;
+        white-space: nowrap;
+        border-radius: var(--rx-radius-sm);
+        box-shadow: 0 10px 24px -10px rgba(0, 0, 0, 0.6);
         opacity: 0;
-        transition: opacity 0.3s ease 0.2s;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity var(--rx-dur) var(--rx-ease), transform var(--rx-dur) var(--rx-ease),
+            visibility var(--rx-dur) var(--rx-ease);
+        z-index: 10;
     }
 
-    .admin-sidebar.open .sidebar-link-text {
+    .rx-sidebar-collapsed .sidebar-nav-link:hover::after,
+    .rx-sidebar-collapsed .sidebar-nav-link:focus-visible::after,
+    .rx-sidebar-collapsed .sidebar-logout-link:hover::after,
+    .rx-sidebar-collapsed .sidebar-logout-link:focus-visible::after,
+    .rx-sidebar-collapsed .sidebar-nav-header:hover::after {
         opacity: 1;
-    }
-
-    .menu-toggle {
-        display: block;
+        visibility: visible;
+        transform: translateY(-50%) scale(1);
     }
 }
 
-/* Animación de entrada para items */
-@keyframes slideIn {
+/* ==========================================================================
+   9. MÓVIL: drawer
+   ========================================================================== */
+@media (max-width: 1023.98px) {
+    .admin-sidebar {
+        border-radius: 0 var(--rx-radius-xl) var(--rx-radius-xl) 0;
+        border-inline-end: none;
+        overflow-y: auto;
+    }
+
+    .sidebar-close {
+        display: inline-flex;
+    }
+
+    .sidebar-header {
+        padding-top: calc(0.9rem + var(--rx-safe-top));
+    }
+
+    .sidebar-nav {
+        overflow-y: visible;
+        flex: 0 0 auto;
+    }
+
+    .logout-container {
+        margin-top: 1rem;
+        padding-bottom: calc(0.25rem + var(--rx-safe-bottom));
+    }
+
+    /* Entrada escalonada de los items del drawer */
+    .admin-sidebar.open .sidebar-nav-item {
+        animation: rxSlideIn 0.36s var(--rx-ease-out) both;
+    }
+
+    .admin-sidebar.open .sidebar-nav-item:nth-child(2) {
+        animation-delay: 0.03s;
+    }
+
+    .admin-sidebar.open .sidebar-nav-item:nth-child(3) {
+        animation-delay: 0.06s;
+    }
+
+    .admin-sidebar.open .sidebar-nav-item:nth-child(4) {
+        animation-delay: 0.09s;
+    }
+
+    .admin-sidebar.open .sidebar-nav-item:nth-child(5) {
+        animation-delay: 0.12s;
+    }
+
+    .admin-sidebar.open .sidebar-nav-item:nth-child(6) {
+        animation-delay: 0.15s;
+    }
+
+    .admin-sidebar.open .sidebar-nav-item:nth-child(n + 7) {
+        animation-delay: 0.18s;
+    }
+
+    /* En móvil el submenú arranca abierto si contiene la ruta activa (lo
+       resuelve el JS con .is-open). Aquí solo ajustamos el alto del texto. */
+    .sidebar-link-text {
+        white-space: normal;
+    }
+}
+
+@keyframes rxSlideIn {
     from {
         opacity: 0;
-        transform: translateX(-20px);
+        transform: translateX(-14px);
     }
+
     to {
         opacity: 1;
         transform: translateX(0);
     }
 }
 
-.sidebar-nav-item {
-    animation: slideIn 0.3s ease forwards;
+@media (prefers-reduced-motion: reduce) {
+    .admin-sidebar.open .sidebar-nav-item {
+        animation: none;
+    }
 }
 
-.sidebar-nav-item:nth-child(1) { animation-delay: 0.1s; }
-.sidebar-nav-item:nth-child(2) { animation-delay: 0.15s; }
-.sidebar-nav-item:nth-child(3) { animation-delay: 0.2s; }
-.sidebar-nav-item:nth-child(4) { animation-delay: 0.25s; }
-.sidebar-nav-item:nth-child(5) { animation-delay: 0.3s; }
-.sidebar-nav-item:nth-child(6) { animation-delay: 0.35s; }
+/* ==========================================================================
+   10. MODO OSCURO
+   ========================================================================== */
+html.dark-mode .admin-sidebar {
+    background-color: #0f172a;
+    background-image: linear-gradient(180deg, #0f172a 0%, #131b33 55%, #17203c 100%);
+    border-inline-end-color: rgba(255, 255, 255, 0.06);
+}

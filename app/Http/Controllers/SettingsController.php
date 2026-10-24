@@ -41,7 +41,91 @@ class SettingsController extends Controller
         // Generar QR Code
         $qrCodeSvg = $this->generateQRCodeSvg($user);
 
-        return view('Admin.settings', compact('user', 'qrCodeSvg'));
+        // Clave pública VAPID para suscribir el navegador a las notificaciones push
+        $webPush = app(\App\Services\WebPushService::class);
+
+        return view('Admin.settings', [
+            'user' => $user,
+            'qrCodeSvg' => $qrCodeSvg,
+            'vapidPublicKey' => $webPush->publicKey(),
+            'pushConfigured' => $webPush->isConfigured(),
+            'pushDevices' => $user->pushSubscriptions()->count(),
+        ]);
+    }
+
+    /**
+     * Diagnóstico de los proveedores de IA (Gemini / DeepSeek).
+     * Devuelve si cada uno responde de verdad y, si no, el motivo.
+     */
+    public function testAi()
+    {
+        $prompt = 'Responde solo con la palabra OK.';
+        $results = [];
+
+        // Gemini
+        $gemini = app(\App\Services\GeminiService::class)->ping();
+
+        $results['gemini'] = [
+            'ok' => $gemini['ok'],
+            'detail' => $gemini['ok']
+                ? 'modelo ' . ($gemini['model'] ?? 'desconocido') . ' · ' . \Illuminate\Support\Str::limit((string) $gemini['text'], 60)
+                : \Illuminate\Support\Str::limit((string) ($gemini['error'] ?? 'sin detalle'), 200),
+        ];
+
+        // DeepSeek
+        try {
+            $reply = app(\App\Services\DeepSeekService::class)->chat($prompt);
+            $text = trim((string) ($reply['respuesta'] ?? ''));
+            $ok = $text !== '' && ! \Illuminate\Support\Str::contains(
+                mb_strtolower($text),
+                ['problemas técnicos', 'problemas tecnicos', 'error en el servicio']
+            );
+
+            $results['deepseek'] = [
+                'ok' => $ok,
+                'detail' => $ok ? \Illuminate\Support\Str::limit($text, 80) : 'Sin saldo o clave inválida (402/401).',
+            ];
+        } catch (\Throwable $e) {
+            $results['deepseek'] = ['ok' => false, 'detail' => \Illuminate\Support\Str::limit($e->getMessage(), 120)];
+        }
+
+        $anyOk = collect($results)->contains(fn ($r) => $r['ok']);
+
+        return response()->json([
+            'success' => true,
+            'any_ok' => $anyOk,
+            'providers' => $results,
+            'message' => $anyOk
+                ? 'La IA está respondiendo correctamente.'
+                : 'Ningún proveedor de IA respondió: los mensajes se derivarán al Centro de Mensajes.',
+        ]);
+    }
+
+    /**
+     * Guardar la configuración de soporte del chat (correo y WhatsApp).
+     */
+    public function updateSupport(Request $request)
+    {
+        $data = $request->validate([
+            'support_email' => ['required', 'email', 'max:180'],
+            'support_whatsapp' => ['nullable', 'string', 'max:25'],
+            'chat_ai_enabled' => ['nullable', 'boolean'],
+        ]);
+
+        $whatsapp = preg_replace('/\D+/', '', (string) ($data['support_whatsapp'] ?? ''));
+
+        \App\Models\Setting::putMany([
+            'support_email' => $data['support_email'],
+            'support_whatsapp' => $whatsapp,
+            'chat_ai_enabled' => $request->boolean('chat_ai_enabled') ? '1' : '0',
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Configuración de soporte guardada.',
+            'support_email' => $data['support_email'],
+            'support_whatsapp' => $whatsapp,
+        ]);
     }
 
     /**

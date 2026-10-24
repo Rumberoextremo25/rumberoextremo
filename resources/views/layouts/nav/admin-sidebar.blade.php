@@ -1,293 +1,235 @@
-<button class="menu-toggle">
-    <i class="fa-solid fa-bars"></i>
-</button>
+@php
+    $user = \Illuminate\Support\Facades\Auth::user();
+    $isAdmin = $user && ($user->role === 'admin' || $user->user_type === 'admin');
+    $isAlly = $user && $user->role === 'aliado';
+    $contentOpen = request()->routeIs('admin.banners.*') || request()->routeIs('admin.commercial-allies.*') || request()->routeIs('admin.promotions.*');
+@endphp
 
-<!-- Overlay para cerrar el menú -->
-<div class="sidebar-overlay"></div>
+{{-- Capa oscura del drawer (móvil / tablet) --}}
+<div class="sidebar-overlay" aria-hidden="true"></div>
 
-<aside class="admin-sidebar">
-    {{-- Navegación del Sidebar --}}
+<aside id="adminSidebar" class="admin-sidebar" aria-label="Navegación del panel">
+
+    {{-- ==================================================================
+         Cabecera: logo + cerrar (móvil)
+         ================================================================== --}}
+    <div class="sidebar-header">
+        <a href="{{ route('welcome') }}" class="sidebar-logo-link" aria-label="Rumbero Extremo — Ir al sitio">
+            <img src="{{ asset('assets/img/logo_sidebar.png') }}" alt="Rumbero Extremo" class="logo-image sidebar-logo"
+                width="174" height="34" decoding="async">
+        </a>
+
+        <button type="button" class="sidebar-close" data-rx-toggle="sidebar" aria-label="Cerrar menú"
+            aria-controls="adminSidebar">
+            <i class="fa-solid fa-xmark" aria-hidden="true"></i>
+        </button>
+    </div>
+
+    {{-- ==================================================================
+         Navegación
+         ================================================================== --}}
     <nav class="sidebar-nav">
         <ul>
-            @if (Auth::check())
-                {{-- Dashboard --}}
-                @if (Auth::user()->role === 'admin' || Auth::user()->role === 'aliado')
+
+            @auth
+                {{-- ------------------------------------------------------------
+                     GENERAL
+                     ------------------------------------------------------------ --}}
+                <li class="sidebar-section-title"><span>General</span></li>
+
+                @if ($isAdmin || $isAlly)
                     <li class="sidebar-nav-item">
                         <a href="{{ route('dashboard') }}"
-                            class="sidebar-nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}">
-                            <i class="fa-solid fa-chart-line"></i> <span class="sidebar-link-text">Dashboard</span>
+                            class="sidebar-nav-link {{ request()->routeIs('dashboard') ? 'active' : '' }}"
+                            data-tooltip="Dashboard" @if (request()->routeIs('dashboard')) aria-current="page" @endif>
+                            <i class="fa-solid fa-chart-line" aria-hidden="true"></i>
+                            <span class="sidebar-link-text">Dashboard</span>
                         </a>
                     </li>
                 @endif
 
-                {{-- Perfil --}}
                 <li class="sidebar-nav-item">
                     <a href="{{ route('profile') }}"
-                        class="sidebar-nav-link {{ request()->routeIs('profile') ? 'active' : '' }}">
-                        <i class="fa-solid fa-user"></i> <span class="sidebar-link-text">Perfil</span>
+                        class="sidebar-nav-link {{ request()->routeIs('profile*') ? 'active' : '' }}"
+                        data-tooltip="Perfil" @if (request()->routeIs('profile*')) aria-current="page" @endif>
+                        <i class="fa-solid fa-user" aria-hidden="true"></i>
+                        <span class="sidebar-link-text">Perfil</span>
                     </a>
                 </li>
 
-                {{-- ===== NUEVO: CHAT DE SOPORTE (solo admin) ===== --}}
-                @if (Auth::user()->role === 'admin')
-                    <li class="sidebar-nav-item">
-                        <a href="{{ route('admin.chat') }}"
-                            class="sidebar-nav-link {{ request()->routeIs('admin.chat') ? 'active' : '' }}">
-                            <i class="fa-solid fa-headset"></i> <span class="sidebar-link-text">Chat de Soporte</span>
-                        </a>
-                    </li>
+                {{-- ------------------------------------------------------------
+                     OPERACIÓN
+                     ------------------------------------------------------------ --}}
+                @if ($isAdmin || $isAlly)
+                    <li class="sidebar-section-title"><span>Operación</span></li>
                 @endif
 
-                {{-- ===== NUEVO: ESTADÍSTICAS DE VENTAS (solo admin) ===== --}}
-                @if (Auth::user()->role === 'admin')
-                    <li class="sidebar-nav-item">
-                        <a href="{{ route('admin.sales.stats') }}"
-                            class="sidebar-nav-link {{ request()->routeIs('admin.sales.stats') ? 'active' : '' }}">
-                            <i class="fa-solid fa-chart-line"></i> <span class="sidebar-link-text">Estadísticas de
-                                Ventas</span>
-                        </a>
-                    </li>
-                @endif
-
-                {{-- ===== GENERADOR DE QR (solo admin) ===== --}}
-                @if (Auth::user()->role === 'admin')
-                    <li class="sidebar-nav-item">
-                        <a href="{{ route('admin.qr.index') }}"
-                            class="sidebar-nav-link {{ request()->routeIs('backoffice.qr.*') ? 'active' : '' }}">
-                            <i class="fa-solid fa-qrcode"></i> <span class="sidebar-link-text">Generar QR</span>
-                        </a>
-                    </li>
-                @endif
-
-                {{-- TRANSACCIONES - PARA ALIADOS Y ADMIN --}}
-                @if (Auth::user()->role === 'admin' || Auth::user()->role === 'aliado')
+                @if ($isAdmin || $isAlly)
                     <li class="sidebar-nav-item">
                         <a href="{{ route('transacciones.index') }}"
-                            class="sidebar-nav-link {{ request()->routeIs('transacciones.*') ? 'active' : '' }}">
-                            <i class="fa-solid fa-right-left"></i> <span class="sidebar-link-text">Mis
-                                Transacciones</span>
+                            class="sidebar-nav-link {{ request()->routeIs('transacciones.*') ? 'active' : '' }}"
+                            data-tooltip="Transacciones" @if (request()->routeIs('transacciones.*')) aria-current="page" @endif>
+                            <i class="fa-solid fa-right-left" aria-hidden="true"></i>
+                            <span class="sidebar-link-text">Mis Transacciones</span>
                         </a>
                     </li>
                 @endif
 
-                {{-- Usuarios --}}
-                @if (Auth::user()->role === 'admin')
+                @if ($isAdmin)
                     <li class="sidebar-nav-item">
                         <a href="{{ route('admin.users.index') }}"
-                            class="sidebar-nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
-                            <i class="fa-solid fa-users"></i> <span class="sidebar-link-text">Usuarios</span>
+                            class="sidebar-nav-link {{ request()->routeIs('admin.users.*') ? 'active' : '' }}"
+                            data-tooltip="Usuarios" @if (request()->routeIs('admin.users.*')) aria-current="page" @endif>
+                            <i class="fa-solid fa-users" aria-hidden="true"></i>
+                            <span class="sidebar-link-text">Usuarios</span>
                         </a>
                     </li>
-                @endif
 
-                {{-- Aliados --}}
-                @if (Auth::user()->role === 'admin')
                     <li class="sidebar-nav-item">
                         <a href="{{ route('admin.aliados.index') }}"
-                            class="sidebar-nav-link {{ request()->routeIs('admin.aliados.*') ? 'active' : '' }}">
-                            <i class="fa-solid fa-handshake"></i><span class="sidebar-link-text">Aliados</span>
+                            class="sidebar-nav-link {{ request()->routeIs('admin.aliados.*') ? 'active' : '' }}"
+                            data-tooltip="Aliados" @if (request()->routeIs('admin.aliados.*')) aria-current="page" @endif>
+                            <i class="fa-solid fa-handshake" aria-hidden="true"></i>
+                            <span class="sidebar-link-text">Aliados</span>
                         </a>
                     </li>
                 @endif
 
-                {{-- Contenedor de Gestión de Contenido --}}
-                @if (Auth::user()->role === 'admin')
-                    <li class="sidebar-nav-item sidebar-parent-item">
-                        <div class="sidebar-nav-header">
-                            <i class="fa-solid fa-newspaper"></i> Gestión de Contenido
-                        </div>
-                        <ul class="sidebar-nav-submenu">
-                            <li class="sidebar-nav-subitem">
-                                <a href="{{ route('admin.banners.index') }}"
-                                    class="sidebar-nav-link {{ request()->routeIs('admin.banners.*') ? 'active' : '' }}">
-                                    <i class="fa-solid fa-images"></i> Banners
-                                </a>
-                            </li>
-                            <li class="sidebar-nav-subitem">
-                                <a href="{{ route('admin.commercial-allies.index') }}"
-                                    class="sidebar-nav-link {{ request()->routeIs('admin.commercial-allies.*') ? 'active' : '' }}">
-                                    <i class="fa-solid fa-store"></i> Aliados Comerciales
-                                </a>
-                            </li>
-                            <li class="sidebar-nav-subitem">
-                                <a href="{{ route('admin.promotions.index') }}"
-                                    class="sidebar-nav-link {{ request()->routeIs('admin.promotions.*') ? 'active' : '' }}">
-                                    <i class="fa-solid fa-tags"></i> Promociones
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                @endif
-
-                {{-- Reportes --}}
-                @if (Auth::user()->role === 'admin' || Auth::user()->role === 'aliado')
+                @if ($isAdmin || $isAlly)
                     <li class="sidebar-nav-item">
                         <a href="{{ route('admin.reports.sales') }}"
-                            class="sidebar-nav-link {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
-                            <i class="fa-solid fa-file-invoice"></i> <span class="sidebar-link-text">Reportes</span>
+                            class="sidebar-nav-link {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}"
+                            data-tooltip="Reportes" @if (request()->routeIs('admin.reports.*')) aria-current="page" @endif>
+                            <i class="fa-solid fa-file-invoice" aria-hidden="true"></i>
+                            <span class="sidebar-link-text">Reportes</span>
                         </a>
                     </li>
                 @endif
 
-                {{-- Payout --}}
-                @if (Auth::user()->role === 'admin')
+                @if ($isAdmin)
+                    <li class="sidebar-nav-item">
+                        <a href="{{ route('admin.requests.index') }}"
+                            class="sidebar-nav-link {{ request()->routeIs('admin.requests.*') ? 'active' : '' }}"
+                            data-tooltip="Solicitudes" @if (request()->routeIs('admin.requests.*')) aria-current="page" @endif>
+                            <i class="fa-solid fa-file-signature" aria-hidden="true"></i>
+                            <span class="sidebar-link-text">Solicitudes</span>
+                        </a>
+                    </li>
+                @endif
+
+                @if ($isAdmin)
                     <li class="sidebar-nav-item">
                         <a href="{{ route('admin.payouts.index') }}"
-                            class="sidebar-nav-link {{ request()->routeIs('admin.payouts.*') ? 'active' : '' }}">
-                            <img src="{{ asset('assets/img/dashboard/pago_proveedores.png') }}"
-                                alt="Pago a Proveedores" class="sidebar-icon">
+                            class="sidebar-nav-link {{ request()->routeIs('admin.payouts.*') ? 'active' : '' }}"
+                            data-tooltip="Pago a Proveedores" @if (request()->routeIs('admin.payouts.*')) aria-current="page" @endif>
+                            <i class="fa-solid fa-money-bill-transfer" aria-hidden="true"></i>
                             <span class="sidebar-link-text">Pago a Proveedores</span>
                         </a>
                     </li>
                 @endif
 
-                {{-- Configuración --}}
-                @if (Auth::user()->role === 'admin')
+                {{-- ------------------------------------------------------------
+                     HERRAMIENTAS (solo admin)
+                     ------------------------------------------------------------ --}}
+                @if ($isAdmin)
+                    <li class="sidebar-section-title"><span>Herramientas</span></li>
+
+                    <li class="sidebar-nav-item">
+                        <a href="{{ route('admin.chat') }}"
+                            class="sidebar-nav-link {{ request()->routeIs('admin.chat') ? 'active' : '' }}"
+                            data-tooltip="Chat de Soporte" @if (request()->routeIs('admin.chat')) aria-current="page" @endif>
+                            <i class="fa-solid fa-headset" aria-hidden="true"></i>
+                            <span class="sidebar-link-text">Chat de Soporte</span>
+                        </a>
+                    </li>
+
+                    <li class="sidebar-nav-item">
+                        <a href="{{ route('admin.sales.stats') }}"
+                            class="sidebar-nav-link {{ request()->routeIs('admin.sales.stats') ? 'active' : '' }}"
+                            data-tooltip="Estadísticas de Ventas" @if (request()->routeIs('admin.sales.stats')) aria-current="page" @endif>
+                            <i class="fa-solid fa-chart-simple" aria-hidden="true"></i>
+                            <span class="sidebar-link-text">Estadísticas de Ventas</span>
+                        </a>
+                    </li>
+
+                    <li class="sidebar-nav-item">
+                        <a href="{{ route('admin.qr.index') }}"
+                            class="sidebar-nav-link {{ request()->routeIs('admin.qr.*') ? 'active' : '' }}"
+                            data-tooltip="Generar QR" @if (request()->routeIs('admin.qr.*')) aria-current="page" @endif>
+                            <i class="fa-solid fa-qrcode" aria-hidden="true"></i>
+                            <span class="sidebar-link-text">Generar QR</span>
+                        </a>
+                    </li>
+
+                    {{-- --------------------------------------------------------
+                         CONTENIDO (submenú plegable)
+                         -------------------------------------------------------- --}}
+                    <li class="sidebar-section-title"><span>Contenido</span></li>
+
+                    <li class="sidebar-nav-item sidebar-parent-item {{ $contentOpen ? 'is-open' : '' }}">
+                        <button type="button" class="sidebar-nav-header" data-tooltip="Gestión de Contenido"
+                            aria-controls="sidebarSubmenuContenido" aria-expanded="{{ $contentOpen ? 'true' : 'false' }}">
+                            <i class="fa-solid fa-newspaper" aria-hidden="true"></i>
+                            <span class="sidebar-link-text">Gestión de Contenido</span>
+                            <i class="fa-solid fa-chevron-down sidebar-caret" aria-hidden="true"></i>
+                        </button>
+
+                        <ul class="sidebar-nav-submenu" id="sidebarSubmenuContenido">
+                            <li class="sidebar-nav-subitem">
+                                <a href="{{ route('admin.banners.index') }}"
+                                    class="sidebar-nav-link {{ request()->routeIs('admin.banners.*') ? 'active' : '' }}"
+                                    @if (request()->routeIs('admin.banners.*')) aria-current="page" @endif>
+                                    <i class="fa-solid fa-images" aria-hidden="true"></i>
+                                    <span class="sidebar-link-text">Banners</span>
+                                </a>
+                            </li>
+                            <li class="sidebar-nav-subitem">
+                                <a href="{{ route('admin.commercial-allies.index') }}"
+                                    class="sidebar-nav-link {{ request()->routeIs('admin.commercial-allies.*') ? 'active' : '' }}"
+                                    @if (request()->routeIs('admin.commercial-allies.*')) aria-current="page" @endif>
+                                    <i class="fa-solid fa-store" aria-hidden="true"></i>
+                                    <span class="sidebar-link-text">Aliados Comerciales</span>
+                                </a>
+                            </li>
+                            <li class="sidebar-nav-subitem">
+                                <a href="{{ route('admin.promotions.index') }}"
+                                    class="sidebar-nav-link {{ request()->routeIs('admin.promotions.*') ? 'active' : '' }}"
+                                    @if (request()->routeIs('admin.promotions.*')) aria-current="page" @endif>
+                                    <i class="fa-solid fa-tags" aria-hidden="true"></i>
+                                    <span class="sidebar-link-text">Promociones</span>
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    {{-- --------------------------------------------------------
+                         SISTEMA
+                         -------------------------------------------------------- --}}
+                    <li class="sidebar-section-title"><span>Sistema</span></li>
+
                     <li class="sidebar-nav-item">
                         <a href="{{ route('admin.settings') }}"
-                            class="sidebar-nav-link {{ request()->routeIs('admin.settings') ? 'active' : '' }}">
-                            <i class="fa-solid fa-gear"></i> <span class="sidebar-link-text">Configuración</span>
+                            class="sidebar-nav-link {{ request()->routeIs('admin.settings') ? 'active' : '' }}"
+                            data-tooltip="Configuración" @if (request()->routeIs('admin.settings')) aria-current="page" @endif>
+                            <i class="fa-solid fa-gear" aria-hidden="true"></i>
+                            <span class="sidebar-link-text">Configuración</span>
                         </a>
                     </li>
                 @endif
-            @endif
+            @endauth
         </ul>
 
-        {{-- Sección de Cerrar Sesión --}}
+        {{-- ==================================================================
+             Cerrar sesión
+             ================================================================== --}}
         <div class="logout-container">
-            <form method="POST" action="{{ route('logout') }}">
+            <form method="POST" action="{{ route('logout') }}" data-no-guard>
                 @csrf
-                <a href="{{ route('logout') }}" onclick="event.preventDefault(); this.closest('form').submit();"
-                    class="sidebar-logout-link">
-                    <i class="fa-solid fa-arrow-right-from-bracket"></i> <span class="sidebar-link-text">Cerrar
-                        Sesión</span>
-                </a>
+                <button type="submit" class="sidebar-logout-link" data-tooltip="Cerrar Sesión">
+                    <i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i>
+                    <span class="sidebar-link-text">Cerrar Sesión</span>
+                </button>
             </form>
         </div>
     </nav>
 </aside>
-
-<style>
-    /* Estilos para el menú activo */
-    .sidebar-nav-link.active {
-        background: linear-gradient(135deg, #A601B3 0%, #3004E1 100%);
-        color: #ffffff !important;
-        border-radius: 8px;
-        box-shadow: 0 4px 10px rgba(166, 1, 179, 0.2);
-    }
-
-    .sidebar-nav-link.active i {
-        color: #ffffff !important;
-    }
-
-    .sidebar-nav-link.active:hover {
-        background: linear-gradient(135deg, #3004E1 0%, #A601B3 100%);
-        box-shadow: 0 6px 15px rgba(166, 1, 179, 0.3);
-    }
-
-    /* Estilo para el header de la sección */
-    .sidebar-nav-header {
-        padding: 0.8rem 1rem;
-        color: #94a3b8;
-        font-size: 0.8rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-
-    .sidebar-nav-header i {
-        color: #A601B3;
-        font-size: 0.9rem;
-    }
-
-    /* Submenú */
-    .sidebar-nav-submenu {
-        list-style: none;
-        padding-left: 0.5rem !important;
-        margin-top: 0.25rem;
-    }
-
-    .sidebar-nav-subitem {
-        margin: 0.25rem 0;
-    }
-
-    .sidebar-nav-subitem .sidebar-nav-link {
-        padding: 0.6rem 1rem 0.6rem 2rem !important;
-        font-size: 0.9rem;
-    }
-
-    /* Iconos */
-    .sidebar-nav-link i.fa-money-bill-transfer,
-    .sidebar-nav-link i.fa-qrcode,
-    .sidebar-nav-link i.fa-chart-simple,
-    .sidebar-nav-link i.fa-headset {
-        font-size: 1.2rem;
-        width: 20px;
-        text-align: center;
-    }
-
-    /* Color cuando está activo */
-    .sidebar-nav-link.active i.fa-money-bill-transfer,
-    .sidebar-nav-link.active i.fa-qrcode,
-    .sidebar-nav-link.active i.fa-chart-simple,
-    .sidebar-nav-link.active i.fa-headset {
-        color: #ffffff !important;
-    }
-
-    /* Efecto hover */
-    .sidebar-nav-link:hover i.fa-money-bill-transfer,
-    .sidebar-nav-link:hover i.fa-qrcode,
-    .sidebar-nav-link:hover i.fa-chart-simple,
-    .sidebar-nav-link:hover i.fa-headset {
-        color: #ffffff;
-    }
-</style>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const menuToggle = document.querySelector('.menu-toggle');
-        const sidebar = document.querySelector('.admin-sidebar');
-        const overlay = document.querySelector('.sidebar-overlay');
-        const body = document.body;
-
-        function toggleMenu() {
-            sidebar.classList.toggle('open');
-            overlay.classList.toggle('active');
-            body.classList.toggle('no-scroll');
-            menuToggle.classList.toggle('active');
-        }
-
-        if (menuToggle) {
-            menuToggle.addEventListener('click', function(e) {
-                e.stopPropagation();
-                toggleMenu();
-            });
-        }
-
-        if (overlay) {
-            overlay.addEventListener('click', toggleMenu);
-        }
-
-        // Cerrar menú al hacer clic en un link
-        const sidebarLinks = document.querySelectorAll('.sidebar-nav-link, .sidebar-logout-link');
-        sidebarLinks.forEach(link => {
-            link.addEventListener('click', function() {
-                if (window.innerWidth <= 768) {
-                    toggleMenu();
-                }
-            });
-        });
-
-        // Cerrar con tecla ESC
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && sidebar && sidebar.classList.contains('open')) {
-                toggleMenu();
-            }
-        });
-
-        // Debug: Mostrar la ruta actual en consola
-        console.log('Ruta actual:', window.location.pathname);
-    });
-</script>

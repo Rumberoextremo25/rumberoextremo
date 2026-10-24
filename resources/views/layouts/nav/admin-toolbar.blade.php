@@ -1,247 +1,220 @@
-{{-- Admin Toolbar Moderno --}}
+{{-- Barra superior del panel: breadcrumb, búsqueda global, notificaciones y usuario --}}
 <header class="admin-toolbar">
+
+    {{-- ==================================================================
+         Izquierda: toggle + título de la página
+         ================================================================== --}}
     <div class="toolbar-left">
-        <button class="toolbar-toggle" id="toolbarSidebarToggle">
-            <i class="fas fa-bars-staggered"></i>
+        <button type="button" class="toolbar-toggle" data-rx-toggle="sidebar" aria-controls="adminSidebar"
+            aria-expanded="false" aria-label="Mostrar u ocultar el menú">
+            <i class="fa-solid fa-bars-staggered" aria-hidden="true"></i>
         </button>
+
         <div class="page-info">
-            <div class="page-breadcrumb">
-                <span class="breadcrumb-home">
-                    <i class="fas fa-house-chimney"></i>
+            <nav class="page-breadcrumb" aria-label="Ubicación">
+                <span class="breadcrumb-home" aria-hidden="true">
+                    <i class="fa-solid fa-house-chimney"></i>
                 </span>
-                <span class="breadcrumb-separator">
-                    <i class="fas fa-chevron-right"></i>
+                <span class="breadcrumb-separator" aria-hidden="true">
+                    <i class="fa-solid fa-chevron-right"></i>
                 </span>
-                <span class="breadcrumb-current">
-                    @yield('page_title_toolbar', 'Dashboard')
-                </span>
-            </div>
-            <h1 class="page-title">
-                @yield('page_title_toolbar', 'Panel Administrativo')
-            </h1>
+                <span class="breadcrumb-current">@yield('page_title_toolbar', 'Panel')</span>
+            </nav>
+            <p class="page-title">@yield('page_title_toolbar', 'Panel Administrativo')</p>
         </div>
     </div>
 
+    {{-- ==================================================================
+         Derecha: búsqueda, notificaciones y perfil
+         ================================================================== --}}
     <div class="toolbar-right">
-        <!-- Búsqueda Moderna -->
+
+        {{-- Búsqueda global (en móvil se despliega bajo la barra) --}}
         <div class="search-modern">
             <div class="search-wrapper">
-                <i class="fas fa-search search-icon"></i>
-                <input type="text" 
-                       id="globalSearchInput" 
-                       class="search-input" 
-                       placeholder="Buscar en el panel..."
-                       autocomplete="off">
-                <div class="search-shortcut">
-                    <span>⌘</span>
-                    <span>K</span>
+                <i class="fas fa-search search-icon" aria-hidden="true"></i>
+                <label for="globalSearchInput" class="rx-sr-only">Buscar en el panel</label>
+                <input type="search" id="globalSearchInput" class="search-input" placeholder="Buscar en el panel⬦"
+                    autocomplete="off" enterkeyhint="search" spellcheck="false">
+
+                <div class="search-shortcut" aria-hidden="true">
+                    <span>&#8984;</span><span>K</span>
                 </div>
-                <div class="search-dropdown" id="searchDropdown">
+
+                <div class="search-dropdown" id="searchDropdown" role="menu" aria-label="Sugerencias de búsqueda">
                     <div class="search-suggestions">
                         <div class="search-suggestion-group">
                             <div class="group-title">
-                                <i class="fas fa-chart-line"></i>
-                                <span>Secciones</span>
+                                <i class="fas fa-compass" aria-hidden="true"></i>
+                                <span>Ir a</span>
                             </div>
                             <a href="{{ route('dashboard') }}" class="suggestion-item">
-                                <i class="fas fa-chart-pie"></i>
+                                <i class="fas fa-chart-pie" aria-hidden="true"></i>
                                 <span>Dashboard</span>
                             </a>
-                            <a href="{{ route('admin.users.index') }}" class="suggestion-item">
-                                <i class="fas fa-users"></i>
-                                <span>Usuarios</span>
-                            </a>
-                            <a href="{{ route('admin.aliados.index') }}" class="suggestion-item">
-                                <i class="fas fa-handshake"></i>
-                                <span>Aliados</span>
-                            </a>
-                            <a href="{{ route('admin.banners.index') }}" class="suggestion-item">
-                                <i class="fas fa-images"></i>
-                                <span>Banners</span>
-                            </a>
+                            @if (auth()->check() && (auth()->user()->role === 'admin' || auth()->user()->user_type === 'admin'))
+                                <a href="{{ route('admin.users.index') }}" class="suggestion-item">
+                                    <i class="fas fa-users" aria-hidden="true"></i>
+                                    <span>Usuarios</span>
+                                </a>
+                                <a href="{{ route('admin.aliados.index') }}" class="suggestion-item">
+                                    <i class="fas fa-handshake" aria-hidden="true"></i>
+                                    <span>Aliados</span>
+                                </a>
+                                <a href="{{ route('admin.banners.index') }}" class="suggestion-item">
+                                    <i class="fas fa-images" aria-hidden="true"></i>
+                                    <span>Banners</span>
+                                </a>
+                                <a href="{{ route('admin.payouts.index') }}" class="suggestion-item">
+                                    <i class="fas fa-money-bill-transfer" aria-hidden="true"></i>
+                                    <span>Pago a Proveedores</span>
+                                </a>
+                                <a href="{{ route('admin.settings') }}" class="suggestion-item">
+                                    <i class="fas fa-gear" aria-hidden="true"></i>
+                                    <span>Configuración</span>
+                                </a>
+                            @endif
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Notificaciones -->
-        <div class="notifications-modern">
-            <button class="notifications-btn" id="notificationsBtn">
-                <i class="fas fa-bell"></i>
-                <span class="notification-badge">3</span>
+        {{-- Botón que despliega la búsqueda en móvil --}}
+        <button type="button" class="toolbar-search-toggle" data-rx-search-toggle aria-expanded="false"
+            aria-controls="globalSearchInput" aria-label="Buscar">
+            <i class="fas fa-search" aria-hidden="true"></i>
+        </button>
+
+        {{-- Notificaciones (datos reales de activity_logs + notifications) --}}
+        <div class="notifications-modern"
+            data-rx-notifications
+            data-feed-url="{{ route('admin.notifications.feed') }}"
+            data-read-url="{{ route('admin.notifications.read', ['id' => '__ID__']) }}"
+            data-read-all-url="{{ route('admin.notifications.read-all') }}">
+            <button type="button" class="notifications-btn" data-rx-dropdown-toggle="notifications"
+                aria-expanded="false" aria-controls="notificationsDropdown" aria-label="Notificaciones">
+                <i class="far fa-bell" aria-hidden="true"></i>
+                <span class="notification-badge" data-rx-notification-badge
+                    @if ($toolbarUnread === 0) hidden @endif>{{ $toolbarUnread }}</span>
             </button>
-            <div class="notifications-dropdown" id="notificationsDropdown">
+
+            <div class="notifications-dropdown" id="notificationsDropdown" data-rx-dropdown="notifications">
                 <div class="dropdown-header">
                     <h4>Notificaciones</h4>
-                    <a href="#">Ver todas</a>
+                    <a href="{{ route('admin.notifications.index') }}">Ver todas</a>
                 </div>
-                <div class="notifications-list">
-                    <div class="notification-item unread">
-                        <div class="notification-icon warning">
-                            <i class="fas fa-exclamation-triangle"></i>
+
+                <div class="notifications-list" data-rx-notification-list>
+                    @forelse ($toolbarNotifications as $notification)
+                        @php $data = $notification->data; @endphp
+                        <a href="{{ $data['url'] ?? '#' }}"
+                            class="notification-item {{ $notification->read_at ? '' : 'unread' }}"
+                            data-rx-notification-id="{{ $notification->id }}">
+                            <span class="notification-icon {{ $data['color'] ?? 'info' }}">
+                                <i class="{{ $data['icon'] ?? 'fa-solid fa-bell' }}" aria-hidden="true"></i>
+                            </span>
+                            <div class="notification-content">
+                                <p>{{ $data['title'] ?? 'Actividad' }}</p>
+                                <span class="notification-message">{{ $data['message'] ?? '' }}</span>
+                                <span class="notification-time">
+                                    <i class="fa-regular fa-clock" aria-hidden="true"></i>
+                                    {{ $notification->created_at?->diffForHumans() }}
+                                </span>
+                            </div>
+                        </a>
+                    @empty
+                        <div class="notification-empty" data-rx-notification-empty>
+                            <i class="fa-regular fa-bell-slash" aria-hidden="true"></i>
+                            <p>Sin actividad todavía</p>
+                            <small>Aquí verás cada usuario, aliado, promoción o banner que se cree, edite o elimine.</small>
                         </div>
-                        <div class="notification-content">
-                            <p>Pago pendiente de aprobación</p>
-                            <span class="notification-time">Hace 5 min</span>
-                        </div>
-                    </div>
-                    <div class="notification-item">
-                        <div class="notification-icon success">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                        <div class="notification-content">
-                            <p>Venta completada #1245</p>
-                            <span class="notification-time">Hace 1 hora</span>
-                        </div>
-                    </div>
-                    <div class="notification-item">
-                        <div class="notification-icon info">
-                            <i class="fas fa-user-plus"></i>
-                        </div>
-                        <div class="notification-content">
-                            <p>Nuevo aliado registrado</p>
-                            <span class="notification-time">Hace 3 horas</span>
-                        </div>
-                    </div>
+                    @endforelse
                 </div>
+
                 <div class="dropdown-footer">
-                    <a href="#" class="view-all-link">
-                        <span>Ver todas las notificaciones</span>
-                        <i class="fas fa-arrow-right"></i>
-                    </a>
+                    <button type="button" class="view-all-link view-all-link--button" data-rx-notification-read-all>
+                        <i class="fa-solid fa-check-double" aria-hidden="true"></i>
+                        <span>Marcar todas como leídas</span>
+                    </button>
                 </div>
             </div>
         </div>
 
-        <!-- Perfil de Usuario -->
-        <div class="user-profile-modern">
-            <button class="user-trigger" id="userTrigger">
-                <div class="user-avatar">
-                    @if(Auth::user()->profile_photo_path)
-                        <img src="{{ asset('storage/' . Auth::user()->profile_photo_path) }}" alt="Avatar">
-                    @else
-                        <span class="avatar-initials">{{ substr(Auth::user()->name ?? 'A', 0, 1) }}</span>
-                    @endif
-                </div>
-                <div class="user-info">
-                    <span class="user-name">{{ Auth::user()->name ?? 'Administrador' }}</span>
-                    <span class="user-role">{{ Auth::user()->role === 'admin' ? 'Administrador' : 'Aliado' }}</span>
-                </div>
-                <i class="fas fa-chevron-down"></i>
-            </button>
-            <div class="user-dropdown" id="userDropdown">
-                <div class="dropdown-header">
-                    <div class="user-avatar-large">
-                        @if(Auth::user()->profile_photo_path)
-                            <img src="{{ asset('storage/' . Auth::user()->profile_photo_path) }}" alt="Avatar">
+        {{-- Perfil de usuario --}}
+        @auth
+            <div class="user-profile-modern">
+                <button type="button" class="user-trigger" data-rx-dropdown-toggle="user" aria-expanded="false"
+                    aria-controls="userDropdown" aria-label="Menú de usuario">
+                    <span class="user-avatar">
+                        @if (auth()->user()->profile_photo_path)
+                            <img src="{{ asset('storage/' . auth()->user()->profile_photo_path) }}"
+                                alt="{{ auth()->user()->name }}" width="34" height="34" loading="lazy">
                         @else
-                            <span>{{ substr(Auth::user()->name ?? 'A', 0, 1) }}</span>
+                            <span class="avatar-initials"
+                                aria-hidden="true">{{ mb_substr(auth()->user()->name ?? 'A', 0, 1) }}</span>
                         @endif
+                    </span>
+                    <span class="user-info">
+                        <span class="user-name">{{ auth()->user()->name ?? 'Administrador' }}</span>
+                        <span class="user-role">{{ auth()->user()->role === 'admin' ? 'Administrador' : 'Aliado' }}</span>
+                    </span>
+                    <i class="fas fa-chevron-down" aria-hidden="true"></i>
+                </button>
+
+                <div class="user-dropdown" id="userDropdown" data-rx-dropdown="user">
+                    <div class="dropdown-header">
+                        <div class="user-avatar-large">
+                            @if (auth()->user()->profile_photo_path)
+                                <img src="{{ asset('storage/' . auth()->user()->profile_photo_path) }}"
+                                    alt="{{ auth()->user()->name }}" width="46" height="46" loading="lazy">
+                            @else
+                                <span aria-hidden="true">{{ mb_substr(auth()->user()->name ?? 'A', 0, 1) }}</span>
+                            @endif
+                        </div>
+                        <div class="user-details">
+                            <h4>{{ auth()->user()->name ?? 'Administrador' }}</h4>
+                            <p>{{ auth()->user()->email ?? 'admin@rumbero.com' }}</p>
+                        </div>
                     </div>
-                    <div class="user-details">
-                        <h4>{{ Auth::user()->name ?? 'Administrador' }}</h4>
-                        <p>{{ Auth::user()->email ?? 'admin@rumbero.com' }}</p>
+
+                    <div class="dropdown-divider"></div>
+
+                    <a href="{{ route('profile') }}" class="dropdown-item">
+                        <i class="fas fa-user-circle" aria-hidden="true"></i>
+                        <span>Mi Perfil</span>
+                    </a>
+
+                    @if (auth()->user()->role === 'admin' || auth()->user()->user_type === 'admin')
+                        <a href="{{ route('admin.settings') }}" class="dropdown-item">
+                            <i class="fas fa-sliders-h" aria-hidden="true"></i>
+                            <span>Configuración</span>
+                        </a>
+                    @endif
+
+                    {{-- Interruptor rápido de modo oscuro (preferencia por usuario) --}}
+                    <div class="dropdown-item dropdown-item--switch">
+                        <i class="fas fa-moon" aria-hidden="true"></i>
+                        <span>Modo oscuro</span>
+                        <label class="toolbar-switch" aria-label="Activar modo oscuro">
+                            <input type="checkbox" data-rx-dark-toggle
+                                data-url="{{ route('admin.settings.update-dark-mode') }}"
+                                {{ ($darkMode ?? false) ? 'checked' : '' }}>
+                            <span class="toolbar-switch-slider"></span>
+                        </label>
                     </div>
+
+                    <div class="dropdown-divider"></div>
+
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button type="submit" class="dropdown-item logout-item">
+                            <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+                            <span>Cerrar Sesión</span>
+                        </button>
+                    </form>
                 </div>
-                <div class="dropdown-divider"></div>
-                <a href="{{ route('profile') }}" class="dropdown-item">
-                    <i class="fas fa-user-circle"></i>
-                    <span>Mi Perfil</span>
-                </a>
-                <a href="{{ route('admin.settings') }}" class="dropdown-item">
-                    <i class="fas fa-sliders-h"></i>
-                    <span>Configuración</span>
-                </a>
-                <div class="dropdown-divider"></div>
-                <form method="POST" action="{{ route('logout') }}" id="logout-form">
-                    @csrf
-                    <button type="submit" class="dropdown-item logout-item">
-                        <i class="fas fa-sign-out-alt"></i>
-                        <span>Cerrar Sesión</span>
-                    </button>
-                </form>
             </div>
-        </div>
+        @endauth
     </div>
 </header>
-
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    // Toggle sidebar
-    const sidebarToggle = document.getElementById('toolbarSidebarToggle');
-    const sidebar = document.querySelector('.admin-sidebar');
-    
-    if (sidebarToggle && sidebar) {
-        sidebarToggle.addEventListener('click', function() {
-            sidebar.classList.toggle('collapsed');
-            localStorage.setItem('sidebarCollapsed', sidebar.classList.contains('collapsed'));
-        });
-        
-        if (localStorage.getItem('sidebarCollapsed') === 'true') {
-            sidebar.classList.add('collapsed');
-        }
-    }
-    
-    // Búsqueda
-    const searchInput = document.getElementById('globalSearchInput');
-    const searchDropdown = document.getElementById('searchDropdown');
-    
-    if (searchInput && searchDropdown) {
-        searchInput.addEventListener('focus', function() {
-            searchDropdown.classList.add('show');
-        });
-        
-        document.addEventListener('click', function(e) {
-            if (!searchInput.contains(e.target) && !searchDropdown.contains(e.target)) {
-                searchDropdown.classList.remove('show');
-            }
-        });
-        
-        searchInput.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') {
-                searchDropdown.classList.remove('show');
-                searchInput.blur();
-            }
-        });
-    }
-    
-    // Notificaciones
-    const notificationsBtn = document.getElementById('notificationsBtn');
-    const notificationsDropdown = document.getElementById('notificationsDropdown');
-    
-    if (notificationsBtn && notificationsDropdown) {
-        notificationsBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            notificationsDropdown.classList.toggle('show');
-        });
-        
-        document.addEventListener('click', function() {
-            notificationsDropdown.classList.remove('show');
-        });
-    }
-    
-    // Perfil de usuario
-    const userTrigger = document.getElementById('userTrigger');
-    const userDropdown = document.getElementById('userDropdown');
-    
-    if (userTrigger && userDropdown) {
-        userTrigger.addEventListener('click', function(e) {
-            e.stopPropagation();
-            userDropdown.classList.toggle('show');
-        });
-        
-        document.addEventListener('click', function() {
-            userDropdown.classList.remove('show');
-        });
-    }
-    
-    // Ctrl + K para búsqueda
-    document.addEventListener('keydown', function(e) {
-        if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
-            e.preventDefault();
-            searchInput?.focus();
-        }
-    });
-});
-</script>

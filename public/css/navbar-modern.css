@@ -1,0 +1,334 @@
+/* ==========================================================================
+   RUMBERO EXTREMO · NAVBAR PÚBLICA
+   navbar-modern.css
+   --------------------------------------------------------------------------
+   Mismo lenguaje de siempre: barra con degradado magenta→azul, panel blanco
+   diagonal detrás del logo y botón de acceso con degradado.
+   Prefijo `nv-` para no chocar con nada.
+   ========================================================================== */
+
+.nv-header {
+    --nv-magenta: #a601b3;
+    --nv-blue: #3004e1;
+    --nv-ink: #1a123c;
+    --nv-gold: #ffb800;
+    --nv-height: 78px;
+
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    height: var(--nv-height);
+    background-image: linear-gradient(105deg, #7d0190 0%, #a601b3 38%, #4b06c9 72%, #3004e1 100%);
+    border-radius: 0 0 34px 34px;
+    box-shadow: 0 10px 30px -18px rgba(26, 18, 60, 0.75);
+    transition: height 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
+    isolation: isolate;
+}
+
+/* Panel blanco diagonal detrás del logo (detalle original, más limpio) */
+.nv-header::before {
+    content: '';
+    position: absolute;
+    inset: 0 auto 0 0;
+    width: 30%;
+    min-width: 250px;
+    background: #fff;
+    clip-path: polygon(0 0, 100% 0, 78% 100%, 0 100%);
+    border-radius: 0 0 0 34px;
+    z-index: -1;
+}
+
+/* Hilos de luz sobre el degradado */
+.nv-header::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+        radial-gradient(600px 200px at 85% 0%, rgba(255, 255, 255, 0.18), transparent 70%),
+        radial-gradient(400px 160px at 45% 100%, rgba(255, 184, 0, 0.12), transparent 70%);
+    pointer-events: none;
+    z-index: -1;
+}
+
+.nv-header.is-scrolled {
+    --nv-height: 68px;
+    box-shadow: 0 14px 36px -16px rgba(26, 18, 60, 0.9);
+}
+
+.nv-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    width: 100%;
+    max-width: 1280px;
+    height: 100%;
+    margin-inline: auto;
+    padding-inline: clamp(1rem, 3vw, 2rem);
+}
+
+/* ============================== LOGO ============================== */
+.nv-logo {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex-shrink: 0;
+    text-decoration: none;
+}
+
+.nv-logo img {
+    display: block;
+    height: 46px;
+    width: auto;
+    transition: height 0.25s ease;
+}
+
+.nv-header.is-scrolled .nv-logo img {
+    height: 40px;
+}
+
+/* ============================== ENLACES ============================== */
+.nv-nav {
+    flex: 1 1 auto;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.nv-links {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.nv-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.55rem 0.9rem;
+    border-radius: 999px;
+    color: rgba(255, 255, 255, 0.92);
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.nv-link::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    bottom: 0.28rem;
+    width: 0;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--nv-gold);
+    transform: translateX(-50%);
+    transition: width 0.22s ease;
+}
+
+.nv-link:hover {
+    background-color: rgba(255, 255, 255, 0.12);
+    color: #fff;
+}
+
+.nv-link:hover::after,
+.nv-link.is-active::after {
+    width: 18px;
+}
+
+.nv-link.is-active {
+    color: #fff;
+    background-color: rgba(255, 255, 255, 0.16);
+}
+
+/* ============================== CTA ============================== */
+.nv-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: 0.5rem;
+}
+
+.nv-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    height: 44px;
+    padding-inline: 1.35rem;
+    border: 0;
+    border-radius: 999px;
+    background-color: #fff;
+    color: var(--nv-ink);
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 800;
+    text-decoration: none;
+    cursor: pointer;
+    box-shadow: 0 10px 24px -12px rgba(0, 0, 0, 0.6);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.nv-cta:hover {
+    transform: translateY(-2px);
+    background-color: #fff7fd;
+    color: var(--nv-magenta);
+    box-shadow: 0 14px 28px -12px rgba(0, 0, 0, 0.55);
+}
+
+.nv-cta--ghost {
+    background-color: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    color: #fff;
+    box-shadow: none;
+    font-weight: 700;
+}
+
+.nv-cta--ghost:hover {
+    background-color: rgba(255, 255, 255, 0.22);
+    color: #fff;
+}
+
+.nv-logout-form {
+    display: inline-flex;
+    margin: 0;
+}
+
+/* ============================ MENÚ MÓVIL ============================ */
+.nv-burger {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    margin-left: 0.25rem;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    border-radius: 13px;
+    background-color: rgba(255, 255, 255, 0.12);
+    color: #fff;
+    font-size: 1.05rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.nv-burger:hover {
+    background-color: rgba(255, 255, 255, 0.22);
+}
+
+@media (max-width: 991.98px) {
+    .nv-header {
+        --nv-height: 68px;
+    }
+
+    .nv-header::before {
+        width: 46%;
+        min-width: 0;
+        clip-path: polygon(0 0, 100% 0, 86% 100%, 0 100%);
+    }
+
+    .nv-logo img {
+        height: 38px;
+    }
+
+    .nv-burger {
+        display: inline-flex;
+    }
+
+    /* Panel desplegable */
+    .nv-nav {
+        position: absolute;
+        top: var(--nv-height);
+        left: 0;
+        right: 0;
+        display: block;
+        padding: 0.75rem clamp(1rem, 4vw, 1.5rem) 1rem;
+        background-color: rgba(26, 18, 60, 0.97);
+        backdrop-filter: blur(14px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+        border-radius: 0 0 22px 22px;
+        box-shadow: 0 24px 48px -20px rgba(0, 0, 0, 0.7);
+
+        /* Oculto por defecto */
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: opacity 0.22s ease, transform 0.22s ease, visibility 0.22s;
+    }
+
+    .nv-nav.active {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .nv-links {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.15rem;
+    }
+
+    .nv-link {
+        padding: 0.8rem 0.9rem;
+        border-radius: 12px;
+        font-size: 0.95rem;
+    }
+
+    .nv-link::after {
+        display: none;
+    }
+
+    .nv-actions {
+        margin: 0.5rem 0 0;
+        padding-top: 0.65rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.12);
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.5rem;
+    }
+
+    .nv-actions li,
+    .nv-actions form {
+        width: 100%;
+    }
+
+    .nv-cta {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .nv-logout-form .nv-cta {
+        width: 100%;
+    }
+}
+
+@media (max-width: 400px) {
+    .nv-logo img {
+        height: 32px;
+    }
+}
+
+/* Accesibilidad */
+.nv-link:focus-visible,
+.nv-cta:focus-visible,
+.nv-burger:focus-visible,
+.nv-logo:focus-visible {
+    outline: 2px solid var(--nv-gold);
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .nv-header,
+    .nv-logo img,
+    .nv-link,
+    .nv-cta,
+    .nv-nav {
+        transition-duration: 0.001ms !important;
+    }
+}

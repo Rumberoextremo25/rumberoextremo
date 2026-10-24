@@ -43,8 +43,9 @@ class AdminController extends Controller
 
         // Filtrar según el rol del usuario
         if ($user->role === 'admin') {
-            if ($request->has('ally_id') && $request->ally_id) {
-                $query->where('ally_id', $request->ally_id);
+            $filterAllyId = $request->input('aliado_id') ?: $request->input('ally_id');
+            if ($filterAllyId) {
+                $query->where('ally_id', $filterAllyId);
             }
         } elseif ($user->role === 'aliado') {
             // Buscar el registro del aliado asociado a este usuario
@@ -70,9 +71,9 @@ class AdminController extends Controller
             $query->where('status', $request->estado);
         }
 
-        // PAGINACIÓN: 6 items por página
+        // PAGINACIÓN
         $transacciones = $query->orderBy('created_at', 'desc')
-            ->paginate(6)
+            ->paginate(12)
             ->withQueryString();
 
         // Calcular resúmenes
@@ -105,9 +106,10 @@ class AdminController extends Controller
 
         if ($user->role === 'admin') {
             $query = PaymentTransaction::query();
-            
-            if ($request->has('ally_id') && $request->ally_id) {
-                $query->where('ally_id', $request->ally_id);
+
+            $filterAllyId = $request->input('aliado_id') ?: $request->input('ally_id');
+            if ($filterAllyId) {
+                $query->where('ally_id', $filterAllyId);
             }
 
             $result['totalRecibido'] = (clone $query)
@@ -121,9 +123,7 @@ class AdminController extends Controller
             $result['totalTransacciones'] = (clone $query)->count();
 
             // Lista de aliados para el filtro (solo para admin)
-            $result['aliados'] = User::where('role', 'aliado')
-                ->orderBy('name')
-                ->get(['id', 'name', 'email']);
+            $result['aliados'] = Ally::orderBy('company_name')->get(['id', 'company_name']);
 
             // Calcular total de comisiones (plataforma)
             $result['totalComisiones'] = (clone $query)

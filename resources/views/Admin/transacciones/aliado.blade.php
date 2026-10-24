@@ -1,850 +1,636 @@
 {{-- resources/views/Admin/transacciones/aliado.blade.php --}}
 @extends('layouts.admin')
 
-@section('title', 'Mis Transacciones - Rumbero Extremo')
+@section('title', 'Mis Transacciones')
 
-@push('styles')
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="{{ asset('css/admin/transactions.css') }}">
-    <style>
-        /* Estilos adicionales para selección múltiple */
-        .select-all-checkbox,
-        .transaction-checkbox {
-            width: 18px;
-            height: 18px;
-            cursor: pointer;
-            accent-color: #A601B3;
-        }
-
-        .bulk-actions-bar {
-            background: #ffffff;
-            border-radius: 16px;
-            padding: 1rem 1.5rem;
-            margin-bottom: 1.5rem;
-            border: 2px solid #A601B3;
-            box-shadow: 0 4px 15px rgba(166, 1, 179, 0.15);
-            animation: slideDown 0.3s ease;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .bulk-actions-content {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 1rem;
-        }
-
-        .selected-count {
-            font-size: 1rem;
-            font-weight: 600;
-            color: #1e293b;
-        }
-
-        .selected-count span {
-            color: #A601B3;
-            font-size: 1.2rem;
-            font-weight: 700;
-        }
-
-        .bulk-buttons {
-            display: flex;
-            gap: 0.8rem;
-            flex-wrap: wrap;
-        }
-
-        .bulk-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-            padding: 0.7rem 1.5rem;
-            border: none;
-            border-radius: 12px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .bulk-btn.approve-all {
-            background: #10b981;
-            color: white;
-            box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
-        }
-
-        .bulk-btn.approve-all:hover {
-            background: #059669;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3);
-        }
-
-        .bulk-btn.reject-all {
-            background: #ef4444;
-            color: white;
-            box-shadow: 0 4px 10px rgba(239, 68, 68, 0.2);
-        }
-
-        .bulk-btn.reject-all:hover {
-            background: #dc2626;
-            transform: translateY(-2px);
-            box-shadow: 0 8px 16px rgba(239, 68, 68, 0.3);
-        }
-
-        .bulk-btn.clear-all {
-            background: #f1f5f9;
-            color: #64748b;
-        }
-
-        .bulk-btn.clear-all:hover {
-            background: #e2e8f0;
-            color: #1e293b;
-        }
-
-        .table-row.selected {
-            background: rgba(166, 1, 179, 0.05);
-            border-left: 3px solid #A601B3;
-        }
-
-        /* Estilo para el checkbox en el header */
-        .select-all-checkbox {
-            margin-left: 0;
-        }
-    </style>
-@endpush
+@section('page_title_toolbar', 'Mis Transacciones')
 
 @section('content')
-    <div class="transactions-wrapper">
-        {{-- Header con Gradiente --}}
-        <div class="transactions-header">
-            <div class="header-content">
-                <div class="role-badge">
-                    @if (auth()->user()->role === 'admin')
-                        <span class="badge-admin">
-                            <i class="fa-solid fa-crown"></i>
-                            ADMINISTRADOR
-                        </span>
-                    @else
-                        <span class="badge-aliado">
-                            <i class="fa-solid fa-handshake"></i>
-                            ALIADO
-                        </span>
-                    @endif
-                </div>
-                <h1 class="page-title">
-                    <span class="title-main">Mis</span>
-                    <span class="title-accent">Transacciones</span>
-                </h1>
-                <div class="page-subtitle">
-                    <i class="fa-regular fa-calendar"></i>
-                    <span>Historial de pagos · Actualizado {{ now()->format('d/m/Y H:i') }}</span>
-                </div>
+    @php
+        $isAdmin = auth()->user()->role === 'admin';
+
+        $statusMeta = [
+            'confirmed' => ['label' => 'Confirmada', 'badge' => 'badge-success', 'icon' => 'fa-circle-check'],
+            'pending_manual_confirmation' => ['label' => 'Pendiente', 'badge' => 'badge-warning', 'icon' => 'fa-hourglass-half'],
+            'awaiting_review' => ['label' => 'En revisión', 'badge' => 'badge-warning', 'icon' => 'fa-clock'],
+            'failed' => ['label' => 'Fallida', 'badge' => 'badge-danger', 'icon' => 'fa-circle-xmark'],
+        ];
+
+        $methodLabels = [
+            'pago_movil' => ['label' => 'Pago móvil', 'icon' => 'fa-mobile-screen'],
+            'transferencia_bancaria' => ['label' => 'Transferencia', 'icon' => 'fa-building-columns'],
+            'transferencia' => ['label' => 'Transferencia', 'icon' => 'fa-building-columns'],
+            'tarjeta' => ['label' => 'Tarjeta', 'icon' => 'fa-credit-card'],
+            'efectivo' => ['label' => 'Efectivo', 'icon' => 'fa-money-bill'],
+        ];
+    @endphp
+
+    <div class="cm-page">
+
+        {{-- ============================ CABECERA ============================ --}}
+        <div class="page-header-block">
+            <div>
+                <h1 class="title-main">Mis <span class="title-accent">transacciones</span></h1>
+                <p class="page-subtitle">
+                    Historial de pagos, comisiones y estado de cada operación.
+                </p>
             </div>
+
             <div class="header-actions">
-                <button class="btn-refresh" id="refreshTable">
-                    <i class="fa-solid fa-rotate-right"></i>
-                    Actualizar
+                <span class="cm-chip {{ $isAdmin ? 'cm-chip--primary' : '' }}">
+                    <i class="fa-solid {{ $isAdmin ? 'fa-crown' : 'fa-handshake' }}"></i>
+                    {{ $isAdmin ? 'Administrador' : 'Aliado' }}
+                </span>
+                <button type="button" class="btn btn-secondary" id="refreshTable">
+                    <i class="fa-solid fa-rotate-right"></i> Actualizar
                 </button>
             </div>
         </div>
 
-        {{-- Tarjetas de Resumen --}}
-        <div class="summary-grid">
-            <div class="summary-card" data-color="purple">
-                <div class="card-icon">
-                    <i class="fa-solid fa-coins"></i>
-                </div>
-                <div class="card-content">
-                    <span class="card-label">Total Recibido</span>
-                    <span class="card-value">$ {{ number_format($totalRecibido ?? 0, 0, ',', '.') }}</span>
-                </div>
-                <div class="card-trend">
-                    <i class="fa-solid fa-arrow-up"></i>
-                    <span>+12%</span>
-                </div>
+        {{-- ============================= MÉTRICAS ============================= --}}
+        <div class="cm-stats">
+            <div class="cm-stat">
+                <span class="cm-stat__icon cm-stat__icon--green"><i class="fa-solid fa-coins"></i></span>
+                <span class="cm-stat__body">
+                    <span class="cm-stat__value">${{ number_format($totalRecibido ?? 0, 0, ',', '.') }}</span>
+                    <span class="cm-stat__label">Total recibido</span>
+                    <span class="cm-stat__delta"><i class="fa-solid fa-circle-check"></i> Confirmado</span>
+                </span>
             </div>
 
-            <div class="summary-card" data-color="orange">
-                <div class="card-icon">
-                    <i class="fa-solid fa-hourglass-half"></i>
-                </div>
-                <div class="card-content">
-                    <span class="card-label">Pendiente por Cobrar</span>
-                    <span class="card-value">$ {{ number_format($pendienteCobrar ?? 0, 0, ',', '.') }}</span>
-                </div>
-                <div class="card-trend warning">
-                    <i class="fa-solid fa-clock"></i>
-                    <span>Por confirmar</span>
-                </div>
+            <div class="cm-stat">
+                <span class="cm-stat__icon cm-stat__icon--gold"><i class="fa-solid fa-hourglass-half"></i></span>
+                <span class="cm-stat__body">
+                    <span class="cm-stat__value">${{ number_format($pendienteCobrar ?? 0, 0, ',', '.') }}</span>
+                    <span class="cm-stat__label">Pendiente por cobrar</span>
+                    <span class="cm-stat__delta"><i class="fa-solid fa-clock"></i> Por confirmar</span>
+                </span>
             </div>
 
-            <div class="summary-card" data-color="green">
-                <div class="card-icon">
-                    <i class="fa-solid fa-arrow-right-arrow-left"></i>
-                </div>
-                <div class="card-content">
-                    <span class="card-label">Total Transacciones</span>
-                    <span class="card-value">{{ $totalTransacciones ?? 0 }}</span>
-                </div>
-                <div class="card-trend">
-                    <i class="fa-solid fa-chart-line"></i>
-                    <span>Histórico</span>
-                </div>
+            <div class="cm-stat">
+                <span class="cm-stat__icon"><i class="fa-solid fa-right-left"></i></span>
+                <span class="cm-stat__body">
+                    <span class="cm-stat__value">{{ number_format($totalTransacciones ?? 0) }}</span>
+                    <span class="cm-stat__label">Transacciones</span>
+                    <span class="cm-stat__delta"><i class="fa-solid fa-chart-line"></i> Histórico</span>
+                </span>
             </div>
         </div>
 
-        {{-- Selector de Aliado (solo admin) --}}
-        @if (auth()->user()->role === 'admin')
-            <div class="filter-section">
-                <div class="filter-card">
-                    <div class="filter-icon">
-                        <i class="fa-solid fa-handshake"></i>
-                    </div>
-                    <div class="filter-content">
-                        <h3>Filtrar por Aliado</h3>
-                        <select id="aliadoSelector" class="filter-select">
-                            <option value="">Todos los aliados</option>
-                            @foreach ($aliados ?? [] as $aliado)
-                                <option value="{{ $aliado->id }}"
-                                    {{ request('aliado_id') == $aliado->id ? 'selected' : '' }}>
-                                    {{ $aliado->name }} - {{ $aliado->email }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-            </div>
-        @endif
-
-        {{-- Panel de Filtros --}}
-        <div class="filters-panel">
+        {{-- ============================= FILTROS ============================= --}}
+        <div class="cm-filters">
             <div class="search-box">
                 <i class="fa-solid fa-magnifying-glass"></i>
-                <input type="text" id="searchInput" placeholder="Buscar por referencia o usuario...">
+                <input type="search" id="searchInput" placeholder="Buscar por referencia o usuario…"
+                    aria-label="Buscar transacciones">
             </div>
 
-            <div class="filters-group">
-                <select id="filterDate" class="filter-select">
-                    <option value="all">📅 Todas las fechas</option>
-                    <option value="today">📅 Hoy</option>
-                    <option value="yesterday">📅 Ayer</option>
-                    <option value="week">📅 Esta semana</option>
-                    <option value="month">📅 Este mes</option>
+            @if ($isAdmin)
+                <select id="aliadoSelector" class="filter-select" aria-label="Filtrar por aliado">
+                    <option value="">Todos los aliados</option>
+                    @foreach ($aliados ?? [] as $aliado)
+                        <option value="{{ $aliado->id }}" @selected((string) request('aliado_id') === (string) $aliado->id)>
+                            {{ $aliado->company_name }}
+                        </option>
+                    @endforeach
                 </select>
+            @endif
 
-                <select id="filterStatus" class="filter-select">
-                    <option value="all">📊 Todos los estados</option>
-                    <option value="confirmed">✅ Confirmada</option>
-                    <option value="pending_manual_confirmation">⏳ Pendiente</option>
-                    <option value="awaiting_review">⏳ En Revisión</option>
-                    <option value="failed">❌ Fallida</option>
-                </select>
+            <select id="filterDate" class="filter-select" aria-label="Filtrar por fecha">
+                <option value="all">Todas las fechas</option>
+                <option value="today">Hoy</option>
+                <option value="yesterday">Ayer</option>
+                <option value="week">Esta semana</option>
+                <option value="month">Este mes</option>
+            </select>
 
-                <button class="btn-filter" id="applyFilters">
-                    <i class="fa-solid fa-filter"></i>
-                    Filtrar
-                </button>
+            <select id="filterStatus" class="filter-select" aria-label="Filtrar por estado">
+                <option value="all">Todos los estados</option>
+                <option value="confirmed">Confirmada</option>
+                <option value="pending_manual_confirmation">Pendiente</option>
+                <option value="awaiting_review">En revisión</option>
+                <option value="failed">Fallida</option>
+            </select>
 
-                <a href="{{ route('transacciones.exportar') }}?{{ http_build_query(request()->all()) }}"
-                    class="btn-export">
-                    <i class="fa-solid fa-download"></i>
-                    Exportar
-                </a>
-            </div>
+            <button type="button" class="btn btn-primary btn-sm" id="applyFilters">
+                <i class="fa-solid fa-filter"></i> Filtrar
+            </button>
+
+            <a href="{{ route('transacciones.exportar') }}?{{ http_build_query(request()->all()) }}"
+                class="btn btn-secondary btn-sm">
+                <i class="fa-solid fa-download"></i> Exportar
+            </a>
         </div>
 
         {{-- Barra de Acciones Masivas (solo admin) --}}
-        @if (auth()->user()->role === 'admin')
-            <div class="bulk-actions-bar" id="bulkActionsBar" style="display: none;">
-                <div class="bulk-actions-content">
-                    <div class="selected-count">
-                        <span id="selectedCount">0</span> transacciones seleccionadas
-                    </div>
-                    <div class="bulk-buttons">
-                        <button class="bulk-btn approve-all" id="approveSelectedBtn">
-                            <i class="fa-regular fa-circle-check"></i>
-                            Aprobar seleccionadas
+        @if ($isAdmin)
+            <div class="tx-bulk" id="bulkActionsBar" style="display: none;">
+                <div class="tx-bulk__content">
+                    <span class="tx-bulk__count">
+                        <strong id="selectedCount">0</strong> transacciones seleccionadas
+                    </span>
+
+                    <div class="tx-bulk__actions">
+                        <button type="button" class="btn btn-success btn-sm" id="approveSelectedBtn">
+                            <i class="fa-solid fa-circle-check"></i> Aprobar
                         </button>
-                        <button class="bulk-btn reject-all" id="rejectSelectedBtn">
-                            <i class="fa-regular fa-circle-xmark"></i>
-                            Rechazar seleccionadas
+                        <button type="button" class="btn btn-danger btn-sm" id="rejectSelectedBtn">
+                            <i class="fa-solid fa-circle-xmark"></i> Rechazar
                         </button>
-                        <button class="bulk-btn clear-all" id="clearSelectedBtn">
-                            <i class="fa-regular fa-times"></i>
-                            Limpiar selección
+                        <button type="button" class="btn btn-secondary btn-sm" id="clearSelectedBtn">
+                            <i class="fa-solid fa-xmark"></i> Limpiar
                         </button>
                     </div>
                 </div>
             </div>
         @endif
 
-        {{-- Tabla de Transacciones --}}
-        <div class="table-container">
-            <div class="table-responsive">
-                <table class="modern-table">
+        {{-- ============================== TABLA ============================== --}}
+        <div class="cm-table-card">
+            <div class="rx-table-scroll">
+                <table class="rx-stack-table tx-table">
                     <thead>
                         <tr>
-                            @if (auth()->user()->role === 'admin')
-                                <th style="width: 40px;">
+                            @if ($isAdmin)
+                                <th style="width:42px;">
                                     <input type="checkbox" id="selectAll" class="select-all-checkbox"
                                         title="Seleccionar todas">
                                 </th>
                             @endif
-                            <th>ID</th>
                             <th>Fecha</th>
                             <th>Referencia</th>
-                            @if (auth()->user()->role === 'admin')
-                                <th>Aliado</th>
+                            @if ($isAdmin)
+                                <th class="hide-mobile">Aliado</th>
                             @endif
                             <th>Usuario</th>
-                            <th>Original</th>
-                            <th>Dto.</th>
-                            <th>Comisión</th>
-                            <th>Neto</th>
-                            <th>Método</th>
+                            <th>Monto</th>
+                            <th class="hide-mobile">Dto.</th>
+                            <th class="hide-mobile hide-wide">Comisión</th>
+                            <th class="hide-mobile hide-wide">Método</th>
                             <th>Estado</th>
-                            <th>Acciones</th>
+                            <th style="text-align:right;">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($transacciones as $transaccion)
-                            <tr class="table-row" data-id="{{ $transaccion->id }}"
+                        @forelse ($transacciones as $transaccion)
+                            @php
+                                $status = $statusMeta[$transaccion->status] ?? [
+                                    'label' => ucfirst($transaccion->status),
+                                    'badge' => 'badge-neutral',
+                                    'icon' => 'fa-circle',
+                                ];
+                                $method = $methodLabels[$transaccion->payment_method] ?? [
+                                    'label' => $transaccion->payment_method ?: '—',
+                                    'icon' => 'fa-wallet',
+                                ];
+                                $selectable = in_array($transaccion->status, ['pending_manual_confirmation', 'awaiting_review']);
+                            @endphp
+                            <tr class="table-row tx-row" data-id="{{ $transaccion->id }}"
                                 data-status="{{ $transaccion->status }}">
-                                @if (auth()->user()->role === 'admin')
-                                    <td>
-                                        @if (in_array($transaccion->status, ['pending_manual_confirmation', 'awaiting_review']))
+                                @if ($isAdmin)
+                                    <td data-label="Seleccionar" class="{{ $selectable ? '' : 'hide-mobile' }}">
+                                        @if ($selectable)
                                             <input type="checkbox" class="transaction-checkbox"
                                                 value="{{ $transaccion->id }}">
                                         @endif
                                     </td>
                                 @endif
-                                <td>
-                                    <span class="id-badge">#{{ $transaccion->id }}</span>
-                                </td>
-                                <td>
-                                    <span class="date-badge">{{ $transaccion->created_at->format('d/m/Y H:i') }}</span>
-                                </td>
-                                <td>
-                                    <span class="reference-badge">{{ $transaccion->reference_code }}</span>
+
+                                <td data-label="Fecha">
+                                    <span class="cm-date">
+                                        {{ $transaccion->created_at->format('d/m/Y') }}
+                                        <small>{{ $transaccion->created_at->format('H:i') }}</small>
+                                    </span>
                                 </td>
 
-                                @if (auth()->user()->role === 'admin')
-                                    <td>
-                                        <div class="user-info">
-                                            <span class="user-name">{{ $transaccion->ally->company_name ?? 'N/A' }}</span>
-                                            <span class="user-email">{{ $transaccion->ally->email ?? '' }}</span>
-                                        </div>
+                                <td data-label="Referencia">
+                                    <span class="cm-chip" style="font-family:monospace;">
+                                        {{ $transaccion->reference_code ?: '—' }}
+                                    </span>
+                                </td>
+
+                                @if ($isAdmin)
+                                    <td class="hide-mobile" data-label="Aliado">
+                                        <span class="cm-ally__name">{{ $transaccion->ally->company_name ?? 'N/A' }}</span>
                                     </td>
                                 @endif
 
-                                <td>
-                                    <div class="user-info">
-                                        <span class="user-name">{{ $transaccion->user->name ?? 'N/A' }}</span>
-                                        <span class="user-email">{{ $transaccion->user->email ?? '' }}</span>
+                                <td data-label="Usuario">
+                                    <div class="cm-user">
+                                        <span class="cm-user__text">
+                                            <span class="cm-user__name">{{ $transaccion->user->name ?? 'N/A' }}</span>
+                                            <span class="cm-user__email">{{ $transaccion->user->email ?? '' }}</span>
+                                        </span>
                                     </div>
                                 </td>
-                                <td>
-                                    <span
-                                        class="amount original">${{ number_format($transaccion->original_amount, 0, ',', '.') }}</span>
+
+                                <td data-label="Monto">
+                                    <strong>${{ number_format($transaccion->amount_to_ally, 0, ',', '.') }}</strong>
+                                    <span class="cm-date"><small>de ${{ number_format($transaccion->original_amount, 0, ',', '.') }}</small></span>
                                 </td>
-                                <td>
+
+                                <td class="hide-mobile" data-label="Descuento">
                                     @if ($transaccion->discount_percentage > 0)
-                                        <span class="discount-badge">
-                                            <i class="fa-solid fa-tag"></i>
-                                            {{ $transaccion->discount_percentage }}%
-                                        </span>
+                                        <span class="cm-chip cm-chip--primary">{{ $transaccion->discount_percentage }}%</span>
                                     @else
-                                        <span class="no-discount">-</span>
+                                        <span class="cm-chip">—</span>
                                     @endif
                                 </td>
-                                <td>
-                                    <span
-                                        class="amount commission">${{ number_format($transaccion->platform_commission, 0, ',', '.') }}</span>
+
+                                <td class="hide-mobile hide-wide" data-label="Comisión">
+                                    ${{ number_format($transaccion->platform_commission, 0, ',', '.') }}
                                 </td>
-                                <td>
-                                    <span
-                                        class="amount net">${{ number_format($transaccion->amount_to_ally, 0, ',', '.') }}</span>
-                                </td>
-                                <td>
-                                    <span class="method-badge method-{{ $transaccion->payment_method }}">
-                                        @if ($transaccion->payment_method == 'pago_movil')
-                                            <i class="fa-solid fa-mobile"></i> Pago Móvil
-                                        @elseif($transaccion->payment_method == 'transferencia_bancaria')
-                                            <i class="fa-solid fa-building"></i> Transferencia
-                                        @else
-                                            {{ $transaccion->payment_method }}
-                                        @endif
+
+                                <td class="hide-mobile hide-wide" data-label="Método">
+                                    <span class="cm-chip">
+                                        <i class="fa-solid {{ $method['icon'] }}"></i> {{ $method['label'] }}
                                     </span>
                                 </td>
-                                <td>
-                                    <span class="status-badge status-{{ $transaccion->status }}">
-                                        @switch($transaccion->status)
-                                            @case('confirmed')
-                                                <i class="fa-regular fa-circle-check"></i> Confirmada
-                                            @break
 
-                                            @case('awaiting_review')
-                                                <i class="fa-regular fa-clock"></i> En Revisión
-                                            @break
-
-                                            @case('pending_manual_confirmation')
-                                                <i class="fa-regular fa-hourglass"></i> Pendiente
-                                            @break
-
-                                            @case('failed')
-                                                <i class="fa-regular fa-circle-xmark"></i> Fallida
-                                            @break
-
-                                            @default
-                                                {{ $transaccion->status }}
-                                        @endswitch
+                                <td data-label="Estado">
+                                    <span class="badge {{ $status['badge'] }}">
+                                        <i class="fa-solid {{ $status['icon'] }}"></i> {{ $status['label'] }}
                                     </span>
                                 </td>
-                                <td>
-                                    <div class="action-group">
-                                        <button class="action-btn view" onclick="verDetalle({{ $transaccion->id }})"
-                                            title="Ver detalles">
-                                            <i class="fa-regular fa-eye"></i>
+
+                                <td data-label="Acciones">
+                                    <div class="cm-actions">
+                                        <button type="button" class="cm-icon-btn" title="Ver detalle"
+                                            onclick="verDetalle({{ $transaccion->id }})">
+                                            <i class="fa-solid fa-eye"></i>
                                         </button>
 
-                                        @if (in_array($transaccion->status, ['pending_manual_confirmation', 'awaiting_review']) &&
-                                                auth()->user()->role === 'admin')
-                                            <button class="action-btn approve"
-                                                onclick="aprobarTransaccion({{ $transaccion->id }})" title="Confirmar">
-                                                <i class="fa-regular fa-circle-check"></i>
+                                        @if ($isAdmin && in_array($transaccion->status, ['pending_manual_confirmation', 'awaiting_review']))
+                                            <button type="button" class="cm-icon-btn" title="Aprobar"
+                                                onclick="aprobarTransaccion({{ $transaccion->id }})">
+                                                <i class="fa-solid fa-check"></i>
                                             </button>
-                                            <button class="action-btn reject"
-                                                onclick="rechazarTransaccion({{ $transaccion->id }})" title="Rechazar">
-                                                <i class="fa-regular fa-circle-xmark"></i>
+                                            <button type="button" class="cm-icon-btn cm-icon-btn--danger"
+                                                title="Rechazar" onclick="rechazarTransaccion({{ $transaccion->id }})">
+                                                <i class="fa-solid fa-xmark"></i>
                                             </button>
                                         @endif
 
-                                        <button class="action-btn print"
-                                            onclick="imprimirComprobante({{ $transaccion->id }})" title="Imprimir">
-                                            <i class="fa-regular fa-print"></i>
+                                        <button type="button" class="cm-icon-btn" title="Imprimir comprobante"
+                                            onclick="imprimirComprobante({{ $transaccion->id }})">
+                                            <i class="fa-solid fa-print"></i>
                                         </button>
                                     </div>
                                 </td>
                             </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="{{ auth()->user()->role === 'admin' ? 13 : 12 }}" class="empty-state">
-                                        <div class="empty-content">
-                                            <i class="fa-regular fa-file-lines"></i>
-                                            <h3>No hay transacciones aún</h3>
-                                            <p>Las transacciones aparecerán cuando los usuarios realicen pagos</p>
-                                        </div>
-                                    </td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
+                        @empty
+                            <tr>
+                                <td colspan="{{ $isAdmin ? 11 : 10 }}">
+                                    <div class="cm-empty" style="border:0;border-radius:0;">
+                                        <i class="fa-regular fa-file-lines"></i>
+                                        <h3>No hay transacciones todavía</h3>
+                                        <p>Las transacciones aparecerán cuando los usuarios realicen pagos.</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
 
-            {{-- Paginación Moderna --}}
-            <div class="pagination-modern">
-                <div class="pagination-info">
-                    <i class="fa-regular fa-chart-bar"></i>
-                    <span>
-                        Mostrando <strong>{{ $transacciones->firstItem() ?? 0 }}</strong> -
-                        <strong>{{ $transacciones->lastItem() ?? 0 }}</strong> de
-                        <strong>{{ $transacciones->total() }}</strong> transacciones
-                    </span>
-                </div>
-                <div class="pagination-links">
-                    {{ $transacciones->onEachSide(1)->links('pagination::bootstrap-4') }}
+            <div class="cm-pagination">
+                <span class="cm-pagination__info">
+                    Mostrando <strong>{{ $transacciones->firstItem() ?? 0 }}</strong>–<strong>{{ $transacciones->lastItem() ?? 0 }}</strong>
+                    de <strong>{{ $transacciones->total() }}</strong>
+                </span>
+
+                {{ $transacciones->onEachSide(1)->links('pagination::bootstrap-4') }}
+            </div>
+        </div>
+    </div>
+
+    {{-- ====================== MODAL DE DETALLE ====================== --}}
+    <div class="modal cf-modal tx-modal" id="transactionModal">
+        <div class="modal-card" style="max-width:600px;">
+            <div class="modal-header">
+                <h3 class="modal-title">
+                    <i class="fa-solid fa-receipt"></i> Detalle de la transacción
+                </h3>
+                <button type="button" class="modal-close" onclick="closeModal()" aria-label="Cerrar">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="modal-body" id="transactionDetails">
+                <div class="loading-spinner">
+                    <div class="spinner-ring"></div>
+                    <p>Cargando detalles…</p>
                 </div>
             </div>
         </div>
+    </div>
 
-        {{-- Modal de Detalles --}}
-        <div class="modal-modern" id="transactionModal">
-            <div class="modal-card" style="max-width: 600px;">
-                <div class="modal-header">
-                    <h3 class="modal-title">
-                        <i class="fa-regular fa-receipt"></i>
-                        Detalles de Transacción
-                    </h3>
-                    <button class="modal-close" onclick="closeModal()">
-                        <i class="fa-regular fa-times"></i>
-                    </button>
-                </div>
-                <div class="modal-body" id="transactionDetails">
-                    <div class="loading-spinner">
-                        <div class="spinner-ring"></div>
-                        <p>Cargando detalles...</p>
-                    </div>
+    {{-- ====================== MODAL DE CONFIRMACIÓN ====================== --}}
+    <div class="modal cf-modal tx-modal" id="confirmModal">
+        <div class="modal-card" style="max-width:460px;">
+            <div class="modal-body">
+                <div class="cf-confirm">
+                    <span class="cf-confirm__icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                    <h2 id="confirmModalTitle">Confirmar acción</h2>
+                    <p id="confirmMessage">¿Seguro que quieres continuar?</p>
                 </div>
             </div>
-        </div>
 
-        {{-- Modal de Confirmación --}}
-        <div class="modal-modern" id="confirmModal">
-            <div class="modal-card" style="max-width: 450px;">
-                <div class="modal-icon warning">
-                    <i class="fa-solid fa-exclamation-triangle"></i>
-                </div>
-                <h3 class="modal-title" id="confirmModalTitle">Confirmar Acción</h3>
-                <div class="modal-body">
-                    <p id="confirmMessage">¿Estás seguro de realizar esta acción?</p>
-                </div>
-                <div class="modal-actions">
-                    <button class="btn-secondary" onclick="closeConfirmModal()">
-                        <i class="fa-regular fa-ban"></i>
-                        Cancelar
-                    </button>
-                    <button class="btn-danger" id="confirmActionBtn">
-                        <i class="fa-regular fa-check"></i>
-                        Confirmar
-                    </button>
-                </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeConfirmModal()">
+                    <i class="fa-solid fa-xmark"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-danger" id="confirmActionBtn">
+                    <i class="fa-solid fa-check"></i> Confirmar
+                </button>
             </div>
         </div>
+    </div>
+@endsection
 
-        <meta name="csrf-token" content="{{ csrf_token() }}">
-    @endsection
+@push('scripts')
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const selectAllCheckbox = document.getElementById('selectAll');
+            const transactionCheckboxes = document.querySelectorAll('.transaction-checkbox');
+            const bulkActionsBar = document.getElementById('bulkActionsBar');
+            const selectedCountSpan = document.getElementById('selectedCount');
+            let selectedIds = new Set();
 
-    @push('scripts')
-        <script src="{{ asset('js/admin/transactions.js') }}"></script>
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                // Variables para selección múltiple
-                const selectAllCheckbox = document.getElementById('selectAll');
-                const transactionCheckboxes = document.querySelectorAll('.transaction-checkbox');
-                const bulkActionsBar = document.getElementById('bulkActionsBar');
-                const selectedCountSpan = document.getElementById('selectedCount');
-                let selectedIds = new Set();
-
-                // ========== SELECCIÓN MÚLTIPLE ==========
-                if (selectAllCheckbox) {
-                    // Seleccionar/Deseleccionar todos
-                    selectAllCheckbox.addEventListener('change', function() {
-                        transactionCheckboxes.forEach(checkbox => {
-                            checkbox.checked = this.checked;
-                            const row = checkbox.closest('.table-row');
-                            if (checkbox.checked) {
-                                selectedIds.add(parseInt(checkbox.value));
-                                row?.classList.add('selected');
-                            } else {
-                                selectedIds.delete(parseInt(checkbox.value));
-                                row?.classList.remove('selected');
-                            }
-                        });
-                        updateBulkActionsBar();
-                    });
-
-                    // Checkbox individuales
+            if (selectAllCheckbox) {
+                selectAllCheckbox.addEventListener('change', function() {
                     transactionCheckboxes.forEach(checkbox => {
-                        checkbox.addEventListener('change', function() {
-                            const row = this.closest('.table-row');
-                            const id = parseInt(this.value);
-
-                            if (this.checked) {
-                                selectedIds.add(id);
-                                row?.classList.add('selected');
-                            } else {
-                                selectedIds.delete(id);
-                                row?.classList.remove('selected');
-                            }
-
-                            // Actualizar estado del checkbox "Seleccionar todos"
-                            selectAllCheckbox.checked = transactionCheckboxes.length ===
-                                document.querySelectorAll('.transaction-checkbox:checked').length;
-                            selectAllCheckbox.indeterminate =
-                                document.querySelectorAll('.transaction-checkbox:checked').length > 0 &&
-                                !selectAllCheckbox.checked;
-
-                            updateBulkActionsBar();
-                        });
+                        checkbox.checked = this.checked;
+                        const row = checkbox.closest('.table-row');
+                        if (checkbox.checked) {
+                            selectedIds.add(parseInt(checkbox.value));
+                            row?.classList.add('selected');
+                        } else {
+                            selectedIds.delete(parseInt(checkbox.value));
+                            row?.classList.remove('selected');
+                        }
                     });
-                }
-
-                // Actualizar barra de acciones masivas
-                function updateBulkActionsBar() {
-                    const count = selectedIds.size;
-                    if (count > 0) {
-                        selectedCountSpan.textContent = count;
-                        bulkActionsBar.style.display = 'block';
-                    } else {
-                        bulkActionsBar.style.display = 'none';
-                    }
-                }
-
-                // Limpiar selección
-                document.getElementById('clearSelectedBtn')?.addEventListener('click', function() {
-                    selectedIds.clear();
-                    transactionCheckboxes.forEach(checkbox => {
-                        checkbox.checked = false;
-                        checkbox.closest('.table-row')?.classList.remove('selected');
-                    });
-                    if (selectAllCheckbox) {
-                        selectAllCheckbox.checked = false;
-                        selectAllCheckbox.indeterminate = false;
-                    }
                     updateBulkActionsBar();
                 });
 
-                // Aprobar seleccionadas
-                document.getElementById('approveSelectedBtn')?.addEventListener('click', function() {
-                    if (selectedIds.size === 0) return;
+                transactionCheckboxes.forEach(checkbox => {
+                    checkbox.addEventListener('change', function() {
+                        const row = this.closest('.table-row');
+                        const id = parseInt(this.value);
 
-                    const ids = Array.from(selectedIds);
-                    document.getElementById('confirmModalTitle').textContent = 'Aprobar Transacciones';
-                    document.getElementById('confirmMessage').innerHTML =
-                        `¿Estás seguro de aprobar <strong>${ids.length}</strong> transacciones seleccionadas?`;
+                        if (this.checked) {
+                            selectedIds.add(id);
+                            row?.classList.add('selected');
+                        } else {
+                            selectedIds.delete(id);
+                            row?.classList.remove('selected');
+                        }
 
-                    openConfirmModal('approve', ids);
-                });
+                        selectAllCheckbox.checked = transactionCheckboxes.length ===
+                            document.querySelectorAll('.transaction-checkbox:checked').length;
+                        selectAllCheckbox.indeterminate =
+                            document.querySelectorAll('.transaction-checkbox:checked').length > 0 &&
+                            !selectAllCheckbox.checked;
 
-                // Rechazar seleccionadas
-                document.getElementById('rejectSelectedBtn')?.addEventListener('click', function() {
-                    if (selectedIds.size === 0) return;
-
-                    const ids = Array.from(selectedIds);
-                    document.getElementById('confirmModalTitle').textContent = 'Rechazar Transacciones';
-                    document.getElementById('confirmMessage').innerHTML =
-                        `¿Estás seguro de rechazar <strong>${ids.length}</strong> transacciones seleccionadas?`;
-
-                    openConfirmModal('reject', ids);
-                });
-
-                // Abrir modal de confirmación para acciones masivas
-                let currentAction = null;
-                let currentIds = [];
-
-                function openConfirmModal(action, ids) {
-                    currentAction = action;
-                    currentIds = ids;
-                    document.getElementById('confirmModal').classList.add('active');
-                }
-
-                // Confirmar acción masiva
-                document.getElementById('confirmActionBtn').addEventListener('click', function() {
-                    if (!currentAction || currentIds.length === 0) return;
-
-                    const url = currentAction === 'approve' ?
-                        '{{ route('transacciones.aprobar-masivas') }}' :
-                        '{{ route('transacciones.rechazar-masivas') }}';
-
-                    fetch(url, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                            },
-                            body: JSON.stringify({
-                                ids: currentIds
-                            })
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                // Recargar la página para ver los cambios
-                                location.reload();
-                            } else {
-                                alert('Error: ' + data.message);
-                            }
-                        })
-                        .catch(error => {
-                            console.error('Error:', error);
-                            alert('Ocurrió un error al procesar las transacciones');
-                        })
-                        .finally(() => {
-                            closeConfirmModal();
-                        });
-                });
-
-                // ========== FUNCIONES EXISTENTES ==========
-
-                // Refresh button
-                document.getElementById('refreshTable')?.addEventListener('click', function() {
-                    location.reload();
-                });
-
-                // Filtros
-                document.getElementById('applyFilters')?.addEventListener('click', function() {
-                    const url = new URL(window.location.href);
-
-                    const fecha = document.getElementById('filterDate').value;
-                    const estado = document.getElementById('filterStatus').value;
-                    const aliado = document.getElementById('aliadoSelector')?.value;
-
-                    if (fecha && fecha !== 'all') url.searchParams.set('fecha', fecha);
-                    else url.searchParams.delete('fecha');
-
-                    if (estado && estado !== 'all') url.searchParams.set('estado', estado);
-                    else url.searchParams.delete('estado');
-
-                    if (aliado) url.searchParams.set('aliado_id', aliado);
-                    else url.searchParams.delete('aliado_id');
-
-                    window.location.href = url.toString();
-                });
-
-                // Selector de aliado
-                document.getElementById('aliadoSelector')?.addEventListener('change', function() {
-                    document.getElementById('applyFilters').click();
-                });
-
-                // Animaciones de entrada
-                document.querySelectorAll('.table-row').forEach((row, index) => {
-                    row.style.animation = `fadeInUp 0.3s ease forwards ${index * 0.05}s`;
-                });
-
-                // Búsqueda en tiempo real
-                document.getElementById('searchInput')?.addEventListener('keyup', function() {
-                    const searchTerm = this.value.toLowerCase();
-                    document.querySelectorAll('.table-row').forEach(row => {
-                        const text = row.textContent.toLowerCase();
-                        row.style.display = text.includes(searchTerm) ? '' : 'none';
+                        updateBulkActionsBar();
                     });
                 });
+            }
+
+            function updateBulkActionsBar() {
+                const count = selectedIds.size;
+                if (!bulkActionsBar || !selectedCountSpan) return;
+
+                if (count > 0) {
+                    selectedCountSpan.textContent = count;
+                    bulkActionsBar.style.display = 'block';
+                } else {
+                    bulkActionsBar.style.display = 'none';
+                }
+            }
+
+            document.getElementById('clearSelectedBtn')?.addEventListener('click', function() {
+                selectedIds.clear();
+                transactionCheckboxes.forEach(checkbox => {
+                    checkbox.checked = false;
+                    checkbox.closest('.table-row')?.classList.remove('selected');
+                });
+                if (selectAllCheckbox) {
+                    selectAllCheckbox.checked = false;
+                    selectAllCheckbox.indeterminate = false;
+                }
+                updateBulkActionsBar();
             });
 
-            // ========== FUNCIONES GLOBALES ==========
+            document.getElementById('approveSelectedBtn')?.addEventListener('click', function() {
+                if (selectedIds.size === 0) return;
 
-            // Ver detalle de transacción
-            function verDetalle(id) {
-                const modal = document.getElementById('transactionModal');
-                const detailsDiv = document.getElementById('transactionDetails');
+                const ids = Array.from(selectedIds);
+                document.getElementById('confirmModalTitle').textContent = 'Aprobar transacciones';
+                document.getElementById('confirmMessage').innerHTML =
+                    `¿Estás seguro de aprobar <strong>${ids.length}</strong> transacciones seleccionadas?`;
 
-                // Mostrar modal y loading
-                modal.classList.add('active');
-                detailsDiv.innerHTML = `
-        <div class="loading-spinner">
-            <div class="spinner-ring"></div>
-            <p>Cargando detalles...</p>
-        </div>
-    `;
+                openConfirmModal('approve', ids);
+            });
 
-                // Usar la ruta correcta (sin /admin/)
-                fetch(`/transacciones/${id}/detalle`, {
+            document.getElementById('rejectSelectedBtn')?.addEventListener('click', function() {
+                if (selectedIds.size === 0) return;
+
+                const ids = Array.from(selectedIds);
+                document.getElementById('confirmModalTitle').textContent = 'Rechazar transacciones';
+                document.getElementById('confirmMessage').innerHTML =
+                    `¿Estás seguro de rechazar <strong>${ids.length}</strong> transacciones seleccionadas?`;
+
+                openConfirmModal('reject', ids);
+            });
+
+            let currentAction = null;
+            let currentIds = [];
+
+            function openConfirmModal(action, ids) {
+                currentAction = action;
+                currentIds = ids;
+
+                const confirmButton = document.getElementById('confirmActionBtn');
+                if (confirmButton) confirmButton.onclick = submitBulkConfirm;
+
+                document.getElementById('confirmModal').classList.add('active');
+            }
+
+            function submitBulkConfirm() {
+                if (!currentAction || currentIds.length === 0) return;
+
+                const url = currentAction === 'approve' ?
+                    '{{ route('transacciones.aprobar-masivas') }}' :
+                    '{{ route('transacciones.rechazar-masivas') }}';
+
+                fetch(url, {
+                        method: 'POST',
                         headers: {
-                            'X-Requested-With': 'XMLHttpRequest',
-                            'Accept': 'application/json'
-                        }
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        },
+                        body: JSON.stringify({
+                            ids: currentIds
+                        })
                     })
-                    .then(response => {
-                        if (!response.ok) {
-                            throw new Error('Error en la respuesta del servidor');
-                        }
-                        return response.json();
-                    })
+                    .then(response => response.json())
                     .then(data => {
-                        if (data.html) {
-                            detailsDiv.innerHTML = data.html;
+                        if (data.success) {
+                            location.reload();
                         } else {
-                            detailsDiv.innerHTML = '<p class="error">No se pudo cargar la información</p>';
+                            alert('Error: ' + data.message);
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
-                        detailsDiv.innerHTML = `
-            <div class="error-message">
-                <i class="fa-solid fa-exclamation-circle"></i>
-                <p>Error al cargar los detalles. Intenta de nuevo.</p>
-            </div>
-        `;
+                        alert('Ocurrió un error al procesar las transacciones');
+                    })
+                    .finally(() => {
+                        closeConfirmModal();
                     });
             }
 
-            // Aprobar transacción individual
-            function aprobarTransaccion(id) {
-                document.getElementById('confirmModalTitle').textContent = 'Aprobar Transacción';
-                document.getElementById('confirmMessage').innerHTML =
-                    `¿Estás seguro de aprobar la transacción #${id}?`;
-
-                document.getElementById('confirmActionBtn').onclick = function() {
-                    fetch(`/admin/transacciones/${id}/aprobar`, {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                            }
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                location.reload();
-                            } else {
-                                alert('Error: ' + data.message);
-                            }
-                        })
-                        .catch(error => {
-                            alert('Error al procesar la solicitud');
-                        })
-                        .finally(() => {
-                            closeConfirmModal();
-                        });
-                };
-
-                document.getElementById('confirmModal').classList.add('active');
-            }
-
-            // Rechazar transacción individual
-            function rechazarTransaccion(id) {
-                document.getElementById('confirmModalTitle').textContent = 'Rechazar Transacción';
-                document.getElementById('confirmMessage').innerHTML =
-                    `¿Estás seguro de rechazar la transacción #${id}?`;
-
-                document.getElementById('confirmActionBtn').onclick = function() {
-                    fetch(`/admin/transacciones/${id}/rechazar`, {
-                            method: 'POST',
-                            headers: {
-                                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-                            }
-                        })
-                        .then(response => response.json())
-                        .then(data => {
-                            if (data.success) {
-                                location.reload();
-                            } else {
-                                alert('Error: ' + data.message);
-                            }
-                        })
-                        .catch(error => {
-                            alert('Error al procesar la solicitud');
-                        })
-                        .finally(() => {
-                            closeConfirmModal();
-                        });
-                };
-
-                document.getElementById('confirmModal').classList.add('active');
-            }
-
-            // Imprimir comprobante
-            function imprimirComprobante(id) {
-                // Usar la ruta correcta sin /admin/
-                const url = `/transacciones/${id}/comprobante`;
-                window.open(url, '_blank');
-            }
-
-            // Cerrar modales
-            function closeModal() {
-                document.getElementById('transactionModal').classList.remove('active');
-            }
-
-            function closeConfirmModal() {
-                document.getElementById('confirmModal').classList.remove('active');
-            }
-
-            // Cerrar modales con Escape
-            document.addEventListener('keydown', function(e) {
-                if (e.key === 'Escape') {
-                    closeModal();
-                    closeConfirmModal();
-                }
+            document.getElementById('refreshTable')?.addEventListener('click', function() {
+                location.reload();
             });
-        </script>
-    @endpush
+
+            document.getElementById('applyFilters')?.addEventListener('click', function() {
+                const url = new URL(window.location.href);
+
+                const fecha = document.getElementById('filterDate').value;
+                const estado = document.getElementById('filterStatus').value;
+                const aliado = document.getElementById('aliadoSelector')?.value;
+
+                if (fecha && fecha !== 'all') url.searchParams.set('fecha', fecha);
+                else url.searchParams.delete('fecha');
+
+                if (estado && estado !== 'all') url.searchParams.set('estado', estado);
+                else url.searchParams.delete('estado');
+
+                if (aliado) url.searchParams.set('aliado_id', aliado);
+                else url.searchParams.delete('aliado_id');
+
+                window.location.href = url.toString();
+            });
+
+            document.getElementById('aliadoSelector')?.addEventListener('change', function() {
+                document.getElementById('applyFilters').click();
+            });
+
+            document.getElementById('searchInput')?.addEventListener('keyup', function() {
+                const searchTerm = this.value.toLowerCase();
+                document.querySelectorAll('.table-row').forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.includes(searchTerm) ? '' : 'none';
+                });
+            });
+        });
+
+        function verDetalle(id) {
+            const modal = document.getElementById('transactionModal');
+            const detailsDiv = document.getElementById('transactionDetails');
+
+            modal.classList.add('active');
+            detailsDiv.innerHTML = `
+                <div class="loading-spinner">
+                    <div class="spinner-ring"></div>
+                    <p>Cargando detalles…</p>
+                </div>
+            `;
+
+            fetch(`/transacciones/${id}/detalle`, {
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest',
+                        'Accept': 'application/json'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) throw new Error('Error en la respuesta del servidor');
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.html) {
+                        detailsDiv.innerHTML = data.html;
+                    } else {
+                        detailsDiv.innerHTML = '<p class="error">No se pudo cargar la información</p>';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    detailsDiv.innerHTML = `
+                        <div class="error-message">
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                            <p>Error al cargar los detalles. Intenta de nuevo.</p>
+                        </div>
+                    `;
+                });
+        }
+
+        function aprobarTransaccion(id) {
+            document.getElementById('confirmModalTitle').textContent = 'Aprobar transacción';
+            document.getElementById('confirmMessage').innerHTML =
+                `¿Estás seguro de aprobar la transacción #${id}?`;
+
+            document.getElementById('confirmActionBtn').onclick = function() {
+                fetch(`/admin/transacciones/${id}/aprobar`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) location.reload();
+                        else alert('Error: ' + data.message);
+                    })
+                    .catch(() => alert('Error al procesar la solicitud'))
+                    .finally(() => closeConfirmModal());
+            };
+
+            document.getElementById('confirmModal').classList.add('active');
+        }
+
+        function rechazarTransaccion(id) {
+            document.getElementById('confirmModalTitle').textContent = 'Rechazar transacción';
+            document.getElementById('confirmMessage').innerHTML =
+                `¿Estás seguro de rechazar la transacción #${id}?`;
+
+            document.getElementById('confirmActionBtn').onclick = function() {
+                fetch(`/admin/transacciones/${id}/rechazar`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.success) location.reload();
+                        else alert('Error: ' + data.message);
+                    })
+                    .catch(() => alert('Error al procesar la solicitud'))
+                    .finally(() => closeConfirmModal());
+            };
+
+            document.getElementById('confirmModal').classList.add('active');
+        }
+
+        function imprimirComprobante(id) {
+            window.open(`/transacciones/${id}/comprobante`, '_blank');
+        }
+
+        function closeModal() {
+            document.getElementById('transactionModal').classList.remove('active');
+        }
+
+        function closeConfirmModal() {
+            document.getElementById('confirmModal').classList.remove('active');
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+                closeConfirmModal();
+            }
+        });
+    </script>
+@endpush

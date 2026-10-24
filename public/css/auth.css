@@ -1,0 +1,410 @@
+/* ==========================================================================
+   RUMBERO EXTREMO · AUTENTICACIÓN (login, registro, recuperar contraseña)
+   auth.css
+   --------------------------------------------------------------------------
+   Shell a dos paneles: marca (degradado) + tarjeta de formulario.
+   Los campos y botones reutilizan .px-field / .px-input / .px-btn de
+   public-modern.css.
+   ========================================================================== */
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+body.px-auth {
+    margin: 0;
+    min-height: 100vh;
+    min-height: 100dvh;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: #475569;
+    background: #f6f4fb;
+    -webkit-font-smoothing: antialiased;
+}
+
+.px-auth__shell {
+    display: grid;
+    grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+    min-height: 100vh;
+    min-height: 100dvh;
+}
+
+/* ============================== MARCA ============================== */
+.px-auth__brand {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 2rem;
+    padding: clamp(1.75rem, 4vw, 3.25rem);
+    background-image: linear-gradient(150deg, #1a123c 0%, #4b06c9 55%, #a601b3 100%);
+    color: #fff;
+}
+
+.px-auth__brand::before,
+.px-auth__brand::after {
+    content: '';
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+    z-index: -1;
+}
+
+.px-auth__brand::before {
+    width: 460px;
+    height: 460px;
+    top: -180px;
+    right: -140px;
+    background: radial-gradient(circle, rgba(166, 1, 179, 0.55) 0%, rgba(166, 1, 179, 0) 70%);
+}
+
+.px-auth__brand::after {
+    width: 380px;
+    height: 380px;
+    bottom: -170px;
+    left: -120px;
+    background: radial-gradient(circle, rgba(255, 184, 0, 0.3) 0%, rgba(255, 184, 0, 0) 70%);
+}
+
+.px-auth__logo {
+    display: inline-flex;
+    align-items: center;
+    align-self: flex-start;
+    padding: 10px 18px;
+    border-radius: 16px;
+    background: #fff;
+    box-shadow: 0 18px 34px -22px rgba(0, 0, 0, 0.7);
+}
+
+.px-auth__logo img {
+    height: 42px;
+    width: auto;
+    display: block;
+}
+
+.px-auth__brand-content {
+    max-width: 30rem;
+}
+
+.px-auth__kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.24);
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+}
+
+.px-auth__kicker i {
+    color: #ffb800;
+}
+
+.px-auth__brand-title {
+    margin: 0 0 0.85rem;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: clamp(1.5rem, 1.1rem + 1.6vw, 2.3rem);
+    font-weight: 800;
+    line-height: 1.15;
+    letter-spacing: -0.02em;
+    color: #fff;
+}
+
+.px-auth__brand-title span {
+    background: linear-gradient(120deg, #ffb800 0%, #ff8ae0 60%, #fff 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+}
+
+.px-auth__brand-text {
+    margin: 0 0 1.35rem;
+    font-size: 0.98rem;
+    line-height: 1.65;
+    color: rgba(255, 255, 255, 0.82);
+}
+
+.px-auth__bullets {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    gap: 0.6rem;
+}
+
+.px-auth__bullets li {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.55rem;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.px-auth__bullets i {
+    color: #ffb800;
+    margin-top: 0.18rem;
+}
+
+.px-auth__brand-foot {
+    margin: 0;
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.px-auth__brand-foot i {
+    color: #ff8ae0;
+}
+
+/* ============================== PANEL ============================== */
+.px-auth__panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: clamp(1.25rem, 4vw, 3rem);
+}
+
+.px-auth__card {
+    width: 100%;
+    max-width: 460px;
+    padding: clamp(1.4rem, 3vw, 2.25rem);
+    background: #fff;
+    border: 1px solid #ece7f7;
+    border-radius: 24px;
+    box-shadow: 0 30px 60px -34px rgba(26, 18, 60, 0.4);
+}
+
+/* Encabezado del formulario */
+.px-auth-head {
+    margin-bottom: 1.4rem;
+}
+
+.px-auth-head__eyebrow {
+    display: inline-block;
+    margin-bottom: 0.4rem;
+    font-size: 0.68rem;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: #a601b3;
+}
+
+.px-auth-head h1 {
+    margin: 0 0 0.4rem;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: clamp(1.35rem, 1.15rem + 0.7vw, 1.7rem);
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: #1e293b;
+}
+
+.px-auth-head p {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: #64748b;
+}
+
+/* Campos */
+.px-auth .px-field {
+    margin-bottom: 0.95rem;
+}
+
+.px-auth .px-field label {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #1e293b;
+}
+
+.px-auth .px-input {
+    min-height: 46px;
+    background: #f8f6fd;
+    border-color: #e8e2f5;
+}
+
+.px-auth .px-input:focus {
+    background: #fff;
+}
+
+/* Botón principal */
+.px-auth .px-btn {
+    min-height: 48px;
+    margin-top: 0.15rem;
+}
+
+.px-auth .px-btn--primary {
+    background-image: linear-gradient(135deg, #a601b3 0%, #3004e1 100%);
+    box-shadow: 0 16px 30px -16px rgba(166, 1, 179, 0.85);
+}
+
+.px-auth .px-btn--primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 36px -16px rgba(166, 1, 179, 0.95);
+}
+
+/* Fila recordarme / olvidé contraseña */
+.px-auth__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin: 0.25rem 0 1.1rem;
+    font-size: 0.84rem;
+}
+
+.px-auth__check {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    color: #475569;
+}
+
+.px-auth__check input {
+    width: 18px;
+    height: 18px;
+    accent-color: #a601b3;
+}
+
+.px-auth__link {
+    color: #a601b3;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.px-auth__link:hover {
+    text-decoration: underline;
+}
+
+/* Separador */
+.px-auth__sep {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 1.25rem 0;
+    font-size: 0.75rem;
+    color: #94a3b8;
+}
+
+.px-auth__sep::before,
+.px-auth__sep::after {
+    content: '';
+    flex: 1 1 auto;
+    height: 1px;
+    background: #ece7f7;
+}
+
+/* Pie del formulario */
+.px-auth__foot {
+    margin: 1.1rem 0 0;
+    text-align: center;
+    font-size: 0.86rem;
+    color: #64748b;
+}
+
+.px-auth__foot a {
+    color: #a601b3;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.px-auth__foot a:hover {
+    text-decoration: underline;
+}
+
+/* Avisos */
+.px-auth .px-alert {
+    margin-bottom: 1rem;
+    font-size: 0.86rem;
+}
+
+/* Nota de requisitos de contraseña */
+.px-auth__hint {
+    margin: 0.35rem 0 0.9rem;
+    padding: 0.65rem 0.8rem;
+    border-radius: 12px;
+    background: #f8f6fd;
+    border: 1px dashed #e8e2f5;
+    font-size: 0.78rem;
+    line-height: 1.5;
+    color: #64748b;
+}
+
+.px-auth__hint strong {
+    color: #1e293b;
+}
+
+/* Enlaces legales bajo la tarjeta */
+.px-auth__legal {
+    margin: 0;
+    font-size: 0.76rem;
+    color: #94a3b8;
+    text-align: center;
+}
+
+.px-auth__legal a {
+    color: #64748b;
+    text-decoration: none;
+}
+
+.px-auth__legal a:hover {
+    color: #a601b3;
+}
+
+/* ============================== RESPONSIVE ============================== */
+@media (max-width: 900px) {
+    .px-auth__shell {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .px-auth__brand {
+        padding: 1.25rem 1.25rem 1.5rem;
+        gap: 1rem;
+        border-radius: 0 0 28px 28px;
+    }
+
+    .px-auth__logo {
+        padding: 8px 14px;
+    }
+
+    .px-auth__logo img {
+        height: 34px;
+    }
+
+    .px-auth__brand-title {
+        font-size: 1.5rem;
+    }
+
+    .px-auth__brand-text,
+    .px-auth__bullets,
+    .px-auth__brand-foot {
+        display: none;
+    }
+
+    .px-auth__panel {
+        padding: 1.25rem 1rem 2rem;
+        justify-content: flex-start;
+    }
+
+    .px-auth__card {
+        box-shadow: 0 22px 44px -30px rgba(26, 18, 60, 0.45);
+    }
+}
+
+@media (max-width: 420px) {
+    .px-auth__card {
+        padding: 1.15rem;
+        border-radius: 20px;
+    }
+}

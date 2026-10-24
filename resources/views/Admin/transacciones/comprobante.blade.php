@@ -3,8 +3,9 @@
 
 @section('title', 'Comprobante de Transacción - Rumbero Extremo')
 
+@section('page_title_toolbar', 'Comprobante de Transacción')
+
 @push('styles')
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
     /* Estilos específicos para impresión */

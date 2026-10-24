@@ -87,7 +87,11 @@ class QRGeneratorController extends Controller
     {
         // Firmar con ID, timestamp y descuento
         $payload = $data['mid'] . $data['ts'] . $data['disc'];
-        $secretKey = env('QR_SECRET_KEY', 'tu_clave_secreta_aqui');
+        $secretKey = (string) config('services.qr.secret');
+
+        if ($secretKey === '') {
+            throw new \RuntimeException('QR_SECRET_KEY no está configurada.');
+        }
 
         return hash_hmac('sha256', $payload, $secretKey);
     }
@@ -97,6 +101,10 @@ class QRGeneratorController extends Controller
         try {
             $qrString = $request->input('qr_string');
             $format = $request->input('format', 'png');
+
+            if (!in_array($format, ['png', 'svg'], true)) {
+                return response()->json(['error' => 'Formato no soportado'], 422);
+            }
 
             if (!$qrString) {
                 return response()->json(['error' => 'No se proporcionó el código QR'], 400);

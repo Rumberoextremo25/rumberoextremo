@@ -13,6 +13,12 @@
     RewriteCond %{HTTP:x-xsrf-token} .
     RewriteRule .* - [E=HTTP_X_XSRF_TOKEN:%{HTTP:X-XSRF-Token}]
 
+    # ------------------------------------------------------------------
+    # Bloqueos de seguridad (archivos que nunca deben servirse)
+    # ------------------------------------------------------------------
+    RewriteRule ^\.(?!well-known/) - [F,L]
+    RewriteRule \.(env|ini|log|sql|bak|old|sh|yml|yaml|lock|md)$ - [F,L]
+
     # Redirect Trailing Slashes If Not A Folder...
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_URI} (.+)/$
@@ -22,4 +28,28 @@
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
+</IfModule>
+
+# ----------------------------------------------------------------------
+# Cabeceras de respaldo (la aplicación ya las envía desde el middleware
+# SecurityHeaders; esto cubre respuestas estáticas y errores del servidor)
+# ----------------------------------------------------------------------
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set X-Permitted-Cross-Domain-Policies "none"
+    Header always unset X-Powered-By
+    Header unset X-Powered-By
+</IfModule>
+
+# Oculta la firma del servidor cuando el hosting lo permita
+<IfModule mod_security.c>
+    SecFilterEngine Off
+</IfModule>
+
+# Sin índices de directorio (condicional: si el hosting no permite Options en
+# .htaccess, no debe provocar un error 500)
+<IfModule mod_autoindex.c>
+    Options -Indexes
 </IfModule>

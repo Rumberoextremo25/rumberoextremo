@@ -532,90 +532,8 @@
 
 /* ========== RUMBERO CHAT - ESTILOS EXTREMOS (CHAT BOT FLOTANTE) ========== */
 
-/* ========== BURBUJA DE CHAT ========== */
-.rumbero-chat-bubble {
-    position: fixed;
-    bottom: 30px;
-    right: 30px;
-    z-index: 9999;
-    cursor: pointer;
-    animation: bounceIn 0.5s ease;
-}
-
-.bubble-content {
-    background: linear-gradient(135deg, #A601B3, #3004E1);
-    border-radius: 60px;
-    padding: 12px 24px;
-    display: flex;
-    align-items: center;
-    gap: 15px;
-    box-shadow: 0 10px 30px rgba(166, 1, 179, 0.4);
-    position: relative;
-    transition: all 0.3s ease;
-}
-
-.rumbero-chat-bubble:hover .bubble-content {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 40px rgba(166, 1, 179, 0.6);
-}
-
-.bubble-icon {
-    width: 40px;
-    height: 40px;
-    background: #FFB800;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.5rem;
-    color: #1e293b;
-    animation: flame 2s infinite;
-}
-
-.bubble-text {
-    display: flex;
-    flex-direction: column;
-}
-
-.bubble-title {
-    font-weight: 700;
-    font-size: 1rem;
-    color: white;
-    letter-spacing: 1px;
-}
-
-.bubble-subtitle {
-    font-size: 0.75rem;
-    color: rgba(255, 255, 255, 0.8);
-}
-
-.bubble-pulse {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    border-radius: 60px;
-    animation: pulse 2s infinite;
-}
-
-.bubble-notification {
-    position: absolute;
-    top: -5px;
-    right: -5px;
-    width: 24px;
-    height: 24px;
-    background: #ef4444;
-    color: white;
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 0.7rem;
-    font-weight: 700;
-    border: 2px solid white;
-    animation: pulse 1.5s infinite;
-}
+/* La burbuja flotante se define más abajo, en la capa
+   "CHAT BOT · WIDGET PÚBLICO", para no duplicar estilos. */
 
 /* ========== MODAL DEL CHAT ========== */
 .rumbero-chat-modal {
@@ -1186,24 +1104,6 @@
         right: 20px;
     }
 
-    .bubble-content {
-        padding: 8px 16px;
-    }
-
-    .bubble-icon {
-        width: 35px;
-        height: 35px;
-        font-size: 1.2rem;
-    }
-
-    .bubble-title {
-        font-size: 0.9rem;
-    }
-
-    .bubble-subtitle {
-        font-size: 0.7rem;
-    }
-
     .rumbero-chat-modal {
         width: 90%;
         height: 80vh;
@@ -1302,5 +1202,786 @@
 
     .footer-note {
         color: #64748b;
+    }
+}
+/* ==========================================================================
+   CHAT 2026 - Canal IA / asesor, WhatsApp y estados
+   ========================================================================== */
+
+/* Badge "IA" junto al nombre del remitente */
+.sender-badge {
+    display: inline-block;
+    margin-left: 6px;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: rgba(166, 1, 179, 0.12);
+    color: #A601B3;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    vertical-align: middle;
+}
+
+.message-avatar.ai-avatar {
+    background: linear-gradient(135deg, #3004E1, #A601B3);
+    color: #fff;
+}
+
+/* Eleccion de canal: seguir en el chat o WhatsApp */
+.chat-channel-choice {
+    display: flex;
+    gap: 8px;
+    padding: 8px 14px 0;
+}
+
+.channel-btn {
+    flex: 1 1 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 9px 10px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    color: #475569;
+    font-size: 12px;
+    font-weight: 700;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.channel-btn:hover {
+    border-color: #cbd5e1;
+    background: #fff;
+}
+
+.channel-btn-chat.is-active {
+    border-color: rgba(166, 1, 179, 0.35);
+    background: rgba(166, 1, 179, 0.08);
+    color: #A601B3;
+}
+
+.channel-btn-whatsapp {
+    border-color: rgba(37, 211, 102, 0.35);
+    background: rgba(37, 211, 102, 0.1);
+    color: #128c4a;
+}
+
+.channel-btn-whatsapp:hover {
+    background: #25d366;
+    border-color: #25d366;
+    color: #fff;
+}
+
+.chat-channel-choice.is-handoff .channel-btn-whatsapp {
+    background: #25d366;
+    border-color: #25d366;
+    color: #fff;
+    box-shadow: 0 6px 16px -8px rgba(18, 140, 74, 0.8);
+}
+
+/* ===== Centro de mensajes (admin) ===== */
+.chat-support-bar {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px 18px;
+    margin-bottom: 16px;
+    padding: 10px 16px;
+    background: #fff;
+    border: 1px solid #e9eef2;
+    border-radius: 12px;
+    font-size: 12px;
+    color: #475569;
+}
+
+.chat-support-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.chat-support-item i {
+    color: #A601B3;
+}
+
+.chat-support-link {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 10px;
+    border-radius: 8px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    color: #475569;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.chat-support-link:hover {
+    color: #A601B3;
+    border-color: rgba(166, 1, 179, 0.3);
+}
+
+.chat-ai-state {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 700;
+    border: 1px solid #e2e8f0;
+    background: #f8fafc;
+    color: #64748b;
+}
+
+.chat-ai-state.is-on {
+    background: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.3);
+    color: #047857;
+}
+
+.chat-head-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.chat-pending-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 18px;
+    height: 18px;
+    margin-left: 6px;
+    padding: 0 5px;
+    border-radius: 999px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 10px;
+    font-weight: 800;
+}
+
+/* Mensajes de la IA en el hilo del admin */
+.chat-message.message-ai .chat-message-bubble {
+    border-left: 3px solid #3004E1;
+    background: #f5f3ff;
+}
+
+@media (max-width: 640px) {
+    .chat-channel-choice {
+        flex-direction: column;
+    }
+}
+
+/* Contraste del mensaje de bienvenida (texto claro sobre burbuja clara) */
+.message-bubble.welcome,
+.message-bubble.welcome .welcome-text p,
+.message-bubble.welcome .welcome-text span {
+    color: #1e293b !important;
+}
+
+.message-avatar.support-avatar {
+    background: linear-gradient(135deg, #A601B3, #3004E1) !important;
+    color: #ffffff !important;
+}
+
+.message-bubble.welcome .feature {
+    background: rgba(166, 1, 179, 0.1) !important;
+    color: #7a0182 !important;
+    border: 1px solid rgba(166, 1, 179, 0.18);
+}
+
+/* Pie del modal: icono + texto legibles */
+.footer-note {
+    color: #cbd5e1;
+}
+
+.footer-note i {
+    color: #c084fc;
+}
+
+/* ==========================================================================
+   CHAT BOT · WIDGET PÚBLICO (2026)
+   Capa moderna: solo afecta al widget (.rumbero-chat-*), no al panel.
+   ========================================================================== */
+
+/* ---------------------------- Burbuja flotante ---------------------------- */
+/* Círculo flotante (FAB): solo el icono. Al pasar el cursor o al enfocarlo
+   con el teclado se despliega en píldora mostrando el texto de soporte. */
+.rumbero-chat-bubble {
+    position: fixed;
+    right: 24px;
+    bottom: 24px;
+    z-index: 9998;
+    display: flex;
+    align-items: center;
+    box-sizing: border-box;
+    width: 60px;
+    height: 60px;
+    padding: 0;
+    border-radius: 999px;
+    background-image: linear-gradient(135deg, #a601b3 0%, #3004e1 100%);
+    color: #fff;
+    cursor: pointer;
+    box-shadow:
+        0 16px 34px -14px rgba(48, 4, 225, 0.85),
+        0 2px 6px rgba(26, 18, 60, 0.12);
+    transition:
+        width 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+        padding 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+        transform 0.22s ease,
+        box-shadow 0.22s ease,
+        opacity 0.18s ease,
+        visibility 0.18s ease;
+    animation: bubbleIn 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* Con el chat abierto el botón se oculta para no quedar tras el overlay */
+.rumbero-chat-bubble.active {
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(0.85);
+    pointer-events: none;
+}
+
+@keyframes bubbleIn {
+    from {
+        opacity: 0;
+        transform: translateY(14px) scale(0.85);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.rumbero-chat-bubble:focus-visible {
+    outline: 3px solid rgba(255, 255, 255, 0.85);
+    outline-offset: 3px;
+}
+
+.rumbero-chat-bubble .bubble-icon {
+    flex: 0 0 60px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    background: transparent;
+    color: #fff;
+    font-size: 22px;
+    animation: none;
+    transition: transform 0.22s ease;
+}
+
+.rumbero-chat-bubble .bubble-text {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex: 0 0 auto;
+    width: 0;
+    margin-left: 4px;
+    overflow: hidden;
+    opacity: 0;
+    white-space: nowrap;
+    text-align: left;
+    transition:
+        width 0.34s cubic-bezier(0.22, 1, 0.36, 1),
+        opacity 0.18s ease 0.05s;
+}
+
+.rumbero-chat-bubble .bubble-title {
+    font-size: 13.5px;
+    font-weight: 800;
+    line-height: 1.25;
+    letter-spacing: 0.01em;
+}
+
+.rumbero-chat-bubble .bubble-subtitle {
+    font-size: 11px;
+    line-height: 1.25;
+    opacity: 0.85;
+}
+
+.rumbero-chat-bubble .bubble-notification {
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    min-width: 21px;
+    height: 21px;
+    padding: 0 5px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 999px;
+    background: #ffb800;
+    color: #1a123c;
+    font-size: 11px;
+    font-weight: 800;
+    border: 2px solid #fff;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+    animation: none;
+}
+
+/* Despliegue solo en dispositivos con cursor: en táctil se mantiene circular */
+@media (hover: hover) and (pointer: fine) {
+    .rumbero-chat-bubble:hover,
+    .rumbero-chat-bubble:focus-visible {
+        width: 248px;
+        padding-right: 20px;
+        transform: translateY(-2px);
+        box-shadow:
+            0 20px 42px -14px rgba(48, 4, 225, 0.9),
+            0 3px 8px rgba(26, 18, 60, 0.14);
+    }
+
+    .rumbero-chat-bubble:hover .bubble-icon,
+    .rumbero-chat-bubble:focus-visible .bubble-icon {
+        transform: scale(1.06);
+    }
+
+    .rumbero-chat-bubble:hover .bubble-text,
+    .rumbero-chat-bubble:focus-visible .bubble-text {
+        width: 164px;
+        opacity: 1;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .rumbero-chat-bubble,
+    .rumbero-chat-bubble .bubble-icon,
+    .rumbero-chat-bubble .bubble-text {
+        animation: none;
+        transition: none;
+    }
+}
+
+/* ------------------------------- Modal ---------------------------------- */
+.rumbero-chat-modal {
+    position: fixed;
+    right: 22px;
+    bottom: 92px;
+    z-index: 9999;
+    width: 400px;
+    max-width: calc(100vw - 32px);
+    height: 620px;
+    max-height: calc(100vh - 130px);
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    border-radius: 24px;
+    overflow: hidden;
+    border: 1px solid rgba(26, 18, 60, 0.08);
+    box-shadow: 0 40px 80px -30px rgba(26, 18, 60, 0.55);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(18px) scale(0.98);
+    transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+}
+
+.rumbero-chat-modal.active,
+.rumbero-chat-modal.show,
+.rumbero-chat-modal.open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0) scale(1);
+}
+
+/* Cabecera */
+.rumbero-chat-modal .modal-header {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 16px 18px;
+    background-image: linear-gradient(120deg, #a601b3 0%, #4b06c9 60%, #3004e1 100%);
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.rumbero-chat-modal .modal-header::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(280px 120px at 85% 0%, rgba(255, 255, 255, 0.22), transparent 70%);
+    pointer-events: none;
+}
+
+.rumbero-chat-modal .header-left {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    z-index: 1;
+}
+
+.rumbero-chat-modal .header-avatar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #ffd76a;
+    font-size: 19px;
+}
+
+.rumbero-chat-modal .header-title {
+    margin: 0;
+    font-size: 15.5px;
+    font-weight: 800;
+    line-height: 1.2;
+    color: #fff;
+}
+
+.rumbero-chat-modal .header-status {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
+    font-size: 11.5px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.rumbero-chat-modal .status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #34d399;
+    box-shadow: 0 0 0 3px rgba(52, 211, 153, 0.28);
+    animation: rmwBlink 2.4s ease-in-out infinite;
+}
+
+@keyframes rmwBlink {
+    50% { opacity: 0.45; }
+}
+
+.rumbero-chat-modal .close-btn {
+    position: relative;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border: 0;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.16);
+    color: #fff;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, transform 0.2s ease;
+}
+
+.rumbero-chat-modal .close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+/* Cuerpo de mensajes */
+.rumbero-chat-modal .modal-body {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 16px 16px 8px;
+    background-color: #f7f5fc;
+    background-image: radial-gradient(420px 200px at 100% 0%, rgba(166, 1, 179, 0.06), transparent 70%);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    scrollbar-width: thin;
+}
+
+.rumbero-chat-modal .modal-body::-webkit-scrollbar {
+    width: 6px;
+}
+
+.rumbero-chat-modal .modal-body::-webkit-scrollbar-thumb {
+    background: #d9d2ea;
+    border-radius: 8px;
+}
+
+/* Bienvenida */
+.rumbero-chat-modal .welcome-message .message-bubble {
+    background: #fff;
+    border: 1px solid #ece7f7;
+}
+
+.rumbero-chat-modal .welcome-emoji {
+    font-size: 15px;
+    margin-bottom: 4px;
+    display: block;
+}
+
+.rumbero-chat-modal .message-bubble.welcome .welcome-text p {
+    color: #241a45 !important;
+    font-size: 13.5px;
+    line-height: 1.55;
+    margin: 0;
+}
+
+.rumbero-chat-modal .welcome-features {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+}
+
+.rumbero-chat-modal .welcome-features .feature {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 9px;
+    border-radius: 999px;
+    background: rgba(166, 1, 179, 0.09) !important;
+    border: 1px solid rgba(166, 1, 179, 0.16);
+    color: #7a0182 !important;
+    font-size: 11px;
+    font-weight: 700;
+}
+
+/* Burbujas */
+.rumbero-chat-modal .message {
+    display: flex;
+    gap: 8px;
+    max-width: 100%;
+}
+
+.rumbero-chat-modal .message-avatar {
+    width: 28px;
+    height: 28px;
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-image: linear-gradient(135deg, #a601b3, #3004e1) !important;
+    color: #fff !important;
+    font-size: 12px;
+}
+
+.rumbero-chat-modal .message-content {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.rumbero-chat-modal .message-sender {
+    font-size: 10.5px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: #8b80a8;
+}
+
+.rumbero-chat-modal .message-bubble {
+    padding: 10px 13px;
+    border-radius: 16px 16px 16px 4px;
+    background: #fff;
+    border: 1px solid #ece7f7;
+    box-shadow: 0 8px 18px -14px rgba(26, 18, 60, 0.5);
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: #241a45;
+    overflow-wrap: anywhere;
+}
+
+.rumbero-chat-modal .message-bubble p {
+    margin: 0;
+    color: inherit;
+}
+
+.rumbero-chat-modal .message-time {
+    font-size: 10px;
+    color: #9b93b3;
+}
+
+/* Mensaje del usuario */
+.rumbero-chat-modal .user-message-wrapper {
+    justify-content: flex-end;
+}
+
+.rumbero-chat-modal .user-message-container {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 3px;
+    max-width: 82%;
+}
+
+.rumbero-chat-modal .user-message {
+    padding: 10px 13px;
+    border-radius: 16px 16px 4px 16px;
+    background-image: linear-gradient(135deg, #a601b3 0%, #3004e1 100%);
+    color: #fff;
+    font-size: 13.5px;
+    line-height: 1.5;
+    box-shadow: 0 10px 22px -14px rgba(166, 1, 179, 0.9);
+    overflow-wrap: anywhere;
+}
+
+.rumbero-chat-modal .user-message p {
+    margin: 0;
+    color: #fff;
+}
+
+/* Mensaje de la IA */
+.rumbero-chat-modal .message.ai .message-bubble {
+    border-left: 3px solid #3004e1;
+    background: #f6f4ff;
+}
+
+/* --------------------------- Pie del widget ----------------------------- */
+.rumbero-chat-modal .modal-footer {
+    flex-shrink: 0;
+    padding: 10px 14px 12px;
+    background: #fff;
+    border-top: 1px solid #f0ecf8;
+}
+
+.rumbero-chat-modal .quick-options {
+    display: flex;
+    gap: 7px;
+    overflow-x: auto;
+    padding-bottom: 8px;
+    scrollbar-width: none;
+}
+
+.rumbero-chat-modal .quick-options::-webkit-scrollbar {
+    display: none;
+}
+
+.rumbero-chat-modal .quick-option {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    padding: 7px 12px;
+    border-radius: 999px;
+    border: 1px solid #e6e0f3;
+    background: #faf8ff;
+    color: #4a3f6b;
+    font-family: inherit;
+    font-size: 11.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.18s ease;
+}
+
+.rumbero-chat-modal .quick-option:hover {
+    background-image: linear-gradient(135deg, #a601b3, #3004e1);
+    border-color: transparent;
+    color: #fff;
+    transform: translateY(-1px);
+}
+
+.rumbero-chat-modal .input-container {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 5px 5px 14px;
+    border-radius: 999px;
+    border: 1px solid #e6e0f3;
+    background: #faf8ff;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+}
+
+.rumbero-chat-modal .input-container:focus-within {
+    background: #fff;
+    border-color: rgba(166, 1, 179, 0.45);
+    box-shadow: 0 0 0 3px rgba(166, 1, 179, 0.12);
+}
+
+.rumbero-chat-modal .chat-input {
+    flex: 1 1 auto;
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    padding: 8px 0;
+    font-family: inherit;
+    font-size: 13.5px;
+    color: #241a45;
+    outline: none;
+}
+
+.rumbero-chat-modal .chat-input::placeholder {
+    color: #a29ac0;
+}
+
+.rumbero-chat-modal .send-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    flex-shrink: 0;
+    border: 0;
+    border-radius: 50%;
+    background-image: linear-gradient(135deg, #a601b3, #3004e1);
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+    box-shadow: 0 10px 20px -10px rgba(166, 1, 179, 0.9);
+    transition: transform 0.18s ease, filter 0.18s ease;
+}
+
+.rumbero-chat-modal .send-btn:hover {
+    transform: scale(1.06);
+    filter: brightness(1.08);
+}
+
+.rumbero-chat-modal .footer-note {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 9px;
+    font-size: 10.5px;
+    color: #9b93b3;
+}
+
+.rumbero-chat-modal .footer-note i {
+    color: #a601b3;
+}
+
+/* ------------------------------ Móvil ----------------------------------- */
+@media (max-width: 640px) {
+    .rumbero-chat-bubble {
+        right: 16px;
+        bottom: 16px;
+        width: 56px;
+        height: 56px;
+        padding: 0;
+        box-shadow:
+            0 12px 26px -12px rgba(48, 4, 225, 0.85),
+            0 2px 6px rgba(26, 18, 60, 0.12);
+    }
+
+    .rumbero-chat-bubble .bubble-icon {
+        flex-basis: 56px;
+        width: 56px;
+        height: 56px;
+        font-size: 20px;
+    }
+
+    .rumbero-chat-modal {
+        right: 0;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        max-width: 100%;
+        height: calc(100dvh - 20px);
+        max-height: calc(100dvh - 20px);
+        border-radius: 22px 22px 0 0;
     }
 }

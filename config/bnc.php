@@ -13,6 +13,6 @@ return [
     'debit_reenviar_url'     => env('BNC_DEBITO_REENVIAR_URL'),
 
     'client_guid'            => env('BNC_CLIENT_GUID'),
-    'master_key'             => env('BNC_MASTER_KEY'),
+    'master_key'             => env('BNC_MASTER_KEY') ?: env('BNC_ENCRYPTION_KEY') ?: env('BNC_KEY'),
     'merchant_id'            => env('BNC_MERCHANT_ID'),
 ];

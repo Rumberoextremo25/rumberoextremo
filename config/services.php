@@ -18,8 +18,37 @@ return [
         'token' => env('POSTMARK_TOKEN'),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | BNC (Banco Nacional de Crédito)
+    |--------------------------------------------------------------------------
+    |
+    | La clave maestra se lee desde config (no con env()) para que siga
+    | funcionando cuando el proyecto ejecuta `php artisan config:cache`.
+    |
+    */
+
+    'bnc' => [
+        'master_key' => env('BNC_MASTER_KEY') ?: env('BNC_ENCRYPTION_KEY') ?: env('BNC_KEY'),
+        'working_key' => env('BNC_WORKING_KEY'),
+        'merchant_id' => env('BNC_MERCHANT_ID'),
+        'environment' => env('BNC_ENVIRONMENT', 'production'),
+    ],
+
     'resend' => [
         'key' => env('RESEND_KEY'),
+    ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Firma de los códigos QR de pago
+    |--------------------------------------------------------------------------
+    | Sin esta clave el generador rechaza crear QRs: nunca se firma con un
+    | valor por defecto conocido.
+    */
+
+    'qr' => [
+        'secret' => env('QR_SECRET_KEY'),
     ],
 
     'ses' => [

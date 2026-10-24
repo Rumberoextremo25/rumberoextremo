@@ -1,243 +1,387 @@
-{{-- resources/views/admin/qr-generator.blade.php --}}
 @extends('layouts.admin')
 
-@section('title', 'Generar Códigos QR')
+@section('title', 'Generar códigos QR')
 
-@push('styles')
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/admin/qr-generator.css') }}">
-@endpush
+@section('page_title_toolbar', 'Generar QR')
 
 @section('content')
-<div class="container-fluid py-4">
-    <div class="row">
-        <div class="col-12">
-            <!-- Breadcrumb -->
-            <nav aria-label="breadcrumb" class="mb-4">
-                <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item active">Generar QR</li>
-                </ol>
-            </nav>
+    <div class="cm-page qr-page">
 
-            <!-- Título de la página -->
-            <div class="d-flex align-items-center justify-content-between mb-4">
-                <h3 class="mb-0">
-                    <i class="fas fa-qrcode text-primary me-2"></i>Generar Códigos QR
-                </h3>
-                <span class="badge bg-primary">Admin</span>
+        {{-- ============================ CABECERA ============================ --}}
+        <div class="page-header-block">
+            <div>
+                <h1 class="title-main">Generar <span class="title-accent">códigos QR</span></h1>
+                <p class="page-subtitle">
+                    Crea el QR de pago de un aliado para que el cliente lo escanee desde la app.
+                </p>
             </div>
 
-            <!-- Card principal -->
-            <div class="card shadow-sm border-0">
-                <div class="card-header bg-white py-3">
-                    <h5 class="card-title mb-0">
-                        <i class="fas fa-cog me-2 text-primary"></i>Generar QR para Aliado
-                    </h5>
+            <div class="header-actions">
+                <a href="{{ route('admin.aliados.index') }}" class="btn btn-secondary">
+                    <i class="fa-solid fa-store"></i> Aliados
+                </a>
+            </div>
+        </div>
+
+        <div class="qr-grid">
+
+            {{-- ============================ FORMULARIO ============================ --}}
+            <section class="cf-card">
+                <div class="cf-card__head">
+                    <span class="cf-card__icon"><i class="fa-solid fa-qrcode"></i></span>
+                    <div class="cf-card__head-text">
+                        <h2>Nuevo código QR</h2>
+                        <p>Selecciona el aliado y el tipo de pago.</p>
+                    </div>
                 </div>
-                
-                <div class="card-body">
-                    <form id="qrGeneratorForm">
+
+                <div class="cf-card__body">
+                    <form id="qrGeneratorForm" autocomplete="off">
                         @csrf
-                        
-                        <!-- Selector de Aliado -->
-                        <div class="row mb-4">
-                            <div class="col-md-6">
-                                <label class="form-label fw-bold">
-                                    <i class="fas fa-handshake me-2"></i>Seleccionar Aliado
-                                </label>
-                                <select class="form-select" name="ally_id" id="allySelect" required>
-                                    <option value="">-- Seleccione un aliado --</option>
-                                    @foreach($allies as $ally)
-                                        <option value="{{ $ally->id }}" data-discount="{{ $ally->discount }}">
-                                            {{ $ally->name }} (ID: {{ $ally->id }}) - {{ $ally->discount }}% descuento
+
+                        <div class="cf-grid">
+                            <div class="form-group cf-span">
+                                <label for="allySelect">Aliado <span class="required-star">*</span></label>
+                                <select class="form-control" name="ally_id" id="allySelect" required>
+                                    <option value="">Selecciona un aliado</option>
+                                    @foreach ($allies as $ally)
+                                        <option value="{{ $ally->id }}" data-discount="{{ $ally->discount }}"
+                                            data-name="{{ $ally->name }}">
+                                            {{ $ally->name }} · {{ $ally->discount_label ?: 'Sin descuento' }}
                                         </option>
                                     @endforeach
                                 </select>
-                            </div>
-                        </div>
-
-                        <!-- Información del aliado -->
-                        <div id="allyInfo" class="alert alert-info" style="display: none;">
-                            <i class="fas fa-info-circle me-2"></i>
-                            <span id="allyInfoText"></span>
-                        </div>
-
-                        <!-- Botón Generar -->
-                        <div class="row mb-4">
-                            <div class="col-12 text-center">
-                                <button type="submit" class="btn btn-primary btn-lg px-5" id="btnGenerate">
-                                    <i class="fas fa-qrcode me-2"></i>Generar Código QR
-                                </button>
-                            </div>
-                        </div>
-                    </form>
-
-                    <!-- Resultado QR -->
-                    <div id="qrResult" class="card border-0 shadow-sm mt-4" style="display: none;">
-                        <div class="card-header bg-success text-white py-3">
-                            <h6 class="mb-0">
-                                <i class="fas fa-check-circle me-2"></i>QR Generado Exitosamente
-                            </h6>
-                        </div>
-                        <div class="card-body text-center py-4">
-                            <div id="qrImageContainer" class="mb-4 p-4 bg-light rounded d-inline-block shadow-sm">
-                                <!-- Aquí se insertará el QR -->
-                            </div>
-                            
-                            <div class="mb-3">
-                                <span class="badge bg-info p-2">
-                                    <i class="fas fa-percentage me-1"></i>
-                                    Descuento del aliado: <span id="resultDiscount">0%</span>
+                                <span class="field-hint">
+                                    <i class="fa-solid fa-circle-info"></i> Solo aparecen aliados activos.
                                 </span>
                             </div>
-                            
-                            <div class="d-flex justify-content-center gap-2 flex-wrap">
-                                <button type="button" class="btn btn-success" id="btnDownloadPNG">
-                                    <i class="fas fa-download me-2"></i>PNG
-                                </button>
-                                <button type="button" class="btn btn-success" id="btnDownloadSVG">
-                                    <i class="fas fa-download me-2"></i>SVG
-                                </button>
+
+                            <div class="form-group">
+                                <label for="qrType">Tipo de pago</label>
+                                <select class="form-control" name="type" id="qrType" required>
+                                    <option value="c2p">Cliente a proveedor (C2P)</option>
+                                    <option value="card">Tarjeta (Card)</option>
+                                    <option value="p2p">Persona a persona (P2P)</option>
+                                </select>
                             </div>
 
-                            <div class="mt-3 text-muted small">
-                                <i class="fas fa-info-circle me-1"></i>
-                                El monto lo ingresará el cliente en la app móvil
+                            <div class="form-group">
+                                <label>Tipo de código</label>
+                                <input type="text" class="form-control" value="QR dinámico con firma HMAC" disabled>
                             </div>
                         </div>
+
+                        <div id="allyInfo" class="alert alert-info" style="display: none;">
+                            <i class="fa-solid fa-circle-info"></i>
+                            <div class="alert-content" id="allyInfoText"></div>
+                        </div>
+
+                        <div id="qrAlert" class="alert alert-error" style="display: none;">
+                            <i class="fa-solid fa-circle-exclamation"></i>
+                            <div class="alert-content" id="qrAlertText"></div>
+                        </div>
+
+                        <div class="cf-actions" style="justify-content:flex-end;">
+                            <button type="submit" class="btn btn-primary" id="btnGenerate">
+                                <i class="fa-solid fa-qrcode"></i> Generar código QR
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            {{-- ============================ ASIDE ============================ --}}
+            <aside class="qr-aside">
+                <section class="cf-card">
+                    <div class="cf-card__head">
+                        <span class="cf-card__icon"><i class="fa-solid fa-store"></i></span>
+                        <div class="cf-card__head-text">
+                            <h2>Aliado seleccionado</h2>
+                        </div>
+                    </div>
+
+                    <div class="qr-ally">
+                        <div class="qr-ally__avatar" id="qrAllyInitial">?</div>
+                        <h3 id="qrAllyName">Ningún aliado</h3>
+                        <p id="qrAllyDiscount">Selecciona uno para ver su descuento.</p>
+                    </div>
+                </section>
+
+                <section class="cf-card">
+                    <div class="cf-card__head">
+                        <span class="cf-card__icon"><i class="fa-solid fa-circle-info"></i></span>
+                        <div class="cf-card__head-text">
+                            <h2>Cómo funciona</h2>
+                        </div>
+                    </div>
+
+                    <div class="cf-tips">
+                        <ul>
+                            <li><i class="fa-solid fa-check"></i> El QR contiene el aliado, su descuento y una firma de seguridad.</li>
+                            <li><i class="fa-solid fa-check"></i> El cliente ingresa el monto desde la app al escanearlo.</li>
+                            <li><i class="fa-solid fa-check"></i> Puedes descargarlo en PNG o SVG para imprimirlo.</li>
+                            <li><i class="fa-solid fa-check"></i> Si cambias el descuento del aliado, genera un QR nuevo.</li>
+                        </ul>
+                    </div>
+                </section>
+            </aside>
+        </div>
+
+        {{-- ============================ RESULTADO ============================ --}}
+        <section class="cf-card qr-result" id="qrResult" style="display: none;">
+            <div class="cf-card__head">
+                <span class="cf-card__icon cm-stat__icon--green"><i class="fa-solid fa-circle-check"></i></span>
+                <div class="cf-card__head-text">
+                    <h2>Código QR generado</h2>
+                    <p>Listo para descargar o imprimir.</p>
+                </div>
+            </div>
+
+            <div class="cf-card__body">
+                <div class="qr-result__grid">
+                    <div class="qr-result__image">
+                        <div id="qrImageContainer"></div>
+                    </div>
+
+                    <div class="qr-result__info">
+                        <div class="qr-result__row">
+                            <span>Aliado</span>
+                            <strong id="qrResultAlly">—</strong>
+                        </div>
+                        <div class="qr-result__row">
+                            <span>Tipo</span>
+                            <strong id="qrResultType">—</strong>
+                        </div>
+                        <div class="qr-result__row">
+                            <span>Descuento</span>
+                            <strong id="resultDiscount">0%</strong>
+                        </div>
+                        <div class="qr-result__row">
+                            <span>Generado</span>
+                            <strong id="qrResultDate">—</strong>
+                        </div>
+
+                        <div class="cf-actions" style="justify-content:flex-start;margin-top:.75rem;">
+                            <button type="button" class="btn btn-primary" id="btnDownloadPNG">
+                                <i class="fa-solid fa-download"></i> PNG
+                            </button>
+                            <button type="button" class="btn btn-secondary" id="btnDownloadSVG">
+                                <i class="fa-solid fa-download"></i> SVG
+                            </button>
+                        </div>
+
+                        <p class="field-hint" style="margin-top:.6rem;">
+                            <i class="fa-solid fa-circle-info"></i>
+                            El monto lo ingresa el cliente en la app móvil.
+                        </p>
                     </div>
                 </div>
             </div>
-        </div>
+        </section>
     </div>
-</div>
 @endsection
 
 @push('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    const allySelect = document.getElementById('allySelect');
-    const allyInfo = document.getElementById('allyInfo');
-    const allyInfoText = document.getElementById('allyInfoText');
-    const form = document.getElementById('qrGeneratorForm');
-    const btnGenerate = document.getElementById('btnGenerate');
-    const qrResult = document.getElementById('qrResult');
-    const qrImageContainer = document.getElementById('qrImageContainer');
-    const resultDiscount = document.getElementById('resultDiscount');
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const allySelect = document.getElementById('allySelect');
+            const allyInfo = document.getElementById('allyInfo');
+            const allyInfoText = document.getElementById('allyInfoText');
+            const form = document.getElementById('qrGeneratorForm');
+            const btnGenerate = document.getElementById('btnGenerate');
+            const qrResult = document.getElementById('qrResult');
+            const qrImageContainer = document.getElementById('qrImageContainer');
+            const resultDiscount = document.getElementById('resultDiscount');
+            const qrAllyName = document.getElementById('qrAllyName');
+            const qrAllyDiscount = document.getElementById('qrAllyDiscount');
+            const qrAllyInitial = document.getElementById('qrAllyInitial');
+            const qrAlert = document.getElementById('qrAlert');
+            const qrAlertText = document.getElementById('qrAlertText');
 
-    // Mostrar información cuando se selecciona aliado
-    function updateAllyInfo() {
-        if (allySelect.value) {
-            const selectedOption = allySelect.options[allySelect.selectedIndex];
-            const allyName = selectedOption.text.split(' - ')[0];
-            const discount = selectedOption.dataset.discount;
-            allyInfoText.innerHTML = `Generando QR para: <strong>${allyName}</strong> | Descuento: <strong>${discount}%</strong>`;
-            allyInfo.style.display = 'block';
-        } else {
-            allyInfo.style.display = 'none';
-        }
-    }
+            const typeLabels = {
+                c2p: 'Cliente a proveedor',
+                card: 'Tarjeta',
+                p2p: 'Persona a persona',
+            };
 
-    allySelect.addEventListener('change', updateAllyInfo);
+            function selectedOption() {
+                return allySelect.options[allySelect.selectedIndex];
+            }
 
-    // Generar QR
-    form.addEventListener('submit', async function(e) {
-        e.preventDefault();
-        
-        if (!allySelect.value) {
-            alert('Seleccione un aliado');
-            return;
-        }
+            function updateAllyInfo() {
+                const option = selectedOption();
+                const hasValue = allySelect.value !== '';
 
-        btnGenerate.disabled = true;
-        btnGenerate.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Generando...';
+                if (!hasValue) {
+                    allyInfo.style.display = 'none';
+                    qrAllyName.textContent = 'Ningún aliado';
+                    qrAllyDiscount.textContent = 'Selecciona uno para ver su descuento.';
+                    qrAllyInitial.textContent = '?';
+                    return;
+                }
 
-        try {
-            const formData = new FormData(form);
-            formData.append('type', 'c2p');
-            
-            // Obtener la URL base dinámicamente (respeta HTTP o HTTPS)
-            const baseUrl = window.location.origin;
-            const generateUrl = baseUrl + '/admin/qr/generate';
-            
-            const response = await fetch(generateUrl, {
-                method: 'POST',
-                body: formData,
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                const name = option.dataset.name || option.text.split('·')[0].trim();
+                const discount = option.dataset.discount || '';
+                const label = /^\d+([.,]\d+)?$/.test(discount) ? discount + '%' : (discount || 'Sin descuento');
+
+                allyInfoText.innerHTML = '<span>Generando QR para <strong>' + name + '</strong> · Descuento: <strong>' + label + '</strong></span>';
+                allyInfo.style.display = 'flex';
+
+                qrAllyName.textContent = name;
+                qrAllyDiscount.textContent = 'Descuento: ' + label;
+                qrAllyInitial.textContent = (name.charAt(0) || '?').toUpperCase();
+            }
+
+            allySelect.addEventListener('change', updateAllyInfo);
+
+            form.addEventListener('submit', async function(event) {
+                event.preventDefault();
+                qrAlert.style.display = 'none';
+
+                if (!allySelect.value) {
+                    qrAlertText.textContent = 'Selecciona un aliado antes de generar el QR.';
+                    qrAlert.style.display = 'flex';
+                    return;
+                }
+
+                btnGenerate.disabled = true;
+                btnGenerate.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Generando…';
+
+                try {
+                    const response = await fetch('{{ route('admin.qr.generate') }}', {
+                        method: 'POST',
+                        body: new FormData(form),
+                        headers: {
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json',
+                        }
+                    });
+
+                    const data = await response.json();
+
+                    if (!data.success) {
+                        throw new Error(data.message || 'No se pudo generar el QR.');
+                    }
+
+                    qrImageContainer.innerHTML = data.qr_code;
+                    resultDiscount.textContent = data.ally_info.discount
+                        ? (/^\d+([.,]\d+)?$/.test(data.ally_info.discount) ? data.ally_info.discount + '%' : data.ally_info.discount)
+                        : 'Sin descuento';
+                    document.getElementById('qrResultAlly').textContent = data.ally_info.name;
+                    document.getElementById('qrResultType').textContent = typeLabels[data.ally_info.type] || data.ally_info.type;
+                    document.getElementById('qrResultDate').textContent = new Date().toLocaleString('es-ES');
+
+                    window.lastQRData = {
+                        string: data.qr_data,
+                        json: data.json_data
+                    };
+
+                    qrResult.style.display = 'block';
+                    qrResult.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                } catch (error) {
+                    qrAlertText.textContent = error.message;
+                    qrAlert.style.display = 'flex';
+                } finally {
+                    btnGenerate.disabled = false;
+                    btnGenerate.innerHTML = '<i class="fa-solid fa-qrcode"></i> Generar código QR';
                 }
             });
 
-            const data = await response.json();
-
-            if (data.success) {
-                qrImageContainer.innerHTML = data.qr_code;
-                if (data.ally_info && data.ally_info.discount) {
-                    resultDiscount.textContent = data.ally_info.discount + '%';
-                }
-                qrResult.style.display = 'block';
-                
-                window.lastQRData = {
-                    string: data.qr_data,
-                    json: data.json_data
-                };
-            } else {
-                alert('Error: ' + data.message);
-            }
-        } catch (error) {
-            console.error('Error detallado:', error);
-            alert('Error al generar el QR: ' + error.message);
-        } finally {
-            btnGenerate.disabled = false;
-            btnGenerate.innerHTML = '<i class="fas fa-qrcode me-2"></i>Generar Código QR';
-        }
-    });
-
-    // Descargas
-    document.getElementById('btnDownloadPNG')?.addEventListener('click', function() {
-        if (window.lastQRData) downloadQR(window.lastQRData.string, 'png');
-    });
-
-    document.getElementById('btnDownloadSVG')?.addEventListener('click', function() {
-        if (window.lastQRData) downloadQR(window.lastQRData.string, 'svg');
-    });
-
-    async function downloadQR(qrString, format) {
-        try {
-            // Obtener la URL base dinámicamente (respeta HTTP o HTTPS)
-            const baseUrl = window.location.origin;
-            const downloadUrl = baseUrl + '/admin/qr/download';
-            
-            const response = await fetch(downloadUrl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                },
-                body: JSON.stringify({ qr_string: qrString, format: format })
+            document.getElementById('btnDownloadPNG')?.addEventListener('click', function() {
+                downloadQrPng();
             });
 
-            if (response.ok) {
-                const blob = await response.blob();
-                const url = window.URL.createObjectURL(blob);
-                const a = document.createElement('a');
-                a.href = url;
-                a.download = `qr_${Date.now()}.${format}`;
-                a.click();
-                window.URL.revokeObjectURL(url);
-            } else {
-                const errorText = await response.text();
-                console.error('Error en descarga:', errorText);
-                alert('Error al descargar el QR');
+            document.getElementById('btnDownloadSVG')?.addEventListener('click', function() {
+                if (window.lastQRData) downloadQR(window.lastQRData.string, 'svg');
+            });
+
+            async function downloadQrPng() {
+                const svg = qrImageContainer.querySelector('svg');
+
+                if (!svg) {
+                    qrAlertText.textContent = 'Genera un código QR antes de descargarlo.';
+                    qrAlert.style.display = 'flex';
+                    return;
+                }
+
+                try {
+                    const clone = svg.cloneNode(true);
+                    clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+
+                    const source = new XMLSerializer().serializeToString(clone);
+                    const svgUrl = window.URL.createObjectURL(new Blob([source], {
+                        type: 'image/svg+xml;charset=utf-8'
+                    }));
+
+                    const image = new Image();
+                    image.onload = function() {
+                        const size = 1000;
+                        const margin = 60;
+                        const canvas = document.createElement('canvas');
+                        canvas.width = size;
+                        canvas.height = size;
+
+                        const context = canvas.getContext('2d');
+                        context.fillStyle = '#ffffff';
+                        context.fillRect(0, 0, size, size);
+                        context.drawImage(image, margin, margin, size - margin * 2, size - margin * 2);
+
+                        canvas.toBlob(function(blob) {
+                            const url = window.URL.createObjectURL(blob);
+                            const link = document.createElement('a');
+                            link.href = url;
+                            link.download = 'qr_' + Date.now() + '.png';
+                            link.click();
+                            window.URL.revokeObjectURL(url);
+                        }, 'image/png');
+
+                        window.URL.revokeObjectURL(svgUrl);
+                    };
+
+                    image.onerror = function() {
+                        window.URL.revokeObjectURL(svgUrl);
+                        qrAlertText.textContent = 'No se pudo convertir el QR a PNG.';
+                        qrAlert.style.display = 'flex';
+                    };
+
+                    image.src = svgUrl;
+                } catch (error) {
+                    qrAlertText.textContent = error.message;
+                    qrAlert.style.display = 'flex';
+                }
             }
-        } catch (error) {
-            console.error('Error detallado en descarga:', error);
-            alert('Error al descargar: ' + error.message);
-        }
-    }
-});
-</script>
+
+            async function downloadQR(qrString, format) {
+                try {
+                    const response = await fetch('{{ route('admin.qr.download') }}', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                            'Accept': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            qr_string: qrString,
+                            format: format
+                        })
+                    });
+
+                    if (!response.ok) {
+                        throw new Error('No se pudo descargar el QR.');
+                    }
+
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = 'qr_' + Date.now() + '.' + format;
+                    link.click();
+                    window.URL.revokeObjectURL(url);
+                } catch (error) {
+                    qrAlertText.textContent = error.message;
+                    qrAlert.style.display = 'flex';
+                }
+            }
+        });
+    </script>
 @endpush

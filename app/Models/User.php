@@ -6,14 +6,16 @@ use Illuminate\Contracts\Auth\MustVerifyEmail; // Descomenta si necesitas verifi
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
 use Spatie\Permission\Traits\HasRoles; // Para gestionar roles y permisos
 use Illuminate\Support\Facades\Storage; // Necesario para la URL de la foto de perfil
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne; // Para la relación uno a uno con Ally
 
 class User extends Authenticatable // Quita `implements MustVerifyEmail` si no lo necesitas
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasRoles;
+    use HasFactory, Notifiable, HasRoles, HasApiTokens;
 
     /**
      * The attributes that are mass assignable.
@@ -42,8 +44,35 @@ class User extends Authenticatable // Quita `implements MustVerifyEmail` si no l
         'registration_date',// ¡Añadido!
         'notes',
         'notifications_enabled',
+        'push_enabled',
+        'dark_mode_enabled',
         'two_factor_secret',
         'two_factor_enabled',
+
+        // Métodos de pago del perfil
+        'payment_bank_code',
+        'payment_bank_name',
+        'payment_phone',
+        'payment_holder_name',
+        'payment_holder_id',
+        'payment_debit_bank_code',
+        'payment_debit_bank_name',
+        'payment_debit_account',
+        'payment_debit_account_type',
+        'payment_card_last4',
+        'payment_card_expiry',
+        'payment_card_holder',
+        'payment_updated_at',
+
+        // Campos exactos que consume la API BNC
+        'debtor_cell_phone',
+        'debtor_id',
+        'card_number',
+        'card_expiration',
+        'card_holder_name',
+        'card_holder_id',
+        'card_type_id',
+        'card_account_type',
     ];
 
     /**
@@ -72,6 +101,20 @@ class User extends Authenticatable // Quita `implements MustVerifyEmail` si no l
             'last_login_at' => 'datetime', // Castea el último login a objeto Carbon
             'is_ally' => 'boolean',  // Castea a booleano
             'two_factor_enabled' => 'boolean', // Castea a booleano
+            'notifications_enabled' => 'boolean',
+            'push_enabled' => 'boolean',
+            'dark_mode_enabled' => 'boolean',
+            'payment_debit_account' => 'encrypted',
+            'payment_updated_at' => 'datetime',
+            'debtor_account' => 'encrypted',
+            'debtor_cell_phone' => 'encrypted',
+            'debtor_id' => 'encrypted',
+            'card_number' => 'encrypted',
+            'card_expiration' => 'encrypted',
+            'card_holder_name' => 'encrypted',
+            'card_holder_id' => 'encrypted',
+            'card_account_type' => 'integer',
+            'card_type_id' => 'integer',
         ];
     }
 
@@ -107,5 +150,37 @@ class User extends Authenticatable // Quita `implements MustVerifyEmail` si no l
     public function ally(): HasOne
     {
         return $this->hasOne(Ally::class);
+    }
+
+    /**
+     * Descuentos activados por el usuario.
+     *
+     * La usa GeminiService (User::with(['ally','activations'])) para armar el
+     * contexto del asistente: sin esta relación el chat lanzaba
+     * "Call to undefined relationship [activations]".
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function activations(): HasMany
+    {
+        return $this->hasMany(DiscountActivation::class, 'user_id');
+    }
+
+    /**
+     * Dispositivos suscritos a las notificaciones Web Push.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     */
+    public function pushSubscriptions(): HasMany
+    {
+        return $this->hasMany(PushSubscription::class);
+    }
+
+    /**
+     * ¿El usuario quiere recibir las notificaciones del panel como push?
+     */
+    public function wantsPushNotifications(): bool
+    {
+        return (bool) $this->push_enabled && (bool) $this->notifications_enabled;
     }
 }

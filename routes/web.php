@@ -28,6 +28,7 @@ Route::get('/', [PageController::class, 'index'])->name('welcome');
 Route::get('/about', [PageController::class, 'about'])->name('about');
 Route::get('/demo', [PageController::class, 'demo'])->name('demo');
 Route::get('/privacy', [PageController::class, 'privacy'])->name('privacy');
+Route::get('/cookies', [PageController::class, 'cookies'])->name('cookies');
 Route::get('/terms', [PageController::class, 'terms'])->name('terms');
 Route::get('/faq', [PageController::class, 'faqs'])->name('faq');
 
@@ -35,11 +36,15 @@ Route::get('/faq', [PageController::class, 'faqs'])->name('faq');
 |--------------------------------------------------------------------------
 | RUTAS PÚBLICAS - AFILIADOS Y ALIADOS
 |--------------------------------------------------------------------------
+| Se aplica throttle para evitar spam en los formularios públicos (antes
+| cualquiera podía insertar registros ilimitados en la base de datos).
 */
 Route::get('/demo-afiliado', [PageController::class, 'afiliado'])->name('demo.afiliado');
-Route::post('/afiliados', [PageController::class, 'storeAffiliateApplication'])->name('affiliate.store');
+Route::post('/afiliados', [PageController::class, 'storeAffiliateApplication'])
+    ->middleware('throttle:6,1')->name('affiliate.store');
 Route::get('/demo-aliados', [PageController::class, 'aliado'])->name('demo.aliado');
-Route::post('/contacto-aliados', [PageController::class, 'storeAllyContact'])->name('allies.store');
+Route::post('/contacto-aliados', [PageController::class, 'storeAllyContact'])
+    ->middleware('throttle:6,1')->name('allies.store');
 
 /*
 |--------------------------------------------------------------------------
@@ -47,8 +52,10 @@ Route::post('/contacto-aliados', [PageController::class, 'storeAllyContact'])->n
 |--------------------------------------------------------------------------
 */
 Route::get('/contact', [PageController::class, 'showContactForm'])->name('contact');
-Route::post('/contact', [PageController::class, 'storeContactMessage'])->name('contact.store');
-Route::post('/newsletter/subscribe', [PageController::class, 'subscribeToNewsletter'])->name('newsletter.subscribe');
+Route::post('/contact', [PageController::class, 'storeContactMessage'])
+    ->middleware('throttle:6,1')->name('contact.store');
+Route::post('/newsletter/subscribe', [PageController::class, 'subscribeToNewsletter'])
+    ->middleware('throttle:6,1')->name('newsletter.subscribe');
 
 /*
 |--------------------------------------------------------------------------
@@ -59,17 +66,16 @@ Route::get('/rumberoai/chat', function () {
     return redirect('/')->with('open_chat', true);
 })->name('rumberoai.chat');
 
-Route::get('/test-chat', function () {
-    return view('test-chat');
-});
-
 /*
 |--------------------------------------------------------------------------
 | RUTAS 2FA (antes del middleware auth)
 |--------------------------------------------------------------------------
+| El código de verificación se limita por IP: sin throttle se podía hacer
+| fuerza bruta contra los 6 dígitos del segundo factor.
 */
 Route::get('/2fa/verify', [AuthenticatedSessionController::class, 'showTwoFactorForm'])->name('2fa.verify');
-Route::post('/2fa/verify', [AuthenticatedSessionController::class, 'verifyTwoFactor'])->name('2fa.verify.post');
+Route::post('/2fa/verify', [AuthenticatedSessionController::class, 'verifyTwoFactor'])
+    ->middleware('throttle:8,1')->name('2fa.verify.post');
 
 /*
 |--------------------------------------------------------------------------
@@ -85,6 +91,9 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile');
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::post('/profile/payment-methods', [ProfileController::class, 'updatePaymentMethods'])->name('profile.payments.update');
+Route::post('/profile/photo', [ProfileController::class, 'updatePhoto'])->name('profile.photo');
+Route::delete('/profile/photo', [ProfileController::class, 'destroyPhoto'])->name('profile.photo.destroy');
     Route::get('/password/change', [ProfileController::class, 'changePassword'])->name('password.change');
 });
 
@@ -109,6 +118,35 @@ Route::prefix('admin')
         Route::get('/sales-stats', [SalesStatsController::class, 'index'])->name('sales.stats');
 
         // ===========================================
+        // SOLICITUDES DE LA WEB (locales y rumberos)
+        // ===========================================
+        Route::prefix('solicitudes')->name('requests.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\RequestController::class, 'index'])->name('index');
+            Route::post('/correo-ventas', [\App\Http\Controllers\Admin\RequestController::class, 'updateSalesEmail'])->name('sales-email');
+            Route::put('/{type}/{id}/estado', [\App\Http\Controllers\Admin\RequestController::class, 'updateStatus'])->name('status');
+        });
+
+        // ===========================================
+        // NOTIFICACIONES PUSH (suscripción del navegador)
+        // ===========================================
+        Route::prefix('push')->name('push.')->group(function () {
+            Route::get('/public-key', [\App\Http\Controllers\Admin\PushSubscriptionController::class, 'publicKey'])->name('public-key');
+            Route::post('/subscribe', [\App\Http\Controllers\Admin\PushSubscriptionController::class, 'subscribe'])->name('subscribe');
+            Route::post('/unsubscribe', [\App\Http\Controllers\Admin\PushSubscriptionController::class, 'unsubscribe'])->name('unsubscribe');
+            Route::post('/test', [\App\Http\Controllers\Admin\PushSubscriptionController::class, 'test'])->name('test');
+        });
+
+        // ===========================================
+        // NOTIFICACIONES (campana de la toolbar)
+        // ===========================================
+        Route::prefix('notifications')->name('notifications.')->group(function () {
+            Route::get('/', [\App\Http\Controllers\Admin\NotificationController::class, 'index'])->name('index');
+            Route::get('/feed', [\App\Http\Controllers\Admin\NotificationController::class, 'feed'])->name('feed');
+            Route::post('/read-all', [\App\Http\Controllers\Admin\NotificationController::class, 'markAllAsRead'])->name('read-all');
+            Route::post('/{id}/read', [\App\Http\Controllers\Admin\NotificationController::class, 'markAsRead'])->name('read');
+        });
+
+        // ===========================================
         // CONFIGURACIÓN Y 2FA
         // ===========================================
         Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
@@ -118,6 +156,8 @@ Route::prefix('admin')
         Route::post('/settings/generate-backup-codes', [SettingsController::class, 'generateBackupCodes'])->name('settings.generate-backup-codes');
         Route::post('/settings/update-notifications', [SettingsController::class, 'updateNotifications'])->name('settings.update-notifications');
         Route::post('/settings/update-dark-mode', [SettingsController::class, 'updateDarkMode'])->name('settings.update-dark-mode');
+        Route::post('/settings/support', [SettingsController::class, 'updateSupport'])->name('settings.update-support');
+        Route::post('/settings/test-ai', [SettingsController::class, 'testAi'])->name('settings.test-ai');
 
         // ===========================================
         // GESTIÓN DE USUARIOS
@@ -209,14 +249,14 @@ Route::prefix('admin')
             Route::put('/{payoutId}', [PayoutController::class, 'update'])->name('update');
             Route::get('/{payoutId}/auditoria', [PayoutController::class, 'auditoria'])->name('auditoria');
 
-            // Acciones POST
-            Route::post('/generar-bnc', [PayoutController::class, 'generarArchivoBNC'])->name('generar-bnc');
-            Route::post('/confirmar', [PayoutController::class, 'confirmarPagos'])->name('confirmar');
-            Route::post('/{payoutId}/revertir', [PayoutController::class, 'revertirPago'])->name('revertir');
-            Route::post('/procesar-lote', [PayoutController::class, 'procesarLote'])->name('procesar-lote');
+            // Acciones POST (limitadas por IP: evitan dobles envíos y abuso)
+            Route::post('/generar-bnc', [PayoutController::class, 'generarArchivoBNC'])->middleware('throttle:20,1')->name('generar-bnc');
+            Route::post('/confirmar', [PayoutController::class, 'confirmarPagos'])->middleware('throttle:20,1')->name('confirmar');
+            Route::post('/{payoutId}/revertir', [PayoutController::class, 'revertirPago'])->middleware('throttle:20,1')->name('revertir');
+            Route::post('/procesar-lote', [PayoutController::class, 'procesarLote'])->middleware('throttle:20,1')->name('procesar-lote');
             Route::get('/{payoutId}/confirmar', [PayoutController::class, 'confirmarIndividualForm'])->name('confirmar-individual-form');
-            Route::post('/{payoutId}/confirmar-individual', [PayoutController::class, 'confirmarPagoIndividual'])->name('confirmar-individual');
-            Route::post('/simular-confirmacion', [PayoutController::class, 'simularConfirmacion'])->name('simular-confirmacion');
+            Route::post('/{payoutId}/confirmar-individual', [PayoutController::class, 'confirmarPagoIndividual'])->middleware('throttle:20,1')->name('confirmar-individual');
+            Route::post('/simular-confirmacion', [PayoutController::class, 'simularConfirmacion'])->middleware('throttle:20,1')->name('simular-confirmacion');
             Route::get('/resumen-aliado/{aliadoId}/detalle', [PayoutController::class, 'detalleAliadoJson'])->name('detalle-aliado-json');
             Route::delete('/{payoutId}', [PayoutController::class, 'destroy'])->name('destroy');
 
@@ -249,10 +289,10 @@ Route::middleware(['auth'])->prefix('transacciones')->name('transacciones.')->gr
 
     // Acciones de admin
     Route::middleware([\App\Http\Middleware\AdminMiddleware::class])->group(function () {
-        Route::post('/{id}/aprobar', [AdminController::class, 'transaccionAprobar'])->name('aprobar')->where('id', '[0-9]+');
-        Route::post('/{id}/rechazar', [AdminController::class, 'transaccionRechazar'])->name('rechazar')->where('id', '[0-9]+');
-        Route::post('/aprobar-masivas', [AdminController::class, 'aprobarMasivas'])->name('aprobar-masivas');
-        Route::post('/rechazar-masivas', [AdminController::class, 'rechazarMasivas'])->name('rechazar-masivas');
+        Route::post('/{id}/aprobar', [AdminController::class, 'transaccionAprobar'])->middleware('throttle:30,1')->name('aprobar')->where('id', '[0-9]+');
+        Route::post('/{id}/rechazar', [AdminController::class, 'transaccionRechazar'])->middleware('throttle:30,1')->name('rechazar')->where('id', '[0-9]+');
+        Route::post('/aprobar-masivas', [AdminController::class, 'aprobarMasivas'])->middleware('throttle:10,1')->name('aprobar-masivas');
+        Route::post('/rechazar-masivas', [AdminController::class, 'rechazarMasivas'])->middleware('throttle:10,1')->name('rechazar-masivas');
     });
 });
 
@@ -261,17 +301,22 @@ Route::middleware(['auth'])->prefix('transacciones')->name('transacciones.')->gr
 | RUTAS DEL CHAT ADMIN
 |--------------------------------------------------------------------------
 */
-Route::prefix('api/rumbero-ai')->middleware(['auth'])->group(function () {
-    // Rutas públicas para usuarios
-    Route::post('/chat', [RumberoAIController::class, 'chat']);
-    Route::get('/conversacion', [RumberoAIController::class, 'conversacion']);
-    Route::post('/activar-descuento', [RumberoAIController::class, 'activarDescuento']);
-    Route::get('/promociones', [RumberoAIController::class, 'promocionesActivas']);
+Route::prefix('api/rumbero-ai')->group(function () {
+    // Públicas: el widget del sitio atiende también a visitantes sin cuenta
+    // (cada mensaje consume cuota de IA, por eso van con throttle).
+    Route::post('/chat', [RumberoAIController::class, 'chat'])->middleware('throttle:30,1');
+    Route::get('/conversacion', [RumberoAIController::class, 'conversacion'])->middleware('throttle:60,1');
+
+    Route::middleware(['auth'])->group(function () {
+        Route::post('/activar-descuento', [RumberoAIController::class, 'activarDescuento'])->middleware('throttle:10,1');
+        Route::get('/promociones', [RumberoAIController::class, 'promocionesActivas']);
+    });
 
     // Rutas exclusivas para admin
-    Route::middleware([\App\Http\Middleware\AdminMiddleware::class])->group(function () {
+    Route::middleware(['auth', \App\Http\Middleware\AdminMiddleware::class])->group(function () {
         Route::get('/admin/pendientes', [RumberoAIController::class, 'mensajesPendientes']);
-        Route::post('/admin/responder', [RumberoAIController::class, 'adminResponder']);
+        Route::post('/admin/responder', [RumberoAIController::class, 'adminResponder'])->middleware('throttle:60,1');
+        Route::post('/admin/marcar-conversacion-leida', [RumberoAIController::class, 'marcarConversacionLeida'])->middleware('throttle:60,1');
     });
 });
 
@@ -284,11 +329,10 @@ Route::middleware(['auth', \App\Http\Middleware\AdminMiddleware::class])->group(
 |--------------------------------------------------------------------------
 | RUTAS DE PRUEBA / DEBUG
 |--------------------------------------------------------------------------
+| Eliminadas: /test-bnc-services instanciaba el servicio bancario en una ruta
+| pública (exponía el estado y los errores de la integración BNC). Para
+| diagnosticar usar: php artisan bnc:test-connection
 */
-Route::get('/test-bnc-services', function() {
-    $bnc = new \App\Services\BncApiService();
-    return response()->json($bnc->checkAvailableServices());
-});
 
 /*
 |--------------------------------------------------------------------------

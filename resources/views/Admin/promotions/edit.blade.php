@@ -1,625 +1,391 @@
 @extends('layouts.admin')
 
-@section('title', 'Editar Promoción Rumbera')
+@section('title', 'Editar promoción')
 
-@push('styles')
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/admin/promotion-edit.css') }}">
-@endpush
+@section('page_title_toolbar', 'Editar promoción')
+
 
 @section('content')
-<div class="rumbero-wrapper">
-    {{-- HEADER CON FRASE RUMBERA --}}
-    <div class="rumbero-header">
-        <div class="header-content">
-            <div class="header-tag">
-                <i class="fas fa-bolt"></i>
-                <span>RUMBERO EXTREMO</span>
+    @php
+        $currentSrc = $promotion->image_src;
+        $hasImage = (bool) $promotion->image_url;
+        $currentName = $promotion->image_url ? basename($promotion->image_url) : 'Ninguna imagen seleccionada';
+        $isActive = old('is_active', $promotion->status === 'active');
+        $isFeatured = old('is_featured', $promotion->is_featured);
+    @endphp
+
+    <div class="cm-page cf-page">
+
+        {{-- ============================ CABECERA ============================ --}}
+        <div class="page-header-block">
+            <div>
+                <h1 class="title-main">Editar <span class="title-accent">promoción</span></h1>
+                <p class="page-subtitle">
+                    Ajusta «{{ $promotion->title ?: 'promoción sin título' }}»: descuento, precio, vigencia e imagen.
+                </p>
             </div>
-            <h1 class="header-title">
-                Editar <span class="gradient-text">Promoción</span>
-            </h1>
-            <p class="header-subtitle">
-                <i class="fas fa-fire"></i>
-                Modifica los detalles de la promoción: <strong>"{{ $promotion->title }}"</strong>
-            </p>
-        </div>
-        <div class="header-actions">
-            <a href="{{ route('admin.promotions.index') }}" class="btn-rumbero-secondary">
-                <i class="fas fa-arrow-left"></i>
-                Volver al Listado
+
+            <a href="{{ route('admin.promotions.index') }}" class="btn btn-secondary">
+                <i class="fa-solid fa-arrow-left"></i> Volver al listado
             </a>
         </div>
-    </div>
 
-    {{-- ALERTAS --}}
-    @if (session('success'))
-        <div class="alert-modern success">
-            <div class="alert-icon">
-                <i class="fas fa-check-circle"></i>
+        {{-- ============================== AVISOS ============================== --}}
+        @if ($errors->any())
+            <div class="alert alert-error">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <div class="alert-content">
+                    <strong>Revisa los siguientes campos:</strong>
+                    <ul style="margin:.35rem 0 0;padding-left:1.1rem;">
+                        @foreach ($errors->all() as $error)
+                            <li>{{ $error }}</li>
+                        @endforeach
+                    </ul>
+                </div>
             </div>
-            <div class="alert-content">
-                <strong>¡Éxito rumbero!</strong>
-                <p>{{ session('success') }}</p>
-            </div>
-            <button class="alert-close" onclick="this.parentElement.remove()">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-    @endif
+        @endif
 
-    @if (session('error'))
-        <div class="alert-modern error">
-            <div class="alert-icon">
-                <i class="fas fa-exclamation-circle"></i>
+        @if (session('success'))
+            <div class="alert alert-success">
+                <i class="fa-solid fa-circle-check"></i>
+                <div class="alert-content">{{ session('success') }}</div>
             </div>
-            <div class="alert-content">
-                <strong>¡Ojo rumbero!</strong>
-                <p>{{ session('error') }}</p>
+        @endif
+
+        @if (session('error'))
+            <div class="alert alert-error">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <div class="alert-content">{{ session('error') }}</div>
             </div>
-            <button class="alert-close" onclick="this.parentElement.remove()">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-    @endif
+        @endif
 
-    {{-- ERRORES DE VALIDACIÓN --}}
-    @if ($errors->any())
-        <div class="alert-modern error">
-            <div class="alert-icon">
-                <i class="fas fa-exclamation-triangle"></i>
-            </div>
-            <div class="alert-content">
-                <strong>¡Corrige estos errores rumbero!</strong>
-                <ul style="margin-top: 0.5rem; margin-left: 1.5rem;">
-                    @foreach ($errors->all() as $error)
-                        <li style="margin-bottom: 0.2rem;">{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-            <button class="alert-close" onclick="this.parentElement.remove()">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-    @endif
+        {{-- ============================== FORM ============================== --}}
+        <form action="{{ route('admin.promotions.update', $promotion->id) }}" method="POST" enctype="multipart/form-data"
+            class="cf-editor" data-cf-form="promotion" id="promotionForm" autocomplete="off">
+            @csrf
+            @method('PUT')
 
-    {{-- FORMULARIO DE EDICIÓN --}}
-    <div class="form-card">
-        <div class="form-card-header">
-            <div class="header-icon">
-                <i class="fas fa-edit"></i>
-            </div>
-            <h2 class="form-card-title">Editando Promoción</h2>
-            <p class="form-card-subtitle">ID: #{{ $promotion->id }} • Creada: {{ $promotion->created_at->format('d/m/Y') }}</p>
-        </div>
+            <div class="cf-form">
 
-        <div class="form-card-body">
-            <form action="{{ route('admin.promotions.update', $promotion->id) }}" method="POST" enctype="multipart/form-data" id="promotionForm">
-                @csrf
-                @method('PUT')
+                {{-- ------------------------- Columna principal ------------------------- --}}
+                <div class="cf-col">
 
-                {{-- INFORMACIÓN BÁSICA --}}
-                <div class="form-section">
-                    <div class="section-title">
-                        <i class="fas fa-info-circle"></i>
-                        <span>Información Básica</span>
-                    </div>
-
-                    <div class="form-grid">
-                        {{-- Título --}}
-                        <div class="full-width">
-                            <div class="form-group">
-                                <label for="title">
-                                    <i class="fas fa-heading"></i>
-                                    Título de la Promoción <span class="required-star">*</span>
-                                </label>
-                                <input type="text" 
-                                       name="title" 
-                                       id="title" 
-                                       class="form-control @error('title') error @enderror"
-                                       placeholder="Ej: 20% de descuento en Zapatos" 
-                                       value="{{ old('title', $promotion->title) }}" 
-                                       required>
-                                <span class="field-hint">
-                                    <i class="fas fa-info-circle"></i> Un título llamativo para la promoción
-                                </span>
-                                @error('title')
-                                    <span class="error-message">
-                                        <i class="fas fa-exclamation-circle"></i> {{ $message }}
-                                    </span>
-                                @enderror
+                    {{-- Imagen --}}
+                    <section class="cf-card">
+                        <div class="cf-card__head">
+                            <span class="cf-card__icon"><i class="fa-regular fa-image"></i></span>
+                            <div class="cf-card__head-text">
+                                <h2>Imagen de la promoción</h2>
+                                <p>Deja la actual o sube una nueva para reemplazarla.</p>
                             </div>
                         </div>
 
-                        {{-- Descuento --}}
-                        <div>
-                            <div class="form-group">
-                                <label for="discount">
-                                    <i class="fas fa-percent"></i>
-                                    Descuento <span class="required-star">*</span>
-                                </label>
-                                <div class="input-group">
-                                    <input type="number" 
-                                           name="discount" 
-                                           id="discount" 
-                                           class="form-control @error('discount') error @enderror"
-                                           placeholder="20" 
-                                           value="{{ old('discount', $promotion->discount) }}"
-                                           min="0"
-                                           max="100"
-                                           required>
-                                    <span class="input-group-text">%</span>
+                        <div class="cf-card__body">
+                            <div class="cf-upload {{ $hasImage ? 'has-file' : '' }}" data-cf-upload>
+                                <div class="cf-upload__thumb" data-cf-thumb>
+                                    <i class="fa-regular fa-image"></i>
+                                    <img data-cf-thumb-img data-img alt=""
+                                        @if ($currentSrc) src="{{ $currentSrc }}" @else hidden @endif>
                                 </div>
-                                <span class="field-hint">
-                                    <i class="fas fa-info-circle"></i> Porcentaje de descuento (0-100)
-                                </span>
-                                @error('discount')
-                                    <span class="error-message">
-                                        <i class="fas fa-exclamation-circle"></i> {{ $message }}
-                                    </span>
-                                @enderror
-                            </div>
-                        </div>
 
-                        {{-- Precio --}}
-                        <div>
-                            <div class="form-group">
-                                <label for="price">
-                                    <i class="fas fa-dollar-sign"></i>
-                                    Precio <span class="required-star">*</span>
-                                </label>
-                                <div class="input-group">
-                                    <span class="input-group-text">$</span>
-                                    <input type="number" 
-                                           name="price" 
-                                           id="price" 
-                                           class="form-control @error('price') error @enderror"
-                                           placeholder="49.99" 
-                                           value="{{ old('price', $promotion->price) }}"
-                                           step="0.01"
-                                           min="0"
-                                           required>
+                                <div class="cf-upload__info">
+                                    <span class="cf-upload__name" data-cf-file-name>{{ $currentName }}</span>
+                                    <span class="cf-upload__hint" data-cf-file-hint>
+                                        @if ($hasImage)
+                                            Imagen actual. Arrastra otra aquí o usa el botón para cambiarla.
+                                        @else
+                                            Arrastra la imagen aquí o usa el botón. JPG, PNG, GIF o WEBP · máx. 2 MB.
+                                        @endif
+                                    </span>
                                 </div>
-                                <span class="field-hint">
-                                    <i class="fas fa-info-circle"></i> Precio final después del descuento
+
+                                <div class="cf-upload__actions">
+                                    <button type="button" class="btn btn-secondary btn-sm" data-cf-image-remove hidden>
+                                        <i class="fa-solid fa-xmark"></i> Descartar
+                                    </button>
+                                    <label for="image" class="btn btn-secondary btn-sm">
+                                        <i class="fa-solid fa-arrow-up-from-bracket"></i>
+                                        {{ $hasImage ? 'Cambiar' : 'Subir' }}
+                                    </label>
+                                </div>
+
+                                <input type="file" id="image" name="image" accept="image/*"
+                                    data-cf-image-input class="@error('image') is-invalid @enderror">
+                            </div>
+
+                            <span class="cf-file-error" data-cf-file-error></span>
+
+                            @error('image')
+                                <span class="error-message" style="margin-top:.5rem;">
+                                    <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
                                 </span>
-                                @error('price')
-                                    <span class="error-message">
-                                        <i class="fas fa-exclamation-circle"></i> {{ $message }}
+                            @enderror
+                        </div>
+                    </section>
+
+                    {{-- Oferta --}}
+                    <section class="cf-card">
+                        <div class="cf-card__head">
+                            <span class="cf-card__icon"><i class="fa-solid fa-tag"></i></span>
+                            <div class="cf-card__head-text">
+                                <h2>Información de la oferta</h2>
+                                <p>Lo que leerá el Rumbero en la tarjeta de la promoción.</p>
+                            </div>
+                        </div>
+
+                        <div class="cf-card__body">
+                            <div class="cf-grid">
+                                <div class="form-group cf-span">
+                                    <label for="title">Título <span class="required-star">*</span></label>
+                                    <input type="text" id="title" name="title" maxlength="255"
+                                        class="form-control @error('title') is-invalid @enderror"
+                                        placeholder="Ej: 20% de descuento en zapatos"
+                                        value="{{ old('title', $promotion->title) }}" required>
+                                    @error('title')
+                                        <span class="error-message">
+                                            <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
+                                        </span>
+                                    @enderror
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="discount">Descuento <span class="required-star">*</span></label>
+                                    <input type="text" id="discount" name="discount" maxlength="50"
+                                        class="form-control @error('discount') is-invalid @enderror"
+                                        placeholder="20%, 2x1, $5…" value="{{ old('discount', $promotion->discount) }}"
+                                        required>
+                                    <span class="field-hint">
+                                        <i class="fa-solid fa-circle-info"></i> Acepta porcentaje, 2x1 o monto fijo.
                                     </span>
-                                @enderror
-                            </div>
-                        </div>
+                                    @error('discount')
+                                        <span class="error-message">
+                                            <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
+                                        </span>
+                                    @enderror
+                                </div>
 
-                        {{-- Fecha de Expiración --}}
-                        <div class="full-width">
-                            <div class="form-group">
-                                <label for="expires_at">
-                                    <i class="fas fa-calendar-alt"></i>
-                                    Fecha de Expiración
-                                    <span class="optional-badge">Opcional</span>
-                                </label>
-                                <input type="date" 
-                                       name="expires_at" 
-                                       id="expires_at" 
-                                       class="form-control @error('expires_at') error @enderror"
-                                       value="{{ old('expires_at', $promotion->expires_at ? $promotion->expires_at->format('Y-m-d') : '') }}"
-                                       min="{{ date('Y-m-d') }}">
-                                <span class="field-hint">
-                                    <i class="fas fa-info-circle"></i> Dejar vacío si no tiene fecha de expiración
-                                </span>
-                                @error('expires_at')
-                                    <span class="error-message">
-                                        <i class="fas fa-exclamation-circle"></i> {{ $message }}
+                                <div class="form-group">
+                                    <label for="price">Precio final <span class="required-star">*</span></label>
+                                    <input type="number" id="price" name="price" step="0.01" min="0"
+                                        class="form-control @error('price') is-invalid @enderror" placeholder="49.99"
+                                        value="{{ old('price', $promotion->price) }}" required>
+                                    <span class="field-hint">
+                                        <i class="fa-solid fa-circle-info"></i> Después de aplicar el descuento.
                                     </span>
-                                @enderror
+                                    @error('price')
+                                        <span class="error-message">
+                                            <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
+                                        </span>
+                                    @enderror
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="expires_at">Vence el</label>
+                                    <input type="date" id="expires_at" name="expires_at"
+                                        class="form-control @error('expires_at') is-invalid @enderror"
+                                        value="{{ old('expires_at', optional($promotion->expires_at)->format('Y-m-d')) }}"
+                                        min="{{ date('Y-m-d') }}">
+                                    <span class="field-hint">
+                                        <i class="fa-solid fa-circle-info"></i> Déjalo vacío si no caduca.
+                                    </span>
+                                    @error('expires_at')
+                                        <span class="error-message">
+                                            <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
+                                        </span>
+                                    @enderror
+                                </div>
+
+                                <div class="form-group">
+                                    <label for="max_uses">Máximo de usos</label>
+                                    <input type="number" id="max_uses" name="max_uses" min="0"
+                                        class="form-control @error('max_uses') is-invalid @enderror"
+                                        placeholder="Ilimitado" value="{{ old('max_uses', $promotion->max_uses) }}">
+                                    <span class="field-hint">
+                                        <i class="fa-solid fa-circle-info"></i> Vacío = sin límite de activaciones.
+                                    </span>
+                                    @error('max_uses')
+                                        <span class="error-message">
+                                            <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
+                                        </span>
+                                    @enderror
+                                </div>
+
+                                <div class="form-group cf-span">
+                                    <label for="description">Descripción</label>
+                                    <textarea id="description" name="description" rows="4"
+                                        class="form-control @error('description') is-invalid @enderror"
+                                        placeholder="Detalla la oferta: qué incluye, dónde canjearla…">{{ old('description', $promotion->description) }}</textarea>
+                                    @error('description')
+                                        <span class="error-message">
+                                            <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
+                                        </span>
+                                    @enderror
+                                </div>
+
+                                <div class="form-group cf-span">
+                                    <label for="terms_conditions">Términos y condiciones</label>
+                                    <textarea id="terms_conditions" name="terms_conditions" rows="3"
+                                        class="form-control @error('terms_conditions') is-invalid @enderror"
+                                        placeholder="Restricciones, vigencia, sucursales participantes…">{{ old('terms_conditions', $promotion->terms_conditions) }}</textarea>
+                                    @error('terms_conditions')
+                                        <span class="error-message">
+                                            <i class="fa-solid fa-circle-exclamation"></i> {{ $message }}
+                                        </span>
+                                    @enderror
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
+                    </section>
 
-                {{-- DESCRIPCIÓN --}}
-                <div class="form-section">
-                    <div class="section-title">
-                        <i class="fas fa-align-left"></i>
-                        <span>Descripción</span>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="description">
-                            <i class="fas fa-pencil-alt"></i>
-                            Descripción Detallada
-                            <span class="optional-badge">Opcional</span>
-                        </label>
-                        <textarea name="description" 
-                                  id="description" 
-                                  class="form-control @error('description') error @enderror"
-                                  rows="5" 
-                                  placeholder="Describe los detalles de la promoción, condiciones, restricciones, etc...">{{ old('description', $promotion->description) }}</textarea>
-                        <span class="field-hint">
-                            <i class="fas fa-info-circle"></i> Explica los detalles de la oferta para los rumberos
-                        </span>
-                        @error('description')
-                            <span class="error-message">
-                                <i class="fas fa-exclamation-circle"></i> {{ $message }}
-                            </span>
-                        @enderror
-                    </div>
-                </div>
-
-                {{-- IMAGEN --}}
-                <div class="form-section">
-                    <div class="section-title">
-                        <i class="fas fa-image"></i>
-                        <span>Imagen de la Promoción</span>
-                    </div>
-
-                    {{-- Imagen actual --}}
-                    @if($promotion->image_url)
-                        <div class="current-image-section" id="currentImageSection">
-                            <label class="current-image-label">
-                                <i class="fas fa-image"></i>
-                                Imagen Actual:
-                            </label>
-                            <div class="current-image-card">
-                                <img src="{{ $promotion->image_url }}" alt="{{ $promotion->title }}" class="current-image">
-                                <button type="button" class="btn-keep-image" onclick="keepCurrentImage()">
-                                    <i class="fas fa-check-circle"></i> Mantener esta imagen
-                                </button>
+                    {{-- Publicación --}}
+                    <section class="cf-card">
+                        <div class="cf-card__head">
+                            <span class="cf-card__icon"><i class="fa-solid fa-toggle-on"></i></span>
+                            <div class="cf-card__head-text">
+                                <h2>Publicación</h2>
+                                <p>Decide si la promoción está visible y si se destaca en la portada.</p>
                             </div>
                         </div>
-                    @endif
 
-                    {{-- Opción de cambiar imagen --}}
-                    <div class="change-image-option">
-                        <label class="change-image-label">
-                            <i class="fas fa-sync-alt"></i>
-                            ¿Quieres cambiar la imagen?
-                        </label>
-                        
-                        <div class="image-upload-area" id="dropArea" style="{{ $promotion->image_url ? 'margin-top: 1rem;' : '' }}">
-                            <i class="fas fa-cloud-upload-alt"></i>
-                            <h3>Arrastra tu nueva imagen aquí</h3>
-                            <p>o haz clic para seleccionar un archivo</p>
-                            <input type="file" 
-                                   name="image" 
-                                   id="image" 
-                                   class="file-input" 
-                                   accept="image/*">
-                            <span class="upload-hint">Formatos: JPG, PNG, GIF • Máx 2MB • Dejar vacío para mantener la actual</span>
-                        </div>
-                    </div>
+                        <div class="cf-card__body">
+                            <div class="cf-switches">
+                                <label class="cf-switch" for="is_active">
+                                    <input type="hidden" name="is_active" value="0">
+                                    <input type="checkbox" name="is_active" id="is_active" value="1"
+                                        {{ $isActive ? 'checked' : '' }}>
+                                    <span class="cf-switch__track" aria-hidden="true"></span>
+                                    <span class="cf-switch__text">
+                                        <strong>Promoción activa</strong>
+                                        <span>Las promociones activas se muestran en la app.</span>
+                                    </span>
+                                </label>
 
-                    {{-- Previsualización de nueva imagen --}}
-                    <div id="image-preview-container" class="image-preview-wrapper" style="display: none;">
-                        <div class="image-preview-card">
-                            <img id="image-preview" src="#" alt="Vista Previa">
-                            <button type="button" class="remove-image" onclick="removeNewImage()">
-                                <i class="fas fa-times"></i>
-                            </button>
-                        </div>
-                        <p class="preview-note">
-                            <i class="fas fa-info-circle"></i>
-                            Esta es la nueva imagen que se guardará
-                        </p>
-                    </div>
-                    @error('image')
-                        <span class="error-message" style="margin-top: 1rem;">
-                            <i class="fas fa-exclamation-circle"></i> {{ $message }}
-                        </span>
-                    @enderror
-                </div>
-
-                {{-- CONFIGURACIÓN ADICIONAL --}}
-                <div class="form-section">
-                    <div class="section-title">
-                        <i class="fas fa-cog"></i>
-                        <span>Configuración</span>
-                    </div>
-
-                    <div class="config-grid">
-                        {{-- Estado Activo --}}
-                        <div class="config-item">
-                            <div class="checkbox-wrapper">
-                                <input type="hidden" name="is_active" value="0">
-                                <input type="checkbox" 
-                                       name="is_active" 
-                                       id="is_active" 
-                                       value="1"
-                                       {{ old('is_active', $promotion->is_active) ? 'checked' : '' }}>
-                                <label for="is_active">
-                                    <i class="fas fa-bolt"></i>
-                                    Promoción Activa
+                                <label class="cf-switch" for="is_featured">
+                                    <input type="hidden" name="is_featured" value="0">
+                                    <input type="checkbox" name="is_featured" id="is_featured" value="1"
+                                        {{ $isFeatured ? 'checked' : '' }}>
+                                    <span class="cf-switch__track" aria-hidden="true"></span>
+                                    <span class="cf-switch__text">
+                                        <strong>Promoción destacada</strong>
+                                        <span>Aparece primero y con la etiqueta «Destacada».</span>
+                                    </span>
                                 </label>
                             </div>
-                            <span class="field-hint">
-                                <i class="fas fa-info-circle"></i> Las promociones activas se muestran en la página
+                        </div>
+                    </section>
+                </div>
+
+                {{-- ----------------------------- Aside ------------------------------ --}}
+                <aside class="cf-aside">
+
+                    {{-- Previsualización --}}
+                    <div class="cf-preview cf-preview--promo" data-cf-preview>
+                        <div class="cf-preview__head">
+                            <strong><i class="fa-regular fa-eye"></i> Vista previa</strong>
+                            <span class="cm-chip">Promoción</span>
+                        </div>
+
+                        <div class="cf-preview__media">
+                            <img data-cf-preview-image data-img alt=""
+                                @if ($currentSrc) src="{{ $currentSrc }}" @else hidden @endif>
+
+                            <div class="cf-preview__empty" data-cf-preview-empty
+                                @if ($currentSrc) hidden @endif>
+                                <i class="fa-regular fa-image"></i>
+                                <span>La imagen se verá aquí</span>
+                            </div>
+
+                            <span class="cf-preview__flag" data-cf-preview="featured"
+                                @unless ($isFeatured) hidden @endunless>
+                                <i class="fa-solid fa-star"></i> Destacada
+                            </span>
+
+                            <span class="cm-card__state {{ $isActive ? 'is-on' : 'is-off' }}"
+                                data-cf-preview="status">
+                                <i class="fa-solid {{ $isActive ? 'fa-circle-check' : 'fa-circle-pause' }}"></i>
+                                <span>{{ $isActive ? 'Activa' : 'Inactiva' }}</span>
+                            </span>
+
+                            <span class="cf-preview__discount" data-cf-preview="discount" hidden>
+                                -{{ $promotion->discount_label }}
                             </span>
                         </div>
 
-                        {{-- Destacado --}}
-                        <div class="config-item">
-                            <div class="checkbox-wrapper">
-                                <input type="hidden" name="is_featured" value="0">
-                                <input type="checkbox" 
-                                       name="is_featured" 
-                                       id="is_featured" 
-                                       value="1"
-                                       {{ old('is_featured', $promotion->is_featured ?? false) ? 'checked' : '' }}>
-                                <label for="is_featured">
-                                    <i class="fas fa-star"></i>
-                                    Promoción Destacada
-                                </label>
+                        <div class="cf-preview__body">
+                            <h3 class="cf-preview__title" data-cf-preview="title"
+                                data-empty="Título de la promoción">{{ old('title', $promotion->title) ?: 'Título de la promoción' }}</h3>
+                            <p class="cf-preview__desc" data-cf-preview="desc"
+                                data-empty="Aquí se verá la descripción que escribas.">
+                                {{ old('description', $promotion->description) ?: 'Aquí se verá la descripción que escribas.' }}
+                            </p>
+
+                            <div class="cf-preview__meta">
+                                <span class="cm-chip cm-chip--primary" data-cf-preview="price" hidden>$ 0</span>
+                                <span class="cm-chip" data-cf-preview="expires">Sin caducidad</span>
                             </div>
-                            <span class="field-hint">
-                                <i class="fas fa-info-circle"></i> Las promociones destacadas aparecen en la portada
-                            </span>
+
+                            <a class="cf-preview__cta" href="#" tabindex="-1" aria-hidden="true">
+                                <i class="fa-solid fa-ticket"></i>
+                                <span>Ver promoción</span>
+                            </a>
                         </div>
                     </div>
-                </div>
 
-                {{-- BOTONES DE ACCIÓN --}}
-                <div class="form-actions">
-                    <a href="{{ route('admin.promotions.index') }}" class="btn-rumbero-secondary">
-                        <i class="fas fa-times"></i>
-                        Cancelar
-                    </a>
-                    <button type="submit" class="btn-rumbero" id="submitBtn">
-                        <i class="fas fa-sync-alt"></i>
-                        <span>Actualizar Promoción</span>
-                        <i class="fas fa-fire"></i>
-                    </button>
-                </div>
-            </form>
-        </div>
-    </div>
+                    {{-- Datos del registro --}}
+                    <div class="cf-card">
+                        <div class="cf-card__head">
+                            <span class="cf-card__icon"><i class="fa-solid fa-clock-rotate-left"></i></span>
+                            <div class="cf-card__head-text">
+                                <h2>Datos del registro</h2>
+                            </div>
+                        </div>
 
-    {{-- DECORACIÓN DE FONDO --}}
-    <div class="rumbero-bg-decoration">
-        <div class="circle circle-1"></div>
-        <div class="circle circle-2"></div>
-        <div class="circle circle-3"></div>
+                        <div class="cf-meta">
+                            <div class="cf-meta__row">
+                                <span>Identificador</span>
+                                <strong>#{{ $promotion->id }}</strong>
+                            </div>
+                            <div class="cf-meta__row">
+                                <span>Creada</span>
+                                <strong>{{ optional($promotion->created_at)->format('d/m/Y H:i') ?? '—' }}</strong>
+                            </div>
+                            <div class="cf-meta__row">
+                                <span>Última edición</span>
+                                <strong>{{ optional($promotion->updated_at)->format('d/m/Y H:i') ?? '—' }}</strong>
+                            </div>
+                            <div class="cf-meta__row">
+                                <span>Usos</span>
+                                <strong>{{ $promotion->current_uses ?? 0 }} /
+                                    {{ $promotion->max_uses ?: 'ilimitados' }}</strong>
+                            </div>
+                            <div class="cf-meta__row">
+                                <span>Estado</span>
+                                <strong>
+                                    @if ($isActive)
+                                        <span class="badge badge-success"><i class="fa-solid fa-circle-check"></i> Activa</span>
+                                    @else
+                                        <span class="badge badge-neutral"><i class="fa-solid fa-circle-pause"></i> Inactiva</span>
+                                    @endif
+                                </strong>
+                            </div>
+                        </div>
+                    </div>
+                </aside>
+            </div>
+
+            {{-- ------------------------------ Acciones ------------------------------ --}}
+            <div class="cf-actions">
+                <a href="{{ route('admin.promotions.index') }}" class="btn btn-secondary">
+                    <i class="fa-solid fa-xmark"></i> Cancelar
+                </a>
+                <button type="submit" class="btn btn-primary" data-cf-submit>
+                    <i class="fa-solid fa-floppy-disk"></i> Guardar cambios
+                </button>
+            </div>
+        </form>
     </div>
-</div>
+@endsection
 
 @push('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // Elementos del DOM
-        const form = document.getElementById('promotionForm');
-        const submitBtn = document.getElementById('submitBtn');
-        const imageInput = document.getElementById('image');
-        const dropArea = document.getElementById('dropArea');
-        const previewContainer = document.getElementById('image-preview-container');
-        const previewImage = document.getElementById('image-preview');
-        const currentImageSection = document.getElementById('currentImageSection');
-
-        // ========== DRAG & DROP ==========
-        if (dropArea) {
-            ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-                dropArea.addEventListener(eventName, preventDefaults, false);
-            });
-
-            function preventDefaults(e) {
-                e.preventDefault();
-                e.stopPropagation();
-            }
-
-            ['dragenter', 'dragover'].forEach(eventName => {
-                dropArea.addEventListener(eventName, highlight, false);
-            });
-
-            ['dragleave', 'drop'].forEach(eventName => {
-                dropArea.addEventListener(eventName, unhighlight, false);
-            });
-
-            function highlight() {
-                dropArea.classList.add('highlight');
-            }
-
-            function unhighlight() {
-                dropArea.classList.remove('highlight');
-            }
-
-            dropArea.addEventListener('drop', handleDrop, false);
-
-            function handleDrop(e) {
-                const dt = e.dataTransfer;
-                const files = dt.files;
-                imageInput.files = files;
-                handleFiles(files);
-            }
-        }
-
-        // ========== PREVISUALIZACIÓN DE IMAGEN ==========
-        if (imageInput) {
-            imageInput.addEventListener('change', function() {
-                handleFiles(this.files);
-            });
-        }
-
-        function handleFiles(files) {
-            if (files.length > 0) {
-                const file = files[0];
-                
-                // Validar tamaño
-                if (file.size > 2 * 1024 * 1024) {
-                    showError('¡El archivo es demasiado pesado! Máximo 2MB');
-                    imageInput.value = '';
-                    return;
-                }
-
-                // Validar tipo
-                if (!file.type.startsWith('image/')) {
-                    showError('¡Solo imágenes! (JPG, PNG, GIF)');
-                    imageInput.value = '';
-                    return;
-                }
-
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    previewImage.src = e.target.result;
-                    previewContainer.style.display = 'block';
-                    
-                    // Ocultar la imagen actual si existe
-                    if (currentImageSection) {
-                        currentImageSection.style.display = 'none';
-                    }
-                }
-                reader.readAsDataURL(file);
-            }
-        }
-
-        // ========== VALIDACIONES ==========
-        // Validar descuento
-        const discountInput = document.getElementById('discount');
-        if (discountInput) {
-            discountInput.addEventListener('input', function() {
-                let value = parseInt(this.value);
-                if (isNaN(value) || value < 0) this.value = 0;
-                if (value > 100) this.value = 100;
-            });
-        }
-
-        // Validar precio
-        const priceInput = document.getElementById('price');
-        if (priceInput) {
-            priceInput.addEventListener('input', function() {
-                let value = parseFloat(this.value);
-                if (isNaN(value) || value < 0) this.value = 0;
-            });
-        }
-
-        // Validar fecha de expiración
-        const expiresInput = document.getElementById('expires_at');
-        if (expiresInput) {
-            expiresInput.addEventListener('change', function() {
-                const today = new Date().toISOString().split('T')[0];
-                if (this.value && this.value < today) {
-                    showError('La fecha de expiración no puede ser en el pasado');
-                    this.value = '';
-                }
-            });
-        }
-
-        // ========== PREVENIR DOBLE ENVÍO ==========
-        if (form) {
-            form.addEventListener('submit', function(e) {
-                if (submitBtn.disabled) {
-                    e.preventDefault();
-                    return;
-                }
-
-                submitBtn.disabled = true;
-                submitBtn.classList.add('loading');
-                submitBtn.querySelector('span').textContent = 'Actualizando...';
-            });
-        }
-
-        // ========== AUTO-CERRAR ALERTAS ==========
-        const alerts = document.querySelectorAll('.alert-modern');
-        alerts.forEach(alert => {
-            setTimeout(() => {
-                if (alert) {
-                    alert.style.transition = 'opacity 0.5s ease';
-                    alert.style.opacity = '0';
-                    setTimeout(() => alert.remove(), 500);
-                }
-            }, 5000);
-        });
-
-        // ========== FUNCIONES AUXILIARES ==========
-        function showError(message) {
-            // Crear alerta temporal
-            const alert = document.createElement('div');
-            alert.className = 'alert-modern error';
-            alert.innerHTML = `
-                <div class="alert-icon">
-                    <i class="fas fa-exclamation-circle"></i>
-                </div>
-                <div class="alert-content">
-                    <strong>¡Error!</strong>
-                    <p>${message}</p>
-                </div>
-                <button class="alert-close" onclick="this.parentElement.remove()">
-                    <i class="fas fa-times"></i>
-                </button>
-            `;
-            
-            const wrapper = document.querySelector('.rumbero-wrapper');
-            wrapper.insertBefore(alert, wrapper.firstChild);
-            
-            setTimeout(() => {
-                alert.style.transition = 'opacity 0.5s ease';
-                alert.style.opacity = '0';
-                setTimeout(() => alert.remove(), 500);
-            }, 3000);
-        }
-
-        // Efectos hover
-        document.querySelectorAll('.btn-rumbero, .btn-rumbero-secondary').forEach(btn => {
-            btn.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-2px)';
-            });
-            btn.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0)';
-            });
-        });
-    });
-
-    // ========== FUNCIONES GLOBALES ==========
-    function keepCurrentImage() {
-        const imageInput = document.getElementById('image');
-        const dropArea = document.getElementById('dropArea');
-        const previewContainer = document.getElementById('image-preview-container');
-        const currentImageSection = document.getElementById('currentImageSection');
-        
-        imageInput.value = '';
-        previewContainer.style.display = 'none';
-        
-        if (currentImageSection) {
-            currentImageSection.style.display = 'block';
-        }
-        
-        // Mostrar mensaje de confirmación
-        const alert = document.createElement('div');
-        alert.className = 'alert-modern success';
-        alert.innerHTML = `
-            <div class="alert-icon">
-                <i class="fas fa-check-circle"></i>
-            </div>
-            <div class="alert-content">
-                <strong>¡Perfecto!</strong>
-                <p>Se mantendrá la imagen actual</p>
-            </div>
-            <button class="alert-close" onclick="this.parentElement.remove()">
-                <i class="fas fa-times"></i>
-            </button>
-        `;
-        
-        const wrapper = document.querySelector('.rumbero-wrapper');
-        wrapper.insertBefore(alert, wrapper.firstChild);
-        
-        setTimeout(() => {
-            alert.style.transition = 'opacity 0.5s ease';
-            alert.style.opacity = '0';
-            setTimeout(() => alert.remove(), 500);
-        }, 3000);
-    }
-
-    function removeNewImage() {
-        const imageInput = document.getElementById('image');
-        const previewContainer = document.getElementById('image-preview-container');
-        const currentImageSection = document.getElementById('currentImageSection');
-        
-        imageInput.value = '';
-        previewContainer.style.display = 'none';
-        
-        if (currentImageSection) {
-            currentImageSection.style.display = 'block';
-        }
-    }
-</script>
+    <script src="{{ asset('js/admin-forms.js') }}"></script>
 @endpush
-@endsection

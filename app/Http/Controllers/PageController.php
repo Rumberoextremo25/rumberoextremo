@@ -83,10 +83,79 @@ class PageController extends Controller
         ]);
 
         // 2. Crear una nueva instancia del modelo y guardar los datos
-        AllyContact::create($validatedData);
+        $contact = AllyContact::create($validatedData);
 
-        // 3. Redirigir al usuario a la vista home con un mensaje de éxito
+        // 3. Avisar a ventas por correo y al panel
+        $this->notifySales('aliado', [
+            'Empresa' => $contact->company_name,
+            'Contacto' => $contact->contact_person,
+            'Correo' => $contact->email,
+            'Teléfono' => $contact->phone ?: '—',
+            'Tipo de alianza' => $contact->partnership_type,
+            'Sitio web' => $contact->website ?: '—',
+            'Mensaje' => $contact->message,
+        ], $contact->email, $contact->company_name);
+
+        // 4. Redirigir al usuario a la vista home con un mensaje de éxito
         return redirect()->route('welcome')->with('success', '¡Tu propuesta de colaboración ha sido enviada con éxito! Nos pondremos en contacto contigo pronto.');
+    }
+
+    /**
+     * Envía la solicitud al correo de ventas configurado y crea una notificación
+     * en la campana del panel para que el equipo la revise.
+     *
+     * @param  array<string, mixed>  $fields
+     */
+    private function notifySales(string $kind, array $fields, ?string $email, ?string $name): void
+    {
+        $recipient = \App\Models\Setting::get('sales_email', 'soporteitsolutech@gmail.com');
+
+        // Correo a ventas: se envía después de responder al usuario
+        $send = function () use ($recipient, $kind, $fields) {
+            try {
+                \Illuminate\Support\Facades\Mail::to($recipient)->send(
+                    new \App\Mail\AllyRequestMail($fields, $kind)
+                );
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::warning('ally_request.mail_failed', [
+                    'error' => $e->getMessage(),
+                    'to' => $recipient,
+                ]);
+            }
+        };
+
+        if (function_exists('defer')) {
+            defer($send);
+        } else {
+            $send();
+        }
+
+        // Notificación en la campana del panel
+        try {
+            $payload = [
+                'action' => 'created',
+                'entity' => 'solicitud',
+                'entity_label' => $kind === 'afiliado' ? 'Solicitud de afiliado' : 'Solicitud de local',
+                'entity_id' => null,
+                'title' => $kind === 'afiliado' ? 'Nueva solicitud de afiliado' : 'Nueva solicitud de local',
+                'subject' => $name,
+                'message' => ($name ?? 'Solicitud') . ($email ? ' · ' . $email : ''),
+                'changes' => [],
+                'icon' => 'fa-solid fa-file-signature',
+                'color' => 'warning',
+                'url' => route('admin.requests.index'),
+                'actor_name' => $name,
+            ];
+
+            \App\Models\User::query()
+                ->where(function ($q) {
+                    $q->where('role', 'admin')->orWhere('user_type', 'admin');
+                })
+                ->get()
+                ->each(fn ($admin) => $admin->notify(new \App\Notifications\AdminActivityNotification($payload)));
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('ally_request.notify_failed', ['error' => $e->getMessage()]);
+        }
     }
 
     public function afiliado()
@@ -112,9 +181,20 @@ class PageController extends Controller
         ]);
 
         // 2. Crear una nueva instancia del modelo y guardar los datos
-        AffiliateApplication::create($validatedData);
+        $application = AffiliateApplication::create($validatedData);
 
-        // 3. Redirigir al usuario con un mensaje de éxito
+        // 3. Avisar a ventas por correo y al panel
+        $this->notifySales('afiliado', [
+            'Nombre' => $application->full_name,
+            'Correo' => $application->email,
+            'Teléfono' => $application->phone ?: '—',
+            'Red social' => $application->social_media_link,
+            'Seguidores' => $application->followers_count,
+            'Tipo' => $application->affiliate_type,
+            'Mensaje' => $application->message ?: '—',
+        ], $application->email, $application->full_name);
+
+        // 4. Redirigir al usuario con un mensaje de éxito
         return redirect()->route('welcome')->with('success', '¡Tu solicitud de afiliado ha sido enviada con éxito! Nos pondremos en contacto contigo pronto.');
     }
 
@@ -231,6 +311,14 @@ class PageController extends Controller
     public function privacy()
     {
         return view('privacy');
+    }
+
+    /**
+     * Política de cookies.
+     */
+    public function cookies()
+    {
+        return view('cookies');
     }
 
     public function faqs()

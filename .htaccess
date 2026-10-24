@@ -1,0 +1,37 @@
+# ============================================================================
+# RUMBERO EXTREMO · Protección del directorio raíz
+# ----------------------------------------------------------------------------
+# Este archivo solo tiene efecto si el servidor web apunta al directorio del
+# proyecto en lugar de a public/. Es una segunda barrera: el document root
+# correcto SIEMPRE debe ser public/.
+# ============================================================================
+
+# Sin listados de directorio
+Options -Indexes -MultiViews
+
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Bloquea el acceso directo a archivos y carpetas sensibles
+    RewriteRule ^\.env(\..*)?$ - [F,L]
+    RewriteRule ^\.git(/|$) - [F,L]
+    RewriteRule ^(app|bootstrap|config|database|resources|routes|storage|tests|vendor|node_modules)(/|$) - [F,L]
+
+    # Bloquea artefactos de desarrollo y metadatos
+    RewriteRule ^(composer\.(json|lock)|package(-lock)?\.json|artisan|phpunit\.xml|vite\.config\.js|tailwind\.config\.js|postcss\.config\.js|README\.md|\.editorconfig|\.gitattributes|\.gitignore)$ - [F,L]
+
+    # Bloquea scripts de diagnóstico/pruebas (patrón test-*.php, *_test.php…)
+    RewriteRule ^test[-_].*\.php$ - [F,L]
+    RewriteRule .*\.(sql|log|bak|old|swp|env)$ - [F,L]
+</IfModule>
+
+# Refuerzo con FilesMatch (funciona aunque mod_rewrite esté desactivado)
+<FilesMatch "^(\.env.*|\.git.*|composer\.(json|lock)|package(-lock)?\.json|artisan|phpunit\.xml|test[-_].*\.php)$">
+    Require all denied
+</FilesMatch>
+
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "SAMEORIGIN"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+</IfModule>

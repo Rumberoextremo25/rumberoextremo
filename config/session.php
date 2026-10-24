@@ -47,7 +47,9 @@ return [
     |
     */
 
-    'encrypt' => env('SESSION_ENCRYPT', false),
+    // El contenido de la sesión se cifra por defecto: en la tabla `sessions`
+    // ya no queda legible el id del usuario autenticado ni los datos de pago.
+    'encrypt' => (bool) env('SESSION_ENCRYPT', true),
 
     /*
     |--------------------------------------------------------------------------
@@ -169,7 +171,9 @@ return [
     |
     */
 
-    'secure' => env('SESSION_SECURE_COOKIE'),
+    // Si la app corre sobre HTTPS la cookie se marca Secure automáticamente
+    // (se puede forzar con SESSION_SECURE_COOKIE=true/false).
+    'secure' => env('SESSION_SECURE_COOKIE', str_starts_with((string) env('APP_URL', ''), 'https://')),
 
     /*
     |--------------------------------------------------------------------------

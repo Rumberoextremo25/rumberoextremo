@@ -10,8 +10,12 @@ class DataCypher
     private $iv;
     private $encryptionKey;
 
-    public function __construct(string $encryptionKey)
+    public function __construct(?string $encryptionKey)
     {
+        if ($encryptionKey === null || $encryptionKey === '') {
+            throw new \RuntimeException('BNC_MASTER_KEY no está configurada en el servidor.');
+        }
+
         $this->encryptionKey = $encryptionKey;
         $this->deriveKeyAndIV();
     }

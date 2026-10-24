@@ -1,135 +1,262 @@
-{{-- resources/views/welcome.blade.php (o home.blade.php si la usas como página de inicio) --}}
+{{-- resources/views/welcome.blade.php --}}
 
 @extends('layouts.app')
 
 @section('title', 'Rumbero Extremo App - Tu Noche Perfecta Comienza Aquí')
 
 @push('styles')
-    {{-- Agregamos el CSS específico de esta vista --}}
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Play:wght@400;700&display=swap"
-        rel="stylesheet">
-
-    <link rel="stylesheet" href="{{ asset('css/welcome.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/public-modern.css') }}?v={{ filemtime(public_path('css/public-modern.css')) }}">
 @endpush
 
 @section('content')
-    <section class="hero">
-        <div class="container">
-            <h1>Tu Próxima Aventura te<br>
-                está esperando
-            </h1>
-            <br>
-            <h3>Conecta, explora y vive sin limites<br>
-                ¡Qué esperas para ser un Rumbero afíliate!
-            </h3>
-            <br>
+    <div class="px-page">
 
-            <!-- Botón de registro -->
-            <a href="{{ route('register') }}" class="cta-button-banner">¡Yo Soy Rumbero!</a>
+        {{-- ============================== HERO ==============================
+             Banner grande con la imagen original como fondo --}}
+        <section class="px-hero px-hero--home">
+            <div class="px-container px-hero__inner">
+                    <div>
+                        <span class="px-hero__kicker">
+                            <i class="fa-solid fa-bolt"></i> Recreación y entretenimiento
+                        </span>
 
-            <!-- Contenedor para botones de tiendas oficiales -->
-            <div class="app-buttons-container">
-                <!-- Google Play Button -->
-                <a href="https://play.google.com/store/apps/details?id=com.sistema.rumberoextremooficial" class="store-btn google-play" target="_blank" rel="noopener noreferrer">
-                    <i class="fab fa-google-play"></i>
-                    <div class="btn-content">
-                        <div class="btn-text">
-                            <span class="small-text">DESCARGALA EN</span>
-                            <span class="large-text">Google Play</span>
+                        <h1 class="px-hero__title">
+                            Tu próxima aventura <span>te está esperando</span>
+                        </h1>
+
+                        <p class="px-hero__text">
+                            Conecta, explora y vive sin límites. Descubre los lugares en tendencia, activa descuentos
+                            exclusivos y comparte la rumba con tu gente.
+                        </p>
+
+                        <div class="px-home-actions">
+                            <a href="{{ route('register') }}" class="px-btn px-btn--primary">
+                                <i class="fa-solid fa-fire"></i> ¡Yo soy Rumbero!
+                            </a>
+
+                            <a href="https://play.google.com/store/apps/details?id=com.sistema.rumberoextremooficial"
+                                class="px-store" target="_blank" rel="noopener noreferrer">
+                                <i class="fa-brands fa-google-play"></i>
+                                <span class="px-store__text">
+                                    <small>Descárgala en</small>
+                                    <strong>Google Play</strong>
+                                </span>
+                            </a>
+
+                            <span class="px-store is-disabled" aria-disabled="true">
+                                <i class="fa-brands fa-apple"></i>
+                                <span class="px-store__text">
+                                    <small>Próximamente en</small>
+                                    <strong>App Store</strong>
+                                </span>
+                                <span class="px-store__soon">Pronto</span>
+                            </span>
                         </div>
                     </div>
-                </a>
-
-                <!-- App Store Button - Coming Soon -->
-                <a href="#" class="store-btn app-store disabled">
-                    <i class="fab fa-apple"></i>
-                    <div class="btn-content">
-                        <div class="btn-text">
-                            <span class="small-text">PRÓXIMAMENTE EN</span>
-                            <span class="large-text">App Store</span>
-                        </div>
-                    </div>
-                    <span class="status-badge soon">Próximamente</span>
-                </a>
+                </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <section id="features" class="features">
-        <div class="container">
-            <h2>¡Hoy los Rumberos quieren …!</h2>
-            <div class="feature-grid">
-                <div class="feature-item">
-                    <img src="assets/img/home/eventos_1.jpg" alt="Eventos Actualizados">
-                    <h3>Eventos <br> Rumberos</h3>
-                    <p>Nuevos Aliados, Conectar con Rumberos, Promociones Aliadas</p>
-                </div>
-                <div class="feature-item">
-                    <img src="assets/img/home/nuevos_lugares.jpg" alt="Descubre Lugares Nuevos">
-                    <h3>Descubre lugares <br> nuevos</h3>
-                    <p>Encuentra los bares, discotecas y lounges de moda, o ese rincón especial que aún no conocías.</p>
-                </div>
-                <div class="feature-item">
-                    <img src="assets/img/home/conecta_con_amigos.webp" alt="Conecta con Amigos">
-                    <h3>Conecta con <br> amigos</h3>
-                    <p>Ve a dónde van tus amigos, coordina tus salidas y planea experiencias inolvidables juntos fácilmente.
+        {{-- ===================== FRANJA DE BENEFICIOS =====================
+             (antes era la tarjeta del hero, que tapaba la cara del banner) --}}
+        <section class="px-trust">
+            <div class="px-container">
+                <ul class="px-trust__grid">
+                    <li class="px-trust__item">
+                        <span class="px-trust__icon"><i class="fa-solid fa-bell"></i></span>
+                        <span>
+                            <strong>Entérate primero</strong>
+                            <small>Eventos y novedades antes que nadie</small>
+                        </span>
+                    </li>
+                    <li class="px-trust__item">
+                        <span class="px-trust__icon"><i class="fa-solid fa-tags"></i></span>
+                        <span>
+                            <strong>Descuentos exclusivos</strong>
+                            <small>En tus lugares favoritos</small>
+                        </span>
+                    </li>
+                    <li class="px-trust__item">
+                        <span class="px-trust__icon"><i class="fa-solid fa-user-group"></i></span>
+                        <span>
+                            <strong>Salidas con amigos</strong>
+                            <small>Coordina y planeen juntos</small>
+                        </span>
+                    </li>
+                    <li class="px-trust__item">
+                        <span class="px-trust__icon"><i class="fa-solid fa-compass"></i></span>
+                        <span>
+                            <strong>Rincones nuevos</strong>
+                            <small>Descubre otra cara de la ciudad</small>
+                        </span>
+                    </li>
+                </ul>
+            </div>
+        </section>
+
+        {{-- =========================== BENEFICIOS =========================== --}}
+        <section id="features" class="px-section">
+            <div class="px-container">
+                <div class="px-head">
+                    <span class="px-head__eyebrow">¿Qué puedes hacer?</span>
+                    <h2 class="px-head__title">¡Hoy los Rumberos quieren…!</h2>
+                    <p class="px-head__text">
+                        Todo lo que necesitas para tus salidas, en una sola app.
                     </p>
                 </div>
-                <div class="feature-item">
-                    <img src="assets/img/home/ofertas_exclusivas.webp" alt="Ofertas Exclusivas">
-                    <h3>Ofertas <br> exclusivas</h3>
-                    <p>Accede a descuentos y promociones especiales en tus lugares favoritos, solo por ser parte de Rumbero
-                        Extremo.</p>
-                </div>
-            </div>
-        </div>
-    </section>
 
-    <section class="image-carousel-section">
-        <div class="carousel-container">
-            <div class="carousel-slide" id="carouselSlide">
-                <img src="assets/img/home/discoteca_5.jpg" alt="Rumbero Extremo - Discoteca">
-                <img src="assets/img/home/cafeteria_4.webp" alt="Rumbero Extremo - Cafeteria">
-                <img src="assets/img/home/parque_3.jpg" alt="Rumbero Extremo - Parque">
-                <img src="assets/img/home/posada_2.jpeg" alt="Rumbero Extremo - Posada">
-                <img src="assets/img/home/fiesta_1.jpg" alt="Rumbero Extremo - Fiesta">
+                <div class="px-grid">
+                    <article class="px-card px-feature">
+                        <div class="px-feature__media">
+                            <img src="{{ asset('assets/img/home/eventos_1.jpg') }}" alt="Eventos Rumberos"
+                                loading="lazy">
+                        </div>
+                        <div class="px-feature__body">
+                            <h3>Eventos Rumberos</h3>
+                            <p>Nuevos aliados, conexión con otros Rumberos y promociones de los locales.</p>
+                        </div>
+                    </article>
+
+                    <article class="px-card px-feature">
+                        <div class="px-feature__media">
+                            <img src="{{ asset('assets/img/home/nuevos_lugares.jpg') }}" alt="Descubre lugares nuevos"
+                                loading="lazy">
+                        </div>
+                        <div class="px-feature__body">
+                            <h3>Descubre lugares nuevos</h3>
+                            <p>Bares, discotecas y lounges de moda, o ese rincón especial que aún no conocías.</p>
+                        </div>
+                    </article>
+
+                    <article class="px-card px-feature">
+                        <div class="px-feature__media">
+                            <img src="{{ asset('assets/img/home/conecta_con_amigos.webp') }}" alt="Conecta con amigos"
+                                loading="lazy">
+                        </div>
+                        <div class="px-feature__body">
+                            <h3>Conecta con amigos</h3>
+                            <p>Ve a dónde van, coordina la salida y planeen experiencias inolvidables.</p>
+                        </div>
+                    </article>
+
+                    <article class="px-card px-feature">
+                        <div class="px-feature__media">
+                            <img src="{{ asset('assets/img/home/ofertas_exclusivas.webp') }}" alt="Ofertas exclusivas"
+                                loading="lazy">
+                        </div>
+                        <div class="px-feature__body">
+                            <h3>Ofertas exclusivas</h3>
+                            <p>Descuentos y promociones especiales solo por ser parte de Rumbero Extremo.</p>
+                        </div>
+                    </article>
+                </div>
             </div>
-            <button class="carousel-nav-button prev-button" onclick="moveSlide(-1)">&#10094;</button>
-            <button class="carousel-nav-button next-button" onclick="moveSlide(1)">&#10095;</button>
-        </div>
-    </section>
-    
-    <section class="testimonials-section">
-        <div class="container">
-            <h2>¡Ellos son Rumberos! Y Comparten sus Experiencias!</h2>
-            <div class="testimonials-grid">
-                <div class="testimonial-card">
-                    <p>"¡Increíble! Desde que uso Rumbero Extremo no me pierdo ni un evento. Es la mejor forma de saber
-                        dónde está la rumba."</p>
-                    <span class="author">Juan David M.</span>
-                    <span class="location">Caracas, Venezuela</span>
+        </section>
+
+        {{-- ============================ GALERÍA ============================ --}}
+        <section class="px-section px-section--muted">
+            <div class="px-container">
+                <div class="px-head">
+                    <span class="px-head__eyebrow">La movida</span>
+                    <h2 class="px-head__title">Así se vive la experiencia</h2>
                 </div>
-                <div class="testimonial-card">
-                    <p>"Me encanta descubrir nuevos locales y DJs. La app es súper fácil de usar y me ha conectado con
-                        la movida nocturna."</p>
-                    <span class="author">María Virginia L.</span>
-                    <span class="location">Valencia, Venezuela</span>
-                </div>
-                <div class="testimonial-card">
-                    <p>"Perfecta para planificar mis noches. Siempre encuentro algo emocionante que hacer. ¡Rumbero
-                        Extremo es la clave!"</p>
-                    <span class="author">Ricardo P.</span>
-                    <span class="location">Maracaibo, Venezuela</span>
+
+                <div class="px-carousel">
+                    {{-- El JS del carrusel necesita este id y las imágenes como hijos directos --}}
+                    <div class="px-carousel__track" id="carouselSlide">
+                        <img src="{{ asset('assets/img/home/discoteca_5.jpg') }}" alt="Rumbero Extremo - Discoteca"
+                            loading="lazy">
+                        <img src="{{ asset('assets/img/home/cafeteria_4.webp') }}" alt="Rumbero Extremo - Cafetería"
+                            loading="lazy">
+                        <img src="{{ asset('assets/img/home/parque_3.jpg') }}" alt="Rumbero Extremo - Parque"
+                            loading="lazy">
+                        <img src="{{ asset('assets/img/home/posada_2.jpeg') }}" alt="Rumbero Extremo - Posada"
+                            loading="lazy">
+                        <img src="{{ asset('assets/img/home/fiesta_1.jpg') }}" alt="Rumbero Extremo - Fiesta"
+                            loading="lazy">
+                    </div>
+
+                    <button type="button" class="px-carousel__btn prev carousel-nav-button prev-button"
+                        onclick="moveSlide(-1)" aria-label="Anterior">&#10094;</button>
+                    <button type="button" class="px-carousel__btn next carousel-nav-button next-button"
+                        onclick="moveSlide(1)" aria-label="Siguiente">&#10095;</button>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
+
+        {{-- ========================== TESTIMONIOS ========================== --}}
+        <section class="px-section">
+            <div class="px-container">
+                <div class="px-head">
+                    <span class="px-head__eyebrow">Comunidad</span>
+                    <h2 class="px-head__title">Ellos son Rumberos y comparten su experiencia</h2>
+                </div>
+
+                <div class="px-grid">
+                    <article class="px-testimonial">
+                        <div class="px-testimonial__stars" aria-label="5 de 5 estrellas">★★★★★</div>
+                        <p class="px-testimonial__text">
+                            "Desde que uso Rumbero Extremo no me pierdo ni un evento. Es la mejor forma de saber
+                            dónde está la rumba."
+                        </p>
+                        <div class="px-testimonial__author">
+                            <span class="px-testimonial__avatar" aria-hidden="true">JD</span>
+                            <span>
+                                <span class="px-testimonial__name">Juan David M.</span>
+                                <span class="px-testimonial__city">Caracas, Venezuela</span>
+                            </span>
+                        </div>
+                    </article>
+
+                    <article class="px-testimonial">
+                        <div class="px-testimonial__stars" aria-label="5 de 5 estrellas">★★★★★</div>
+                        <p class="px-testimonial__text">
+                            "Me encanta descubrir nuevos locales y DJs. La app es súper fácil de usar y me ha
+                            conectado con la movida nocturna."
+                        </p>
+                        <div class="px-testimonial__author">
+                            <span class="px-testimonial__avatar" aria-hidden="true">MV</span>
+                            <span>
+                                <span class="px-testimonial__name">María Virginia L.</span>
+                                <span class="px-testimonial__city">Valencia, Venezuela</span>
+                            </span>
+                        </div>
+                    </article>
+
+                    <article class="px-testimonial">
+                        <div class="px-testimonial__stars" aria-label="5 de 5 estrellas">★★★★★</div>
+                        <p class="px-testimonial__text">
+                            "Perfecta para planificar mis noches. Siempre encuentro algo emocionante que hacer.
+                            ¡Rumbero Extremo es la clave!"
+                        </p>
+                        <div class="px-testimonial__author">
+                            <span class="px-testimonial__avatar" aria-hidden="true">RP</span>
+                            <span>
+                                <span class="px-testimonial__name">Ricardo P.</span>
+                                <span class="px-testimonial__city">Maracaibo, Venezuela</span>
+                            </span>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        {{-- =============================== CTA =============================== --}}
+        <section class="px-section" style="padding-top:0;">
+            <div class="px-container">
+                <div class="px-cta">
+                    <h2>¿Qué esperas para ser un Rumbero?</h2>
+                    <p>Afíliate gratis y empieza a disfrutar los beneficios de nuestros aliados comerciales.</p>
+                    <a href="{{ route('register') }}" class="px-btn px-btn--gold">
+                        <i class="fa-solid fa-user-plus"></i> Quiero afiliarme
+                    </a>
+                </div>
+            </div>
+        </section>
+    </div>
 @endsection
 
 @push('scripts')
-    {{-- Agregamos el JS específico de esta vista --}}
+    {{-- El JS del carrusel (moveSlide / autoplay) se mantiene igual --}}
     <script src="{{ asset('js/welcome.js') }}"></script>
 @endpush

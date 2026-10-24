@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\LoginRequest;
+use App\Http\Requests\Auth\LoginRequest;
 use App\Models\User;
 use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Auth\Events\Registered;
@@ -565,9 +565,24 @@ class AuthController extends Controller
             'name' => ['sometimes', 'string', 'max:255'],
             'email' => ['sometimes', 'email', 'unique:users,email,' . $user->id],
             'phone' => ['sometimes', 'string', 'max:20'],
+            'identification' => ['sometimes', 'string', 'max:50'],
+            'address' => ['sometimes', 'string', 'max:500'],
         ]);
 
-        $user->update($request->only(['name', 'email', 'phone']));
+        $data = $request->only(['name', 'email']);
+
+        // El panel y la app usan "phone"; la tabla guarda phone1.
+        if ($request->filled('phone')) {
+            $data['phone1'] = $request->input('phone');
+        }
+        if ($request->filled('identification')) {
+            $data['identification'] = $request->input('identification');
+        }
+        if ($request->filled('address')) {
+            $data['address'] = $request->input('address');
+        }
+
+        $user->update($data);
 
         return response()->json([
             'success' => true,

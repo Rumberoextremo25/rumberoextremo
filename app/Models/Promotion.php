@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Support\Facades\Storage;
 
 class Promotion extends Model
 {
@@ -25,17 +26,59 @@ class Promotion extends Model
         'status',
         'max_uses',
         'current_uses',
-        'metadata'
+        'metadata',
+        'is_featured',
     ];
 
     protected $casts = [
         'expires_at' => 'datetime',
         'max_uses' => 'integer',
         'current_uses' => 'integer',
+        'is_featured' => 'boolean',
         'metadata' => 'array',
         'created_at' => 'datetime',
         'updated_at' => 'datetime'
     ];
+
+    /**
+     * La columna real es `status`; las vistas y el admin hablan de "activa".
+     */
+    public function getIsActiveAttribute(): bool
+    {
+        return $this->status === 'active';
+    }
+
+    /**
+     * URL pública de la imagen (la columna guarda la ruta relativa del disco).
+     * Devuelve null si el archivo no existe para no dejar imágenes rotas.
+     */
+    public function getImageSrcAttribute(): ?string
+    {
+        $path = $this->image_url;
+
+        if (! $path) {
+            return null;
+        }
+
+        if (str_starts_with($path, 'http')) {
+            return $path;
+        }
+
+        return Storage::disk('public')->exists($path)
+            ? asset('storage/' . ltrim($path, '/'))
+            : null;
+    }
+
+    /**
+     * Etiqueta del descuento: "20" => "20%", "2x1" se mantiene tal cual.
+     */
+    public function getDiscountLabelAttribute(): string
+    {
+        $discount = trim((string) $this->discount);
+
+        return preg_match('/^\d+(?:[.,]\d+)?$/', $discount) ? $discount . '%' : $discount;
+    }
+
 
     /**
      * Relación: Una promoción pertenece a un aliado

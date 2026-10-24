@@ -41,19 +41,19 @@
         @include('layouts.footer')
     </div>
 
-    {{-- BURBUJA DE CHAT FLOTANTE --}}
-    <div id="chat-bubble" class="rumbero-chat-bubble" onclick="toggleChatModal()">
-        <div class="bubble-content">
-            <div class="bubble-icon">
-                <i class="fas fa-headset"></i>
-            </div>
-            <div class="bubble-text">
-                <span class="bubble-title">Soporte</span>
-                <span class="bubble-subtitle">Habla con nosotros</span>
-            </div>
-        </div>
-        <div class="bubble-pulse"></div>
-        <div class="bubble-notification" id="chat-notification" style="display: none;">1</div>
+    {{-- BURBUJA DE CHAT FLOTANTE (FAB que se expande al pasar el cursor) --}}
+    <div id="chat-bubble" class="rumbero-chat-bubble" role="button" tabindex="0"
+        aria-label="Abrir chat de soporte" aria-haspopup="dialog"
+        onclick="toggleChatModal()"
+        onkeydown="if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); toggleChatModal(); }">
+        <span class="bubble-icon" aria-hidden="true">
+            <i class="fas fa-comment-dots"></i>
+        </span>
+        <span class="bubble-text" aria-hidden="true">
+            <span class="bubble-title">Soporte</span>
+            <span class="bubble-subtitle">Habla con nosotros</span>
+        </span>
+        <span class="bubble-notification" id="chat-notification" style="display: none;">1</span>
     </div>
 
     {{-- MODAL DEL CHAT --}}
@@ -136,9 +136,21 @@
                 </button>
             </div>
 
-            <div class="footer-note">
-                <i class="fas fa-user-clock"></i>
-                <span>Un asesor te responderá en breve</span>
+            {{-- Elección del usuario: seguir en el chat o continuar por WhatsApp --}}
+            <div class="chat-channel-choice" id="chat-channel-choice">
+                <button type="button" class="channel-btn channel-btn-chat is-active" onclick="continuarEnChat()">
+                    <i class="fas fa-comments"></i> Seguir en el chat
+                </button>
+
+                <a href="{{ app(\App\Services\ChatSupportService::class)->whatsappUrl() ?? 'https://wa.me/' }}"
+                   class="channel-btn channel-btn-whatsapp" id="chat-whatsapp-btn" target="_blank" rel="noopener">
+                    <i class="fab fa-whatsapp"></i> Continuar por WhatsApp
+                </a>
+            </div>
+
+            <div class="footer-note" id="chat-footer-note">
+                <i class="fas fa-robot"></i>
+                <span id="chat-footer-text">Respuesta automática con IA</span>
             </div>
         </div>
     </div>
@@ -156,6 +168,8 @@
         let sessionId = localStorage.getItem('chat_session_id') || generateSessionId();
         let lastMessageId = null;
         let pollingInterval = null;
+        let renderedIds = new Set();
+        let currentChannel = 'ai';
         
         // Guardar session ID
         localStorage.setItem('chat_session_id', sessionId);
@@ -214,39 +228,34 @@
             }, 5000);
         }
         
-        // Verificar mensajes nuevos
+        // Verificar mensajes nuevos (respuestas del asesor o de la IA)
         async function checkForNewMessages() {
             try {
-                const response = await fetch('{{ url("/api/rumbero-ai/conversacion") }}?session_id=' + sessionId, {
+                const response = await fetch('{{ url("/api/rumbero-ai/conversacion") }}?session_id=' + encodeURIComponent(sessionId), {
                     headers: {
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                        'Content-Type': 'application/json'
+                        'Accept': 'application/json'
                     }
                 });
                 
                 const data = await response.json();
                 
                 if (data.success && data.data) {
-                    const mensajes = data.data;
-                    const ultimoMensaje = mensajes[mensajes.length - 1];
-                    
-                    // Si hay nuevos mensajes del admin y no es el último que enviamos
-                    if (ultimoMensaje && ultimoMensaje.sender === 'admin') {
-                        if (lastMessageId !== ultimoMensaje.id) {
-                            // Agregar mensaje del admin al chat
-                            addModalMessage(ultimoMensaje.message, 'assistant');
-                            lastMessageId = ultimoMensaje.id;
-                            
-                            // Reproducir sonido de notificación (opcional)
-                            // playNotificationSound();
-                            
-                            // Si el modal no está abierto, mostrar notificación
-                            if (!isModalOpen) {
-                                const notification = document.getElementById('chat-notification');
-                                if (notification) notification.style.display = 'flex';
-                            }
+                    data.data.forEach(msg => {
+                        if (msg.sender === 'user') return;
+                        if (renderedIds.has(String(msg.id))) return;
+
+                        renderedIds.add(String(msg.id));
+                        addModalMessage(msg.message, msg.is_admin ? 'assistant' : 'ai');
+
+                        // Si el modal está cerrado, avisar en la burbuja
+                        if (!isModalOpen) {
+                            const notification = document.getElementById('chat-notification');
+                            if (notification) notification.style.display = 'flex';
                         }
-                    }
+                    });
+
+                    if (data.meta) updateChatChannel(data.meta.mode);
                 }
             } catch (error) {
                 console.error('Error polling:', error);
@@ -272,11 +281,13 @@
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
+                        'Accept': 'application/json',
                         'X-CSRF-TOKEN': '{{ csrf_token() }}',
                         'X-Chat-Session': sessionId
                     },
                     body: JSON.stringify({
-                        mensaje: mensaje
+                        mensaje: mensaje,
+                        session_id: sessionId
                     })
                 });
                 
@@ -284,10 +295,25 @@
                 
                 if (data.success) {
                     updateChatStatus('conectado');
-                    lastMessageId = data.data?.message_id;
-                    
-                    // Mostrar mensaje automático de "te responderemos pronto"
-                    addModalMessage(data.data?.respuesta || '¡Mensaje recibido! Un asesor te responderá en breve.', 'assistant');
+
+                    const payload = data.data || {};
+                    lastMessageId = payload.message_id;
+
+                    if (payload.message_id) renderedIds.add(String(payload.message_id));
+
+                    // IA o asesor: se muestra con su etiqueta correspondiente
+                    addModalMessage(
+                        payload.respuesta || '¡Mensaje recibido! Un asesor te responderá en breve.',
+                        payload.mode === 'ai' ? 'ai' : 'assistant'
+                    );
+
+                    // Enlace de WhatsApp con la consulta precargada
+                    if (payload.whatsapp_url) {
+                        const wa = document.getElementById('chat-whatsapp-btn');
+                        if (wa) wa.href = payload.whatsapp_url;
+                    }
+
+                    updateChatChannel(payload.mode || 'human');
                 } else {
                     addModalMessage('Lo siento, hubo un error. Intenta de nuevo.', 'assistant');
                     updateChatStatus('error');
@@ -296,6 +322,35 @@
                 console.error('Error:', error);
                 addModalMessage('Error de conexión. ¿Tienes internet?', 'assistant');
                 updateChatStatus('offline');
+            }
+        }
+
+        // Refleja si responde la IA o un asesor, y ajusta el pie del chat
+        function updateChatChannel(mode) {
+            currentChannel = mode === 'ai' ? 'ai' : 'human';
+
+            const note = document.getElementById('chat-footer-text');
+            const choice = document.getElementById('chat-channel-choice');
+
+            if (note) {
+                note.textContent = currentChannel === 'ai'
+                    ? 'Respuesta automática con IA · puedes pedir un asesor cuando quieras'
+                    : 'Un asesor del equipo te responderá por aquí en breve';
+            }
+
+            if (choice) {
+                choice.classList.toggle('is-handoff', currentChannel === 'human');
+            }
+        }
+
+        // El usuario decide seguir en el chat
+        function continuarEnChat() {
+            const input = document.getElementById('chat-modal-input');
+            if (input) input.focus();
+
+            const note = document.getElementById('chat-footer-text');
+            if (note && currentChannel === 'human') {
+                note.textContent = 'Seguimos por aquí: un asesor te responderá en este chat';
             }
         }
         
@@ -326,16 +381,19 @@
                     </div>
                 `;
             } else {
+                const isAi = type === 'ai';
+
                 messageDiv.innerHTML = `
-                    <div class="message-avatar support-avatar">
-                        <i class="fas fa-headset"></i>
+                    <div class="message-avatar ${isAi ? 'ai-avatar' : 'support-avatar'}">
+                        <i class="fas ${isAi ? 'fa-robot' : 'fa-headset'}"></i>
                     </div>
                     <div class="message-content">
                         <div class="message-header">
-                            <span class="message-sender">Soporte</span>
+                            <span class="message-sender">${isAi ? 'Rumbero AI' : 'Soporte'}</span>
+                            ${isAi ? '<span class="sender-badge">IA</span>' : ''}
                         </div>
                         <div class="message-bubble">
-                            <p>${escapeHtml(text)}</p>
+                            <p>${formatMessage(text)}</p>
                         </div>
                         <span class="message-time">${time}</span>
                     </div>
@@ -352,7 +410,7 @@
             if (!statusElement) return;
             
             const statusMap = {
-                'conectado': '🟢 Online • Respuesta rápida',
+                'conectado': 'En línea · respuesta rápida',
                 'enviando...': '📤 Enviando...',
                 'error': '🔴 Error • Intenta de nuevo',
                 'offline': '⚠️ Sin conexión'
@@ -378,6 +436,15 @@
             const div = document.createElement('div');
             div.textContent = text;
             return div.innerHTML;
+        }
+
+        // Formato mínimo para las respuestas de la IA: escapa el HTML y
+        // convierte **negrita** y saltos de línea (Markdown no se interpreta).
+        function formatMessage(text) {
+            let html = escapeHtml(String(text ?? ''));
+            html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            html = html.replace(/\n/g, '<br>');
+            return html;
         }
         
         // Cargar historial de conversación

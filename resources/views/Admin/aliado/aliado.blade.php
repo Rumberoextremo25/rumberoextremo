@@ -1,240 +1,249 @@
-{{-- resources/views/Admin/aliado/aliado.blade.php --}}
 @extends('layouts.admin')
 
-@section('title', 'Gestión de Aliados')
+@section('title', 'Aliados')
 
-@section('page_title_toolbar', 'Listado de Aliados')
-
-@push('styles')
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/admin/aliados.css') }}">
-@endpush
+@section('page_title_toolbar', 'Gestión de aliados')
 
 @section('content')
-    <div class="aliados-wrapper">
-        {{-- Header con bienvenida --}}
-        <div class="aliados-header-bar">
-            <div class="header-content">
-                <h1 class="page-title">
-                    <span class="title-main">Gestión de</span>
-                    <span class="title-accent">Aliados Comerciales</span>
-                </h1>
+    @php
+        $statusMeta = [
+            'activo' => ['label' => 'Activo', 'badge' => 'badge-success', 'icon' => 'fa-circle-check'],
+            'pendiente' => ['label' => 'Pendiente', 'badge' => 'badge-warning', 'icon' => 'fa-clock'],
+            'inactivo' => ['label' => 'Inactivo', 'badge' => 'badge-neutral', 'icon' => 'fa-circle-pause'],
+        ];
+        $hasFilters = $q !== '' || ctype_digit((string) $tipo) || in_array($estado, ['activo', 'pendiente', 'inactivo'], true);
+    @endphp
+
+    <div class="cm-page">
+
+        {{-- ============================ CABECERA ============================ --}}
+        <div class="page-header-block">
+            <div>
+                <h1 class="title-main">Gestión de <span class="title-accent">aliados</span></h1>
                 <p class="page-subtitle">
-                    <i class="fas fa-handshake"></i>
-                    Administra y gestiona tus aliados comerciales
+                    Locales y marcas asociadas: datos de contacto, categoría, descuento y estado.
                 </p>
             </div>
-            <div class="header-actions">
-                <div class="user-greeting">
-                    <span>Bienvenido,</span>
-                    <strong>{{ Auth::user()->name }}</strong>
-                </div>
-                <div class="avatar-circle">
-                    <span>{{ substr(Auth::user()->name, 0, 1) }}</span>
-                </div>
-            </div>
+
+            <a href="{{ route('admin.aliados.create') }}" class="btn btn-primary">
+                <i class="fa-solid fa-plus"></i> Nuevo aliado
+            </a>
         </div>
 
-        {{-- Alertas --}}
+        {{-- ============================== AVISOS ============================== --}}
         @if (session('success'))
             <div class="alert alert-success">
-                <i class="fas fa-check-circle"></i>
-                <span>{{ session('success') }}</span>
-                <button type="button" class="alert-close">&times;</button>
+                <i class="fa-solid fa-circle-check"></i>
+                <div class="alert-content">{{ session('success') }}</div>
             </div>
         @endif
 
         @if (session('error'))
             <div class="alert alert-error">
-                <i class="fas fa-exclamation-circle"></i>
-                <span>{{ session('error') }}</span>
-                <button type="button" class="alert-close">&times;</button>
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <div class="alert-content">{{ session('error') }}</div>
             </div>
         @endif
 
-        {{-- Barra de acciones --}}
-        <div class="actions-bar">
-            <div class="actions-left">
+        {{-- ============================= MÉTRICAS ============================= --}}
+        <div class="cm-stats">
+            <div class="cm-stat">
+                <span class="cm-stat__icon"><i class="fa-solid fa-handshake"></i></span>
+                <span class="cm-stat__body">
+                    <span class="cm-stat__value">{{ number_format($stats['total']) }}</span>
+                    <span class="cm-stat__label">Total</span>
+                </span>
+            </div>
+
+            <div class="cm-stat">
+                <span class="cm-stat__icon cm-stat__icon--green"><i class="fa-solid fa-circle-check"></i></span>
+                <span class="cm-stat__body">
+                    <span class="cm-stat__value">{{ number_format($stats['active']) }}</span>
+                    <span class="cm-stat__label">Activos</span>
+                </span>
+            </div>
+
+            <div class="cm-stat">
+                <span class="cm-stat__icon cm-stat__icon--gold"><i class="fa-solid fa-clock"></i></span>
+                <span class="cm-stat__body">
+                    <span class="cm-stat__value">{{ number_format($stats['pending']) }}</span>
+                    <span class="cm-stat__label">Pendientes</span>
+                </span>
+            </div>
+
+            <div class="cm-stat">
+                <span class="cm-stat__icon cm-stat__icon--red"><i class="fa-solid fa-ban"></i></span>
+                <span class="cm-stat__body">
+                    <span class="cm-stat__value">{{ number_format($stats['inactive']) }}</span>
+                    <span class="cm-stat__label">Inactivos</span>
+                </span>
+            </div>
+        </div>
+
+        {{-- ============================= FILTROS ============================= --}}
+        <div class="cm-filters">
+            <form method="GET" action="{{ route('admin.aliados.index') }}" data-cm-filters>
                 <div class="search-box">
-                    <i class="fas fa-search"></i>
-                    <input type="text" id="searchInput" placeholder="Buscar aliados por empresa, tipo o categoría...">
-                </div>
-                
-                <div class="filter-dropdown">
-                    <select id="filterType" class="filter-select">
-                        <option value="">Todos los tipos</option>
-                        @foreach($businessTypes ?? [] as $type)
-                            <option value="{{ strtolower($type->name) }}">{{ $type->name }}</option>
-                        @endforeach
-                    </select>
-                    <i class="fas fa-chevron-down"></i>
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="search" name="q" value="{{ $q }}"
+                        placeholder="Buscar por empresa, RIF, contacto o correo…" aria-label="Buscar aliados">
                 </div>
 
-                <div class="filter-dropdown">
-                    <select id="filterStatus" class="filter-select">
-                        <option value="">Todos los estados</option>
-                        <option value="activo">Activos</option>
-                        <option value="inactivo">Inactivos</option>
-                        <option value="pendiente">Pendientes</option>
-                    </select>
-                    <i class="fas fa-chevron-down"></i>
-                </div>
-            </div>
+                <select name="tipo" class="filter-select" aria-label="Filtrar por tipo de negocio">
+                    <option value="">Todos los tipos</option>
+                    @foreach ($businessTypes as $type)
+                        <option value="{{ $type->id }}" @selected((string) $tipo === (string) $type->id)>{{ $type->name }}</option>
+                    @endforeach
+                </select>
 
-            <div class="actions-right">
-                <a href="{{ route('admin.aliados.create') }}" class="btn-add">
-                    <i class="fas fa-plus-circle"></i>
-                    Nuevo Aliado
-                </a>
-            </div>
+                <select name="estado" class="filter-select" aria-label="Filtrar por estado">
+                    <option value="">Todos los estados</option>
+                    <option value="activo" @selected($estado === 'activo')>Activos</option>
+                    <option value="pendiente" @selected($estado === 'pendiente')>Pendientes</option>
+                    <option value="inactivo" @selected($estado === 'inactivo')>Inactivos</option>
+                </select>
+
+                <noscript>
+                    <button type="submit" class="btn btn-secondary btn-sm">
+                        <i class="fa-solid fa-filter"></i> Filtrar
+                    </button>
+                </noscript>
+
+                @if ($hasFilters)
+                    <a href="{{ route('admin.aliados.index') }}" class="btn btn-secondary btn-sm">
+                        <i class="fa-solid fa-xmark"></i> Limpiar
+                    </a>
+                @endif
+            </form>
+
+            <span class="cm-filters__count">
+                {{ $allies->total() }} {{ $allies->total() === 1 ? 'aliado' : 'aliados' }}
+            </span>
         </div>
 
-        {{-- Tarjetas de estadísticas rápidas --}}
-        <div class="stats-grid">
-            <div class="stat-card" data-color="purple">
-                <div class="stat-icon">
-                    <i class="fas fa-handshake"></i>
+        {{-- ============================== TABLA ============================== --}}
+        <div class="cm-table-card">
+            @if ($allies->isEmpty())
+                <div class="cm-empty">
+                    <i class="fa-solid fa-handshake-slash"></i>
+                    @if ($hasFilters)
+                        <h3>Sin resultados</h3>
+                        <p>No hay aliados que coincidan con la búsqueda o los filtros.</p>
+                        <a href="{{ route('admin.aliados.index') }}" class="btn btn-secondary btn-sm">
+                            <i class="fa-solid fa-xmark"></i> Quitar filtros
+                        </a>
+                    @else
+                        <h3>Todavía no hay aliados</h3>
+                        <p>Registra el primer aliado comercial para que aparezca en la app.</p>
+                        <a href="{{ route('admin.aliados.create') }}" class="btn btn-primary" style="margin-top:.5rem;">
+                            <i class="fa-solid fa-plus"></i> Crear aliado
+                        </a>
+                    @endif
                 </div>
-                <div class="stat-content">
-                    <span class="stat-value">{{ $allies->total() }}</span>
-                    <span class="stat-label">Total Aliados</span>
-                </div>
-            </div>
-
-            <div class="stat-card" data-color="green">
-                <div class="stat-icon">
-                    <i class="fas fa-check-circle"></i>
-                </div>
-                <div class="stat-content">
-                    <span class="stat-value">{{ $allies->where('status', 'activo')->count() }}</span>
-                    <span class="stat-label">Activos</span>
-                </div>
-            </div>
-
-            <div class="stat-card" data-color="orange">
-                <div class="stat-icon">
-                    <i class="fas fa-clock"></i>
-                </div>
-                <div class="stat-content">
-                    <span class="stat-value">{{ $allies->where('status', 'pendiente')->count() }}</span>
-                    <span class="stat-label">Pendientes</span>
-                </div>
-            </div>
-
-            <div class="stat-card" data-color="red">
-                <div class="stat-icon">
-                    <i class="fas fa-ban"></i>
-                </div>
-                <div class="stat-content">
-                    <span class="stat-value">{{ $allies->where('status', 'inactivo')->count() }}</span>
-                    <span class="stat-label">Inactivos</span>
-                </div>
-            </div>
-        </div>
-
-        {{-- Tabla de aliados --}}
-        @if($allies->isEmpty())
-            <div class="empty-state">
-                <i class="fas fa-handshake-slash"></i>
-                <h3>No hay aliados registrados</h3>
-                <p>Comienza agregando tu primer aliado comercial</p>
-                <a href="{{ route('admin.aliados.create') }}" class="btn-add">
-                    <i class="fas fa-plus-circle"></i>
-                    Crear Primer Aliado
-                </a>
-            </div>
-        @else
-            <div class="table-container">
-                <div class="table-responsive">
-                    <table class="data-table">
+            @else
+                <div class="rx-table-scroll">
+                    <table class="rx-stack-table">
                         <thead>
                             <tr>
-                                <th>ID</th>
                                 <th>Empresa</th>
+                                <th class="hide-mobile">Categoría</th>
                                 <th>Tipo</th>
-                                <th>Categoría</th>
-                                <th>Subcategoría</th>
                                 <th>Descuento</th>
                                 <th>Estado</th>
-                                <th>Registro</th>
-                                <th>Acciones</th>
+                                <th class="hide-mobile">Registro</th>
+                                <th style="text-align:right;">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody id="aliadosTableBody">
-                            @foreach($allies as $ally)
-                                <tr class="aliado-row" 
-                                    data-type="{{ strtolower($ally->businessType->name ?? '') }}" 
-                                    data-status="{{ strtolower($ally->status) }}">
-                                    <td>
-                                        <span class="id-badge">#{{ $ally->id }}</span>
-                                    </td>
-                                    <td>
-                                        <div class="company-info">
-                                            <div class="company-name">{{ $ally->company_name }}</div>
-                                            @if($ally->contact_person_name)
-                                                <div class="contact-person">
-                                                    <i class="fas fa-user"></i>
-                                                    {{ $ally->contact_person_name }}
-                                                </div>
-                                            @endif
-                                            @if($ally->contact_email)
-                                                <div class="contact-email">
-                                                    <i class="fas fa-envelope"></i>
-                                                    {{ $ally->contact_email }}
-                                                </div>
-                                            @endif
+                        <tbody>
+                            @foreach ($allies as $ally)
+                                @php
+                                    $statusKey = $ally->status ?: 'activo';
+                                    $status = $statusMeta[$statusKey] ?? ['label' => ucfirst($statusKey), 'badge' => 'badge-neutral', 'icon' => 'fa-circle'];
+                                    $registered = $ally->registered_at ?? $ally->created_at;
+                                @endphp
+                                <tr>
+                                    <td data-label="Empresa">
+                                        <div class="cm-ally">
+                                            <div class="cm-ally__logo">
+                                                <span>{{ mb_strtoupper(mb_substr($ally->company_name, 0, 1)) }}</span>
+                                                @if ($ally->image_src)
+                                                    <img src="{{ $ally->image_src }}" alt="Logo de {{ $ally->company_name }}"
+                                                        loading="lazy" data-img>
+                                                @endif
+                                            </div>
+
+                                            <div class="cm-ally__text">
+                                                <span class="cm-ally__name">{{ $ally->company_name }}</span>
+                                                @if ($ally->contact_email)
+                                                    <span class="cm-user__email">{{ $ally->contact_email }}</span>
+                                                @endif
+                                                @if ($ally->contact_person_name)
+                                                    <span class="cm-ally__link">
+                                                        <i class="fa-regular fa-user"></i> {{ $ally->contact_person_name }}
+                                                    </span>
+                                                @endif
+                                            </div>
                                         </div>
                                     </td>
-                                    <td>
-                                        <span class="badge badge-type-{{ strtolower($ally->businessType->name ?? 'sin-tipo') }}">
-                                            <i class="fas fa-tag"></i>
-                                            {{ $ally->businessType->name ?? 'N/A' }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <span class="category-text">{{ $ally->category->name ?? 'N/A' }}</span>
-                                    </td>
-                                    <td>
-                                        <span class="subcategory-text">{{ $ally->subCategory->name ?? 'N/A' }}</span>
-                                    </td>
-                                    <td>
-                                        @if($ally->discount)
-                                            <span class="discount-badge">
-                                                <i class="fas fa-percentage"></i>
-                                                {{ $ally->discount }}%
-                                            </span>
-                                        @else
-                                            <span class="no-discount">N/A</span>
+
+                                    <td class="hide-mobile" data-label="Categoría">
+                                        <span class="cm-desc">{{ $ally->category->name ?? 'Sin categoría' }}</span>
+                                        @if ($ally->subCategory)
+                                            <span class="cm-date"><small>{{ $ally->subCategory->name }}</small></span>
                                         @endif
                                     </td>
-                                    <td>
-                                        <span class="badge badge-status-{{ strtolower($ally->status) }}">
-                                            <i class="fas fa-circle"></i>
-                                            {{ ucfirst($ally->status) }}
+
+                                    <td data-label="Tipo">
+                                        <span class="badge badge-info">
+                                            <i class="fa-solid fa-tag"></i> {{ $ally->businessType->name ?? 'Sin tipo' }}
                                         </span>
                                     </td>
-                                    <td>
-                                        <div class="date-info">
-                                            <i class="fas fa-calendar"></i>
-                                            {{ \Carbon\Carbon::parse($ally->registered_at ?? $ally->created_at)->format('d/m/Y') }}
-                                        </div>
+
+                                    <td data-label="Descuento">
+                                        @if ($ally->discount)
+                                            <span class="cm-chip cm-chip--primary">{{ $ally->discount_label }}</span>
+                                        @else
+                                            <span class="cm-chip">—</span>
+                                        @endif
                                     </td>
-                                    <td>
-                                        <div class="action-buttons">
-                                            <a href="{{ route('admin.aliados.show', $ally->id) }}" class="action-btn view" title="Ver detalles">
-                                                <i class="fas fa-eye"></i>
+
+                                    <td data-label="Estado">
+                                        <span class="badge {{ $status['badge'] }}">
+                                            <i class="fa-solid {{ $status['icon'] }}"></i> {{ $status['label'] }}
+                                        </span>
+                                    </td>
+
+                                    <td class="hide-mobile" data-label="Registro">
+                                        <span class="cm-date">
+                                            {{ $registered ? \Carbon\Carbon::parse($registered)->format('d/m/Y') : '—' }}
+                                            <small>{{ $registered ? \Carbon\Carbon::parse($registered)->diffForHumans() : '' }}</small>
+                                        </span>
+                                    </td>
+
+                                    <td data-label="Acciones">
+                                        <div class="cm-actions">
+                                            <a href="{{ route('admin.aliados.show', $ally->id) }}" class="cm-icon-btn"
+                                                title="Ver detalle" aria-label="Ver detalle de {{ $ally->company_name }}">
+                                                <i class="fa-solid fa-eye"></i>
                                             </a>
-                                            <a href="{{ route('admin.aliados.edit', $ally->id) }}" class="action-btn edit" title="Editar">
-                                                <i class="fas fa-edit"></i>
+
+                                            <a href="{{ route('admin.aliados.edit', $ally->id) }}" class="cm-icon-btn"
+                                                title="Editar aliado" aria-label="Editar {{ $ally->company_name }}">
+                                                <i class="fa-solid fa-pen"></i>
                                             </a>
-                                            <form action="{{ route('admin.aliados.destroy', $ally->id) }}" method="POST" class="delete-form" 
-                                                  onsubmit="return confirm('¿Estás seguro de eliminar este aliado? Esta acción no se puede deshacer.');">
+
+                                            <button type="button" class="cm-icon-btn cm-icon-btn--danger"
+                                                title="Eliminar aliado" aria-label="Eliminar {{ $ally->company_name }}"
+                                                data-delete-trigger data-delete-id="{{ $ally->id }}"
+                                                data-delete-name="{{ $ally->company_name }}">
+                                                <i class="fa-solid fa-trash-can"></i>
+                                            </button>
+
+                                            <form id="delete-form-{{ $ally->id }}"
+                                                action="{{ route('admin.aliados.destroy', $ally->id) }}" method="POST"
+                                                hidden>
                                                 @csrf
                                                 @method('DELETE')
-                                                <button type="submit" class="action-btn delete" title="Eliminar">
-                                                    <i class="fas fa-trash-alt"></i>
-                                                </button>
                                             </form>
                                         </div>
                                     </td>
@@ -243,130 +252,45 @@
                         </tbody>
                     </table>
                 </div>
+
+                @if ($allies->hasPages())
+                    <div class="cm-pagination">
+                        <span class="cm-pagination__info">
+                            Mostrando <strong>{{ $allies->firstItem() }}</strong>–<strong>{{ $allies->lastItem() }}</strong>
+                            de <strong>{{ $allies->total() }}</strong>
+                        </span>
+
+                        {{ $allies->onEachSide(1)->links('pagination::bootstrap-4') }}
+                    </div>
+                @endif
+            @endif
+        </div>
+    </div>
+
+    {{-- ====================== MODAL DE CONFIRMACIÓN ====================== --}}
+    <div class="modal cf-modal" id="deleteModal" hidden>
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="deleteTitle">
+            <div class="modal-body">
+                <div class="cf-confirm">
+                    <span class="cf-confirm__icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                    <h2 id="deleteTitle">Eliminar aliado</h2>
+                    <p>¿Seguro que quieres eliminar a <span class="cf-confirm__name" data-delete-name></span>?</p>
+                    <p>Se borrará su ficha y no se puede deshacer.</p>
+                </div>
             </div>
 
-            {{-- Paginación --}}
-            @if($allies->hasPages())
-                <div class="pagination-wrapper">
-                    <div class="pagination-info">
-                        <i class="fas fa-list-ul"></i>
-                        Mostrando {{ $allies->firstItem() ?? 0 }} - {{ $allies->lastItem() ?? 0 }} de {{ $allies->total() }} aliados
-                    </div>
-
-                    <div class="pagination">
-                        @if ($allies->onFirstPage())
-                            <span class="page-link disabled">
-                                <i class="fas fa-chevron-left"></i>
-                            </span>
-                        @else
-                            <a href="{{ $allies->previousPageUrl() }}" class="page-link">
-                                <i class="fas fa-chevron-left"></i>
-                            </a>
-                        @endif
-
-                        @foreach ($allies->getUrlRange(1, $allies->lastPage()) as $page => $url)
-                            @if ($page == $allies->currentPage())
-                                <span class="page-link active">{{ $page }}</span>
-                            @elseif ($page >= $allies->currentPage() - 2 && $page <= $allies->currentPage() + 2)
-                                <a href="{{ $url }}" class="page-link">{{ $page }}</a>
-                            @elseif ($page == 1 || $page == $allies->lastPage())
-                                <a href="{{ $url }}" class="page-link">{{ $page }}</a>
-                            @elseif ($page == $allies->currentPage() - 3 || $page == $allies->currentPage() + 3)
-                                <span class="page-link disabled">...</span>
-                            @endif
-                        @endforeach
-
-                        @if ($allies->hasMorePages())
-                            <a href="{{ $allies->nextPageUrl() }}" class="page-link">
-                                <i class="fas fa-chevron-right"></i>
-                            </a>
-                        @else
-                            <span class="page-link disabled">
-                                <i class="fas fa-chevron-right"></i>
-                            </span>
-                        @endif
-                    </div>
-                </div>
-            @endif
-        @endif
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-delete-cancel>
+                    <i class="fa-solid fa-xmark"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-danger" data-delete-confirm>
+                    <i class="fa-solid fa-trash-can"></i> Sí, eliminar
+                </button>
+            </div>
+        </div>
     </div>
 @endsection
 
 @push('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // ========== CERRAR ALERTAS ==========
-        document.querySelectorAll('.alert-close').forEach(button => {
-            button.addEventListener('click', function() {
-                this.closest('.alert').style.display = 'none';
-            });
-        });
-
-        // Auto-cerrar alertas después de 5 segundos
-        setTimeout(() => {
-            document.querySelectorAll('.alert').forEach(alert => {
-                alert.style.opacity = '0';
-                setTimeout(() => alert.style.display = 'none', 300);
-            });
-        }, 5000);
-
-        // ========== FILTROS EN TIEMPO REAL ==========
-        const searchInput = document.getElementById('searchInput');
-        const filterType = document.getElementById('filterType');
-        const filterStatus = document.getElementById('filterStatus');
-        const aliadoRows = document.querySelectorAll('.aliado-row');
-
-        function filterAliados() {
-            const searchTerm = searchInput.value.toLowerCase();
-            const typeFilter = filterType.value.toLowerCase();
-            const statusFilter = filterStatus.value.toLowerCase();
-
-            aliadoRows.forEach(row => {
-                const rowType = row.dataset.type || '';
-                const rowStatus = row.dataset.status || '';
-                const rowText = row.textContent.toLowerCase();
-                
-                const matchesSearch = searchTerm === '' || rowText.includes(searchTerm);
-                const matchesType = typeFilter === '' || rowType === typeFilter;
-                const matchesStatus = statusFilter === '' || rowStatus === statusFilter;
-
-                if (matchesSearch && matchesType && matchesStatus) {
-                    row.style.display = '';
-                } else {
-                    row.style.display = 'none';
-                }
-            });
-        }
-
-        searchInput.addEventListener('input', filterAliados);
-        filterType.addEventListener('change', filterAliados);
-        filterStatus.addEventListener('change', filterAliados);
-
-        // ========== ANIMACIONES EN LAS FILAS ==========
-        aliadoRows.forEach(row => {
-            row.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-2px)';
-                this.style.boxShadow = '0 10px 25px -5px rgba(166, 1, 179, 0.15)';
-            });
-
-            row.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0)';
-                this.style.boxShadow = 'none';
-            });
-        });
-
-        // ========== EFECTOS HOVER EN BOTONES ==========
-        document.querySelectorAll('.action-btn, .btn-add, .page-link').forEach(btn => {
-            if (btn && !btn.classList.contains('disabled') && !btn.classList.contains('active')) {
-                btn.addEventListener('mouseenter', function() {
-                    this.style.transform = 'translateY(-2px)';
-                });
-                
-                btn.addEventListener('mouseleave', function() {
-                    this.style.transform = 'translateY(0)';
-                });
-            }
-        });
-    });
-</script>
+    <script src="{{ asset('js/admin-forms.js') }}"></script>
 @endpush

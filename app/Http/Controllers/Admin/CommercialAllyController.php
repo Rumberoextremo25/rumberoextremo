@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\CommercialAlly;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
 class CommercialAllyController extends Controller
@@ -12,10 +13,38 @@ class CommercialAllyController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function index(Request $request)
     {
-        $allies = CommercialAlly::orderBy('name')->paginate(10);
-        return view('Admin.commercial_allies.index', compact('allies'));
+        $q = trim((string) $request->query('q', ''));
+        $estado = $request->query('estado');
+
+        $alliesQuery = CommercialAlly::query();
+
+        if ($q !== '') {
+            $like = '%' . $q . '%';
+            $operator = DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
+
+            $alliesQuery->where(function ($sub) use ($like, $operator) {
+                $sub->where('name', $operator, $like)
+                    ->orWhere('description', $operator, $like)
+                    ->orWhere('website_url', $operator, $like);
+            });
+        }
+
+        if (in_array($estado, ['1', '0'], true)) {
+            $alliesQuery->where('is_active', $estado === '1');
+        }
+
+        $allies = $alliesQuery->orderBy('name')->paginate(10)->withQueryString();
+
+        $stats = [
+            'total' => CommercialAlly::count(),
+            'active' => CommercialAlly::where('is_active', true)->count(),
+            'inactive' => CommercialAlly::where('is_active', false)->count(),
+            'rating' => round((float) CommercialAlly::avg('rating'), 1),
+        ];
+
+        return view('Admin.commercial_allies.index', compact('allies', 'stats', 'q', 'estado'));
     }
 
     /**
@@ -51,7 +80,7 @@ class CommercialAllyController extends Controller
             'rating' => $request->rating ?? 0.0,
             'description' => $request->description,
             'website_url' => $request->website_url,
-            'is_active' => $request->has('is_active') ? true : false,
+            'is_active' => $request->boolean('is_active'),
         ]);
 
         return redirect()->route('admin.commercial-allies.index')
@@ -104,7 +133,7 @@ class CommercialAllyController extends Controller
             'rating' => $request->rating ?? 0.0,
             'description' => $request->description,
             'website_url' => $request->website_url,
-            'is_active' => $request->has('is_active') ? true : false,
+            'is_active' => $request->boolean('is_active'),
         ]);
 
         return redirect()->route('admin.commercial-allies.index')

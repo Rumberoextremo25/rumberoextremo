@@ -1,176 +1,271 @@
-dame los cambios aca porque quien agrega la opcion de solapar es la toolbar no la sidebar -- aca, dame los cambios aca -- /* ============================================
-   ADMIN TOOLBAR - MODERN STYLES
-   ============================================ */
+/* ==========================================================================
+   RUMBERO EXTREMO · PANEL ADMIN
+   toolbar.css  ·  Capa 2 de 3 (barra superior)
+   --------------------------------------------------------------------------
+   Contiene: breadcrumb + título, búsqueda global, notificaciones y menú de
+   usuario. Paleta original (#A601B3 / #3004E1) sobre superficies neutras.
+   ========================================================================== */
 
-/* Toolbar principal */
+/* ==========================================================================
+   1. BARRA
+   ========================================================================== */
 .admin-toolbar {
-    background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-    border-bottom: 1px solid #e2e8f0;
-    padding: 0 28px;
-    height: 80px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    position: sticky;
-    top: 0;
-    z-index: 99;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    gap: 1rem;
+    height: var(--rx-toolbar-h);
+    min-height: var(--rx-toolbar-h);
+    padding-inline: var(--rx-gutter);
+    padding-top: var(--rx-safe-top);
+    background: rgba(255, 255, 255, 0.88);
+    -webkit-backdrop-filter: saturate(180%) blur(14px);
+    backdrop-filter: saturate(180%) blur(14px);
+    border-bottom: 1px solid var(--rx-line);
+    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+    /* Fix de z-index: por debajo del drawer, encima del contenido */
+    z-index: var(--rx-z-toolbar);
 }
 
-/* ========== SECCIÓN IZQUIERDA ========== */
+html.dark-mode .admin-toolbar {
+    background: rgba(15, 23, 42, 0.9);
+    border-bottom-color: #334155;
+}
+
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .admin-toolbar {
+        background: var(--rx-surface);
+    }
+}
+
+/* ==========================================================================
+   2. ZONA IZQUIERDA
+   ========================================================================== */
 .toolbar-left {
     display: flex;
     align-items: center;
-    gap: 24px;
+    gap: 0.85rem;
+    min-width: 0;
+    flex: 1 1 auto;
 }
 
-/* Botón toggle del sidebar */
-.toolbar-toggle {
-    width: 44px;
-    height: 44px;
-    background: #f1f5f9;
-    border: none;
-    border-radius: 14px;
-    cursor: pointer;
-    display: flex;
+/* Botón hamburguesa / colapsar */
+.toolbar-toggle,
+.menu-toggle {
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    color: #475569;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    padding: 0;
+    border: 1px solid var(--rx-line);
+    border-radius: var(--rx-radius-md);
+    background: var(--rx-surface-2);
+    color: var(--rx-text);
+    cursor: pointer;
+    transition: background var(--rx-dur) var(--rx-ease),
+        color var(--rx-dur) var(--rx-ease),
+        border-color var(--rx-dur) var(--rx-ease),
+        transform var(--rx-dur) var(--rx-ease);
+    -webkit-tap-highlight-color: transparent;
 }
 
-.toolbar-toggle:hover {
-    background: #e2e8f0;
-    color: #764ba2;
-    transform: translateY(-2px);
+.toolbar-toggle:hover,
+.menu-toggle:hover {
+    background: var(--rx-primary-soft);
+    border-color: rgba(166, 1, 179, 0.28);
+    color: var(--rx-primary);
 }
 
-.toolbar-toggle i {
-    font-size: 18px;
+.toolbar-toggle:active,
+.menu-toggle:active {
+    transform: scale(0.96);
 }
 
-/* Información de página */
+.toolbar-toggle i,
+.menu-toggle i {
+    font-size: 1rem;
+}
+
+/* Info de página */
 .page-info {
     display: flex;
     flex-direction: column;
-    gap: 4px;
+    justify-content: center;
+    gap: 0.1rem;
+    min-width: 0;
+    flex: 1 1 auto;
 }
 
 .page-breadcrumb {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 12px;
+    gap: 0.4rem;
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--rx-subtle);
+    min-width: 0;
 }
 
 .breadcrumb-home {
-    color: #94a3b8;
-    transition: color 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    color: var(--rx-subtle);
 }
 
 .breadcrumb-home i {
-    font-size: 12px;
+    font-size: 0.72rem;
 }
 
 .breadcrumb-separator {
-    color: #cbd5e1;
-    font-size: 10px;
+    display: inline-flex;
+    align-items: center;
+    color: var(--rx-line-strong);
+    font-size: 0.55rem;
 }
 
 .breadcrumb-current {
-    color: #764ba2;
-    font-weight: 500;
-    letter-spacing: 0.3px;
+    color: var(--rx-primary);
+    font-weight: 700;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 40ch;
 }
 
 .page-title {
-    font-size: 20px;
-    font-weight: 700;
-    color: #1e293b;
     margin: 0;
-    line-height: 1.3;
-    letter-spacing: -0.3px;
+    font-family: var(--rx-font-display);
+    font-size: clamp(1.05rem, 0.95rem + 0.5vw, 1.3rem);
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    color: var(--rx-ink);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-/* ========== SECCIÓN DERECHA ========== */
+html.dark-mode .page-title {
+    color: var(--rx-heading);
+}
+
+/* ==========================================================================
+   3. ZONA DERECHA
+   ========================================================================== */
 .toolbar-right {
     display: flex;
     align-items: center;
-    gap: 16px;
+    gap: 0.6rem;
+    flex-shrink: 0;
 }
 
-/* ========== BÚSQUEDA MODERNA ========== */
+/* Botón de búsqueda (solo móvil/tablet) */
+.toolbar-search-toggle {
+    display: none;
+}
+
+/* ==========================================================================
+   4. BÚSQUEDA GLOBAL
+   ========================================================================== */
 .search-modern {
     position: relative;
+    transition: width var(--rx-dur) var(--rx-ease);
 }
 
 .search-wrapper {
     position: relative;
-    width: 320px;
+    width: clamp(200px, 22vw, 320px);
 }
 
 .search-icon {
     position: absolute;
-    left: 16px;
+    inset-inline-start: 14px;
     top: 50%;
     transform: translateY(-50%);
-    color: #94a3b8;
-    font-size: 14px;
+    color: var(--rx-subtle);
+    font-size: 0.82rem;
     pointer-events: none;
 }
 
 .search-input {
     width: 100%;
-    height: 48px;
-    padding: 0 16px 0 44px;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    font-size: 14px;
-    color: #1e293b;
-    transition: all 0.3s ease;
-    font-family: 'Inter', sans-serif;
+    height: 44px;
+    padding: 0 3.4rem 0 2.6rem;
+    background: var(--rx-surface-2);
+    border: 1px solid var(--rx-line);
+    border-radius: var(--rx-radius-md);
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--rx-heading);
+    transition: background var(--rx-dur) var(--rx-ease),
+        border-color var(--rx-dur) var(--rx-ease),
+        box-shadow var(--rx-dur) var(--rx-ease);
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+.search-input::placeholder {
+    color: var(--rx-subtle);
+    font-weight: 500;
+}
+
+.search-input:hover {
+    border-color: var(--rx-line-strong);
 }
 
 .search-input:focus {
     outline: none;
-    border-color: #764ba2;
-    background: #ffffff;
-    box-shadow: 0 0 0 3px rgba(118, 75, 162, 0.1);
-    width: 360px;
+    background: var(--rx-surface);
+    border-color: var(--rx-primary);
+    box-shadow: 0 0 0 3px var(--rx-primary-ring);
 }
 
 .search-shortcut {
     position: absolute;
-    right: 12px;
+    inset-inline-end: 8px;
     top: 50%;
     transform: translateY(-50%);
     display: flex;
-    gap: 4px;
-    background: #e2e8f0;
-    padding: 4px 8px;
-    border-radius: 8px;
-    font-size: 11px;
-    font-weight: 600;
-    color: #64748b;
+    gap: 2px;
+    padding: 3px 6px;
+    border-radius: var(--rx-radius-xs);
+    background: var(--rx-surface);
+    border: 1px solid var(--rx-line);
+    color: var(--rx-subtle);
+    font-size: 0.66rem;
+    font-weight: 700;
     pointer-events: none;
 }
 
-/* Dropdown de búsqueda */
+/* Panel de búsqueda móvil: se activa con .search-open en la toolbar y mueve el
+   MISMO bloque de búsqueda bajo la barra (sin duplicar markup ni IDs). */
+.toolbar-search-panel {
+    display: none;
+}
+
+/* Dropdown de sugerencias */
 .search-dropdown {
     position: absolute;
-    top: 56px;
-    left: 0;
-    right: 0;
-    background: #ffffff;
-    border-radius: 20px;
-    box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.15);
-    border: 1px solid #e2e8f0;
+    top: calc(100% + 10px);
+    inset-inline-start: 0;
+    inset-inline-end: 0;
+    min-width: 280px;
+    background: var(--rx-surface);
+    border: 1px solid var(--rx-line);
+    border-radius: var(--rx-radius-lg);
+    box-shadow: var(--rx-shadow-lg);
     opacity: 0;
     visibility: hidden;
-    transform: translateY(-10px);
-    transition: all 0.2s ease;
-    z-index: 1000;
+    transform: translateY(-8px);
+    transition: opacity var(--rx-dur) var(--rx-ease),
+        transform var(--rx-dur) var(--rx-ease),
+        visibility var(--rx-dur) var(--rx-ease);
+    z-index: var(--rx-z-popover);
+    overflow: hidden;
 }
 
 .search-dropdown.show {
@@ -180,476 +275,798 @@ dame los cambios aca porque quien agrega la opcion de solapar es la toolbar no l
 }
 
 .search-suggestions {
-    padding: 12px;
+    padding: 0.5rem;
 }
 
 .search-suggestion-group {
-    margin-bottom: 8px;
+    margin-bottom: 0.25rem;
 }
 
 .group-title {
     display: flex;
     align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
-    font-size: 11px;
-    font-weight: 600;
+    gap: 0.5rem;
+    padding: 0.5rem 0.6rem;
+    font-size: 0.66rem;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-    color: #94a3b8;
-}
-
-.group-title i {
-    font-size: 12px;
+    letter-spacing: 0.1em;
+    color: var(--rx-subtle);
 }
 
 .suggestion-item {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 10px 12px;
-    border-radius: 12px;
+    gap: 0.7rem;
+    padding: 0.6rem;
+    min-height: 42px;
+    border-radius: var(--rx-radius-sm);
+    color: var(--rx-text);
+    font-size: 0.875rem;
+    font-weight: 500;
     text-decoration: none;
-    color: #1e293b;
-    transition: all 0.2s ease;
+    transition: background var(--rx-dur) var(--rx-ease), color var(--rx-dur) var(--rx-ease);
 }
 
-.suggestion-item:hover {
-    background: #f8fafc;
-    color: #764ba2;
+.suggestion-item:hover,
+.suggestion-item:focus-visible {
+    background: var(--rx-primary-soft);
+    color: var(--rx-primary-active);
 }
 
 .suggestion-item i {
-    width: 28px;
-    font-size: 14px;
-    color: #94a3b8;
+    width: 26px;
+    height: 26px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+    border-radius: var(--rx-radius-xs);
+    background: var(--rx-surface-3);
+    color: var(--rx-muted);
 }
 
 .suggestion-item:hover i {
-    color: #764ba2;
+    background: #fff;
+    color: var(--rx-primary);
 }
 
-/* ========== NOTIFICACIONES ========== */
-.notifications-modern {
+/* ==========================================================================
+   5. BOTONES DE ACCIÓN (campana, avatar, etc.)
+   ========================================================================== */
+.notifications-modern,
+.user-profile-modern {
     position: relative;
 }
 
 .notifications-btn {
-    width: 48px;
-    height: 48px;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 16px;
-    cursor: pointer;
-    display: flex;
+    position: relative;
+    display: inline-flex;
     align-items: center;
     justify-content: center;
-    transition: all 0.3s ease;
-    color: #475569;
-    position: relative;
+    width: 44px;
+    height: 44px;
+    border: 1px solid var(--rx-line);
+    border-radius: var(--rx-radius-md);
+    background: var(--rx-surface-2);
+    color: var(--rx-muted);
+    transition: background var(--rx-dur) var(--rx-ease),
+        color var(--rx-dur) var(--rx-ease),
+        border-color var(--rx-dur) var(--rx-ease);
+    -webkit-tap-highlight-color: transparent;
 }
 
 .notifications-btn:hover {
-    background: #f1f5f9;
-    border-color: #cbd5e1;
-    transform: translateY(-2px);
+    background: var(--rx-primary-soft);
+    border-color: rgba(166, 1, 179, 0.28);
+    color: var(--rx-primary);
 }
 
 .notifications-btn i {
-    font-size: 20px;
+    font-size: 1rem;
 }
 
 .notification-badge {
     position: absolute;
-    top: -6px;
-    right: -6px;
-    background: linear-gradient(135deg, #ef4444, #dc2626);
-    color: #ffffff;
-    font-size: 10px;
-    font-weight: 700;
-    width: 20px;
-    height: 20px;
-    border-radius: 10px;
+    top: -5px;
+    inset-inline-end: -5px;
+    min-width: 19px;
+    height: 19px;
+    padding: 0 5px;
     display: flex;
     align-items: center;
     justify-content: center;
-    border: 2px solid #ffffff;
+    background: linear-gradient(135deg, #ef4444, #dc2626);
+    color: #fff;
+    font-size: 0.62rem;
+    font-weight: 800;
+    border-radius: var(--rx-radius-pill);
+    border: 2px solid var(--rx-surface);
+    box-shadow: 0 2px 6px rgba(239, 68, 68, 0.45);
 }
 
-/* Dropdown de notificaciones */
-.notifications-dropdown {
+/* ==========================================================================
+   6. DROPDOWNS (notificaciones / usuario)
+   ========================================================================== */
+.notifications-dropdown,
+.user-dropdown {
     position: absolute;
-    top: 56px;
-    right: 0;
-    width: 360px;
-    background: #ffffff;
-    border-radius: 20px;
-    box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.15);
-    border: 1px solid #e2e8f0;
+    top: calc(100% + 10px);
+    inset-inline-end: 0;
+    width: min(360px, calc(100vw - 2rem));
+    background: var(--rx-surface);
+    border: 1px solid var(--rx-line);
+    border-radius: var(--rx-radius-lg);
+    box-shadow: var(--rx-shadow-lg);
     opacity: 0;
     visibility: hidden;
-    transform: translateY(-10px);
-    transition: all 0.2s ease;
-    z-index: 1000;
+    transform: translateY(-8px) scale(0.99);
+    transform-origin: top right;
+    transition: opacity var(--rx-dur) var(--rx-ease),
+        transform var(--rx-dur) var(--rx-ease),
+        visibility var(--rx-dur) var(--rx-ease);
+    z-index: var(--rx-z-popover);
+    overflow: hidden;
 }
 
-.notifications-dropdown.show {
+.notifications-dropdown.show,
+.user-dropdown.show {
     opacity: 1;
     visibility: visible;
-    transform: translateY(0);
+    transform: translateY(0) scale(1);
 }
 
 .dropdown-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 16px 20px;
-    border-bottom: 1px solid #e2e8f0;
+    gap: 0.75rem;
+    padding: 0.9rem 1rem;
+    border-bottom: 1px solid var(--rx-line);
+    background: var(--rx-surface-2);
 }
 
 .dropdown-header h4 {
-    font-size: 15px;
-    font-weight: 600;
-    color: #1e293b;
     margin: 0;
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: var(--rx-heading);
 }
 
 .dropdown-header a {
-    font-size: 12px;
-    color: #764ba2;
-    text-decoration: none;
-    font-weight: 500;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--rx-primary);
+}
+
+.dropdown-header a:hover {
+    color: var(--rx-primary-active);
 }
 
 .notifications-list {
-    max-height: 360px;
+    max-height: min(58vh, 360px);
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
 }
 
 .notification-item {
     display: flex;
-    gap: 14px;
-    padding: 14px 20px;
-    transition: background 0.2s ease;
+    gap: 0.75rem;
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid var(--rx-line-soft);
+    transition: background var(--rx-dur) var(--rx-ease);
     cursor: pointer;
-    border-bottom: 1px solid #f1f5f9;
+    /* La campana renderiza enlaces reales */
+    text-decoration: none;
+    color: inherit;
+}
+
+/* Mensaje de la notificación: dos líneas como máximo */
+.notification-message {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    font-size: 0.72rem;
+    line-height: 1.35;
+    color: var(--rx-muted);
+    margin-top: 0.1rem;
+}
+
+.notification-time {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    margin-top: 0.2rem;
+    font-size: 0.7rem;
+    color: var(--rx-subtle);
+}
+
+/* Estado vacío */
+.notification-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 1.75rem 1.25rem;
+    text-align: center;
+}
+
+.notification-empty i {
+    font-size: 1.4rem;
+    color: var(--rx-line-strong);
+    margin-bottom: 0.25rem;
+}
+
+.notification-empty p {
+    margin: 0;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--rx-heading);
+}
+
+.notification-empty small {
+    font-size: 0.72rem;
+    line-height: 1.4;
+    color: var(--rx-muted);
+    max-width: 30ch;
+}
+
+/* Botón del pie ("Marcar todas como leídas") */
+.view-all-link--button {
+    border: 0;
+    background: none;
+    cursor: pointer;
+    font-family: inherit;
+}
+
+.notification-badge[hidden] {
+    display: none !important;
+}
+
+.notification-item:last-child {
+    border-bottom: 0;
 }
 
 .notification-item:hover {
-    background: #f8fafc;
+    background: var(--rx-surface-2);
 }
 
 .notification-item.unread {
-    background: #faf5ff;
+    background: linear-gradient(90deg, var(--rx-primary-soft), transparent 85%);
 }
 
 .notification-icon {
-    width: 40px;
-    height: 40px;
-    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
+    width: 38px;
+    height: 38px;
     flex-shrink: 0;
+    border-radius: var(--rx-radius-md);
+    font-size: 0.85rem;
 }
 
 .notification-icon.warning {
-    background: #fff7ed;
-    color: #f97316;
+    background: var(--rx-warning-soft);
+    color: #b45309;
 }
 
 .notification-icon.success {
-    background: #f0fdf4;
-    color: #22c55e;
+    background: var(--rx-success-soft);
+    color: #047857;
 }
 
 .notification-icon.info {
-    background: #eff6ff;
-    color: #3b82f6;
+    background: var(--rx-info-soft);
+    color: #1d4ed8;
+}
+
+.notification-icon.primary {
+    background: var(--rx-primary-soft);
+    color: var(--rx-primary);
+}
+
+.notification-icon.secondary {
+    background: var(--rx-surface-3);
+    color: var(--rx-muted);
+}
+
+.notification-icon.danger {
+    background: var(--rx-danger-soft);
+    color: #b91c1c;
 }
 
 .notification-content {
     flex: 1;
+    min-width: 0;
 }
 
 .notification-content p {
-    font-size: 13px;
-    font-weight: 500;
-    color: #1e293b;
-    margin: 0 0 4px 0;
+    margin: 0 0 0.15rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--rx-heading);
+    line-height: 1.35;
 }
 
 .notification-time {
-    font-size: 11px;
-    color: #94a3b8;
+    font-size: 0.7rem;
+    color: var(--rx-subtle);
 }
 
 .dropdown-footer {
-    padding: 12px 20px;
-    border-top: 1px solid #e2e8f0;
+    padding: 0.6rem 1rem;
+    border-top: 1px solid var(--rx-line);
     text-align: center;
+    background: var(--rx-surface-2);
 }
 
 .view-all-link {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    font-size: 13px;
-    font-weight: 500;
-    color: #764ba2;
-    text-decoration: none;
-    transition: gap 0.2s ease;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--rx-primary);
+    transition: gap var(--rx-dur) var(--rx-ease);
 }
 
 .view-all-link:hover {
-    gap: 12px;
+    gap: 0.7rem;
 }
 
-/* ========== PERFIL DE USUARIO ========== */
-.user-profile-modern {
-    position: relative;
-}
-
+/* ==========================================================================
+   7. PERFIL DE USUARIO
+   ========================================================================== */
 .user-trigger {
     display: flex;
     align-items: center;
-    gap: 12px;
-    background: #f8fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 60px;
-    padding: 6px 16px 6px 6px;
-    cursor: pointer;
-    transition: all 0.3s ease;
+    gap: 0.6rem;
+    padding: 4px 0.75rem 4px 4px;
+    min-height: 44px;
+    background: var(--rx-surface-2);
+    border: 1px solid var(--rx-line);
+    border-radius: var(--rx-radius-pill);
+    transition: background var(--rx-dur) var(--rx-ease),
+        border-color var(--rx-dur) var(--rx-ease);
+    -webkit-tap-highlight-color: transparent;
 }
 
 .user-trigger:hover {
-    background: #f1f5f9;
-    border-color: #cbd5e1;
+    background: var(--rx-surface);
+    border-color: var(--rx-line-strong);
 }
 
 .user-avatar {
-    width: 40px;
-    height: 40px;
+    width: 34px;
+    height: 34px;
+    flex-shrink: 0;
     border-radius: 50%;
-    background: linear-gradient(135deg, #764ba2, #667eea);
+    background: var(--rx-gradient);
     display: flex;
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    box-shadow: 0 2px 8px -2px rgba(166, 1, 179, 0.6);
 }
 
-.user-avatar img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.avatar-initials {
-    font-size: 16px;
-    font-weight: 600;
-    color: #ffffff;
-}
-
-.user-info {
-    text-align: left;
-}
-
-.user-name {
-    font-size: 14px;
-    font-weight: 600;
-    color: #1e293b;
-    display: block;
-    line-height: 1.3;
-}
-
-.user-role {
-    font-size: 11px;
-    color: #94a3b8;
-    display: block;
-}
-
-.user-trigger i {
-    font-size: 12px;
-    color: #94a3b8;
-    margin-left: 4px;
-}
-
-/* Dropdown de usuario */
-.user-dropdown {
-    position: absolute;
-    top: 56px;
-    right: 0;
-    width: 320px;
-    background: #ffffff;
-    border-radius: 20px;
-    box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.15);
-    border: 1px solid #e2e8f0;
-    opacity: 0;
-    visibility: hidden;
-    transform: translateY(-10px);
-    transition: all 0.2s ease;
-    z-index: 1000;
-}
-
-.user-dropdown.show {
-    opacity: 1;
-    visibility: visible;
-    transform: translateY(0);
-}
-
-.user-avatar-large {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: linear-gradient(135deg, #764ba2, #667eea);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-}
-
+.user-avatar img,
 .user-avatar-large img {
     width: 100%;
     height: 100%;
     object-fit: cover;
 }
 
-.user-avatar-large span {
-    font-size: 24px;
+.avatar-initials {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #fff;
+    text-transform: uppercase;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    text-align: start;
+    line-height: 1.2;
+}
+
+.user-name {
+    display: block;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--rx-heading);
+    max-width: 14ch;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.user-role {
+    display: block;
+    font-size: 0.66rem;
     font-weight: 600;
-    color: #ffffff;
+    color: var(--rx-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.user-trigger > i {
+    font-size: 0.62rem;
+    color: var(--rx-subtle);
+    transition: transform var(--rx-dur) var(--rx-ease);
+}
+
+.user-trigger[aria-expanded='true'] > i {
+    transform: rotate(180deg);
+}
+
+.user-dropdown {
+    width: min(320px, calc(100vw - 2rem));
+}
+
+.user-dropdown .dropdown-header {
+    gap: 0.8rem;
+    justify-content: flex-start;
+}
+
+.user-avatar-large {
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background: var(--rx-gradient);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.user-avatar-large span {
+    font-size: 1.1rem;
+    font-weight: 800;
+    color: #fff;
+    text-transform: uppercase;
+}
+
+.user-details {
+    min-width: 0;
 }
 
 .user-details h4 {
-    font-size: 15px;
-    font-weight: 600;
-    color: #1e293b;
-    margin: 0 0 4px 0;
+    margin: 0 0 0.1rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: var(--rx-heading);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .user-details p {
-    font-size: 12px;
-    color: #94a3b8;
     margin: 0;
+    font-size: 0.72rem;
+    color: var(--rx-subtle);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .dropdown-divider {
     height: 1px;
-    background: #e2e8f0;
-    margin: 8px 0;
+    background: var(--rx-line);
+    margin: 0.35rem 0;
 }
 
 .dropdown-item {
     display: flex;
     align-items: center;
-    gap: 12px;
-    padding: 12px 20px;
-    text-decoration: none;
-    color: #1e293b;
-    font-size: 14px;
-    transition: background 0.2s ease;
+    gap: 0.7rem;
     width: 100%;
+    padding: 0.65rem 1rem;
+    min-height: 42px;
     background: none;
-    border: none;
-    cursor: pointer;
-    font-family: inherit;
+    border: 0;
+    color: var(--rx-text);
+    font-size: 0.85rem;
+    font-weight: 600;
+    text-align: start;
+    text-decoration: none;
+    transition: background var(--rx-dur) var(--rx-ease), color var(--rx-dur) var(--rx-ease);
 }
 
-.dropdown-item:hover {
-    background: #f8fafc;
-    color: #764ba2;
+.dropdown-item:hover,
+.dropdown-item:focus-visible {
+    background: var(--rx-surface-2);
+    color: var(--rx-primary);
 }
 
 .dropdown-item i {
-    width: 20px;
-    font-size: 16px;
-    color: #94a3b8;
+    width: 18px;
+    font-size: 0.85rem;
+    color: var(--rx-subtle);
+    text-align: center;
 }
 
 .dropdown-item:hover i {
-    color: #764ba2;
+    color: var(--rx-primary);
 }
 
-.logout-item {
-    color: #ef4444;
-}
-
+.logout-item,
 .logout-item i {
-    color: #ef4444;
+    color: #dc2626;
 }
 
-/* ========== ANIMACIONES ========== */
-@keyframes slideDown {
+.logout-item:hover {
+    background: #fef2f2;
+    color: #b91c1c;
+}
+
+.logout-item:hover i {
+    color: #b91c1c;
+}
+
+html.dark-mode .logout-item:hover {
+    background: rgba(239, 68, 68, 0.14);
+}
+
+.user-dropdown form {
+    margin: 0;
+}
+
+/* Interruptor de modo oscuro dentro del menú de usuario */
+.dropdown-item--switch {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    cursor: default;
+}
+
+.dropdown-item--switch > span {
+    flex: 1 1 auto;
+}
+
+.dropdown-item--switch:hover {
+    background: transparent;
+    color: var(--rx-text);
+}
+
+.toolbar-switch {
+    position: relative;
+    display: inline-flex;
+    width: 40px;
+    height: 22px;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.toolbar-switch input {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    cursor: pointer;
+}
+
+.toolbar-switch-slider {
+    position: absolute;
+    inset: 0;
+    border-radius: var(--rx-radius-pill);
+    background-color: var(--rx-line-strong);
+    transition: background-color var(--rx-dur) var(--rx-ease);
+}
+
+.toolbar-switch-slider::before {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background-color: #fff;
+    box-shadow: 0 1px 3px rgba(15, 23, 42, 0.3);
+    transition: transform var(--rx-dur) var(--rx-ease);
+}
+
+.toolbar-switch input:checked + .toolbar-switch-slider {
+    background-image: var(--rx-gradient);
+}
+
+.toolbar-switch input:checked + .toolbar-switch-slider::before {
+    transform: translateX(18px);
+}
+
+.toolbar-switch input:focus-visible + .toolbar-switch-slider {
+    outline: 2px solid var(--rx-primary);
+    outline-offset: 2px;
+}
+
+/* ==========================================================================
+   8. RESPONSIVE
+   ========================================================================== */
+
+/* Tablet horizontal / escritorio pequeño */
+@media (max-width: 1279.98px) {
+    .search-wrapper {
+        width: 240px;
+    }
+
+    .user-name {
+        max-width: 10ch;
+    }
+}
+
+@media (max-width: 1023.98px) {
+
+    /* La búsqueda se despliega bajo la barra con .search-open en la toolbar */
+    .search-modern {
+        display: none;
+    }
+
+    .toolbar-search-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 44px;
+        height: 44px;
+        border: 1px solid var(--rx-line);
+        border-radius: var(--rx-radius-md);
+        background: var(--rx-surface-2);
+        color: var(--rx-muted);
+        transition: background var(--rx-dur) var(--rx-ease), color var(--rx-dur) var(--rx-ease);
+    }
+
+    .toolbar-search-toggle:hover,
+    .toolbar-search-toggle[aria-expanded='true'] {
+        background: var(--rx-primary-soft);
+        color: var(--rx-primary);
+    }
+
+    /* El MISMO bloque de búsqueda se reposiciona: cero duplicación de markup */
+    .admin-toolbar.search-open .search-modern {
+        display: block;
+        position: absolute;
+        inset-inline: 0;
+        top: 100%;
+        padding: 0.6rem var(--rx-gutter) 0.8rem;
+        background: var(--rx-surface);
+        border-bottom: 1px solid var(--rx-line);
+        box-shadow: var(--rx-shadow-md);
+        animation: rxSearchIn var(--rx-dur) var(--rx-ease-out);
+        z-index: calc(var(--rx-z-toolbar) + 1);
+    }
+
+    .admin-toolbar.search-open .search-wrapper {
+        width: 100%;
+    }
+
+    .admin-toolbar.search-open .search-input {
+        height: 46px;
+        background: var(--rx-surface-2);
+    }
+
+    .admin-toolbar.search-open .search-shortcut {
+        display: none;
+    }
+
+    .admin-toolbar.search-open .search-dropdown {
+        inset-inline: 0;
+        min-width: 0;
+    }
+}
+
+@keyframes rxSearchIn {
     from {
         opacity: 0;
-        transform: translateY(-10px);
+        transform: translateY(-8px);
     }
+
     to {
         opacity: 1;
         transform: translateY(0);
     }
 }
-
-/* ========== RESPONSIVE ========== */
-@media (max-width: 1024px) {
+/* Móvil */
+@media (max-width: 639.98px) {
     .admin-toolbar {
-        padding: 0 20px;
+        gap: 0.5rem;
+        padding-inline: 0.65rem;
     }
-    
-    .search-wrapper {
-        width: 260px;
+
+    .page-breadcrumb {
+        display: none;
     }
-    
+
+    .page-title {
+        font-size: 1rem;
+        white-space: normal;
+        display: -webkit-box;
+        -webkit-line-clamp: 1;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .toolbar-left {
+        gap: 0.5rem;
+    }
+
+    .toolbar-right {
+        gap: 0.4rem;
+    }
+
     .user-info {
         display: none;
     }
-    
+
     .user-trigger {
-        padding: 6px;
+        padding: 4px;
+        gap: 0;
+        border-radius: var(--rx-radius-md);
     }
-}
 
-@media (max-width: 768px) {
-    .admin-toolbar {
-        height: 70px;
-        padding: 0 16px;
-    }
-    
-    .page-info {
+    .user-trigger > i {
         display: none;
     }
-    
-    .search-wrapper {
-        width: 200px;
-    }
-    
-    .search-shortcut {
-        display: none;
-    }
-    
-    .notifications-dropdown {
-        width: 320px;
-        right: -60px;
-    }
-    
-    .user-dropdown {
-        width: 280px;
-        right: -20px;
-    }
-}
 
-@media (max-width: 480px) {
-    .search-wrapper {
-        width: 160px;
-    }
-    
-    .notifications-btn {
+    .notifications-btn,
+    .toolbar-toggle,
+    .toolbar-search-toggle {
         width: 40px;
         height: 40px;
     }
-    
-    .notifications-dropdown {
-        width: 300px;
-        right: -80px;
+
+    /* Los desplegables usan ancho de viewport en pantallas pequeñas */
+    .notifications-dropdown,
+    .user-dropdown {
+        position: fixed;
+        top: auto;
+        bottom: calc(0.75rem + var(--rx-safe-bottom));
+        inset-inline: 0.75rem;
+        width: auto;
+        max-height: min(72dvh, 520px);
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+        transform: translateY(12px) scale(0.99);
+        transform-origin: bottom center;
+    }
+
+    .notifications-dropdown.show,
+    .user-dropdown.show {
+        transform: translateY(0) scale(1);
+    }
+
+    .notifications-list {
+        max-height: none;
+    }
+}
+
+/* Pantallas muy pequeñas */
+@media (max-width: 379.98px) {
+    /* El título de la página ya se muestra en el contenido: en 320px solo
+       estorba, así que la toolbar queda con el botón de menú y las acciones */
+    .page-info {
+        display: none;
+    }
+
+    .notifications-btn,
+    .toolbar-toggle,
+    .toolbar-search-toggle {
+        width: 38px;
+        height: 38px;
+    }
+}
+
+/* Dispositivos táctiles: sin hover "pegado" */
+@media (hover: none) {
+    .notifications-btn:hover,
+    .toolbar-toggle:hover,
+    .user-trigger:hover {
+        background: var(--rx-surface-2);
+        border-color: var(--rx-line);
+        color: var(--rx-muted);
     }
 }

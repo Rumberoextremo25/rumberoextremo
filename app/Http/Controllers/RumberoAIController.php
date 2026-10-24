@@ -32,9 +32,13 @@ class RumberoAIController extends Controller
     }
 
     /**
-     * Endpoint principal del chat - Usuario envía mensaje
+     * Endpoint principal del chat - Usuario envía mensaje.
+     *
+     * Responde la IA si está configurada; si no (o si el usuario pide una
+     * persona), deriva la conversación al Centro de Mensajes y avisa por
+     * correo al buzón de soporte.
      */
-    public function chat(Request $request)
+    public function chat(Request $request, \App\Services\ChatSupportService $chatSupport)
     {
         $request->validate([
             'mensaje' => 'required|string|max:1000',
@@ -44,40 +48,30 @@ class RumberoAIController extends Controller
             $usuario = $request->user();
             $sessionId = $this->getSessionId($request);
 
-            Log::info('💬 Chat - Mensaje recibido', [
-                'usuario' => $usuario?->id,
-                'session_id' => $sessionId,
-                'mensaje' => $request->mensaje
-            ]);
-
-            // Guardar mensaje del usuario
-            $userMessage = ChatMessage::create([
-                'user_id' => $usuario?->id,
-                'session_id' => $sessionId,
-                'message' => $request->mensaje,
-                'sender' => 'user',
-                'status' => 'pending'
-            ]);
-
-            // Respuesta automática
-            $respuestaAuto = "📱 *Mensaje recibido!*\n\nUn asesor Rumbero Extremo te responderá en breve.\n\n*Tu consulta:*\n\"" . substr($request->mensaje, 0, 100) . (strlen($request->mensaje) > 100 ? '...' : '') . "\"\n\n⏰ Tiempo estimado de respuesta: menos de 5 minutos.";
+            $result = $chatSupport->handleIncoming($sessionId, $request->mensaje, $usuario);
 
             return response()->json([
                 'success' => true,
                 'data' => [
-                    'respuesta' => $respuestaAuto,
-                    'message_id' => $userMessage->id,
+                    'respuesta' => $result['reply'],
+                    'message_id' => $result['message_id'],
                     'session_id' => $sessionId,
-                    'status' => 'pending'
+                    'mode' => $result['mode'],           // 'ai' | 'human'
+                    'handoff' => $result['handoff'],
+                    'ai_available' => $chatSupport->aiAvailable(),
+                    'whatsapp_url' => $chatSupport->whatsappUrl($request->mensaje),
+                    'status' => $result['handoff'] ? 'pending' : 'answered',
                 ],
-                'message' => 'Mensaje enviado. Un asesor te responderá pronto.'
+                'message' => $result['handoff']
+                    ? 'Mensaje enviado al equipo de soporte.'
+                    : 'Respondido por Rumbero AI.',
             ]);
         } catch (\Exception $e) {
             Log::error('❌ Error en chat: ' . $e->getMessage());
 
             return response()->json([
                 'success' => false,
-                'message' => 'Error al enviar el mensaje. Intenta de nuevo.'
+                'message' => 'Error al enviar el mensaje. Intenta de nuevo.',
             ], 500);
         }
     }
@@ -183,7 +177,7 @@ class RumberoAIController extends Controller
                 ], 404);
             }
 
-            // Guardar respuesta del admin
+            // Guardar respuesta del admin y dar por atendidos los pendientes
             $adminResponse = ChatMessage::create([
                 'user_id' => $userMessage->user_id,
                 'session_id' => $request->session_id,
@@ -193,6 +187,11 @@ class RumberoAIController extends Controller
                 'answered_by' => Auth::id(),
                 'answered_at' => now()
             ]);
+
+            ChatMessage::where('session_id', $request->session_id)
+                ->where('sender', 'user')
+                ->where('status', 'pending')
+                ->update(['status' => 'answered', 'answered_at' => now()]);
 
             Log::info('✅ Admin respondió mensaje', [
                 'admin_id' => Auth::id(),
@@ -237,25 +236,107 @@ class RumberoAIController extends Controller
                     'id' => $msg->id,
                     'message' => $msg->message,
                     'sender' => $msg->sender,
-                    'status' => $msg->status,
-                    'created_at' => $msg->created_at->format('Y-m-d H:i:s'),
                     'is_admin' => $msg->sender === 'admin',
-                    'user_name' => $msg->user?->name ?? 'Usuario invitado'
+                    'is_ai' => $msg->sender === 'ai',
+                    'status' => $msg->status,
+                    'created_at' => $msg->created_at->format('H:i'),
+                    'created_at_full' => $msg->created_at->format('Y-m-d H:i:s'),
+                    'user_name' => $msg->user?->name ?? 'Visitante'
                 ];
-            })
+            }),
+            'meta' => [
+                'mode' => $this->conversationMode($request->session_id),
+                'pending' => $messages->where('sender', 'user')->where('status', 'pending')->count(),
+            ],
         ]);
+    }
+
+    /**
+     * Modo de la conversación: 'human' si el último mensaje del usuario sigue
+     * pendiente de un asesor, 'ai' en caso contrario.
+     */
+    private function conversationMode(string $sessionId): string
+    {
+        $pending = ChatMessage::where('session_id', $sessionId)
+            ->where('sender', 'user')
+            ->where('status', 'pending')
+            ->exists();
+
+        return $pending ? 'human' : 'ai';
     }
 
     /**
      * Mostrar la vista del panel de administración del chat
      */
-    public function adminChatView()
+    public function adminChatView(Request $request)
     {
-        if (!Auth::user() || Auth::user()->role !== 'admin') {
+        if (! Auth::user() || Auth::user()->role !== 'admin') {
             abort(403, 'No autorizado');
         }
 
-        return view('Admin.chat');  // ← Debe ser exactamente 'admin.chat'
+        // Conversaciones agrupadas por sesión (servidor, sin depender de fetch)
+        $conversaciones = ChatMessage::where('sender', 'user')
+            ->select('session_id', DB::raw('MAX(created_at) as last_message_time'), DB::raw('COUNT(*) as total_messages'))
+            ->groupBy('session_id')
+            ->orderByDesc('last_message_time')
+            ->limit(60)
+            ->get()
+            ->map(function ($conv) {
+                $ultimo = ChatMessage::where('session_id', $conv->session_id)
+                    ->where('sender', 'user')
+                    ->latest()
+                    ->first();
+
+                $conUsuario = ChatMessage::with('user')
+                    ->where('session_id', $conv->session_id)
+                    ->whereNotNull('user_id')
+                    ->first();
+
+                $pendientes = ChatMessage::where('session_id', $conv->session_id)
+                    ->where('sender', 'user')
+                    ->where('status', 'pending')
+                    ->count();
+
+                return [
+                    'session_id' => $conv->session_id,
+                    'user_name' => $conUsuario?->user?->name ?? 'Visitante',
+                    'user_email' => $conUsuario?->user?->email ?? null,
+                    'message' => $ultimo?->message ?? '',
+                    'total_messages' => $conv->total_messages,
+                    'pending' => $pendientes,
+                    'time_ago' => $ultimo?->created_at?->diffForHumans() ?? '',
+                    'created_at' => $ultimo?->created_at?->format('d/m/Y H:i') ?? '',
+                ];
+            });
+
+        $chatSupport = app(\App\Services\ChatSupportService::class);
+
+        return view('Admin.chat', [
+            'conversaciones' => $conversaciones,
+            'sessionSeleccionada' => $request->query('session'),
+            'supportEmail' => \App\Models\Setting::get('support_email'),
+            'supportWhatsapp' => \App\Models\Setting::get('support_whatsapp'),
+            'aiAvailable' => $chatSupport->aiAvailable(),
+        ]);
+    }
+
+    /**
+     * ADMIN: marcar como leídos los mensajes pendientes de una conversación.
+     */
+    public function marcarConversacionLeida(Request $request)
+    {
+        if (! Auth::user() || Auth::user()->role !== 'admin') {
+            return response()->json(['success' => false, 'message' => 'No autorizado'], 403);
+        }
+
+        $request->validate(['session_id' => 'required|string']);
+
+        $updated = ChatMessage::where('session_id', $request->session_id)
+            ->where('sender', 'user')
+            ->where('status', 'pending')
+            ->update(['status' => 'read', 'read_at' => now()]);
+
+        return response()->json(['success' => true, 'updated' => $updated]);
     }
 
     /**

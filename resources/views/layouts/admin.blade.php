@@ -1,94 +1,130 @@
+@php
+    /**
+     * Layout base del panel administrativo.
+     *
+     * Modo oscuro: se resuelve en el servidor (sin parpadeo y sin errores de JS,
+     * porque antes se intentaba tocar document.body desde el <head>).
+     */
+    $darkMode = auth()->check() && (bool) auth()->user()->dark_mode_enabled;
+
+    /**
+     * CSS del shell. Se versionan con filemtime para invalidar caché en cada
+     * despliegue y se cargan en orden de capas:
+     *   design-system -> shell -> CSS de página -> dark-mode -> modern
+     */
+    $shellStyles = [
+        'css/admin/design-system.css',
+        'css/admin.css',
+        'css/sidebar.css',
+        'css/toolbar.css',
+        'css/admin/bootstrap-compat.css',
+        'css/dashboard.css',
+        'css/admin/profile.css',
+        'css/admin/users.css',
+        'css/admin/aliados.css',
+        'css/admin/banner.css',
+        'css/admin/commercial.css',
+        'css/admin/promotion.css',
+        'css/admin/payout.css',
+        'css/admin/reports.css',
+        'css/admin/settings.css',
+        'css/admin/add-user-redesign.css',
+        'css/admin/user-details.css',
+        'css/admin/edit-user.css',
+        'css/admin/profile-update.css',
+        'css/admin/aliados-form.css',
+        'css/admin/banner-create.css',
+        'css/admin/banner-edit.css',
+        'css/admin/commercial-form.css',
+        'css/admin/commercial-ally-edit.css',
+        'css/admin/promotion-create.css',
+        'css/admin/promotion-edit.css',
+    ];
+
+    $assetVersion = static function (string $relative): string {
+        $path = public_path($relative);
+
+        return is_file($path) ? (string) filemtime($path) : '1';
+    };
+@endphp
 <!DOCTYPE html>
-<html lang="es">
+<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="{{ $darkMode ? 'dark-mode' : '' }}">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Admin Dashboard') - Rumbero Extremo</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    {{-- Font Awesome para iconos --}}
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    {{-- Google Font: Inter --}}
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    {{-- Barra de estado del iPhone con el color de marca --}}
+    <meta name="theme-color" content="#1A123C">
+    <meta name="color-scheme" content="{{ $darkMode ? 'dark' : 'light' }}">
+    <meta name="robots" content="noindex, nofollow, noarchive">
 
-    {{-- Enlaza tu archivo CSS principal sin Laravel Mix --}}
-    <link rel="stylesheet" href="{{ asset('css/admin.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/sidebar.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/toolbar.css') }}">
+    {{-- PWA / iOS --}}
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Rumbero Admin">
+    <meta name="format-detection" content="telephone=no">
 
+    <title>@yield('title', 'Panel') · Rumbero Extremo</title>
 
-    <link rel="stylesheet" href="{{ asset('css/dashboard.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/admin/profile.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/admin/users.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/admin/aliados.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/admin/banner.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/admin/commercial.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/admin/promotion.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/admin/payout.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/admin/reports.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/admin/settings.css') }}">
-
-    <link rel="stylesheet" href="{{ asset('css/admin/add-user-redesign.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/admin/user-details.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/admin/edit-user.css') }}">
-
-    <link rel="stylesheet" href="{{ asset('css/admin/profile-update.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/admin/aliados-form.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/admin/banner-create.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/admin/banner-edit.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/admin/commercial.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/admin/commercial-form.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/admin/commercial-ally-edit.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/admin/promotion-create.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/admin/promotion-edit.css') }}">
-
-    {{-- Estilos para modo oscuro --}}
-    <link rel="stylesheet" href="{{ asset('css/admin/dark-mode.css') }}">
-
-    {{-- Logo en el head (como favicon o preload) --}}
+    <link rel="icon" href="{{ asset('favicon.ico') }}" sizes="any">
     <link rel="apple-touch-icon" href="{{ asset('assets/img/logo_sidebar.png') }}">
 
-    {{-- Aquí se inyectarán los estilos específicos de cada página --}}
+    {{-- Conexiones tempranas: recortan el primer render --}}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+
+    {{-- Iconografía + tipografía (una sola carga para todo el panel) --}}
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+        referrerpolicy="no-referrer">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap">
+
+    {{-- Capa 1 y 2: tokens, reset, shell y hojas por módulo --}}
+    @foreach ($shellStyles as $style)
+        <link rel="stylesheet" href="{{ asset($style) }}?v={{ $assetVersion($style) }}">
+    @endforeach
+
+    {{-- Estilos propios de cada página --}}
     @stack('styles')
 
-    {{-- Aquí se inyectarán los estilos específicos de cada página --}}
-    @stack('styles')
+    {{-- Capa 3: modo oscuro (compatibilidad con el toggle existente) --}}
+    <link rel="stylesheet" href="{{ asset('css/admin/dark-mode.css') }}?v={{ $assetVersion('css/admin/dark-mode.css') }}">
 
-    {{-- Script para aplicar modo oscuro antes del renderizado --}}
-    <script>
-        (function() {
-            const isDarkMode = @json(auth()->check() ? auth()->user()->dark_mode_enabled : false);
-            if (isDarkMode) {
-                document.documentElement.classList.add('dark-mode');
-                document.body.classList.add('dark-mode');
-            }
-        })();
-    </script>
+    {{-- Capa 4: sistema de componentes + responsive + ajustes iOS --}}
+    <link rel="stylesheet" href="{{ asset('css/admin/modern.css') }}?v={{ $assetVersion('css/admin/modern.css') }}">
 
-    <div class="sidebar-header">
-        <a href="{{ route('welcome') }}">
-            <img src="{{ asset('assets/img/logo_sidebar.png') }}" alt="Rumbero Extremo Logo" class="logo-image">
-        </a>
-        {{-- Other sidebar header content, like the app title or a menu toggle --}}
-    </div>
+    {{-- Capa 5: ajustes por módulo (asistente, ficha de aliado, resumen…) --}}
+    <link rel="stylesheet" href="{{ asset('css/admin/pages.css') }}?v={{ $assetVersion('css/admin/pages.css') }}">
+
+    {{-- Comportamiento del shell (drawer, dropdowns, tablas, foco) --}}
+    <script src="{{ asset('js/admin-shell.js') }}?v={{ $assetVersion('js/admin-shell.js') }}" defer></script>
 </head>
 
-<body> {{-- Puedes quitar 'dark-mode' para probar el modo claro --}}
+<body class="admin-body {{ $darkMode ? 'dark-mode' : '' }} @yield('body_class')">
 
-    {{-- Contenido Principal --}}
-    <main class="main-content">
-        {{-- Sidebar --}}
+    {{-- Accesibilidad: salta el sidebar con el teclado --}}
+    <a href="#pageContent" class="rx-skip-link">Saltar al contenido principal</a>
+
+    <div class="admin-shell">
+        {{-- Sidebar / drawer --}}
         @include('layouts.nav.admin-sidebar')
-        {{-- Barra Superior (Toolbar) --}}
-        @include('layouts.nav.admin-toolbar')
 
-        {{-- Contenido Específico de la Página --}}
-        <section class="page-content">
-            @yield('content')
-        </section>
-    </main>
+        <div class="main-content">
+            {{-- Barra superior --}}
+            @include('layouts.nav.admin-toolbar')
 
-    {{-- Aquí se inyectarán los scripts específicos de cada página --}}
+            {{-- Contenido de la página --}}
+            <main id="pageContent" class="page-content" tabindex="-1">
+                @yield('content')
+            </main>
+        </div>
+    </div>
+
+    {{-- Scripts propios de cada página --}}
     @stack('scripts')
 </body>
 

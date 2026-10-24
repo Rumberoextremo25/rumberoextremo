@@ -3,8 +3,9 @@
 
 @section('title', 'Detalle de Transacción - Rumbero Extremo')
 
+@section('page_title_toolbar', 'Detalle de Transacción')
+
 @push('styles')
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 <link rel="stylesheet" href="{{ asset('css/admin/transaction-detail.css') }}">
 @endpush
 

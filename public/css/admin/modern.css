@@ -1,0 +1,2052 @@
+/* ==========================================================================
+   RUMBERO EXTREMO · PANEL ADMIN
+   modern.css  ·  Capa 3 de 3 (sistema de componentes + responsive + iOS)
+   --------------------------------------------------------------------------
+   Se carga DESPUÉS de todos los CSS de página y de admin/dark-mode.css.
+   Objetivo: unificar la apariencia de las ~40 vistas del panel sobre los
+   MISMOS colores de siempre (#A601B3, #3004E1, #1A123C + neutros slate) y
+   garantizar que ninguna pantalla se rompa entre 320px y 4K.
+
+   Índice
+     1. Tipografía y encabezados de sección
+     2. Botones
+     3. Formularios
+     4. Tarjetas y métricas
+     5. Tablas (responsive real)
+     6. Badges / estados
+     7. Alertas
+     8. Bloques de detalle / info
+     9. Filtros y barras de herramientas
+    10. Paginación
+    11. Modales y overlays
+    12. Estados vacíos y carga
+    13. Overrides responsive globales (móvil / tablet / iOS)
+    14. Preferencias de usuario y accesibilidad
+   ========================================================================== */
+
+/* ==========================================================================
+   1. TIPOGRAFÍA Y ENCABEZADOS DE SECCIÓN
+   ========================================================================== */
+.page-content h1,
+.page-content h2,
+.page-content h3,
+.page-content h4 {
+    font-family: var(--rx-font-display);
+    color: var(--rx-heading);
+    letter-spacing: -0.015em;
+}
+
+/* Títulos "main + accent" reutilizados en muchas vistas */
+.title-main,
+.page-title-main {
+    font-family: var(--rx-font-display);
+    font-size: var(--rx-fs-2xl);
+    font-weight: 800;
+    color: var(--rx-ink);
+    letter-spacing: -0.025em;
+    margin: 0;
+}
+
+.title-accent {
+    color: var(--rx-primary);
+    font-weight: 800;
+}
+
+html.dark-mode .title-main {
+    color: var(--rx-heading);
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin: 0 0 1rem;
+    font-size: var(--rx-fs-lg);
+    font-weight: 700;
+    color: var(--rx-heading);
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid var(--rx-line);
+}
+
+.section-title i {
+    color: var(--rx-primary);
+}
+
+.section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    padding-bottom: 0.85rem;
+    margin-bottom: 0.85rem;
+    border-bottom: 1px solid var(--rx-line);
+}
+
+.card-header h3,
+.card-header h4 {
+    margin: 0;
+    font-size: var(--rx-fs-md);
+    font-weight: 700;
+}
+
+/* ==========================================================================
+   2. BOTONES
+   ========================================================================== */
+.btn,
+.btn-primary,
+.btn-secondary,
+.btn-add,
+.btn-back,
+.btn-refresh,
+.btn-export,
+.btn-danger,
+.btn-success,
+.btn-warning,
+.action-btn,
+.filter-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 42px;
+    padding: 0.6rem 1.1rem;
+    border: 1px solid transparent;
+    border-radius: var(--rx-radius-md);
+    font-family: inherit;
+    font-size: var(--rx-fs-base);
+    font-weight: 600;
+    line-height: 1.2;
+    white-space: nowrap;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background var(--rx-dur) var(--rx-ease),
+        border-color var(--rx-dur) var(--rx-ease),
+        color var(--rx-dur) var(--rx-ease),
+        box-shadow var(--rx-dur) var(--rx-ease),
+        transform var(--rx-dur) var(--rx-ease);
+    -webkit-tap-highlight-color: transparent;
+}
+
+.btn:active,
+.btn-primary:active,
+.btn-secondary:active,
+.btn-add:active,
+.action-btn:active {
+    transform: translateY(1px) scale(0.995);
+}
+
+.btn i,
+.btn-primary i,
+.btn-secondary i,
+.btn-add i,
+.action-btn i {
+    font-size: 0.9em;
+}
+
+/* Primario: gradiente de marca */
+.btn-primary,
+.btn-add {
+    background-image: var(--rx-gradient);
+    color: #fff;
+    box-shadow: var(--rx-glow-primary);
+}
+
+.btn-primary:hover,
+.btn-add:hover {
+    background-image: var(--rx-gradient-reverse);
+    color: #fff;
+    box-shadow: 0 14px 28px -12px rgba(166, 1, 179, 0.7);
+}
+
+.btn-primary:focus-visible,
+.btn-add:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: -4px;
+    box-shadow: 0 0 0 3px var(--rx-primary-ring);
+}
+
+/* Secundario: fantasma sobre superficie */
+.btn-secondary,
+.btn-back,
+.btn-refresh,
+.btn-export,
+.filter-btn {
+    background-color: var(--rx-surface);
+    border-color: var(--rx-line);
+    color: var(--rx-text);
+}
+
+.btn-secondary:hover,
+.btn-back:hover,
+.btn-refresh:hover,
+.btn-export:hover,
+.filter-btn:hover {
+    background-color: var(--rx-surface-2);
+    border-color: var(--rx-line-strong);
+    color: var(--rx-primary);
+}
+
+/* Peligro / éxito / aviso */
+.btn-danger {
+    background-color: var(--rx-danger);
+    color: #fff;
+    box-shadow: 0 10px 24px -12px rgba(239, 68, 68, 0.8);
+}
+
+.btn-danger:hover {
+    background-color: #dc2626;
+    color: #fff;
+}
+
+.btn-success {
+    background-color: var(--rx-success);
+    color: #fff;
+}
+
+.btn-success:hover {
+    background-color: #059669;
+    color: #fff;
+}
+
+.btn-warning {
+    background-color: var(--rx-warning);
+    color: #422006;
+}
+
+/* Botón sólo-icono */
+.btn-icon,
+.action-btn.btn-icon {
+    min-width: 40px;
+    min-height: 40px;
+    padding: 0;
+    border-radius: var(--rx-radius-sm);
+    background-color: var(--rx-surface-2);
+    border: 1px solid var(--rx-line);
+    color: var(--rx-muted);
+}
+
+.btn-icon:hover {
+    background-color: var(--rx-primary-soft);
+    border-color: rgba(166, 1, 179, 0.25);
+    color: var(--rx-primary);
+}
+
+/* Acciones dentro de tablas: compactas */
+.action-btn {
+    min-height: 36px;
+    padding: 0.4rem 0.7rem;
+    font-size: var(--rx-fs-sm);
+    background-color: var(--rx-surface-2);
+    border-color: var(--rx-line);
+    color: var(--rx-text);
+}
+
+/* Tamaños */
+.btn-sm {
+    min-height: 34px;
+    padding: 0.35rem 0.75rem;
+    font-size: var(--rx-fs-sm);
+    border-radius: var(--rx-radius-sm);
+}
+
+.btn-lg {
+    min-height: 50px;
+    padding: 0.85rem 1.6rem;
+    font-size: var(--rx-fs-md);
+    border-radius: var(--rx-radius-lg);
+}
+
+.btn-block {
+    width: 100%;
+}
+
+.btn:disabled,
+.btn-primary:disabled,
+.btn-secondary:disabled {
+    opacity: 0.55;
+    box-shadow: none;
+    transform: none;
+}
+
+/* Grupo de acciones al pie de un formulario */
+.form-actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    padding-top: 1.1rem;
+    margin-top: 1.25rem;
+    border-top: 1px solid var(--rx-line);
+}
+
+/* ==========================================================================
+   3. FORMULARIOS
+   ========================================================================== */
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin-bottom: 1.05rem;
+    min-width: 0;
+}
+
+.form-group label,
+.form-label,
+label.label {
+    font-size: var(--rx-fs-sm);
+    font-weight: 600;
+    color: var(--rx-heading);
+    letter-spacing: 0.01em;
+}
+
+.form-group label .required,
+.required-star {
+    color: var(--rx-danger);
+    margin-inline-start: 0.15rem;
+}
+
+/* Controles */
+.form-control,
+.form-group input:not([type='checkbox']):not([type='radio']):not([type='submit']):not([type='button']),
+.form-group select,
+.form-group textarea,
+input.form-control,
+select.form-control,
+textarea.form-control {
+    width: 100%;
+    min-height: 46px;
+    padding: 0.65rem 0.9rem;
+    background-color: var(--rx-surface);
+    border: 1px solid var(--rx-line);
+    border-radius: var(--rx-radius-md);
+    font-family: inherit;
+    font-size: var(--rx-fs-base);
+    font-weight: 500;
+    color: var(--rx-heading);
+    box-shadow: var(--rx-shadow-xs);
+    transition: border-color var(--rx-dur) var(--rx-ease),
+        box-shadow var(--rx-dur) var(--rx-ease),
+        background-color var(--rx-dur) var(--rx-ease);
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+/* Chevron propio para selects (consistente en iOS) */
+.form-group select,
+select.form-control {
+    padding-inline-end: 2.4rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='none' stroke='%2364748B' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M1 1.5 6 6.5l5-5'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.9rem center;
+    background-size: 12px 8px;
+}
+
+textarea.form-control,
+.form-group textarea {
+    min-height: 110px;
+    resize: vertical;
+    line-height: 1.6;
+}
+
+.form-control::placeholder,
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+    color: var(--rx-subtle);
+    font-weight: 400;
+}
+
+.form-control:hover:not(:disabled),
+.form-group input:hover:not(:disabled),
+.form-group select:hover:not(:disabled),
+.form-group textarea:hover:not(:disabled) {
+    border-color: var(--rx-line-strong);
+}
+
+.form-control:focus,
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--rx-primary);
+    box-shadow: 0 0 0 3px var(--rx-primary-ring);
+    background-color: var(--rx-surface);
+}
+
+.form-control.is-invalid,
+.form-group input.is-invalid,
+.form-group .error ~ input,
+.form-group .error-message ~ input {
+    border-color: var(--rx-danger);
+}
+
+.form-control.is-invalid:focus {
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.16);
+}
+
+.form-control:disabled {
+    background-color: var(--rx-surface-3);
+    color: var(--rx-muted);
+}
+
+/* Checkboxes y radios: tamaño táctil correcto */
+.form-group input[type='checkbox'],
+.form-group input[type='radio'],
+.form-check-input {
+    width: 20px;
+    height: 20px;
+    min-height: 20px;
+    flex-shrink: 0;
+    accent-color: var(--rx-primary);
+    cursor: pointer;
+}
+
+/* Mensajes de error / ayuda */
+.error-message,
+.error {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin: 0;
+    font-size: var(--rx-fs-sm);
+    font-weight: 600;
+    color: var(--rx-danger);
+}
+
+.error-message i {
+    font-size: 0.8em;
+}
+
+.field-hint,
+.help-text,
+small.hint {
+    font-size: var(--rx-fs-sm);
+    color: var(--rx-muted);
+    line-height: 1.5;
+}
+
+/* Grid de formularios: se adapta solo, sin breakpoints manuales */
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+    gap: 0 1.15rem;
+    align-items: start;
+}
+
+.form-grid .full-width,
+.form-grid > .full,
+.full-width {
+    grid-column: 1 / -1;
+}
+
+/* Secciones dentro de un formulario largo */
+.form-section {
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+    background-color: var(--rx-surface);
+    border: 1px solid var(--rx-line);
+    border-radius: var(--rx-radius-lg);
+}
+
+.form-section > h3,
+.form-section > h4 {
+    margin: 0 0 1rem;
+    font-size: var(--rx-fs-md);
+    font-weight: 700;
+    color: var(--rx-heading);
+}
+
+/* Inputs con icono / addon */
+.input-icon-group,
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.input-icon-group > i,
+.input-wrapper > i {
+    position: absolute;
+    inset-inline-start: 0.9rem;
+    color: var(--rx-subtle);
+    font-size: 0.85rem;
+    pointer-events: none;
+}
+
+.input-icon-group > .form-control,
+.input-wrapper > input {
+    padding-inline-start: 2.4rem;
+}
+
+/* Toggle / switch reutilizable */
+.rx-switch {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
+    cursor: pointer;
+    user-select: none;
+}
+
+/* ==========================================================================
+   4. TARJETAS Y MÉTRICAS
+   ========================================================================== */
+.stat-card,
+.card,
+.form-card,
+.table-container,
+.info-card,
+.summary-card,
+.settings-card,
+.data-card,
+.card-container,
+.filter-card,
+.control-panel,
+.panel,
+.widget {
+    background-color: var(--rx-surface);
+    border: 1px solid var(--rx-line);
+    border-radius: var(--rx-radius-lg);
+    box-shadow: var(--rx-shadow-sm);
+}
+
+.stat-card {
+    position: relative;
+    padding: clamp(1rem, 0.8rem + 0.7vw, 1.5rem);
+    overflow: hidden;
+    transition: transform var(--rx-dur) var(--rx-ease),
+        box-shadow var(--rx-dur) var(--rx-ease),
+        border-color var(--rx-dur) var(--rx-ease);
+}
+
+.stat-card::after {
+    content: '';
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline: 0;
+    height: 3px;
+    background-image: var(--rx-gradient);
+    opacity: 0;
+    transition: opacity var(--rx-dur) var(--rx-ease);
+}
+
+@media (hover: hover) {
+    .stat-card:hover {
+        transform: translateY(-3px);
+        box-shadow: var(--rx-shadow-md);
+        border-color: rgba(166, 1, 179, 0.22);
+    }
+
+    .stat-card:hover::after {
+        opacity: 1;
+    }
+}
+
+.stat-card .stat-value {
+    font-family: var(--rx-font-display);
+    font-size: clamp(1.5rem, 1.2rem + 1.2vw, 2.15rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    color: var(--rx-ink);
+    font-variant-numeric: tabular-nums;
+}
+
+.stat-card .stat-label {
+    font-size: var(--rx-fs-sm);
+    font-weight: 600;
+    color: var(--rx-muted);
+    /* Evita cortes feos a mitad de palabra en tarjetas estrechas */
+    overflow-wrap: normal;
+    word-break: normal;
+    hyphens: none;
+}
+
+.stat-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 46px;
+    height: 46px;
+    flex-shrink: 0;
+    border-radius: var(--rx-radius-md);
+    background-image: var(--rx-gradient);
+    color: #fff;
+    font-size: 1.1rem;
+    box-shadow: 0 8px 18px -10px rgba(166, 1, 179, 0.8);
+}
+
+.stat-content {
+    min-width: 0;
+}
+
+.stat-sub,
+.stat-trend {
+    font-size: var(--rx-fs-sm);
+    color: var(--rx-muted);
+}
+
+.stat-trend.positive,
+.stat-trend.up {
+    color: #047857;
+}
+
+.stat-trend.negative,
+.stat-trend.down {
+    color: #b91c1c;
+}
+
+/* Cabecera de página tipo "hero" (dashboard) */
+.hero-banner {
+    border-radius: var(--rx-radius-xl);
+    box-shadow: var(--rx-shadow-lg);
+    overflow: hidden;
+}
+
+/* En móvil el hero ocupa casi una pantalla completa: se compacta */
+@media (max-width: 767.98px) {
+    .hero-banner {
+        padding: 1.35rem 1.1rem;
+        margin-bottom: 1rem;
+    }
+
+    .hero-title {
+        font-size: 1.4rem;
+        line-height: 1.22;
+    }
+
+    .hero-subtitle {
+        font-size: 0.82rem;
+        margin-bottom: 1rem;
+    }
+
+    .hero-stats {
+        max-width: 100%;
+        width: 100%;
+        gap: 0.55rem;
+        padding: 0.85rem 1rem;
+        border-radius: var(--rx-radius-lg);
+    }
+
+    .hero-stat-value {
+        font-size: 1.15rem;
+    }
+
+    .hero-stat-label {
+        font-size: 0.68rem;
+    }
+
+    .hero-stat-divider {
+        width: 60%;
+        height: 1px;
+    }
+
+    .hero-tag {
+        font-size: 0.68rem;
+        padding: 0.3rem 0.7rem;
+    }
+}
+
+/* ==========================================================================
+   5. TABLAS (responsive real: scroll táctil + sin romper el layout)
+   ========================================================================== */
+.page-content table {
+    width: 100%;
+    min-width: 0;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: var(--rx-fs-base);
+    color: var(--rx-text);
+    background-color: var(--rx-surface);
+}
+
+/* Contenedor con scroll: se aplica automáticamente por JS a toda tabla */
+.rx-table-scroll {
+    position: relative;
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    border-radius: var(--rx-radius-lg);
+    border: 1px solid var(--rx-line);
+    background-color: var(--rx-surface);
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+    scrollbar-width: thin;
+}
+
+.page-content table thead th {
+    position: sticky;
+    top: 0;
+    z-index: 2;
+    padding: 0.8rem 0.9rem;
+    background-color: var(--rx-surface-3);
+    color: var(--rx-muted);
+    font-size: var(--rx-fs-xs);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    text-align: start;
+    white-space: nowrap;
+    border-bottom: 1px solid var(--rx-line);
+}
+
+.page-content table tbody td {
+    padding: 0.8rem 0.9rem;
+    border-bottom: 1px solid var(--rx-line-soft);
+    vertical-align: middle;
+    text-align: start;
+}
+
+.page-content table tbody tr:last-child td {
+    border-bottom: 0;
+}
+
+.page-content table tbody tr {
+    transition: background-color var(--rx-dur) var(--rx-ease);
+}
+
+@media (hover: hover) {
+    .page-content table tbody tr:hover {
+        background-color: var(--rx-primary-soft);
+    }
+}
+
+.page-content table td .actions,
+.page-content table td .action-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    flex-wrap: nowrap;
+}
+
+/* Tablas con clase propia de cada módulo: se benefician del mismo estilo */
+.data-table,
+.modern-table,
+.activities-table,
+.table-modern,
+.list-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+}
+
+/* Wrappers legacy */
+.table-responsive,
+.table-scroll,
+.table-wrapper {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior-x: contain;
+}
+
+/* En móvil: scroll con columnas legibles (evita el "aplastado") */
+@media (max-width: 767.98px) {
+
+    .page-content table {
+        min-width: 560px;
+        font-size: var(--rx-fs-sm);
+    }
+
+    .page-content table thead th,
+    .page-content table tbody td {
+        padding: 0.65rem 0.7rem;
+    }
+
+    /* Oculta columnas marcadas como secundarias por los propios módulos */
+    .page-content table .hide-mobile,
+    .page-content table th.hide-mobile,
+    .page-content table td.hide-mobile {
+        display: none;
+    }
+}
+
+/* Tabla "de tarjetas" en móvil (opt-in con .rx-stack-table) */
+@media (max-width: 639.98px) {
+    .rx-stack-table thead {
+        display: none;
+    }
+
+    .rx-stack-table,
+    .rx-stack-table tbody,
+    .rx-stack-table tr,
+    .rx-stack-table td {
+        display: block;
+        width: 100%;
+    }
+
+    .rx-stack-table {
+        min-width: 0 !important;
+        border: 0;
+        background: transparent;
+    }
+
+    .rx-stack-table tr {
+        margin-bottom: 0.75rem;
+        border: 1px solid var(--rx-line);
+        border-radius: var(--rx-radius-lg);
+        background: var(--rx-surface);
+        overflow: hidden;
+        box-shadow: var(--rx-shadow-xs);
+    }
+
+    .rx-stack-table td {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 0.85rem;
+        padding: 0.65rem 0.9rem !important;
+        border-bottom: 1px solid var(--rx-line-soft);
+        text-align: end;
+    }
+
+    .rx-stack-table td:last-child {
+        border-bottom: 0;
+    }
+
+    .rx-stack-table td::before {
+        content: attr(data-label);
+        flex: 0 0 45%;
+        text-align: start;
+        font-size: var(--rx-fs-xs);
+        font-weight: 700;
+        letter-spacing: 0.06em;
+        text-transform: uppercase;
+        color: var(--rx-muted);
+    }
+}
+
+/* ==========================================================================
+   6. BADGES Y ESTADOS
+   ========================================================================== */
+.badge,
+.status-badge,
+.badge-status-active,
+.badge-status-inactive,
+.badge-status-pendiente,
+.tag,
+.chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.25rem 0.6rem;
+    border-radius: var(--rx-radius-pill);
+    border: 1px solid transparent;
+    font-size: var(--rx-fs-xs);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    line-height: 1.6;
+    white-space: nowrap;
+    vertical-align: middle;
+}
+
+.badge i,
+.status-badge i {
+    font-size: 0.85em;
+}
+
+.badge-primary {
+    background-color: var(--rx-primary-soft);
+    color: #7a0182;
+    border-color: rgba(166, 1, 179, 0.18);
+}
+
+.badge-success,
+.badge-status-active,
+.status-badge.active,
+.badge.active,
+.status-active {
+    background-color: var(--rx-success-soft);
+    color: #065f46;
+    border-color: rgba(16, 185, 129, 0.25);
+}
+
+.badge-danger,
+.badge-status-inactive,
+.status-badge.inactive,
+.badge.inactive,
+.status-inactive {
+    background-color: var(--rx-danger-soft);
+    color: #991b1b;
+    border-color: rgba(239, 68, 68, 0.25);
+}
+
+.badge-warning,
+.badge-status-pendiente,
+.status-badge.pending,
+.status-pendiente {
+    background-color: var(--rx-warning-soft);
+    color: #92400e;
+    border-color: rgba(245, 158, 11, 0.28);
+}
+
+.badge-info {
+    background-color: var(--rx-info-soft);
+    color: #1e40af;
+    border-color: rgba(59, 130, 246, 0.25);
+}
+
+.badge-neutral,
+.badge-secondary {
+    background-color: var(--rx-surface-3);
+    color: var(--rx-muted);
+    border-color: var(--rx-line);
+}
+
+.badge-lg {
+    padding: 0.4rem 0.85rem;
+    font-size: var(--rx-fs-sm);
+}
+
+/* Punto indicador */
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: var(--rx-subtle);
+    flex-shrink: 0;
+}
+
+.status-dot.success,
+.status-dot.active {
+    background-color: var(--rx-success);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.18);
+}
+
+.status-dot.danger {
+    background-color: var(--rx-danger);
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.18);
+}
+
+.status-dot.warning {
+    background-color: var(--rx-warning);
+    box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.18);
+}
+
+/* ==========================================================================
+   7. ALERTAS
+   ========================================================================== */
+.alert,
+.alert-success,
+.alert-error,
+.alert-danger,
+.alert-warning,
+.alert-info {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.9rem 1rem;
+    margin-bottom: 1rem;
+    border: 1px solid var(--rx-line);
+    border-left: 4px solid var(--rx-subtle);
+    border-radius: var(--rx-radius-md);
+    background-color: var(--rx-surface);
+    color: var(--rx-text);
+    font-size: var(--rx-fs-base);
+    box-shadow: var(--rx-shadow-xs);
+}
+
+.alert > i,
+.alert-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px;
+    height: 26px;
+    flex-shrink: 0;
+    font-size: 0.95rem;
+}
+
+.alert-content {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.alert-content strong {
+    display: block;
+    color: inherit;
+    font-weight: 700;
+    margin-bottom: 0.1rem;
+}
+
+.alert-success {
+    border-left-color: var(--rx-success);
+    background-color: #f0fdf9;
+    color: #065f46;
+}
+
+.alert-success > i,
+.alert-success .alert-icon {
+    color: var(--rx-success);
+}
+
+.alert-error,
+.alert-danger {
+    border-left-color: var(--rx-danger);
+    background-color: #fef4f4;
+    color: #991b1b;
+}
+
+.alert-error > i,
+.alert-danger > i,
+.alert-error .alert-icon {
+    color: var(--rx-danger);
+}
+
+.alert-warning {
+    border-left-color: var(--rx-warning);
+    background-color: #fffbeb;
+    color: #92400e;
+}
+
+.alert-warning > i,
+.alert-warning .alert-icon {
+    color: var(--rx-warning);
+}
+
+.alert-info {
+    border-left-color: var(--rx-info);
+    background-color: #eff6ff;
+    color: #1e40af;
+}
+
+.alert-info > i,
+.alert-info .alert-icon {
+    color: var(--rx-info);
+}
+
+.alert-close,
+.close-alert {
+    position: absolute;
+    top: 0.5rem;
+    inset-inline-end: 0.5rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    background: transparent;
+    border: 0;
+    border-radius: var(--rx-radius-xs);
+    color: currentColor;
+    opacity: 0.6;
+    transition: opacity var(--rx-dur) var(--rx-ease), background var(--rx-dur) var(--rx-ease);
+}
+
+.alert-close:hover,
+.close-alert:hover {
+    opacity: 1;
+    background: rgba(0, 0, 0, 0.05);
+}
+
+html.dark-mode .alert-success {
+    background-color: rgba(16, 185, 129, 0.12);
+    color: #a7f3d0;
+}
+
+html.dark-mode .alert-error,
+html.dark-mode .alert-danger {
+    background-color: rgba(239, 68, 68, 0.12);
+    color: #fecaca;
+}
+
+html.dark-mode .alert-warning {
+    background-color: rgba(245, 158, 11, 0.12);
+    color: #fde68a;
+}
+
+html.dark-mode .alert-info {
+    background-color: rgba(59, 130, 246, 0.12);
+    color: #bfdbfe;
+}
+
+/* ==========================================================================
+   8. BLOQUES DE DETALLE / INFO
+   ========================================================================== */
+.info-grid,
+.detail-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+    gap: 0.85rem;
+}
+
+.info-row,
+.detail-item,
+.info-item {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.7rem 0.85rem;
+    background-color: var(--rx-surface-2);
+    border: 1px solid var(--rx-line);
+    border-radius: var(--rx-radius-md);
+    min-width: 0;
+}
+
+.info-row {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.info-label,
+.detail-label {
+    font-size: var(--rx-fs-xs);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--rx-muted);
+}
+
+.info-value,
+.detail-value {
+    font-size: var(--rx-fs-base);
+    font-weight: 600;
+    color: var(--rx-heading);
+    word-break: break-word;
+    overflow-wrap: anywhere;
+}
+
+.info-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    border-radius: var(--rx-radius-sm);
+    background-color: var(--rx-primary-soft);
+    color: var(--rx-primary);
+}
+
+.detail-section {
+    padding: 1.15rem;
+    margin-bottom: 1rem;
+    background-color: var(--rx-surface);
+    border: 1px solid var(--rx-line);
+    border-radius: var(--rx-radius-lg);
+}
+
+/* Fichas de usuario / avatares */
+.avatar-circle,
+.user-avatar-sm {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    flex-shrink: 0;
+    border-radius: 50%;
+    background-image: var(--rx-gradient);
+    color: #fff;
+    font-weight: 800;
+    text-transform: uppercase;
+    overflow: hidden;
+}
+
+.avatar-circle img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* ==========================================================================
+   9. FILTROS Y BARRAS DE HERRAMIENTAS
+   ========================================================================== */
+.filters-panel,
+.actions-bar,
+.control-panel,
+.toolbar-panel {
+    display: flex;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding: 1rem;
+    background-color: var(--rx-surface);
+    border: 1px solid var(--rx-line);
+    border-radius: var(--rx-radius-lg);
+    box-shadow: var(--rx-shadow-xs);
+    margin-bottom: var(--rx-gap);
+}
+
+.filtro-group,
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    flex: 1 1 180px;
+    min-width: 0;
+}
+
+.filtro-group label,
+.filter-group label {
+    font-size: var(--rx-fs-xs);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--rx-muted);
+}
+
+.filtro-group select,
+.filtro-group input,
+.filter-select {
+    width: 100%;
+    min-height: 44px;
+    padding: 0.55rem 2.2rem 0.55rem 0.85rem;
+    background-color: var(--rx-surface);
+    border: 1px solid var(--rx-line);
+    border-radius: var(--rx-radius-md);
+    font-size: var(--rx-fs-base);
+    color: var(--rx-heading);
+    -webkit-appearance: none;
+    appearance: none;
+}
+
+/* Caja de búsqueda local de cada módulo */
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-width: 0;
+}
+
+.search-box input {
+    width: 100%;
+    min-height: 44px;
+    padding: 0.55rem 0.9rem 0.55rem 2.4rem;
+    background-color: var(--rx-surface);
+    border: 1px solid var(--rx-line);
+    border-radius: var(--rx-radius-md);
+    font-size: var(--rx-fs-base);
+    color: var(--rx-heading);
+}
+
+.search-box i {
+    position: absolute;
+    inset-inline-start: 0.85rem;
+    color: var(--rx-subtle);
+    font-size: 0.85rem;
+    pointer-events: none;
+}
+
+/* Tabs / pills de navegación interna */
+.tabs,
+.pills {
+    display: flex;
+    gap: 0.35rem;
+    padding: 0.3rem;
+    background-color: var(--rx-surface-3);
+    border-radius: var(--rx-radius-md);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+}
+
+.tabs::-webkit-scrollbar,
+.pills::-webkit-scrollbar {
+    display: none;
+}
+
+.tab,
+.pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.5rem 0.9rem;
+    min-height: 40px;
+    border: 0;
+    border-radius: var(--rx-radius-sm);
+    background: transparent;
+    color: var(--rx-muted);
+    font-size: var(--rx-fs-sm);
+    font-weight: 600;
+    white-space: nowrap;
+    text-decoration: none;
+    transition: background var(--rx-dur) var(--rx-ease), color var(--rx-dur) var(--rx-ease);
+}
+
+.tab:hover,
+.pill:hover {
+    color: var(--rx-primary);
+}
+
+.tab.active,
+.pill.active {
+    background-color: var(--rx-surface);
+    color: var(--rx-primary);
+    box-shadow: var(--rx-shadow-xs);
+}
+
+/* ==========================================================================
+   10. PAGINACIÓN
+   ========================================================================== */
+.pagination,
+.pagination-modern,
+.pagination-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+    padding: 0.85rem 0.5rem;
+}
+
+.page-link,
+.pagination a,
+.pagination span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 40px;
+    min-height: 40px;
+    padding: 0 0.7rem;
+    border: 1px solid var(--rx-line);
+    border-radius: var(--rx-radius-sm);
+    background-color: var(--rx-surface);
+    color: var(--rx-text);
+    font-size: var(--rx-fs-sm);
+    font-weight: 600;
+    text-decoration: none;
+    transition: background var(--rx-dur) var(--rx-ease),
+        border-color var(--rx-dur) var(--rx-ease),
+        color var(--rx-dur) var(--rx-ease);
+}
+
+.page-link:hover,
+.pagination a:hover {
+    border-color: rgba(166, 1, 179, 0.35);
+    color: var(--rx-primary);
+    background-color: var(--rx-primary-soft);
+}
+
+.page-link.active,
+.pagination .active span,
+.page-item.active .page-link {
+    background-image: var(--rx-gradient);
+    border-color: transparent;
+    color: #fff;
+    box-shadow: 0 8px 18px -10px rgba(166, 1, 179, 0.8);
+}
+
+.page-link.disabled,
+.pagination .disabled span {
+    opacity: 0.45;
+    pointer-events: none;
+}
+
+/* ==========================================================================
+   11. MODALES
+   ========================================================================== */
+.modal,
+.modal-overlay,
+.modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: var(--rx-z-modal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    background-color: rgba(15, 23, 42, 0.55);
+    -webkit-backdrop-filter: blur(4px);
+    backdrop-filter: blur(4px);
+    overflow-y: auto;
+}
+
+.modal-card,
+.modal-content,
+.modal-dialog {
+    position: relative;
+    width: min(720px, 100%);
+    max-height: min(88dvh, 900px);
+    display: flex;
+    flex-direction: column;
+    background-color: var(--rx-surface);
+    border: 1px solid var(--rx-line);
+    border-radius: var(--rx-radius-xl);
+    box-shadow: var(--rx-shadow-xl);
+    overflow: hidden;
+    animation: rxModalIn var(--rx-dur-slow) var(--rx-ease-out);
+}
+
+@keyframes rxModalIn {
+    from {
+        opacity: 0;
+        transform: translateY(14px) scale(0.985);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    padding: 1rem 1.15rem;
+    border-bottom: 1px solid var(--rx-line);
+    background-color: var(--rx-surface-2);
+    flex-shrink: 0;
+}
+
+.modal-title,
+.modal-header h2,
+.modal-header h3 {
+    margin: 0;
+    font-size: var(--rx-fs-lg);
+    font-weight: 700;
+    color: var(--rx-heading);
+}
+
+.modal-body {
+    padding: 1.15rem;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    min-height: 0;
+}
+
+.modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    padding: 0.9rem 1.15rem;
+    border-top: 1px solid var(--rx-line);
+    background-color: var(--rx-surface-2);
+    flex-shrink: 0;
+}
+
+/* Móvil: modal tipo "sheet" a pantalla completa */
+@media (max-width: 767.98px) {
+
+    .modal,
+    .modal-overlay,
+    .modal-backdrop {
+        align-items: flex-end;
+        padding: 0;
+    }
+
+    .modal-card,
+    .modal-content,
+    .modal-dialog {
+        width: 100%;
+        max-height: 92dvh;
+        border-radius: var(--rx-radius-xl) var(--rx-radius-xl) 0 0;
+        padding-bottom: var(--rx-safe-bottom);
+    }
+
+    .modal-footer {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+    .modal-footer .btn,
+    .modal-footer button,
+    .modal-footer a.btn {
+        width: 100%;
+    }
+
+    .modal-body {
+        padding: 1rem;
+    }
+}
+
+/* ==========================================================================
+   11.5 ASISTENTES PASO A PASO (wizards de aliados / comerciales)
+   En móvil los pasos deben repartirse el ancho y permitir que la etiqueta
+   baje de línea; si no, los textos se solapan ("GeneralNegocioContacto…").
+   ========================================================================== */
+.progress-steps {
+    max-width: 100%;
+}
+
+@media (max-width: 767.98px) {
+    .progress-steps {
+        gap: 0.25rem;
+    }
+
+    .progress-steps .step {
+        flex: 1 1 0;
+        min-width: 0;
+        gap: 0.3rem;
+    }
+
+    .progress-steps .step-label {
+        font-size: 0.6rem;
+        line-height: 1.15;
+        letter-spacing: 0;
+        text-align: center;
+        white-space: normal;
+        overflow-wrap: anywhere;
+    }
+
+    .progress-steps .step-icon {
+        width: 38px;
+        height: 38px;
+        min-width: 38px;
+        font-size: 0.85rem;
+    }
+
+    .progress-step {
+        min-width: 0;
+        flex: 1 1 0;
+    }
+
+    .step-navigation {
+        flex-direction: column-reverse;
+        align-items: stretch;
+        gap: 0.6rem;
+    }
+
+    .step-navigation > * {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* ==========================================================================
+   12. ESTADOS VACÍOS / CARGA
+   ========================================================================== */.empty-state,
+.no-data,
+.timeline-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    padding: clamp(1.5rem, 3vw, 3rem) 1rem;
+    text-align: center;
+    color: var(--rx-muted);
+}
+
+.empty-state i,
+.no-data i {
+    font-size: 2rem;
+    color: var(--rx-line-strong);
+}
+
+.empty-state h3,
+.no-data h3 {
+    margin: 0;
+    font-size: var(--rx-fs-md);
+    color: var(--rx-heading);
+}
+
+.empty-state p {
+    margin: 0;
+    font-size: var(--rx-fs-sm);
+    max-width: 46ch;
+}
+
+.rx-loading {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: rxSpin 0.7s linear infinite;
+}
+
+@keyframes rxSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Indicador de "cargando" en botones al enviar formularios */
+.btn.is-loading,
+.btn-primary.is-loading,
+button.is-loading {
+    position: relative;
+    color: transparent !important;
+    pointer-events: none;
+}
+
+.btn.is-loading::after,
+.btn-primary.is-loading::after,
+button.is-loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 18px;
+    height: 18px;
+    margin: -9px 0 0 -9px;
+    border: 2px solid rgba(255, 255, 255, 0.75);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: rxSpin 0.7s linear infinite;
+}
+
+/* ==========================================================================
+   13. OVERRIDES RESPONSIVE GLOBALES
+   La regla de oro: nada puede generar scroll horizontal en el <body>.
+   ========================================================================== */
+
+/* --- 13.0 Neutralización de reglas legacy que rompen el shell -------------
+   Varias hojas por página (payout.css, aliados-form.css, estadisticas.css,
+   payouts-modern.css…) siguen definiendo `body{padding}` y
+   `.main-content{max-width:1200px;margin:0 auto;padding:2rem}` porque se
+   escribieron para el layout antiguo. Como se cargan globalmente, movían el
+   contenido por debajo del sidebar. Aquí se restauran las medidas del shell. */
+body.admin-body {
+    margin: 0;
+    padding: 0;
+}
+
+.main-content {
+    margin: 0 0 0 var(--rx-sidebar-w);
+    max-width: none;
+    padding: 0;
+    width: auto;
+}
+
+/* Los 10 módulos de pagos arrastran su propio <div class="main-content">
+   heredado del layout antiguo: dentro de .page-content debe ser un simple
+   contenedor transparente (si no, se margina otra vez y se descentra). */
+.page-content .main-content {
+    margin: 0;
+    max-width: none;
+    padding: 0;
+    width: auto;
+}
+
+@media (max-width: 1023.98px) {
+    .main-content {
+        margin: 0;
+        width: 100%;
+    }
+}
+
+/* La toolbar debe mantenerse en una sola línea en móvil: las hojas por página
+   (profile.css, users.css…) vuelven a mostrar .user-info y desbordan la barra */
+@media (max-width: 639.98px) {
+
+    .admin-toolbar .user-info,
+    .admin-toolbar .user-trigger > i {
+        display: none !important;
+    }
+
+    .admin-toolbar .user-trigger {
+        padding: 4px;
+        gap: 0;
+    }
+
+    .admin-toolbar .user-name,
+    .admin-toolbar .user-role {
+        display: none !important;
+    }
+}
+
+/* Grid de métricas: evita la tarjeta "huérfana" a mitad de fila.
+   Hasta 1400px se fuerza una retícula de 2 columnas (4 tarjetas = 2x2). */
+@media (max-width: 1399.98px) {
+    .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+}
+
+@media (max-width: 479.98px) {
+    .stats-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+}
+
+@media (max-width: 1023.98px) {
+
+    /* Cualquier grid de 2+ columnas fijas pasa a una sola columna */
+    .form-grid,
+    .info-grid,
+    .detail-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .filters-panel,
+    .actions-bar {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .filters-panel > *,
+    .actions-bar > * {
+        width: 100%;
+    }
+
+    .form-actions {
+        justify-content: stretch;
+    }
+
+    .form-actions > .btn,
+    .form-actions > button,
+    .form-actions > a {
+        flex: 1 1 auto;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 767.98px) {
+
+    /* Tipografía móvil */
+    .page-content h1 {
+        font-size: clamp(1.25rem, 1.05rem + 1vw, 1.55rem);
+    }
+
+    .page-content h2 {
+        font-size: clamp(1.1rem, 1rem + 0.6vw, 1.3rem);
+    }
+
+    /* Tarjetas y contenedores sin padding excesivo */
+    .stat-card,
+    .card,
+    .form-card,
+    .info-card,
+    .summary-card,
+    .settings-card,
+    .detail-section,
+    .form-section {
+        border-radius: var(--rx-radius-md);
+        padding: 0.95rem;
+    }
+
+    .card-header,
+    .section-title {
+        margin-bottom: 0.7rem;
+    }
+
+    /* Botones de formulario a ancho completo (objetivos táctiles grandes) */
+    .form-actions {
+        flex-direction: column-reverse;
+        align-items: stretch;
+    }
+
+    .form-actions > .btn,
+    .form-actions > button,
+    .form-actions > a,
+    .form-actions .btn {
+        width: 100%;
+    }
+
+    /* Métricas: el ritmo se controla en la sección 13 */
+    .stat-card .stat-value {
+        font-size: clamp(1.35rem, 1.1rem + 1.4vw, 1.75rem);
+    }
+
+    /* Evita que elementos "inline-block" con ancho fijo rompan el layout */
+    .page-content [style*='width:'] {
+        max-width: 100%;
+    }
+
+    /* El contenido nunca debe superar el viewport (evita "zoom out" en iOS) */
+    .page-content img,
+    .page-content video,
+    .page-content iframe,
+    .page-content canvas {
+        max-width: 100%;
+        height: auto;
+    }
+
+    .page-content iframe {
+        min-height: 320px;
+    }
+
+    /* Tablas dentro de tarjetas: el scroll queda en el wrapper, no en el body */
+    .table-container,
+    .table-responsive {
+        border-radius: var(--rx-radius-md);
+    }
+
+    /* Acciones de fila que se apilan */
+    .page-content table td .actions,
+    .page-content table td .action-buttons {
+        flex-wrap: wrap;
+    }
+}
+
+/* iPhone SE / pantallas de 320px */
+@media (max-width: 379.98px) {
+    .page-content {
+        font-size: 0.875rem;
+    }
+
+    .badge,
+    .status-badge {
+        font-size: 0.62rem;
+        padding: 0.2rem 0.5rem;
+    }
+
+    .btn,
+    .btn-primary,
+    .btn-secondary,
+    .btn-add {
+        font-size: 0.82rem;
+        padding-inline: 0.85rem;
+    }
+}
+
+/* ==========================================================================
+   iOS: detalles que marcan la diferencia
+   ========================================================================== */
+@supports (-webkit-touch-callout: none) {
+
+    /* Safari iOS: los inputs < 16px hacen zoom; los botones también heredan */
+    input,
+    select,
+    textarea {
+        font-size: max(16px, 1em);
+    }
+
+    /* Evita el fondo gris al tocar enlaces/botones */
+    a,
+    button,
+    [role='button'] {
+        -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Momentum scroll correcto en contenedores internos */
+    .rx-table-scroll,
+    .table-responsive,
+    .notifications-list,
+    .modal-body {
+        -webkit-overflow-scrolling: touch;
+    }
+
+    /* Evita que el toolbar "salte" al hacer scroll en Safari */
+    .admin-toolbar {
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+    }
+}
+
+/* Landscape en móviles: reduce alturas para no perder contenido */
+@media (max-height: 500px) and (orientation: landscape) {
+    .admin-toolbar {
+        height: 56px;
+        min-height: 56px;
+    }
+
+    .modal-card,
+    .modal-content {
+        max-height: 96dvh;
+    }
+}
+
+/* ==========================================================================
+   14. ACCESIBILIDAD
+   ========================================================================== */
+@media (prefers-contrast: more) {
+
+    .btn-secondary,
+    .btn-icon,
+    .stat-card,
+    .form-control {
+        border-color: var(--rx-heading);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+
+    .stat-card:hover {
+        transform: none;
+    }
+
+    .modal-card,
+    .modal-content {
+        animation: none;
+    }
+}
+
+/* Modo alto contraste de Windows */
+@media (forced-colors: active) {
+
+    .btn-primary,
+    .btn-add,
+    .sidebar-nav-link.active {
+        forced-color-adjust: none;
+        background: Highlight;
+        color: HighlightText;
+    }
+}
+
+/* ==========================================================================
+   15. COMPATIBILIDAD CON admin/dark-mode.css
+   dark-mode.css usa !important y colorea TODO enlace con el magenta de marca
+   (incluido el sidebar) y pinta cabeceras como si fueran tarjetas. Aquí se
+   corrige lo necesario manteniendo la misma paleta.
+   ========================================================================== */
+
+/* --- Sidebar: los enlaces no deben volverse magenta ni dorados al pasar --- */
+html.dark-mode .admin-sidebar .sidebar-nav-link,
+html.dark-mode .admin-sidebar .sidebar-nav-link:hover,
+html.dark-mode .admin-sidebar .sidebar-nav-link:focus,
+html.dark-mode .admin-sidebar .sidebar-nav-header,
+html.dark-mode .admin-sidebar .sidebar-nav-header:hover {
+    color: #d7dbe7 !important;
+}
+
+html.dark-mode .admin-sidebar .sidebar-nav-link.active {
+    color: #ffffff !important;
+}
+
+html.dark-mode .admin-sidebar .sidebar-logout-link {
+    color: #fecaca !important;
+}
+
+html.dark-mode .admin-sidebar .sidebar-logout-link:hover {
+    color: #ffffff !important;
+}
+
+/* --- Cabeceras de página: no son tarjetas --- */
+html.dark-mode .dashboard-header,
+html.dark-mode .page-header,
+html.dark-mode .allies-header-bar,
+html.dark-mode .settings-header,
+html.dark-mode .transactions-header,
+html.dark-mode .detail-header {
+    background-color: transparent !important;
+    background-image: none !important;
+    border-color: transparent !important;
+    box-shadow: none !important;
+}
+
+/* --- Alertas: fondo translúcido (no bloques saturados) --- */
+html.dark-mode .alert-success {
+    background-color: rgba(16, 185, 129, 0.12) !important;
+    color: #a7f3d0 !important;
+}
+
+html.dark-mode .alert-error,
+html.dark-mode .alert-danger {
+    background-color: rgba(239, 68, 68, 0.12) !important;
+    color: #fecaca !important;
+}
+
+html.dark-mode .alert-warning {
+    background-color: rgba(245, 158, 11, 0.12) !important;
+    color: #fde68a !important;
+}
+
+html.dark-mode .alert-info {
+    background-color: rgba(59, 130, 246, 0.12) !important;
+    color: #bfdbfe !important;
+}
+
+/* --- Badges legibles sobre superficie oscura --- */
+html.dark-mode .badge-success,
+html.dark-mode .badge-status-active,
+html.dark-mode .badge.active {
+    background-color: rgba(16, 185, 129, 0.18) !important;
+    color: #a7f3d0 !important;
+    border-color: rgba(16, 185, 129, 0.35) !important;
+}
+
+html.dark-mode .badge-danger,
+html.dark-mode .badge-status-inactive,
+html.dark-mode .badge.inactive {
+    background-color: rgba(239, 68, 68, 0.18) !important;
+    color: #fecaca !important;
+    border-color: rgba(239, 68, 68, 0.35) !important;
+}
+
+html.dark-mode .badge-warning,
+html.dark-mode .badge-status-pendiente,
+html.dark-mode .badge.pending {
+    background-color: rgba(245, 158, 11, 0.18) !important;
+    color: #fde68a !important;
+    border-color: rgba(245, 158, 11, 0.38) !important;
+}
+
+html.dark-mode .badge-info {
+    background-color: rgba(59, 130, 246, 0.18) !important;
+    color: #bfdbfe !important;
+    border-color: rgba(59, 130, 246, 0.35) !important;
+}
+
+html.dark-mode .badge-primary {
+    background-color: rgba(166, 1, 179, 0.2) !important;
+    color: #e9d5ff !important;
+    border-color: rgba(166, 1, 179, 0.4) !important;
+}
+
+html.dark-mode .badge-neutral,
+html.dark-mode .badge-secondary {
+    background-color: #334155 !important;
+    color: #cbd5e1 !important;
+    border-color: #475569 !important;
+}
+
+/* --- Tablas: cabecera y filas consistentes --- */
+html.dark-mode .page-content table {
+    background-color: var(--rx-surface);
+    color: var(--rx-text);
+}
+
+html.dark-mode .page-content table thead th,
+html.dark-mode .rx-table-scroll thead th {
+    background-color: #0f172a !important;
+    color: #94a3b8 !important;
+    border-bottom-color: #334155 !important;
+}
+
+html.dark-mode .page-content table tbody td {
+    border-bottom-color: #29364b !important;
+}
+
+html.dark-mode .page-content table tbody tr:hover {
+    background-color: rgba(166, 1, 179, 0.1) !important;
+}
+
+/* --- Superficies y contenedores --- */
+html.dark-mode .info-item,
+html.dark-mode .detail-item,
+html.dark-mode .info-row,
+html.dark-mode .detail-section,
+html.dark-mode .form-section {
+    background-color: var(--rx-surface-2);
+    border-color: var(--rx-line);
+}
+
+html.dark-mode .section-title {
+    border-bottom-color: var(--rx-line);
+}
+
+/* --- Menús desplegables de la toolbar --- */
+html.dark-mode .dropdown-header,
+html.dark-mode .dropdown-footer {
+    background-color: var(--rx-surface-2);
+    border-color: var(--rx-line);
+}
+
+html.dark-mode .dropdown-item,
+html.dark-mode .suggestion-item {
+    color: var(--rx-text) !important;
+}
+
+html.dark-mode .dropdown-item:hover,
+html.dark-mode .suggestion-item:hover {
+    color: var(--rx-primary) !important;
+}
+
+html.dark-mode .logout-item,
+html.dark-mode .logout-item i {
+    color: #fca5a5 !important;
+}

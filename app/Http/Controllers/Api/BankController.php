@@ -10,11 +10,9 @@ use Illuminate\Support\Facades\Log;
 
 class BankController extends Controller
 {
-    protected BncApiService $bncApiService;
-
-    public function __construct(BncApiService $bncApiService)
+    public function __construct()
     {
-        $this->bncApiService = $bncApiService;
+        //
     }
 
     /**
@@ -25,7 +23,7 @@ class BankController extends Controller
         Log::info('Solicitud recibida para obtener la lista de bancos.');
 
         try {
-            $banks = $this->bncApiService->getBanksFromBnc();
+            $banks = app(BncApiService::class)->getBanksFromBnc();
 
             if (is_null($banks)) {
                 Log::error('No se pudo obtener la lista de bancos del BNC. Retornando error 500.');
@@ -58,9 +56,20 @@ class BankController extends Controller
                 'exception' => $e
             ]);
 
+            if (str_contains($e->getMessage(), 'BNC_MASTER_KEY')) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'La integración con el BNC no está configurada en el servidor.',
+                    'error' => 'Falta BNC_MASTER_KEY en el entorno de producción.',
+                    'data' => null,
+                ], 503);
+            }
+
             return response()->json([
-                'message' => 'Error interno del servidor al procesar la solicitud.',
-                'error' => 'Por favor, contacte al soporte técnico si el problema persiste.'
+                'success' => false,
+                'message' => 'No se pudo obtener la lista de bancos en este momento.',
+                'error' => 'Por favor, contacte al soporte técnico si el problema persiste.',
+                'data' => null,
             ], 500);
         }
     }
@@ -77,7 +86,7 @@ class BankController extends Controller
 
         try {
             // Utiliza el servicio para obtener la tasa del dólar
-            $dailyRate = $this->bncApiService->getDailyRateFromBnc();
+            $dailyRate = app(BncApiService::class)->getDailyRateFromBnc();
 
             // Verifica si la obtención de la tasa fue exitosa
             if (is_null($dailyRate)) {

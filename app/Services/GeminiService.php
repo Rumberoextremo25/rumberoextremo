@@ -4,6 +4,7 @@
 namespace App\Services;
 
 use GuzzleHttp\Client;
+use GuzzleHttp\Exception\RequestException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use App\Models\Ally;
@@ -13,25 +14,160 @@ use App\Models\DiscountActivation;
 
 class GeminiService
 {
-    protected $client;
-    protected $apiKey;
-    protected $apiUrl;
+    protected Client $client;
+    protected ?string $apiKey;
+    protected string $baseUrl;
+    protected array $modelos;
+    protected ?string $modeloUsado = null;
 
     public function __construct()
     {
         $this->apiKey = config('gemini.api_key');
-        // ✅ MODELO CONFIABLE - PROBADO Y FUNCIONA
-        $this->apiUrl = 'https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent';
-
-        // Alternativas comentadas:
-        // $this->apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
-        // $this->apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent';
-        // $this->apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent';
+        $this->baseUrl = rtrim((string) config('gemini.api_url', 'https://generativelanguage.googleapis.com/v1beta'), '/');
+        $this->modelos = array_values(array_unique(array_filter(array_merge(
+            [(string) config('gemini.model', 'gemini-3.5-flash')],
+            (array) config('gemini.fallback_models', [])
+        ))));
 
         $this->client = new Client([
-            'timeout' => 30,
-            'verify' => false,
+            'timeout' => (int) config('gemini.timeout', 45),
+            'connect_timeout' => 15,
+            'verify' => (bool) config('gemini.verify_tls', false),
         ]);
+    }
+
+    /**
+     * Prueba rápida del proveedor, sin tocar la base de datos.
+     *
+     * @return array{ok: bool, text?: string, error?: string, model?: string|null}
+     */
+    public function ping(): array
+    {
+        try {
+            $texto = $this->generateText('Responde solo con la palabra OK.', [
+                'temperature' => 0,
+                'maxOutputTokens' => 512,
+            ]);
+
+            return ['ok' => true, 'text' => $texto, 'model' => $this->modeloUsado];
+        } catch (\Throwable $e) {
+            return ['ok' => false, 'error' => $e->getMessage(), 'model' => $this->modeloUsado];
+        }
+    }
+
+    /**
+     * Lanza generateContent contra Gemini.
+     *
+     * Usa la clave en la cabecera x-goog-api-key (no en la URL, para no
+     * filtrarla en logs) y prueba los modelos de respaldo si el primero
+     * ya no está disponible para proyectos nuevos (HTTP 404) o está
+     * saturado (HTTP 429/503).
+     */
+    public function generateText(string $prompt, array $generationConfig = []): string
+    {
+        if (empty($this->apiKey)) {
+            throw new \RuntimeException('Falta GEMINI_API_KEY en el archivo .env.');
+        }
+
+        $config = array_merge([
+            'temperature' => 0.7,
+            'maxOutputTokens' => 2048,
+            'topP' => 0.95,
+            'topK' => 40,
+            'thinkingConfig' => ['thinkingLevel' => 'low'],
+        ], $generationConfig);
+
+        $errores = [];
+
+        foreach ($this->modelos as $modelo) {
+            $params = $config;
+            // El control de "thinking" solo existe en la familia Gemini 3.
+            if (! str_starts_with($modelo, 'gemini-3')) {
+                unset($params['thinkingConfig']);
+            }
+
+            try {
+                $response = $this->client->post($this->baseUrl . '/models/' . $modelo . ':generateContent', [
+                    'headers' => ['x-goog-api-key' => $this->apiKey],
+                    'json' => [
+                        'contents' => [['parts' => [['text' => $prompt]]]],
+                        'generationConfig' => $params,
+                    ],
+                ]);
+
+                $texto = $this->extraerTexto(json_decode((string) $response->getBody(), true));
+
+                if ($texto === '') {
+                    throw new \RuntimeException('el modelo devolvió una respuesta vacía');
+                }
+
+                $this->modeloUsado = $modelo;
+
+                return $texto;
+            } catch (RequestException $e) {
+                $status = $e->getResponse()?->getStatusCode();
+                $detalle = $this->detalleError($e);
+                $errores[] = "{$modelo} (HTTP " . ($status ?? '?') . "): {$detalle}";
+
+                Log::warning('Gemini: fallo al generar contenido', [
+                    'modelo' => $modelo,
+                    'status' => $status,
+                    'detalle' => $detalle,
+                ]);
+
+                // Clave inválida o sin permisos: probar otro modelo no ayuda.
+                if (in_array($status, [400, 401, 403], true) && $this->esErrorDeClave($detalle)) {
+                    break;
+                }
+            } catch (\Throwable $e) {
+                $errores[] = "{$modelo}: " . $e->getMessage();
+                Log::warning('Gemini: error de conexión', [
+                    'modelo' => $modelo,
+                    'detalle' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        throw new \RuntimeException(implode(' | ', $errores) ?: 'No hay modelos de Gemini configurados.');
+    }
+
+    /**
+     * Extrae el texto de la respuesta ignorando las partes de "thinking".
+     */
+    private function extraerTexto(?array $data): string
+    {
+        $partes = $data['candidates'][0]['content']['parts'] ?? [];
+        $texto = '';
+
+        foreach ($partes as $parte) {
+            if (! empty($parte['thought'])) {
+                continue;
+            }
+            $texto .= $parte['text'] ?? '';
+        }
+
+        return trim($texto);
+    }
+
+    /**
+     * Motivo devuelto por Google, sin la URL ni la clave.
+     */
+    private function detalleError(RequestException $e): string
+    {
+        $body = $e->getResponse() ? (string) $e->getResponse()->getBody() : '';
+        $json = json_decode($body, true);
+
+        return trim((string) ($json['error']['message'] ?? $e->getMessage()));
+    }
+
+    private function esErrorDeClave(string $detalle): bool
+    {
+        $detalle = mb_strtolower($detalle);
+
+        return str_contains($detalle, 'api key')
+            || str_contains($detalle, 'api_key')
+            || str_contains($detalle, 'unauthenticated')
+            || str_contains($detalle, 'permission');
     }
 
     /**
@@ -40,11 +176,6 @@ class GeminiService
     public function chat($mensajeUsuario, $usuarioId = null, $ubicacion = null, $categoriaFiltro = null, $rol = 'ventas')
     {
         try {
-            if (empty($this->apiKey)) {
-                Log::error('❌ Gemini API Key no configurada');
-                return $this->respuestaError('Configuración de IA no disponible');
-            }
-
             Log::info('🤖 RumberoAI - Consulta recibida', [
                 'rol' => $rol,
                 'usuario_id' => $usuarioId,
@@ -72,33 +203,12 @@ class GeminiService
                 $usuario
             );
 
-            // Llamar a Gemini
-            $response = $this->client->post($this->apiUrl . '?key=' . $this->apiKey, [
-                'json' => [
-                    'contents' => [
-                        [
-                            'parts' => [
-                                ['text' => $prompt]
-                            ]
-                        ]
-                    ],
-                    'generationConfig' => [
-                        'temperature' => 0.7,
-                        'maxOutputTokens' => 1000,
-                        'topP' => 0.95,
-                        'topK' => 40
-                    ]
-                ]
-            ]);
-
-            $resultado = json_decode($response->getBody(), true);
-            $respuestaIA = '';
-            if (isset($resultado['candidates'][0]['content']['parts'][0]['text'])) {
-                $respuestaIA = $resultado['candidates'][0]['content']['parts'][0]['text'];
-            }
+            // Llamar a Gemini (con modelo de respaldo)
+            $respuestaIA = $this->generateText($prompt);
 
             Log::info('✅ Respuesta generada', [
                 'rol' => $rol,
+                'modelo' => $this->modeloUsado,
                 'respuesta' => substr($respuestaIA, 0, 50)
             ]);
 
@@ -113,14 +223,13 @@ class GeminiService
                 'respuesta' => $respuestaIA,
                 'accion' => $accion,
                 'rol' => $rol,
-                'datos_adicionales' => isset($datosContexto['resumen']) ? $datosContexto['resumen'] : null
+                'datos_adicionales' => isset($datosContexto['resumen']) ? $datosContexto['resumen'] : null,
+                'modelo' => $this->modeloUsado,
             ];
-        } catch (\Exception $e) {
-            Log::error('❌ Error Gemini: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
-            ]);
+        } catch (\Throwable $e) {
+            Log::error('❌ Error Gemini: ' . $e->getMessage());
 
-            return $this->respuestaError('Error en el servicio. Por favor intenta de nuevo.');
+            return $this->respuestaError('Error en el servicio. Por favor intenta de nuevo.', $e->getMessage());
         }
     }
 
@@ -582,14 +691,15 @@ class GeminiService
         }
     }
 
-    private function respuestaError($mensaje)
+    private function respuestaError($mensaje, $detalle = null)
     {
         return [
             'success' => false,
             'respuesta' => $mensaje,
             'accion' => null,
             'rol' => null,
-            'datos_adicionales' => null
+            'datos_adicionales' => null,
+            'error' => $detalle,
         ];
     }
 

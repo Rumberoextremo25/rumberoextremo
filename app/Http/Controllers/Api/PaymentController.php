@@ -34,7 +34,7 @@ class PaymentController extends Controller
     public function initiateC2PPayment(Request $request): JsonResponse
     {
         return $this->paymentProcessor->processPayment($request, 'c2p', [
-            'DebtorBankCode' => 'required|integer',
+            'DebtorBankCode' => 'required|string|size:4|regex:/^[0-9]{4}$/',
             'DebtorCellPhone' => 'required|string|regex:/^[0-9]{10,15}$/',
             'DebtorID' => 'required|string|min:6|max:20',
             'Amount' => 'required|numeric|min:0.01',
@@ -42,7 +42,7 @@ class PaymentController extends Controller
             'Terminal' => 'required|string|max:50',
         ], function ($validatedData) {
             return [
-                'DebtorBankCode' => (int)$validatedData['DebtorBankCode'],
+                'DebtorBankCode' => (string)$validatedData['DebtorBankCode'],
                 'DebtorCellPhone' => $validatedData['DebtorCellPhone'],
                 'DebtorID' => $validatedData['DebtorID'],
                 'Amount' => (float)$validatedData['Amount'],

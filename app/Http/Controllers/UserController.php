@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
 
@@ -13,10 +14,49 @@ class UserController extends Controller
     /**
      * Muestra una lista de todos los usuarios.
      */
-    public function usersIndex()
+    public function usersIndex(Request $request)
     {
-        $users = User::paginate(5); // 5 usuarios por página
-        return view('Admin.usuario.users', compact('users'));
+        $q = trim((string) $request->query('q', ''));
+        $rol = $request->query('rol');
+        $estado = $request->query('estado');
+
+        $query = User::query();
+
+        if ($q !== '') {
+            $like = '%' . $q . '%';
+            $operator = DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
+
+            $query->where(function ($sub) use ($like, $operator) {
+                $sub->where('name', $operator, $like)
+                    ->orWhere('firstname', $operator, $like)
+                    ->orWhere('lastname', $operator, $like)
+                    ->orWhere('email', $operator, $like)
+                    ->orWhere('phone1', $operator, $like);
+            });
+        }
+
+        if ($rol === 'comun') {
+            $query->where(function ($sub) {
+                $sub->whereIn('role', ['comun', 'user'])->orWhereNull('role');
+            });
+        } elseif (in_array($rol, ['admin', 'aliado', 'afiliado'], true)) {
+            $query->where('role', $rol);
+        }
+
+        if (in_array($estado, ['activo', 'inactivo', 'pendiente'], true)) {
+            $query->where('status', $estado);
+        }
+
+        $users = $query->orderByDesc('created_at')->paginate(12)->withQueryString();
+
+        $stats = [
+            'total' => User::count(),
+            'active' => User::where('status', 'activo')->count(),
+            'pending' => User::where('status', 'pendiente')->count(),
+            'inactive' => User::where('status', 'inactivo')->count(),
+        ];
+
+        return view('Admin.usuario.users', compact('users', 'stats', 'q', 'rol', 'estado'));
     }
 
     /**

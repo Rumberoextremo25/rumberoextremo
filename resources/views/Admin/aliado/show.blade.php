@@ -1,384 +1,339 @@
-{{-- resources/views/Admin/aliado/show.blade.php --}}
 @extends('layouts.admin')
 
-@section('title', 'Detalles del Aliado - ' . $ally->company_name)
+@section('title', 'Aliado · ' . $ally->company_name)
 
-@section('page_title_toolbar', 'Detalles del Aliado')
-
-@push('styles')
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ asset('css/admin/aliado-show.css') }}">
-@endpush
+@section('page_title_toolbar', 'Detalle del aliado')
 
 @section('content')
-    <div class="aliado-detail-wrapper">
-        {{-- Header con bienvenida --}}
-        <div class="detail-header-bar">
-            <div class="header-left">
-                <a href="{{ route('admin.aliados.index') }}" class="back-link">
-                    <i class="fas fa-arrow-left"></i>
-                    <span>Volver al Listado</span>
-                </a>
-                <div class="page-title">
-                    <span class="title-main">Detalles del</span>
-                    <span class="title-accent">Aliado</span>
-                </div>
+    @php
+        $statusMeta = [
+            'activo' => ['label' => 'Activo', 'badge' => 'badge-success', 'icon' => 'fa-circle-check'],
+            'pendiente' => ['label' => 'Pendiente', 'badge' => 'badge-warning', 'icon' => 'fa-clock'],
+            'inactivo' => ['label' => 'Inactivo', 'badge' => 'badge-neutral', 'icon' => 'fa-circle-pause'],
+        ];
+        $statusKey = $ally->status ?: 'activo';
+        $status = $statusMeta[$statusKey] ?? ['label' => ucfirst($statusKey), 'badge' => 'badge-neutral', 'icon' => 'fa-circle'];
+        $registered = $ally->registered_at ?? $ally->created_at;
+        $gallery = collect($ally->product_images ?? [])
+            ->filter(fn ($path) => is_string($path) && \Illuminate\Support\Facades\Storage::disk('public')->exists($path))
+            ->values();
+    @endphp
+
+    <div class="pf-page">
+
+        {{-- ============================ CABECERA ============================ --}}
+        <div class="page-header-block">
+            <div>
+                <h1 class="title-main">Ficha del <span class="title-accent">aliado</span></h1>
+                <p class="page-subtitle">
+                    {{ $ally->company_name }} · {{ $ally->businessType->name ?? 'Sin tipo' }} ·
+                    <span class="badge {{ $status['badge'] }}">{{ $status['label'] }}</span>
+                </p>
             </div>
+
             <div class="header-actions">
-                <div class="user-greeting">
-                    <span>Visualizando,</span>
-                    <strong>{{ Auth::user()->name }}</strong>
-                </div>
-                <div class="avatar-circle">
-                    <span>{{ substr(Auth::user()->name, 0, 1) }}</span>
-                </div>
+                <a href="{{ route('admin.aliados.index') }}" class="btn btn-secondary">
+                    <i class="fa-solid fa-arrow-left"></i> Volver al listado
+                </a>
+                <a href="{{ route('admin.aliados.edit', $ally->id) }}" class="btn btn-primary">
+                    <i class="fa-solid fa-pen"></i> Editar aliado
+                </a>
             </div>
         </div>
 
-        {{-- Tarjeta principal del perfil --}}
-        <div class="profile-main-card">
-            {{-- Cabecera del perfil con portada --}}
-            <div class="profile-cover">
-                <div class="profile-avatar-wrapper">
-                    <div class="profile-avatar">
-                        <img src="{{ asset('assets/img/dashboard/logo_aliados.png') }}" alt="Aliado">
-                    </div>
-                </div>
-                <div class="profile-badge-container">
-                    <span class="badge badge-type-{{ strtolower($ally->businessType->name ?? 'sin-tipo') }}">
-                        <i class="fas fa-tag"></i>
-                        {{ $ally->businessType->name ?? 'Tipo no definido' }}
-                    </span>
-                    <span class="badge badge-status-{{ strtolower($ally->status) }}">
-                        <i class="fas fa-circle"></i>
-                        {{ ucfirst($ally->status) }}
-                    </span>
-                </div>
+        {{-- ============================== AVISOS ============================== --}}
+        @if (session('success'))
+            <div class="alert alert-success">
+                <i class="fa-solid fa-circle-check"></i>
+                <div class="alert-content">{{ session('success') }}</div>
             </div>
+        @endif
 
-            {{-- Información básica del aliado --}}
-            <div class="profile-info-header">
-                <h2>{{ $ally->company_name }}</h2>
-                <p class="company-identifier">
-                    <i class="fas fa-id-card"></i>
-                    {{ $ally->company_rif ?? 'RIF no especificado' }}
-                </p>
-                <div class="company-meta">
-                    <span><i class="fas fa-calendar-alt"></i> Registrado: {{ \Carbon\Carbon::parse($ally->registered_at ?? $ally->created_at)->format('d/m/Y') }}</span>
-                    <span><i class="fas fa-sync-alt"></i> Actualizado: {{ $ally->updated_at->diffForHumans() }}</span>
-                </div>
+        @if (session('error'))
+            <div class="alert alert-error">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <div class="alert-content">{{ session('error') }}</div>
             </div>
+        @endif
 
-            {{-- Tarjetas de estadísticas rápidas --}}
-            <div class="quick-stats-grid">
-                <div class="stat-card" data-color="purple">
-                    <div class="stat-icon">
-                        <i class="fas fa-percentage"></i>
-                    </div>
-                    <div class="stat-content">
-                        <span class="stat-value">{{ $ally->discount ?? '0' }}%</span>
-                        <span class="stat-label">Descuento</span>
-                    </div>
-                </div>
-                <div class="stat-card" data-color="blue">
-                    <div class="stat-icon">
-                        <i class="fas fa-tag"></i>
-                    </div>
-                    <div class="stat-content">
-                        <span class="stat-value">{{ $ally->category->name ?? 'N/A' }}</span>
-                        <span class="stat-label">Categoría</span>
-                    </div>
-                </div>
-                <div class="stat-card" data-color="green">
-                    <div class="stat-icon">
-                        <i class="fas fa-briefcase"></i>
-                    </div>
-                    <div class="stat-content">
-                        <span class="stat-value">{{ $ally->businessType->name ?? 'N/A' }}</span>
-                        <span class="stat-label">Tipo</span>
-                    </div>
-                </div>
-                <div class="stat-card" data-color="orange">
-                    <div class="stat-icon">
-                        <i class="fas fa-user-tie"></i>
-                    </div>
-                    <div class="stat-content">
-                        <span class="stat-value">{{ $ally->contact_person_name ?? 'N/A' }}</span>
-                        <span class="stat-label">Contacto</span>
-                    </div>
-                </div>
-            </div>
+        <div class="pf-grid">
 
-            {{-- Navegación por pestañas --}}
-            <div class="tabs-navigation">
-                <button class="tab-btn active" data-tab="general">
-                    <i class="fas fa-info-circle"></i>
-                    General
-                </button>
-                <button class="tab-btn" data-tab="contact">
-                    <i class="fas fa-address-book"></i>
-                    Contacto
-                </button>
-                <button class="tab-btn" data-tab="business">
-                    <i class="fas fa-briefcase"></i>
-                    Negocio
-                </button>
-                <button class="tab-btn" data-tab="additional">
-                    <i class="fas fa-file-alt"></i>
-                    Adicional
-                </button>
-                @if($ally->image_url)
-                <button class="tab-btn" data-tab="media">
-                    <i class="fas fa-image"></i>
-                    Multimedia
-                </button>
-                @endif
-            </div>
+            {{-- ====================== COLUMNA DE IDENTIDAD ====================== --}}
+            <div class="pf-col">
 
-            {{-- Contenido de pestañas --}}
-            <div class="tabs-content">
-                {{-- Pestaña General --}}
-                <div class="tab-pane active" id="general-tab">
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <span class="info-label">Nombre de la Empresa</span>
-                            <span class="info-value highlight">{{ $ally->company_name }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">RIF</span>
-                            <span class="info-value">{{ $ally->company_rif ?? 'No especificado' }}</span>
-                        </div>
-                        <div class="info-item full-width">
-                            <span class="info-label">Dirección</span>
-                            <span class="info-value">{{ $ally->company_address ?? 'No especificada' }}</span>
-                        </div>
-                        <div class="info-item full-width">
-                            <span class="info-label">Sitio Web</span>
-                            <span class="info-value">
-                                @if($ally->website_url)
-                                    <a href="{{ $ally->website_url }}" target="_blank" class="website-link">
-                                        {{ $ally->website_url }}
-                                        <i class="fas fa-external-link-alt"></i>
-                                    </a>
-                                @else
-                                    <span class="text-muted">No especificado</span>
+                <section class="pf-card">
+                    <div class="pf-cover">
+                        <div class="pf-avatar-wrap">
+                            <div class="pf-avatar pf-avatar--stack">
+                                <span class="pf-avatar__initial">{{ mb_strtoupper(mb_substr($ally->company_name, 0, 1)) }}</span>
+                                @if ($ally->image_src)
+                                    <img src="{{ $ally->image_src }}" alt="Logo de {{ $ally->company_name }}" data-img>
                                 @endif
+                            </div>
+                        </div>
+
+                        <span class="pf-badge">{{ $ally->businessType->name ?? 'Aliado' }}</span>
+                    </div>
+
+                    <div class="pf-identity">
+                        <h2 class="pf-name">{{ $ally->company_name }}</h2>
+                        <p class="pf-email">
+                            <i class="fa-solid fa-id-card"></i>
+                            {{ $ally->company_rif ?: 'RIF no especificado' }}
+                        </p>
+
+                        <div class="pf-stats">
+                            <div class="pf-stat">
+                                <span class="pf-stat__value">{{ $ally->discount_label ?: '0%' }}</span>
+                                <span class="pf-stat__label">Descuento</span>
+                            </div>
+                            <div class="pf-stat">
+                                <span class="pf-stat__value">{{ $ally->category->name ?? '—' }}</span>
+                                <span class="pf-stat__label">Categoría</span>
+                            </div>
+                            <div class="pf-stat">
+                                <span class="pf-stat__value">{{ $ally->businessType->name ?? '—' }}</span>
+                                <span class="pf-stat__label">Tipo</span>
+                            </div>
+                        </div>
+
+                        <div class="pf-actions">
+                            <a href="{{ route('admin.aliados.edit', $ally->id) }}" class="btn btn-primary">
+                                <i class="fa-solid fa-pen"></i> Editar
+                            </a>
+                            <a href="{{ route('admin.aliados.index') }}" class="btn btn-secondary">
+                                <i class="fa-solid fa-list"></i> Listado
+                            </a>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="pf-card">
+                    <div class="pf-card__head">
+                        <i class="fa-solid fa-clock-rotate-left"></i>
+                        <h3>Registro</h3>
+                    </div>
+
+                    <div class="pf-rows">
+                        <div class="pf-row">
+                            <span class="pf-row__label">Fecha de registro</span>
+                            <span class="pf-row__value">{{ $registered ? \Carbon\Carbon::parse($registered)->format('d/m/Y') : '—' }}</span>
+                        </div>
+                        <div class="pf-row">
+                            <span class="pf-row__label">Última actualización</span>
+                            <span class="pf-row__value">{{ optional($ally->updated_at)->format('d/m/Y H:i') ?? '—' }}</span>
+                        </div>
+                        <div class="pf-row">
+                            <span class="pf-row__label">Estado</span>
+                            <span class="pf-row__value">
+                                <span class="badge {{ $status['badge'] }}">{{ $status['label'] }}</span>
                             </span>
                         </div>
                     </div>
-                </div>
+                </section>
 
-                {{-- Pestaña Contacto --}}
-                <div class="tab-pane" id="contact-tab">
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <span class="info-label">Persona de Contacto</span>
-                            <span class="info-value">{{ $ally->contact_person_name ?? 'N/A' }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Email de Contacto</span>
-                            <span class="info-value">
-                                <a href="mailto:{{ $ally->contact_email }}" class="email-link">
-                                    {{ $ally->contact_email }}
-                                </a>
-                            </span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Teléfono Principal</span>
-                            <span class="info-value">
-                                <a href="tel:{{ $ally->contact_phone }}" class="phone-link">
-                                    {{ $ally->contact_phone }}
-                                </a>
-                            </span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Teléfono Alternativo</span>
-                            <span class="info-value">
-                                @if($ally->contact_phone_alt)
-                                    <a href="tel:{{ $ally->contact_phone_alt }}" class="phone-link">
-                                        {{ $ally->contact_phone_alt }}
-                                    </a>
-                                @else
-                                    <span class="text-muted">No especificado</span>
-                                @endif
-                            </span>
-                        </div>
+                <section class="pf-card">
+                    <div class="pf-card__head">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <h3>Eliminar aliado</h3>
                     </div>
-                </div>
 
-                {{-- Pestaña Negocio --}}
-                <div class="tab-pane" id="business-tab">
-                    <div class="info-grid">
-                        <div class="info-item">
-                            <span class="info-label">Tipo de Aliado</span>
-                            <span class="info-value">
-                                <span class="badge badge-type-{{ strtolower($ally->businessType->name ?? 'sin-tipo') }}">
-                                    {{ $ally->businessType->name ?? 'N/A' }}
-                                </span>
-                            </span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Categoría</span>
-                            <span class="info-value">{{ $ally->category->name ?? 'N/A' }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Subcategoría</span>
-                            <span class="info-value">{{ $ally->subCategory->name ?? 'N/A' }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Descuento Ofrecido</span>
-                            <span class="info-value discount-highlight">{{ $ally->discount ?? '0' }}%</span>
-                        </div>
+                    <div class="pf-notes">
+                        Se borrará la ficha del aliado y su relación con la app. Esta acción no se puede deshacer.
                     </div>
-                </div>
 
-                {{-- Pestaña Adicional --}}
-                <div class="tab-pane" id="additional-tab">
-                    <div class="info-grid">
-                        <div class="info-item full-width">
-                            <span class="info-label">Descripción del Negocio</span>
-                            <div class="description-box">
-                                {{ $ally->description ?? 'Sin descripción proporcionada.' }}
-                            </div>
-                        </div>
-                        @if($ally->notes)
-                        <div class="info-item full-width">
-                            <span class="info-label">Notas Adicionales</span>
-                            <div class="notes-box">
-                                {{ $ally->notes }}
-                            </div>
-                        </div>
-                        @endif
-                        <div class="info-item">
-                            <span class="info-label">Fecha de Registro</span>
-                            <span class="info-value">{{ \Carbon\Carbon::parse($ally->registered_at ?? $ally->created_at)->format('d/m/Y H:i') }}</span>
-                        </div>
-                        <div class="info-item">
-                            <span class="info-label">Última Actualización</span>
-                            <span class="info-value">{{ $ally->updated_at->format('d/m/Y H:i') }}</span>
-                        </div>
-                    </div>
-                </div>
-
-                {{-- Pestaña Multimedia --}}
-                @if($ally->image_url)
-                <div class="tab-pane" id="media-tab">
-                    <div class="media-container">
-                        <h4 class="media-title">
-                            <i class="fas fa-image"></i>
-                            Imagen del Aliado
-                        </h4>
-                        <div class="image-preview-wrapper">
-                            <img src="{{ Storage::url($ally->image_url) }}" 
-                                 alt="{{ $ally->company_name }}" 
-                                 class="aliado-image">
-                            <div class="image-actions">
-                                <a href="{{ Storage::url($ally->image_url) }}" download class="image-action">
-                                    <i class="fas fa-download"></i> Descargar
-                                </a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                @endif
-            </div>
-
-            {{-- Acciones rápidas --}}
-            <div class="actions-section">
-                <h3 class="actions-title">
-                    <i class="fas fa-bolt"></i>
-                    Acciones Rápidas
-                </h3>
-                <div class="actions-grid">
-                    <a href="{{ route('admin.aliados.edit', $ally->id) }}" class="action-card edit">
-                        <div class="action-icon">
-                            <i class="fas fa-edit"></i>
-                        </div>
-                        <div class="action-content">
-                            <span class="action-title">Editar Aliado</span>
-                            <span class="action-desc">Modificar información</span>
-                        </div>
-                    </a>
-
-                    <a href="{{ route('admin.aliados.index') }}" class="action-card back">
-                        <div class="action-icon">
-                            <i class="fas fa-list"></i>
-                        </div>
-                        <div class="action-content">
-                            <span class="action-title">Ver Listado</span>
-                            <span class="action-desc">Todos los aliados</span>
-                        </div>
-                    </a>
-
-                    <form action="{{ route('admin.aliados.destroy', $ally->id) }}" method="POST" class="delete-form">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="action-card delete" onclick="return confirm('¿Estás seguro de eliminar este aliado? Esta acción no se puede deshacer.')">
-                            <div class="action-icon">
-                                <i class="fas fa-trash-alt"></i>
-                            </div>
-                            <div class="action-content">
-                                <span class="action-title">Eliminar Aliado</span>
-                                <span class="action-desc">Eliminar permanentemente</span>
-                            </div>
+                    <div class="pf-actions pf-actions--single" style="padding:0 1.15rem 1.15rem;">
+                        <button type="button" class="btn btn-danger" data-delete-trigger
+                            data-delete-id="{{ $ally->id }}" data-delete-name="{{ $ally->company_name }}">
+                            <i class="fa-solid fa-trash-can"></i> Eliminar aliado
                         </button>
-                    </form>
+
+                        <form id="delete-form-{{ $ally->id }}"
+                            action="{{ route('admin.aliados.destroy', $ally->id) }}" method="POST" hidden>
+                            @csrf
+                            @method('DELETE')
+                        </form>
+                    </div>
+                </section>
+            </div>
+
+            {{-- ========================= DATOS DETALLADOS ========================= --}}
+            <div class="pf-col">
+
+                <section class="pf-card">
+                    <div class="pf-card__head">
+                        <i class="fa-solid fa-store"></i>
+                        <h3>Información del negocio</h3>
+                    </div>
+
+                    <div class="pf-rows">
+                        <div class="pf-row">
+                            <span class="pf-row__label">Empresa</span>
+                            <span class="pf-row__value">{{ $ally->company_name }}</span>
+                        </div>
+                        <div class="pf-row">
+                            <span class="pf-row__label">RIF</span>
+                            <span class="pf-row__value">{{ $ally->company_rif ?: 'No especificado' }}</span>
+                        </div>
+                        <div class="pf-row">
+                            <span class="pf-row__label">Categoría</span>
+                            <span class="pf-row__value">{{ $ally->category->name ?? 'No especificada' }}</span>
+                        </div>
+                        <div class="pf-row">
+                            <span class="pf-row__label">Subcategoría</span>
+                            <span class="pf-row__value">{{ $ally->subCategory->name ?? 'No especificada' }}</span>
+                        </div>
+                        <div class="pf-row">
+                            <span class="pf-row__label">Tipo de negocio</span>
+                            <span class="pf-row__value">
+                                <span class="badge badge-info">{{ $ally->businessType->name ?? 'Sin tipo' }}</span>
+                            </span>
+                        </div>
+                        <div class="pf-row">
+                            <span class="pf-row__label">Descuento</span>
+                            <span class="pf-row__value">{{ $ally->discount_label ?: 'No definido' }}</span>
+                        </div>
+                        @if ($ally->website_url)
+                            <div class="pf-row">
+                                <span class="pf-row__label">Sitio web</span>
+                                <span class="pf-row__value">
+                                    <a href="{{ $ally->website_url }}" target="_blank" rel="noopener noreferrer">
+                                        {{ $ally->website_url }}
+                                    </a>
+                                </span>
+                            </div>
+                        @endif
+                        @if ($ally->company_address)
+                            <div class="pf-row">
+                                <span class="pf-row__label">Dirección</span>
+                                <span class="pf-row__value">{{ $ally->company_address }}</span>
+                            </div>
+                        @endif
+                    </div>
+                </section>
+
+                <section class="pf-card">
+                    <div class="pf-card__head">
+                        <i class="fa-solid fa-address-book"></i>
+                        <h3>Contacto</h3>
+                    </div>
+
+                    <div class="pf-rows">
+                        <div class="pf-row">
+                            <span class="pf-row__label">Persona de contacto</span>
+                            <span class="pf-row__value">{{ $ally->contact_person_name ?: 'No especificada' }}</span>
+                        </div>
+                        <div class="pf-row">
+                            <span class="pf-row__label">Correo</span>
+                            <span class="pf-row__value">
+                                @if ($ally->contact_email)
+                                    <a href="mailto:{{ $ally->contact_email }}">{{ $ally->contact_email }}</a>
+                                @else
+                                    No especificado
+                                @endif
+                            </span>
+                        </div>
+                        <div class="pf-row">
+                            <span class="pf-row__label">Teléfono principal</span>
+                            <span class="pf-row__value">{{ $ally->contact_phone ?: 'No especificado' }}</span>
+                        </div>
+                        @if ($ally->contact_phone_alt)
+                            <div class="pf-row">
+                                <span class="pf-row__label">Teléfono alternativo</span>
+                                <span class="pf-row__value">{{ $ally->contact_phone_alt }}</span>
+                            </div>
+                        @endif
+                    </div>
+                </section>
+
+                @if ($ally->user)
+                    <section class="pf-card">
+                        <div class="pf-card__head">
+                            <i class="fa-solid fa-user-lock"></i>
+                            <h3>Cuenta de acceso</h3>
+                        </div>
+
+                        <div class="pf-rows">
+                            <div class="pf-row">
+                                <span class="pf-row__label">Usuario</span>
+                                <span class="pf-row__value">{{ $ally->user->name }}</span>
+                            </div>
+                            <div class="pf-row">
+                                <span class="pf-row__label">Correo de acceso</span>
+                                <span class="pf-row__value">{{ $ally->user->email }}</span>
+                            </div>
+                            <div class="pf-row">
+                                <span class="pf-row__label">Creado</span>
+                                <span class="pf-row__value">{{ optional($ally->user->created_at)->format('d/m/Y') ?? '—' }}</span>
+                            </div>
+                        </div>
+                    </section>
+                @endif
+
+                <section class="pf-card">
+                    <div class="pf-card__head">
+                        <i class="fa-solid fa-clipboard-list"></i>
+                        <h3>Descripción y notas</h3>
+                    </div>
+
+                    <div class="pf-notes {{ $ally->description ? '' : 'is-empty' }}">
+                        {{ $ally->description ?: 'Sin descripción del negocio.' }}
+                    </div>
+
+                    @if ($ally->notes)
+                        <div class="pf-notes">
+                            <strong>Notas internas:</strong> {{ $ally->notes }}
+                        </div>
+                    @endif
+                </section>
+
+                @if ($gallery->isNotEmpty())
+                    <section class="pf-card">
+                        <div class="pf-card__head">
+                            <i class="fa-regular fa-images"></i>
+                            <h3>Galería de productos</h3>
+                        </div>
+
+                        <div class="db-quick" style="grid-template-columns:repeat(auto-fill,minmax(120px,1fr));">
+                            @foreach ($gallery as $path)
+                                <a href="{{ asset('storage/' . ltrim($path, '/')) }}" target="_blank"
+                                    rel="noopener noreferrer" style="padding:0;overflow:hidden;">
+                                    <img src="{{ asset('storage/' . ltrim($path, '/')) }}"
+                                        alt="Imagen de {{ $ally->company_name }}" data-img
+                                        style="width:100%;height:100%;object-fit:cover;aspect-ratio:1;">
+                                </a>
+                            @endforeach
+                        </div>
+                    </section>
+                @endif
+            </div>
+        </div>
+    </div>
+
+    {{-- ====================== MODAL DE CONFIRMACIÓN ====================== --}}
+    <div class="modal cf-modal" id="deleteModal" hidden>
+        <div class="modal-card" role="dialog" aria-modal="true" aria-labelledby="deleteTitle">
+            <div class="modal-body">
+                <div class="cf-confirm">
+                    <span class="cf-confirm__icon"><i class="fa-solid fa-triangle-exclamation"></i></span>
+                    <h2 id="deleteTitle">Eliminar aliado</h2>
+                    <p>¿Seguro que quieres eliminar a <span class="cf-confirm__name" data-delete-name></span>?</p>
+                    <p>Se borrará su ficha y no se puede deshacer.</p>
                 </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-delete-cancel>
+                    <i class="fa-solid fa-xmark"></i> Cancelar
+                </button>
+                <button type="button" class="btn btn-danger" data-delete-confirm>
+                    <i class="fa-solid fa-trash-can"></i> Sí, eliminar
+                </button>
             </div>
         </div>
     </div>
 @endsection
 
 @push('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        // ========== NAVEGACIÓN POR PESTAÑAS ==========
-        const tabButtons = document.querySelectorAll('.tab-btn');
-        const tabPanes = document.querySelectorAll('.tab-pane');
-
-        tabButtons.forEach(button => {
-            button.addEventListener('click', function() {
-                const targetTab = this.dataset.tab;
-                
-                // Remover clase activa de todos los botones
-                tabButtons.forEach(btn => btn.classList.remove('active'));
-                this.classList.add('active');
-                
-                // Ocultar todos los paneles
-                tabPanes.forEach(pane => pane.classList.remove('active'));
-                
-                // Mostrar el panel correspondiente
-                document.getElementById(targetTab + '-tab').classList.add('active');
-            });
-        });
-
-        // ========== ANIMACIONES DE ENTRADA ==========
-        const observer = new IntersectionObserver((entries) => {
-            entries.forEach(entry => {
-                if (entry.isIntersecting) {
-                    entry.target.style.opacity = '1';
-                    entry.target.style.transform = 'translateY(0)';
-                }
-            });
-        }, { threshold: 0.1 });
-
-        document.querySelectorAll('.stat-card, .info-item, .action-card').forEach(el => {
-            el.style.opacity = '0';
-            el.style.transform = 'translateY(20px)';
-            el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-            observer.observe(el);
-        });
-
-        // ========== EFECTOS HOVER EN TARJETAS ==========
-        document.querySelectorAll('.stat-card, .action-card').forEach(card => {
-            card.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-5px)';
-            });
-            card.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0)';
-            });
-        });
-    });
-</script>
+    <script src="{{ asset('js/admin-forms.js') }}"></script>
 @endpush

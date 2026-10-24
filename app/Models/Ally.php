@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class Ally extends Model
 {
@@ -22,6 +23,8 @@ class Ally extends Model
         'contact_phone',
         'contact_phone_alt',
         'company_address',
+        'latitude',
+        'longitude',
         'website_url',
         'discount',
         'notes',
@@ -157,10 +160,42 @@ class Ally extends Model
     {
         return match($this->status) {
             self::STATUS_ACTIVE => 'Activo',
-            self::STATUS_INACTIVE => 'Inactive',
-            self::STATUS_SUSPENDED => 'Suspended',
-            default => 'Unknown'
+            self::STATUS_INACTIVE => 'Inactivo',
+            self::STATUS_SUSPENDED => 'Suspendido',
+            'pendiente' => 'Pendiente',
+            default => 'Desconocido'
         };
+    }
+
+    /**
+     * URL pública de la imagen principal del aliado.
+     * Devuelve null si el archivo no existe para no dejar imágenes rotas.
+     */
+    public function getImageSrcAttribute(): ?string
+    {
+        $path = $this->image_url;
+
+        if (! $path) {
+            return null;
+        }
+
+        if (str_starts_with($path, 'http')) {
+            return $path;
+        }
+
+        return Storage::disk('public')->exists($path)
+            ? asset('storage/' . ltrim($path, '/'))
+            : null;
+    }
+
+    /**
+     * Etiqueta del descuento: "15" => "15%", "2x1" se mantiene tal cual.
+     */
+    public function getDiscountLabelAttribute(): string
+    {
+        $discount = trim((string) $this->discount);
+
+        return preg_match('/^\d+(?:[.,]\d+)?$/', $discount) ? $discount . '%' : $discount;
     }
 
     /**

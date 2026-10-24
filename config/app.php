@@ -56,6 +56,19 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Forzar HTTPS
+    |--------------------------------------------------------------------------
+    |
+    | Cuando está activo, todas las URLs generadas usan https:// y el middleware
+    | de seguridad añade HSTS. No manipula la petición actual (eso permitía que
+    | el servidor "creyera" que una petición HTTP era segura).
+    |
+    */
+
+    'force_https' => (bool) env('APP_FORCE_HTTPS', false),
+
+    /*
+    |--------------------------------------------------------------------------
     | Application Timezone
     |--------------------------------------------------------------------------
     |

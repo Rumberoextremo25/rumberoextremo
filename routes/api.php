@@ -25,13 +25,13 @@ use Illuminate\Support\Facades\Route;
 // RUTAS PÚBLICAS (NO REQUIEREN AUTENTICACIÓN)
 // ===========================================
 
-// ========== AUTENTICACIÓN ==========
+// ========== AUTENTICACIÓN (con límite de intentos por IP) ==========
 Route::prefix('auth')->name('api.auth.')->group(function () {
-    Route::post('/register', [AuthController::class, 'register'])->name('register');
-    Route::post('/login', [AuthController::class, 'login'])->name('login');
-    Route::post('/verify-2fa', [AuthController::class, 'verifyTwoFactor'])->name('verify-2fa');
-    Route::post('/forgot-password', [AuthController::class, 'sendPasswordResetLink'])->name('forgot-password');
-    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->name('reset-password');
+    Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:6,1')->name('register');
+    Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1')->name('login');
+    Route::post('/verify-2fa', [AuthController::class, 'verifyTwoFactor'])->middleware('throttle:8,1')->name('verify-2fa');
+    Route::post('/forgot-password', [AuthController::class, 'sendPasswordResetLink'])->middleware('throttle:5,1')->name('forgot-password');
+    Route::post('/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:5,1')->name('reset-password');
 });
 
 // ========== VERIFICACIÓN DE EMAIL ==========
@@ -53,11 +53,12 @@ Route::get('/aliados', [AllyController::class, 'index'])->name('api.aliados.inde
 Route::get('/aliados/{user_id}', [AllyController::class, 'show'])->name('api.aliados.show');
 
 // ========== RUMBERO AI - RUTAS PÚBLICAS ==========
+// El chat de IA consume cuota de un proveedor externo: se limita por IP.
 Route::get('/categorias', [RumberoAIController::class, 'getCategorias'])->name('api.categorias');
-Route::post('/ia/chat', [RumberoAIController::class, 'chat'])->name('api.ia.chat');
+Route::post('/ia/chat', [RumberoAIController::class, 'chat'])->middleware('throttle:10,1')->name('api.ia.chat');
 
 // ========== PAGOS PÚBLICOS ==========
-Route::prefix('pagos')->name('api.pagos.')->group(function () {
+Route::prefix('pagos')->name('api.pagos.')->middleware('throttle:20,1')->group(function () {
     Route::post('/c2p', [PaymentController::class, 'initiateC2PPayment']);
     Route::post('/tarjeta', [PaymentController::class, 'processCardPayment']);
     Route::post('/solicitar', [PaymentController::class, 'solicitarDebito']);

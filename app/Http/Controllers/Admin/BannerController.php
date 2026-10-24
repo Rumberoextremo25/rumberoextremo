@@ -38,7 +38,7 @@ class BannerController extends Controller
             'image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'description' => 'nullable|string',
             'target_url' => 'nullable|url',
-            'display_order' => 'integer|min:0',  // ← Cambiado
+            'display_order' => 'nullable|integer|min:0',  // ← Cambiado
             'is_active' => 'sometimes|boolean',
         ]);
 
@@ -55,7 +55,7 @@ class BannerController extends Controller
             'description' => $request->description,
             'target_url' => $request->target_url,
             'display_order' => $request->display_order ?? 0,  // ← Cambiado
-            'is_active' => $request->has('is_active') ? true : false,
+            'is_active' => $request->boolean('is_active'),
         ]);
 
         return redirect()->route('admin.banners.index')->with('success', '¡Banner creado exitosamente!');
@@ -80,7 +80,7 @@ class BannerController extends Controller
             'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
             'description' => 'nullable|string',
             'target_url' => 'nullable|url',
-            'display_order' => 'integer|min:0',  // ← Cambiado
+            'display_order' => 'nullable|integer|min:0',  // ← Cambiado
             'is_active' => 'sometimes|boolean',
         ]);
 
@@ -102,8 +102,8 @@ class BannerController extends Controller
             'image_url' => $imagePathToSave,
             'description' => $request->description,
             'target_url' => $request->target_url,
-            'display_order' => $request->display_order,  // ← Cambiado
-            'is_active' => $request->has('is_active') ? true : false,
+            'display_order' => $request->display_order ?? 0,  // ← Cambiado
+            'is_active' => $request->boolean('is_active'),
         ]);
 
         return redirect()->route('admin.banners.index')->with('success', '¡Banner actualizado exitosamente!');

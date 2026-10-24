@@ -73,8 +73,8 @@ class PromotionController extends Controller
             'expires_at' => $request->expires_at,
             'max_uses' => $request->max_uses ?? null,  // ✅ CORREGIDO: null en lugar de 0
             'current_uses' => 0,
-            'status' => $request->has('is_active') ? 'active' : 'inactive',
-            'is_featured' => $request->has('is_featured'),
+            'status' => $request->boolean('is_active') ? 'active' : 'inactive',
+            'is_featured' => $request->boolean('is_featured'),
         ]);
 
         return redirect()
@@ -126,8 +126,8 @@ class PromotionController extends Controller
             'terms_conditions' => $request->terms_conditions,
             'expires_at' => $request->expires_at,
             'max_uses' => $request->max_uses ?? null,  // ✅ CORREGIDO: null en lugar de 0
-            'status' => $request->has('is_active') ? 'active' : 'inactive',
-            'is_featured' => $request->has('is_featured'),
+            'status' => $request->boolean('is_active') ? 'active' : 'inactive',
+            'is_featured' => $request->boolean('is_featured'),
         ]);
 
         return redirect()

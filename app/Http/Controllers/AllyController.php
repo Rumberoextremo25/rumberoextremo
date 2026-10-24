@@ -21,14 +21,48 @@ class AllyController extends Controller
     /**
      * Muestra una lista de todos los aliados.
      */
-    public function index()
+    public function index(Request $request)
     {
-        // Cambiar get() por paginate() para tener paginación
-        $allies = Ally::with('category', 'subCategory', 'businessType', 'user')
-                     ->orderBy('created_at', 'desc')
-                     ->paginate(5); // 5 items por página
-        
-        return view('Admin.aliado.aliado', compact('allies'));
+        $q = trim((string) $request->query('q', ''));
+        $tipo = $request->query('tipo');
+        $estado = $request->query('estado');
+
+        $query = Ally::with('category', 'subCategory', 'businessType', 'user');
+
+        if ($q !== '') {
+            $like = '%' . $q . '%';
+            $operator = DB::connection()->getDriverName() === 'pgsql' ? 'ilike' : 'like';
+
+            $query->where(function ($sub) use ($like, $operator) {
+                $sub->where('company_name', $operator, $like)
+                    ->orWhere('company_rif', $operator, $like)
+                    ->orWhere('contact_person_name', $operator, $like)
+                    ->orWhere('contact_email', $operator, $like)
+                    ->orWhere('contact_phone', $operator, $like)
+                    ->orWhere('description', $operator, $like);
+            });
+        }
+
+        if (ctype_digit((string) $tipo)) {
+            $query->where('business_type_id', (int) $tipo);
+        }
+
+        if (in_array($estado, ['activo', 'pendiente', 'inactivo'], true)) {
+            $query->where('status', $estado);
+        }
+
+        $allies = $query->orderByDesc('created_at')->paginate(12)->withQueryString();
+
+        $stats = [
+            'total' => Ally::count(),
+            'active' => Ally::where('status', 'activo')->count(),
+            'pending' => Ally::where('status', 'pendiente')->count(),
+            'inactive' => Ally::where('status', 'inactivo')->count(),
+        ];
+
+        $businessTypes = BusinessType::orderBy('name')->get();
+
+        return view('Admin.aliado.aliado', compact('allies', 'stats', 'businessTypes', 'q', 'tipo', 'estado'));
     }
 
     /**
@@ -120,6 +154,8 @@ class AllyController extends Controller
             'contact_phone'     => 'required|string|max:20',
             'contact_phone_alt' => 'nullable|string|max:20',
             'company_address'   => 'nullable|string|max:500',
+            'latitude'          => 'nullable|numeric|between:-90,90',
+            'longitude'         => 'nullable|numeric|between:-180,180',
             'website_url'       => 'nullable|url|max:255',
             'discount'          => 'nullable|string|max:500',
             'notes'             => 'nullable|string|max:500',
@@ -194,14 +230,14 @@ class AllyController extends Controller
                 'name'      => $validatedData['user_name'],
                 'email'     => $validatedData['user_email'],
                 'password'  => Hash::make($validatedData['user_password']),
+                'role'      => 'aliado',
+                'status'    => $validatedData['status'],
             ]);
 
-            // 6. Asignar el rol 'ally' al usuario
+            // 6. Asignar el rol 'ally' al usuario (si Spatie lo tiene configurado)
             $role = Role::where('name', 'ally')->first();
             if ($role) {
                 $user->assignRole($role);
-            } else {
-                throw new \Exception('El rol "ally" no está configurado en el sistema.');
             }
 
             // 7. Manejar la subida de la imagen principal
@@ -237,6 +273,9 @@ class AllyController extends Controller
                 'contact_phone'     => $validatedData['contact_phone'],
                 'contact_phone_alt' => $validatedData['contact_phone_alt'] ?? null,
                 'company_address'   => $validatedData['company_address'] ?? null,
+                'latitude'          => $validatedData['latitude'] ?? null,
+                'longitude'         => $validatedData['longitude'] ?? null,
+                
                 'website_url'       => $validatedData['website_url'] ?? null,
                 'discount'          => $validatedData['discount'] ?? null,
                 'notes'             => $validatedData['notes'] ?? null,
@@ -302,6 +341,8 @@ class AllyController extends Controller
             'contact_phone'     => 'required|string|max:20',
             'contact_phone_alt' => 'nullable|string|max:20',
             'company_address'   => 'nullable|string|max:500',
+            'latitude'          => 'nullable|numeric|between:-90,90',
+            'longitude'         => 'nullable|numeric|between:-180,180',
             'website_url'       => 'nullable|url|max:255',
             'discount'          => 'nullable|string|max:500',
             'notes'             => 'nullable|string|max:500',
@@ -419,6 +460,9 @@ class AllyController extends Controller
                 'contact_phone'     => $validatedData['contact_phone'],
                 'contact_phone_alt' => $validatedData['contact_phone_alt'] ?? null,
                 'company_address'   => $validatedData['company_address'] ?? null,
+                'latitude'          => $validatedData['latitude'] ?? null,
+                'longitude'         => $validatedData['longitude'] ?? null,
+                
                 'website_url'       => $validatedData['website_url'] ?? null,
                 'discount'          => $validatedData['discount'] ?? null,
                 'notes'             => $validatedData['notes'] ?? null,

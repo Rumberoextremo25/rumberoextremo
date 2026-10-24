@@ -18,5 +18,15 @@ class AffiliateApplication extends Model
         'affiliate_type',
         'message',
         'terms',
+        'status',
+        'admin_notes',
+        'reviewed_at',
+        'reviewed_by',
+    ];
+
+    protected $casts = [
+        'terms' => 'boolean',
+        'followers_count' => 'integer',
+        'reviewed_at' => 'datetime',
     ];
 }

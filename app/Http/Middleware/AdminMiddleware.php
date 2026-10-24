@@ -6,53 +6,87 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpFoundation\Response;
 
+/**
+ * Restringe una ruta a usuarios con rol de administrador.
+ *
+ * Cambios de seguridad respecto a la versión anterior:
+ *  - Dejó de registrar el email y el rol del usuario en cada petición (el log
+ *    acumulaba datos personales y crecía sin límite).
+ *  - Un usuario autenticado sin permisos recibe un 403 (antes se le
+ *    redirigía al dashboard, lo que ocultaba el intento de escalada y
+ *    permitía bucles de redirección).
+ *  - Se comprueba también el estado de la cuenta.
+ *  - Se registra un único evento de seguridad (sin datos personales).
+ */
 class AdminMiddleware
 {
-    /**
-     * Handle an incoming request.
-     */
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next): Response
     {
-        // LOG 1: Verificar si llega al middleware
-        Log::info('AdminMiddleware: Iniciando verificación', [
-            'url' => $request->fullUrl(),
-            'method' => $request->method(),
-            'authenticated' => Auth::check()
-        ]);
-
-        // Verificar si el usuario está autenticado
-        if (!Auth::check()) {
-            Log::warning('AdminMiddleware: Usuario no autenticado, redirigiendo a login');
-            return redirect()->route('login')->with('error', 'Debes iniciar sesión');
-        }
-
         $user = Auth::user();
-        
-        // LOG 2: Ver datos del usuario
-        Log::info('AdminMiddleware: Usuario autenticado', [
-            'user_id' => $user->id,
-            'user_type' => $user->user_type,
-            'user_role' => $user->role ?? 'no definido',
-            'email' => $user->email
-        ]);
 
-        // Verificar si el usuario es admin
-        // PRUEBA: Cambia temporalmente a true para ver si el problema es la condición
-        $isAdmin = ($user->user_type === 'admin' || $user->role === 'admin');
-        
-        Log::info('AdminMiddleware: Verificación de admin', [
-            'user_type' => $user->user_type,
-            'user_role' => $user->role ?? 'no definido',
-            'is_admin' => $isAdmin ? 'SI' : 'NO'
-        ]);
+        if (! $user) {
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'No autenticado.'], 401);
+            }
 
-        if (!$isAdmin) {
-            Log::warning('AdminMiddleware: Usuario no es admin, redirigiendo a dashboard');
-            return redirect()->route('dashboard')->with('error', 'No tienes permisos de administrador');
+            return redirect()->route('login')->with('error', 'Debes iniciar sesión.');
         }
 
-        Log::info('AdminMiddleware: Acceso permitido');
+        // Cuenta desactivada: fuera de la aplicación, aunque el rol sea admin
+        if (! $this->isActive($user)) {
+            Auth::logout();
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'La cuenta está inactiva.'], 403);
+            }
+
+            return redirect()->route('login')
+                ->with('error', 'Tu cuenta está inactiva. Contacta al administrador.');
+        }
+
+        if (! $this->isAdmin($user)) {
+            Log::warning('security.admin_access_denied', [
+                'user_id' => $user->getAuthIdentifier(),
+                'method' => $request->method(),
+                'path' => $request->path(),
+                'ip' => $request->ip(),
+            ]);
+
+            if ($request->expectsJson()) {
+                return response()->json(['message' => 'No tienes permisos de administrador.'], 403);
+            }
+
+            abort(403, 'No tienes permisos para acceder a esta sección.');
+        }
+
         return $next($request);
+    }
+
+    private function isAdmin($user): bool
+    {
+        return in_array('admin', [
+            $user->role ?? null,
+            $user->user_type ?? null,
+        ], true)
+            || (method_exists($user, 'hasRole') && $user->hasRole('admin'));
+    }
+
+    private function isActive($user): bool
+    {
+        // Solo se bloquea con estados explícitos: así un `status` nulo (datos
+        // antiguos) no deja fuera a usuarios válidos.
+        return ! in_array(strtolower((string) ($user->status ?? 'activo')), [
+            'inactivo',
+            'inactive',
+            'suspendido',
+            'suspended',
+            'bloqueado',
+            'blocked',
+            'disabled',
+        ], true);
     }
 }

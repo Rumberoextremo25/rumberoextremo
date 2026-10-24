@@ -17,5 +17,17 @@ class AllyContact extends Model
         'partnership_type',
         'website',
         'message',
+        'status',
+        'admin_notes',
+        'reviewed_at',
+        'reviewed_by',
+    ];
+
+    /**
+     * reviewed_at debe ser Carbon: antes llegaba como string y rompía
+     * diffForHumans() en la vista de solicitudes.
+     */
+    protected $casts = [
+        'reviewed_at' => 'datetime',
     ];
 }

@@ -1,51 +1,54 @@
-@extends('layouts.guest') {{-- Asegúrate de que esto apunta a tu layout principal --}}
+{{-- resources/views/auth/forgot-password.blade.php --}}
 
-@section('title', 'Recuperar Contraseña - Rumbero Extremo') {{-- Título específico para esta página --}}
+@extends('layouts.guest')
+
+@section('title', 'Recuperar contraseña - Rumbero Extremo')
 
 @section('content')
-    <div class="login-container"> {{-- Reutilizamos la clase del contenedor de login --}}
-        <link rel="stylesheet" href="{{ asset('css/forgot-password.css') }}">
-        <div class="login-card"> {{-- Reutilizamos la clase de la tarjeta de login --}}
-            <div class="login-header">
-                {{-- Logo de Rumbero Extremo --}}
-                <h2>¿Olvidaste tu contraseña?</h2>
-                <p>Ingresa tu correo electrónico y te enviaremos un enlace para restablecerla.</p>
-            </div>
-
-            @if (session('status'))
-                <div class="alert alert-success">
-                    {{ session('status') }}
-                </div>
-            @endif
-
-            <form method="POST" action="{{ route('password.email') }}" class="login-form"> {{-- Reutilizamos la clase del
-                formulario --}}
-                @csrf
-
-                {{-- Campo Correo Electrónico --}}
-                <div class="form-group">
-                    <label for="email">Correo Electrónico</label>
-                    <input id="email" type="email" name="email" value="{{ old('email') }}" required autofocus
-                        class="form-control @error('email') is-invalid @enderror">
-                    @error('email')
-                        <span class="invalid-feedback" role="alert">
-                            <strong>{{ $message }}</strong>
-                        </span>
-                    @enderror
-                </div>
-
-                {{-- Botón de Enviar Enlace --}}
-                <div class="form-actions" style="justify-content: center;"> {{-- Alineamos el botón al centro --}}
-                    <button type="submit" class="btn btn-primary btn-block">
-                        Enviar Link de Restablecimiento
-                    </button>
-                </div>
-            </form>
-
-            {{-- Opciones adicionales: Volver al Login --}}
-            <div class="login-footer">
-                <p>¿Recordaste tu contraseña? <a href="{{ route('login') }}">Volver al Login</a></p>
-            </div>
-        </div>
+    <div class="px-auth-head">
+        <span class="px-auth-head__eyebrow">Recuperar acceso</span>
+        <h1>¿Olvidaste tu contraseña?</h1>
+        <p>Escribe tu correo y te enviaremos un enlace para restablecerla.</p>
     </div>
+
+    @if (session('status'))
+        <div class="px-alert px-alert--success">
+            <i class="fa-solid fa-circle-check"></i>
+            <span>{{ session('status') }}</span>
+        </div>
+    @endif
+
+    @if ($errors->any())
+        <div class="px-alert px-alert--error">
+            <i class="fa-solid fa-circle-exclamation"></i>
+            <span>{{ $errors->first() }}</span>
+        </div>
+    @endif
+
+    <form method="POST" action="{{ route('password.email') }}">
+        @csrf
+
+        <div class="px-field">
+            <label for="email">Correo electrónico</label>
+            <input id="email" type="email" name="email" value="{{ old('email') }}"
+                class="px-input @error('email') is-invalid @enderror" placeholder="tucorreo@ejemplo.com" required
+                autofocus autocomplete="username">
+            @error('email')
+                <span class="px-error">{{ $message }}</span>
+            @enderror
+        </div>
+
+        <button type="submit" class="px-btn px-btn--primary px-btn--block">
+            <i class="fa-solid fa-paper-plane"></i> Enviar enlace
+        </button>
+    </form>
+
+    <p class="px-auth__hint" style="margin-top:1rem;">
+        El enlace caduca en 60 minutos. Si no lo ves, revisa la carpeta de spam.
+    </p>
+
+    <p class="px-auth__foot">
+        ¿Recordaste tu contraseña?
+        <a href="{{ route('login') }}">Volver al login</a>
+    </p>
 @endsection
