@@ -67,6 +67,8 @@ class User extends Authenticatable // Quita `implements MustVerifyEmail` si no l
         // Campos exactos que consume la API BNC
         'debtor_cell_phone',
         'debtor_id',
+        'debtor_account',
+        'debtor_account_type',
         'card_number',
         'card_expiration',
         'card_holder_name',

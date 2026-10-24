@@ -31,6 +31,7 @@ Route::prefix('auth')->name('api.auth.')->group(function () {
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:10,1')->name('login');
     Route::post('/verify-2fa', [AuthController::class, 'verifyTwoFactor'])->middleware('throttle:8,1')->name('verify-2fa');
     Route::post('/forgot-password', [AuthController::class, 'sendPasswordResetLink'])->middleware('throttle:5,1')->name('forgot-password');
+    Route::post('/forgot-username', [AuthController::class, 'forgotUsername'])->middleware('throttle:5,1')->name('forgot-username');
     Route::post('/reset-password', [AuthController::class, 'resetPassword'])->middleware('throttle:5,1')->name('reset-password');
 });
 
@@ -79,6 +80,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/profile', [AuthController::class, 'profile'])->name('api.profile');
     Route::put('/profile', [AuthController::class, 'updateProfile'])->name('api.profile.update');
     Route::post('/logout', [AuthController::class, 'logout'])->name('api.logout');
+    Route::delete('/account', [AuthController::class, 'deleteAccount'])->name('api.account.delete');
     
     // ========== CAMBIO DE CONTRASEÑA ==========
     Route::post('/password/update', [AuthController::class, 'updatePassword'])->name('api.password.update');

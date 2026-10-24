@@ -35,18 +35,38 @@ class AuthController extends Controller
      */
     public function register(Request $request): JsonResponse
     {
-        $request->validate([
+        $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
             'user_type' => ['required', 'string', 'in:user,partner'],
             'password' => ['required', 'string', 'min:8', 'confirmed'],
+
+            // Datos que envía la app Android además de las credenciales.
+            'firstname' => ['sometimes', 'nullable', 'string', 'max:120'],
+            'lastname' => ['sometimes', 'nullable', 'string', 'max:120'],
+            'phone' => ['sometimes', 'nullable', 'string', 'max:20'],
+            'identification' => ['sometimes', 'nullable', 'string', 'max:50', 'unique:users,identification'],
+            'address' => ['sometimes', 'nullable', 'string', 'max:500'],
+            'dob' => ['sometimes', 'nullable', 'date'],
         ]);
 
+        $firstname = $validated['firstname'] ?? null;
+        $lastname = $validated['lastname'] ?? null;
+        $fullName = trim(($firstname ?? '') . ' ' . ($lastname ?? ''));
+
         $user = User::create([
-            'name' => $request->name,
-            'email' => $request->email,
-            'user_type' => $request->user_type,
-            'password' => Hash::make($request->password),
+            'name' => $validated['name'],
+            'firstname' => $firstname,
+            'lastname' => $lastname,
+            'full_name' => $fullName !== '' ? $fullName : $validated['name'],
+            'email' => $validated['email'],
+            'user_type' => $validated['user_type'],
+            'password' => Hash::make($validated['password']),
+            'phone1' => $validated['phone'] ?? null,
+            'identification' => $validated['identification'] ?? null,
+            'address' => $validated['address'] ?? null,
+            'dob' => $validated['dob'] ?? null,
+            'status' => 'activo',
         ]);
 
         event(new Registered($user));
@@ -563,13 +583,34 @@ class AuthController extends Controller
 
         $request->validate([
             'name' => ['sometimes', 'string', 'max:255'],
+            'firstname' => ['sometimes', 'nullable', 'string', 'max:120'],
+            'lastname' => ['sometimes', 'nullable', 'string', 'max:120'],
             'email' => ['sometimes', 'email', 'unique:users,email,' . $user->id],
             'phone' => ['sometimes', 'string', 'max:20'],
-            'identification' => ['sometimes', 'string', 'max:50'],
+            'identification' => ['sometimes', 'string', 'max:50', 'unique:users,identification,' . $user->id],
             'address' => ['sometimes', 'string', 'max:500'],
+            'dob' => ['sometimes', 'nullable', 'date'],
+            'birthdate' => ['sometimes', 'nullable', 'string', 'max:20'],
+
+            // Métodos de pago que administra la app.
+            'bank_code' => ['sometimes', 'nullable', 'integer'],
+            'bank_name' => ['sometimes', 'nullable', 'string', 'max:120'],
+            'card_number' => ['sometimes', 'nullable', 'string', 'max:30'],
+            'card_expiry' => ['sometimes', 'nullable', 'string', 'max:10'],
+            'card_holder_name' => ['sometimes', 'nullable', 'string', 'max:120'],
+            'debtor_account' => ['sometimes', 'nullable', 'string', 'max:30'],
+            'debtor_account_type' => ['sometimes', 'nullable', 'string', 'max:10'],
+            'debtor_bank_code' => ['sometimes', 'nullable', 'integer'],
+            'debtor_bank_name' => ['sometimes', 'nullable', 'string', 'max:120'],
         ]);
 
-        $data = $request->only(['name', 'email']);
+        $data = $request->only(['name', 'firstname', 'lastname', 'email']);
+
+        if ($request->filled('firstname') || $request->filled('lastname')) {
+            $firstname = $request->input('firstname', $user->firstname);
+            $lastname = $request->input('lastname', $user->lastname);
+            $data['full_name'] = trim(($firstname ?? '') . ' ' . ($lastname ?? ''));
+        }
 
         // El panel y la app usan "phone"; la tabla guarda phone1.
         if ($request->filled('phone')) {
@@ -577,9 +618,55 @@ class AuthController extends Controller
         }
         if ($request->filled('identification')) {
             $data['identification'] = $request->input('identification');
+            $data['debtor_id'] = $request->input('identification');
         }
         if ($request->filled('address')) {
             $data['address'] = $request->input('address');
+        }
+        if ($request->filled('dob')) {
+            $data['dob'] = $request->input('dob');
+        }
+
+        // La app envía la fecha como dd/MM/yyyy.
+        if (! $request->filled('dob') && $request->filled('birthdate')) {
+            try {
+                $data['dob'] = \Carbon\Carbon::createFromFormat('d/m/Y', $request->input('birthdate'))->toDateString();
+            } catch (\Throwable $e) {
+                // Formato inesperado: se ignora la fecha en lugar de romper el guardado.
+            }
+        }
+
+        // Datos de pago (la tarjeta se guarda cifrada; el CVV nunca se almacena).
+        if ($request->has('card_number')) {
+            $cardNumber = preg_replace('/\D+/', '', (string) $request->input('card_number'));
+            $data['card_number'] = $cardNumber;
+            $data['payment_card_last4'] = $cardNumber !== '' ? substr($cardNumber, -4) : null;
+        }
+        if ($request->has('card_expiry')) {
+            $data['card_expiration'] = $request->input('card_expiry');
+            $data['payment_card_expiry'] = $request->input('card_expiry');
+        }
+        if ($request->has('card_holder_name')) {
+            $data['card_holder_name'] = $request->input('card_holder_name');
+            $data['payment_card_holder'] = $request->input('card_holder_name');
+        }
+        if ($request->has('bank_code')) {
+            $data['payment_bank_code'] = $request->input('bank_code');
+        }
+        if ($request->has('bank_name')) {
+            $data['payment_bank_name'] = $request->input('bank_name');
+        }
+        if ($request->has('debtor_account')) {
+            $data['debtor_account'] = $request->input('debtor_account');
+        }
+        if ($request->has('debtor_account_type')) {
+            $data['debtor_account_type'] = $request->input('debtor_account_type');
+        }
+        if ($request->has('debtor_bank_code')) {
+            $data['payment_debit_bank_code'] = $request->input('debtor_bank_code');
+        }
+        if ($request->has('debtor_bank_name')) {
+            $data['payment_debit_bank_name'] = $request->input('debtor_bank_name');
         }
 
         $user->update($data);
@@ -588,6 +675,110 @@ class AuthController extends Controller
             'success' => true,
             'message' => 'Perfil actualizado exitosamente',
             'data' => $user,
+        ]);
+    }
+
+    /**
+     * Recuperar el nombre de usuario por correo (app Android).
+     * Responde siempre igual para no revelar si el correo existe.
+     */
+    public function forgotUsername(Request $request): JsonResponse
+    {
+        $request->validate([
+            'email' => ['required', 'email'],
+        ]);
+
+        $user = User::where('email', $request->email)->first();
+
+        if ($user) {
+            try {
+                \Illuminate\Support\Facades\Mail::raw(
+                    "Hola {$user->name},\n\nTu usuario en Rumbero Extremo es: {$user->email}\n\nSi no solicitaste este correo, ignóralo.",
+                    function ($message) use ($user) {
+                        $message->to($user->email)->subject('Tu usuario de Rumbero Extremo');
+                    }
+                );
+            } catch (\Throwable $e) {
+                \Log::warning('No se pudo enviar el correo de usuario: ' . $e->getMessage());
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Si el correo está registrado, te enviamos tu usuario.',
+        ]);
+    }
+
+    /**
+     * Eliminar la cuenta desde la app.
+     *
+     * No se borra la fila (rompería el historial de pagos y promociones):
+     * se desactiva y se anonimizan los datos personales.
+     */
+    public function deleteAccount(Request $request): JsonResponse
+    {
+        $request->validate([
+            'password' => ['required', 'string'],
+        ]);
+
+        $user = $request->user();
+
+        if (! Hash::check($request->input('password'), $user->password)) {
+            return response()->json([
+                'success' => false,
+                'message' => 'La contraseña es incorrecta.',
+                'errors' => ['password' => ['La contraseña es incorrecta.']],
+            ], 422);
+        }
+
+        $user->tokens()->delete();
+        $user->pushSubscriptions()->delete();
+
+        $user->forceFill([
+            'name' => 'Cuenta eliminada',
+            'firstname' => null,
+            'lastname' => null,
+            'full_name' => 'Cuenta eliminada',
+            'email' => 'eliminado+' . $user->id . '@rumberoextremo.local',
+            'phone1' => null,
+            'phone2' => null,
+            'identification' => null,
+            'address' => null,
+            'dob' => null,
+            'profile_photo_path' => null,
+            'status' => 'inactivo',
+            'notifications_enabled' => false,
+            'push_enabled' => false,
+            'password' => Hash::make(Str::random(40)),
+
+            // Datos de pago: se borran por completo.
+            'payment_bank_code' => null,
+            'payment_bank_name' => null,
+            'payment_phone' => null,
+            'payment_holder_name' => null,
+            'payment_holder_id' => null,
+            'payment_debit_bank_code' => null,
+            'payment_debit_bank_name' => null,
+            'payment_debit_account' => null,
+            'payment_debit_account_type' => 'CELE',
+            'payment_card_last4' => null,
+            'payment_card_expiry' => null,
+            'payment_card_holder' => null,
+            'debtor_account' => null,
+            'debtor_account_type' => 'CELE',
+            'debtor_cell_phone' => null,
+            'debtor_id' => null,
+            'card_number' => null,
+            'card_expiration' => null,
+            'card_holder_name' => null,
+            'card_holder_id' => null,
+            'card_type_id' => null,
+            'card_account_type' => 20,
+        ])->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Cuenta eliminada exitosamente',
         ]);
     }
 
