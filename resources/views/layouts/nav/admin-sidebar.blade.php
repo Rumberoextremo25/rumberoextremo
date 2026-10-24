@@ -3,6 +3,8 @@
     $isAdmin = $user && ($user->role === 'admin' || $user->user_type === 'admin');
     $isAlly = $user && $user->role === 'aliado';
     $contentOpen = request()->routeIs('admin.banners.*') || request()->routeIs('admin.commercial-allies.*') || request()->routeIs('admin.promotions.*');
+    $auditEmails = $isAdmin ? app(\App\Services\SystemAuditService::class)->allowedEmails() : [];
+    $canViewAudit = $isAdmin && ($auditEmails === [] || in_array(strtolower((string) $user->email), $auditEmails, true));
 @endphp
 
 {{-- Capa oscura del drawer (móvil / tablet) --}}
@@ -206,6 +208,17 @@
                          SISTEMA
                          -------------------------------------------------------- --}}
                     <li class="sidebar-section-title"><span>Sistema</span></li>
+
+                    @if ($canViewAudit)
+                        <li class="sidebar-nav-item">
+                            <a href="{{ route('admin.system-audit.index') }}"
+                                class="sidebar-nav-link {{ request()->routeIs('admin.system-audit.*') ? 'active' : '' }}"
+                                data-tooltip="Auditoría del sistema" @if (request()->routeIs('admin.system-audit.*')) aria-current="page" @endif>
+                                <i class="fa-solid fa-heart-pulse" aria-hidden="true"></i>
+                                <span class="sidebar-link-text">Auditoría del sistema</span>
+                            </a>
+                        </li>
+                    @endif
 
                     <li class="sidebar-nav-item">
                         <a href="{{ route('admin.settings') }}"

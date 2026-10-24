@@ -100,6 +100,9 @@
     {{-- Capa 5: ajustes por módulo (asistente, ficha de aliado, resumen…) --}}
     <link rel="stylesheet" href="{{ asset('css/admin/pages.css') }}?v={{ $assetVersion('css/admin/pages.css') }}">
 
+    {{-- Capa 6: auditoría del sistema (se carga al final para sus estados) --}}
+    <link rel="stylesheet" href="{{ asset('css/admin/system-audit.css') }}?v={{ $assetVersion('css/admin/system-audit.css') }}">
+
     {{-- Comportamiento del shell (drawer, dropdowns, tablas, foco) --}}
     <script src="{{ asset('js/admin-shell.js') }}?v={{ $assetVersion('js/admin-shell.js') }}" defer></script>
 </head>

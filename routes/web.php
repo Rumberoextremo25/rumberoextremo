@@ -10,6 +10,7 @@ use App\Http\Controllers\Admin\CommercialAllyController;
 use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\SalesStatsController;
+use App\Http\Controllers\Admin\SystemAuditController;
 use App\Http\Controllers\AllyController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -158,6 +159,20 @@ Route::prefix('admin')
         Route::post('/settings/update-dark-mode', [SettingsController::class, 'updateDarkMode'])->name('settings.update-dark-mode');
         Route::post('/settings/support', [SettingsController::class, 'updateSupport'])->name('settings.update-support');
         Route::post('/settings/test-ai', [SettingsController::class, 'testAi'])->name('settings.test-ai');
+
+        // ===========================================
+        // AUDITORÍA DEL SISTEMA (solo administradores)
+        // ===========================================
+        Route::prefix('system-audit')->name('system-audit.')->group(function () {
+            Route::get('/', [SystemAuditController::class, 'index'])->name('index');
+            Route::post('/run', [SystemAuditController::class, 'run'])
+                ->middleware('throttle:12,1')->name('run');
+            Route::post('/fix', [SystemAuditController::class, 'fix'])
+                ->middleware('throttle:20,1')->name('fix');
+            Route::get('/export', [SystemAuditController::class, 'export'])->name('export');
+            Route::post('/access', [SystemAuditController::class, 'updateAccess'])
+                ->middleware('throttle:10,1')->name('access');
+        });
 
         // ===========================================
         // GESTIÓN DE USUARIOS
