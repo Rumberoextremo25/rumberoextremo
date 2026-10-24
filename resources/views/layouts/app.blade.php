@@ -21,9 +21,9 @@
 
     {{-- Styles --}}
     @vite(['resources/css/app.css', 'resources/js/app.js'])
-    <link rel="stylesheet" href="{{ asset('css/app.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/affiliate-form.css') }}">
-    <link rel="stylesheet" href="{{ asset('css/chat.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/app.css') }}?v={{ filemtime(public_path('css/app.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/affiliate-form.css') }}?v={{ filemtime(public_path('css/affiliate-form.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/chat.css') }}?v={{ filemtime(public_path('css/chat.css')) }}">
     @stack('styles')
 </head>
 
