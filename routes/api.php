@@ -37,7 +37,7 @@ Route::prefix('auth')->name('api.auth.')->group(function () {
 
 // ========== VERIFICACIÓN DE EMAIL ==========
 Route::get('/email/verify/{id}/{hash}', [AuthController::class, 'verifyEmail'])
-    ->name('api.verification.verify');
+    ->name('api.email.verify');
 
 // ========== HOME / DATOS PÚBLICOS ==========
 Route::get('/home-data', [HomeController::class, 'index'])->name('api.home-data');
