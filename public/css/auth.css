@@ -408,3 +408,128 @@ body.px-auth {
         border-radius: 20px;
     }
 }
+
+/* ==========================================================================
+   2FA · Código de 6 dígitos
+   ========================================================================== */
+.px-auth__shield {
+    display: grid;
+    place-items: center;
+    width: 58px;
+    height: 58px;
+    margin: 0 auto 1.15rem;
+    border-radius: 18px;
+    background: linear-gradient(135deg, #f3e8ff 0%, #eef2ff 100%);
+    border: 1px solid #e8e2f5;
+    color: #a601b3;
+    font-size: 1.35rem;
+    box-shadow: 0 12px 26px -20px rgba(166, 1, 179, 0.8);
+}
+
+.px-auth .px-otp {
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 0.45rem;
+    margin: 0.55rem 0 0.65rem;
+}
+
+.px-auth .px-otp__digit {
+    width: 100%;
+    height: 56px;
+    padding: 0;
+    border: 1.5px solid #e8e2f5;
+    border-radius: 14px;
+    background: #f8f6fd;
+    color: #1e293b;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 800;
+    line-height: 56px;
+    text-align: center;
+    transition: border-color 160ms ease, box-shadow 160ms ease, background 160ms ease, transform 160ms ease;
+}
+
+.px-auth .px-otp__digit:focus {
+    outline: none;
+    border-color: #a601b3;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(166, 1, 179, 0.12);
+    transform: translateY(-1px);
+}
+
+.px-auth .px-otp__digit.is-filled {
+    border-color: #cfc3e8;
+    background: #fff;
+}
+
+.px-auth .px-auth__note {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.45rem;
+    margin: 0.6rem 0 0;
+    color: #64748b;
+    font-size: 0.78rem;
+    line-height: 1.5;
+}
+
+.px-auth .px-auth__note i {
+    margin-top: 0.15rem;
+    color: #a601b3;
+    flex: 0 0 auto;
+}
+
+.px-auth .px-auth__note--center {
+    justify-content: center;
+    margin-top: 1rem;
+    text-align: center;
+    font-size: 0.76rem;
+}
+
+.px-auth .px-auth__note a {
+    color: #a601b3;
+    font-weight: 700;
+    text-decoration: none;
+}
+
+.px-auth .px-auth__note a:hover {
+    text-decoration: underline;
+}
+
+.px-auth #verifyBtn:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}
+
+.px-auth #verifyBtn:disabled:hover {
+    transform: none;
+    box-shadow: none;
+}
+
+.px-auth .px-auth__foot a {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+@media (max-width: 420px) {
+    .px-auth .px-otp {
+        gap: 0.32rem;
+    }
+
+    .px-auth .px-otp__digit {
+        height: 48px;
+        border-radius: 11px;
+        font-size: 1.1rem;
+        line-height: 48px;
+    }
+
+    .px-auth__shield {
+        width: 50px;
+        height: 50px;
+        border-radius: 15px;
+        font-size: 1.15rem;
+        margin-bottom: 1rem;
+    }
+}
