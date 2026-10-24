@@ -2,7 +2,7 @@
     $user = \Illuminate\Support\Facades\Auth::user();
     $isAdmin = $user && ($user->role === 'admin' || $user->user_type === 'admin');
     $isAlly = $user && $user->role === 'aliado';
-    $contentOpen = request()->routeIs('admin.banners.*') || request()->routeIs('admin.commercial-allies.*') || request()->routeIs('admin.promotions.*');
+    $contentOpen = request()->routeIs('admin.banners.*') || request()->routeIs('admin.commercial-allies.*') || request()->routeIs('admin.promotions.*') || request()->routeIs('admin.demo-videos.*') || request()->routeIs('admin.home-slides.*');
     $auditEmails = $isAdmin ? app(\App\Services\SystemAuditService::class)->allowedEmails() : [];
     $canViewAudit = $isAdmin && ($auditEmails === [] || in_array(strtolower((string) $user->email), $auditEmails, true));
 @endphp
@@ -199,6 +199,22 @@
                                     @if (request()->routeIs('admin.promotions.*')) aria-current="page" @endif>
                                     <i class="fa-solid fa-tags" aria-hidden="true"></i>
                                     <span class="sidebar-link-text">Promociones</span>
+                                </a>
+                            </li>
+                            <li class="sidebar-nav-subitem">
+                                <a href="{{ route('admin.demo-videos.index') }}"
+                                    class="sidebar-nav-link {{ request()->routeIs('admin.demo-videos.*') ? 'active' : '' }}"
+                                    @if (request()->routeIs('admin.demo-videos.*')) aria-current="page" @endif>
+                                    <i class="fa-solid fa-clapperboard" aria-hidden="true"></i>
+                                    <span class="sidebar-link-text">Videos de demo</span>
+                                </a>
+                            </li>
+                            <li class="sidebar-nav-subitem">
+                                <a href="{{ route('admin.home-slides.index') }}"
+                                    class="sidebar-nav-link {{ request()->routeIs('admin.home-slides.*') ? 'active' : '' }}"
+                                    @if (request()->routeIs('admin.home-slides.*')) aria-current="page" @endif>
+                                    <i class="fa-solid fa-images" aria-hidden="true"></i>
+                                    <span class="sidebar-link-text">Carrusel del Home</span>
                                 </a>
                             </li>
                         </ul>

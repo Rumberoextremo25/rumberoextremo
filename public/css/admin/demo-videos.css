@@ -1,0 +1,301 @@
+/* ==========================================================================
+   RUMBERO EXTREMO · Videos de la demo (backoffice)
+   ========================================================================== */
+
+.dv-page {
+    display: grid;
+    gap: var(--rx-gap);
+}
+
+/* ------------------------------- Listado --------------------------------- */
+.dv-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+    gap: 1rem;
+}
+
+.dv-card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: var(--rx-radius-lg);
+    border: 1px solid var(--rx-line);
+    background: var(--rx-surface);
+    box-shadow: var(--rx-shadow-sm);
+    transition: transform var(--rx-dur), box-shadow var(--rx-dur);
+}
+
+.dv-card:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--rx-shadow-md);
+}
+
+.dv-card--inactive {
+    opacity: 0.82;
+}
+
+.dv-card__media {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    background: #0f172a;
+    overflow: hidden;
+}
+
+.dv-card__media img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+}
+
+.dv-card__placeholder {
+    display: grid;
+    place-items: center;
+    height: 100%;
+    color: #64748b;
+    font-size: 2rem;
+}
+
+.dv-source,
+.dv-order,
+.dv-off {
+    position: absolute;
+    top: 0.6rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 999px;
+    font-size: 0.64rem;
+    font-weight: 700;
+    line-height: 1.3;
+    backdrop-filter: blur(6px);
+}
+
+.dv-source {
+    left: 0.6rem;
+    color: #fff;
+    background: rgba(15, 23, 42, 0.72);
+}
+
+.dv-source--youtube i {
+    color: #ff0033;
+}
+
+.dv-source--file i {
+    color: #a5b4fc;
+}
+
+.dv-order {
+    right: 0.6rem;
+    color: #e2e8f0;
+    background: rgba(15, 23, 42, 0.66);
+}
+
+.dv-off {
+    left: 0.6rem;
+    bottom: 0.6rem;
+    top: auto;
+    color: #fecaca;
+    background: rgba(127, 29, 29, 0.78);
+}
+
+.dv-card__body {
+    display: grid;
+    gap: 0.35rem;
+    padding: 0.9rem 1rem 0.75rem;
+    flex: 1;
+}
+
+.dv-card__body h2 {
+    margin: 0;
+    font-family: var(--rx-font-display);
+    font-size: 0.95rem;
+    color: var(--rx-heading);
+    overflow-wrap: anywhere;
+}
+
+.dv-card__body p {
+    margin: 0;
+    color: var(--rx-muted);
+    font-size: 0.76rem;
+    line-height: 1.45;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.dv-card__meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin-top: 0.15rem;
+    color: var(--rx-muted);
+    font-size: 0.68rem;
+    font-weight: 600;
+}
+
+.dv-card__meta .fa-circle-check {
+    color: var(--rx-success);
+}
+
+.dv-card__meta .fa-circle-pause {
+    color: var(--rx-warning);
+}
+
+.dv-card__actions {
+    display: flex;
+    gap: 0.4rem;
+    padding: 0.7rem 1rem 1rem;
+    border-top: 1px solid var(--rx-line-soft);
+}
+
+.dv-card__actions > a,
+.dv-card__actions > form {
+    flex: 1 1 0;
+    display: flex;
+}
+
+.dv-card__actions .cm-btn {
+    width: 100%;
+    justify-content: center;
+}
+
+/* ------------------------------- Formulario ------------------------------- */
+.dv-source-fields {
+    display: grid;
+    gap: 0.75rem;
+}
+
+.dv-source-fields[hidden] {
+    display: none !important;
+}
+
+.dv-current-file {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.45rem;
+    padding: 0.5rem 0.65rem;
+    border-radius: 0.5rem;
+    background: var(--rx-surface-2);
+    color: var(--rx-text);
+    font-size: 0.72rem;
+}
+
+.dv-current-file i {
+    color: var(--rx-primary);
+}
+
+.dv-current-file strong {
+    color: var(--rx-heading);
+    overflow-wrap: anywhere;
+}
+
+.dv-preview-image,
+.dv-preview-video {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+    border-radius: var(--rx-radius-md);
+    background: #0f172a;
+    display: block;
+}
+
+.dv-preview-empty {
+    display: grid;
+    justify-items: center;
+    gap: 0.45rem;
+    padding: 1.5rem 0.75rem;
+    border-radius: var(--rx-radius-md);
+    border: 1px dashed var(--rx-line-strong);
+    background: var(--rx-surface-2);
+    color: var(--rx-muted);
+    text-align: center;
+    font-size: 0.72rem;
+}
+
+.dv-preview-empty i {
+    font-size: 1.8rem;
+    color: var(--rx-primary);
+}
+
+.dv-preview-empty span {
+    overflow-wrap: anywhere;
+}
+
+.dv-tip {
+    display: flex;
+    gap: 0.5rem;
+    margin: 0;
+    color: var(--rx-text);
+    font-size: 0.75rem;
+    line-height: 1.5;
+}
+
+.dv-tip i {
+    margin-top: 0.1rem;
+    color: var(--rx-warning);
+}
+
+.dv-form-actions {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.dv-form-actions .btn {
+    flex: 1 1 140px;
+    justify-content: center;
+}
+
+/* ------------------------------- Modo oscuro ------------------------------- */
+.dark-mode .dv-card {
+    background: #1e293b;
+    border-color: #334155;
+}
+
+.dark-mode .dv-card__body h2 {
+    color: #f1f5f9;
+}
+
+.dark-mode .dv-card__body p,
+.dark-mode .dv-card__meta {
+    color: #94a3b8;
+}
+
+.dark-mode .dv-card__actions {
+    border-top-color: #334155;
+}
+
+.dark-mode .dv-current-file,
+.dark-mode .dv-preview-empty {
+    background: #0f172a;
+    border-color: #334155;
+    color: #94a3b8;
+}
+
+.dark-mode .dv-current-file strong {
+    color: #f1f5f9;
+}
+
+.dark-mode .dv-tip {
+    color: #cbd5e1;
+}
+
+@media (max-width: 640px) {
+    .dv-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .dv-card__actions {
+        flex-wrap: wrap;
+    }
+
+    .dv-card__actions > a,
+    .dv-card__actions > form {
+        flex: 1 1 100%;
+    }
+}

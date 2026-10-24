@@ -6,6 +6,7 @@
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('css/public-modern.css') }}?v={{ filemtime(public_path('css/public-modern.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/demo-videos.css') }}?v={{ filemtime(public_path('css/demo-videos.css')) }}">
 @endpush
 
 @section('content')
@@ -24,7 +25,7 @@
                     </h1>
 
                     <p class="px-hero__text">
-                        Mira cómo funciona la app en menos de un minuto: descubre lugares, activa descuentos
+                        Mira cómo funciona la app: descubre lugares, activa descuentos
                         y disfruta los beneficios de nuestros aliados comerciales.
                     </p>
 
@@ -88,19 +89,103 @@
             </div>
         </section>
 
-        {{-- ============================== VIDEO ============================== --}}
+        {{-- ============================== VIDEOS ============================== --}}
         <section class="px-section px-section--muted" id="videos">
             <div class="px-container">
                 <div class="px-head">
                     <span class="px-head__eyebrow">Un minuto de tu tiempo</span>
                     <h2 class="px-head__title">Descubre Rumbero Extremo en acción</h2>
-                    <p class="px-head__text">Videos de cómo registrarte como aliado comercial y como rumbero.</p>
+                    <p class="px-head__text">Cómo registrarte como aliado comercial, como rumbero y todo lo que puedes hacer.</p>
                 </div>
 
-                <div class="px-media">
-                    <iframe src="https://www.youtube.com/embed/v4j2Hxq7BoI" title="Demo de Rumbero Extremo"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                        referrerpolicy="strict-origin-when-cross-origin" allowfullscreen loading="lazy"></iframe>
+                @php $firstVideo = $videos->first(); @endphp
+
+                <div class="px-video-carousel" data-video-carousel>
+                    <div class="px-video-carousel__stage">
+                        @foreach ($videos as $video)
+                            @php $isFirst = $loop->first; @endphp
+                            <div class="px-video-slide {{ $isFirst ? 'is-active' : '' }}"
+                                data-video-slide
+                                data-index="{{ $loop->index }}"
+                                data-title="{{ $video->title }}"
+                                data-description="{{ $video->description ?? '' }}">
+                                @if ($video->is_youtube && $video->embed_url)
+                                    <iframe data-src="{{ $video->embed_url }}"
+                                        @if ($isFirst) src="{{ $video->embed_url }}" @endif
+                                        title="{{ $video->title }}"
+                                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                        referrerpolicy="strict-origin-when-cross-origin"
+                                        allowfullscreen loading="lazy"></iframe>
+                                @elseif ($video->video_src)
+                                    <video data-src="{{ $video->video_src }}" controls playsinline preload="none"
+                                        @if ($isFirst) src="{{ $video->video_src }}" @endif
+                                        @if ($video->thumbnail_src) poster="{{ $video->thumbnail_src }}" @endif>
+                                        Tu navegador no soporta la reproducción de video.
+                                    </video>
+                                @else
+                                    <div class="px-video-empty">
+                                        <i class="fa-solid fa-video-slash" aria-hidden="true"></i>
+                                        <p>Este video no está disponible por ahora.</p>
+                                    </div>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+
+                    <div class="px-video-carousel__bar">
+                        <div class="px-video-carousel__info" aria-live="polite">
+                            <span class="px-video-carousel__eyebrow">
+                                <i class="fa-solid fa-circle-play" aria-hidden="true"></i>
+                                Ahora viendo
+                                <span data-video-counter>1 / {{ $videos->count() }}</span>
+                            </span>
+                            <h3 data-video-title>{{ $firstVideo?->title }}</h3>
+                            <p data-video-description>{{ $firstVideo?->description }}</p>
+                        </div>
+
+                        <div class="px-video-carousel__controls">
+                            <button type="button" class="px-video-nav" data-video-prev
+                                aria-label="Video anterior">
+                                <i class="fa-solid fa-chevron-left" aria-hidden="true"></i>
+                            </button>
+
+                            <div class="px-video-dots" role="tablist" aria-label="Seleccionar video">
+                                @foreach ($videos as $video)
+                                    <button type="button" role="tab"
+                                        class="px-video-dot {{ $loop->first ? 'is-active' : '' }}"
+                                        data-video-dot="{{ $loop->index }}"
+                                        aria-label="Ver video {{ $loop->iteration }}: {{ $video->title }}"
+                                        aria-selected="{{ $loop->first ? 'true' : 'false' }}"></button>
+                                @endforeach
+                            </div>
+
+                            <button type="button" class="px-video-nav" data-video-next
+                                aria-label="Video siguiente">
+                                <i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="px-video-carousel__thumbs" aria-label="Videos de la demo">
+                        @foreach ($videos as $video)
+                            <button type="button"
+                                class="px-video-thumb {{ $loop->first ? 'is-active' : '' }}"
+                                data-video-thumb="{{ $loop->index }}"
+                                aria-label="Ver {{ $video->title }}">
+                                <span class="px-video-thumb__media">
+                                    @if ($video->thumbnail_src)
+                                        <img src="{{ $video->thumbnail_src }}" alt="" loading="lazy">
+                                    @else
+                                        <i class="fa-solid fa-video" aria-hidden="true"></i>
+                                    @endif
+                                    <span class="px-video-thumb__play">
+                                        <i class="fa-solid fa-play" aria-hidden="true"></i>
+                                    </span>
+                                </span>
+                                <span class="px-video-thumb__title">{{ $video->title }}</span>
+                            </button>
+                        @endforeach
+                    </div>
                 </div>
             </div>
         </section>
@@ -152,4 +237,5 @@
 
 @push('scripts')
     <script src="{{ asset('js/demo.js') }}"></script>
+    <script src="{{ asset('js/demo-videos.js') }}?v={{ filemtime(public_path('js/demo-videos.js')) }}"></script>
 @endpush

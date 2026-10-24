@@ -11,6 +11,8 @@ use App\Http\Controllers\Admin\PromotionController;
 use App\Http\Controllers\Admin\ReportController;
 use App\Http\Controllers\Admin\SalesStatsController;
 use App\Http\Controllers\Admin\SystemAuditController;
+use App\Http\Controllers\Admin\DemoVideoController;
+use App\Http\Controllers\Admin\HomeSlideController;
 use App\Http\Controllers\AllyController;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
@@ -244,6 +246,32 @@ Route::prefix('admin')
         Route::resource('banners', BannerController::class);
         Route::resource('commercial-allies', CommercialAllyController::class);
         Route::resource('promotions', PromotionController::class);
+
+        // ===========================================
+        // VIDEOS DE LA DEMO (carrusel público)
+        // ===========================================
+        Route::prefix('demo-videos')->name('demo-videos.')->group(function () {
+            Route::get('/', [DemoVideoController::class, 'index'])->name('index');
+            Route::get('/create', [DemoVideoController::class, 'create'])->name('create');
+            Route::post('/', [DemoVideoController::class, 'store'])->name('store');
+            Route::get('/{demoVideo}/edit', [DemoVideoController::class, 'edit'])->name('edit');
+            Route::put('/{demoVideo}', [DemoVideoController::class, 'update'])->name('update');
+            Route::post('/{demoVideo}/toggle', [DemoVideoController::class, 'toggle'])->name('toggle');
+            Route::delete('/{demoVideo}', [DemoVideoController::class, 'destroy'])->name('destroy');
+        });
+
+        // ===========================================
+        // CARRUSEL DEL HOME (imágenes de la portada)
+        // ===========================================
+        Route::prefix('home-slides')->name('home-slides.')->group(function () {
+            Route::get('/', [HomeSlideController::class, 'index'])->name('index');
+            Route::get('/create', [HomeSlideController::class, 'create'])->name('create');
+            Route::post('/', [HomeSlideController::class, 'store'])->name('store');
+            Route::get('/{homeSlide}/edit', [HomeSlideController::class, 'edit'])->name('edit');
+            Route::put('/{homeSlide}', [HomeSlideController::class, 'update'])->name('update');
+            Route::post('/{homeSlide}/toggle', [HomeSlideController::class, 'toggle'])->name('toggle');
+            Route::delete('/{homeSlide}', [HomeSlideController::class, 'destroy'])->name('destroy');
+        });
 
         // ===========================================
         // PAYOUTS

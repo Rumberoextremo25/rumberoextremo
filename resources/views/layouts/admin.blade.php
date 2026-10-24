@@ -39,6 +39,8 @@
         'css/admin/commercial-ally-edit.css',
         'css/admin/promotion-create.css',
         'css/admin/promotion-edit.css',
+        'css/admin/demo-videos.css',
+        'css/admin/home-slides.css',
     ];
 
     $assetVersion = static function (string $relative): string {

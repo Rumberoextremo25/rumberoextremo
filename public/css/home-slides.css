@@ -1,0 +1,45 @@
+/* ==========================================================================
+   RUMBERO EXTREMO · Carrusel de imágenes del Home
+   ========================================================================== */
+
+.px-carousel .px-carousel__track {
+    align-items: stretch;
+}
+
+.px-carousel .px-carousel__slide {
+    position: relative;
+    flex: 0 0 100%;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    display: block;
+    overflow: hidden;
+    text-decoration: none;
+    background: #0f172a;
+}
+
+.px-carousel .px-carousel__slide img {
+    width: 100%;
+    height: 100%;
+    flex: none;
+    aspect-ratio: auto;
+    object-fit: contain;
+    display: block;
+}
+
+.px-carousel .px-carousel__slide:focus-visible {
+    outline: 3px solid #ffb800;
+    outline-offset: -3px;
+}
+
+@media (min-width: 1280px) {
+    .px-carousel {
+        width: calc(100% + 4rem);
+        margin-left: -2rem;
+    }
+}
+
+@media (max-width: 640px) {
+    .px-carousel .px-carousel__slide {
+        aspect-ratio: 16 / 10;
+    }
+}

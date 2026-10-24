@@ -7,6 +7,8 @@ use App\Mail\NewsletterConfirmationMail;
 use App\Models\AffiliateApplication;
 use App\Models\AllyContact;
 use App\Models\ContactMessage;
+use App\Models\DemoVideo;
+use App\Models\HomeSlide;
 use App\Models\NewsletterSubscriber;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -18,7 +20,22 @@ class PageController extends Controller
 {
     public function index()
     {
-        return view('welcome');
+        $homeSlides = collect();
+        $homeSlidesFallback = true;
+
+        try {
+            $homeSlides = HomeSlide::query()
+                ->where('is_active', true)
+                ->orderBy('display_order')
+                ->orderBy('id')
+                ->get();
+            $homeSlidesFallback = false;
+        } catch (\Throwable) {
+            // Si aún no se ha ejecutado la migración, el Home sigue usando
+            // las imágenes estáticas de la vista.
+        }
+
+        return view('welcome', compact('homeSlides', 'homeSlidesFallback'));
     }
 
     public function about()
@@ -28,7 +45,32 @@ class PageController extends Controller
 
     public function demo()
     {
-        return view('demo');
+        try {
+            $videos = DemoVideo::query()
+                ->where('is_active', true)
+                ->orderBy('display_order')
+                ->orderBy('id')
+                ->get();
+        } catch (\Throwable) {
+            // Si la migración aún no se ha ejecutado, la vista sigue funcionando
+            // con el video original.
+            $videos = collect();
+        }
+
+        if ($videos->isEmpty()) {
+            $videos = collect([
+                new DemoVideo([
+                    'title' => 'Demo de Rumbero Extremo',
+                    'description' => 'Cómo funciona la app: lugares, descuentos y beneficios.',
+                    'source' => 'youtube',
+                    'video_url' => 'https://www.youtube.com/watch?v=v4j2Hxq7BoI',
+                    'display_order' => 0,
+                    'is_active' => true,
+                ]),
+            ]);
+        }
+
+        return view('demo', compact('videos'));
     }
 
     public function showContactForm()

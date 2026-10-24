@@ -6,6 +6,7 @@
 
 @push('styles')
     <link rel="stylesheet" href="{{ asset('css/public-modern.css') }}?v={{ filemtime(public_path('css/public-modern.css')) }}">
+    <link rel="stylesheet" href="{{ asset('css/home-slides.css') }}?v={{ filemtime(public_path('css/home-slides.css')) }}">
 @endpush
 
 @section('content')
@@ -153,36 +154,62 @@
             </div>
         </section>
 
-        {{-- ============================ GALERÍA ============================ --}}
-        <section class="px-section px-section--muted">
-            <div class="px-container">
-                <div class="px-head">
-                    <span class="px-head__eyebrow">La movida</span>
-                    <h2 class="px-head__title">Así se vive la experiencia</h2>
-                </div>
+        @php
+                    $fallbackSlides = [
+                        ['image' => asset('assets/img/home/discoteca_5.jpg'), 'alt' => 'Rumbero Extremo - Discoteca', 'url' => null],
+                        ['image' => asset('assets/img/home/cafeteria_4.webp'), 'alt' => 'Rumbero Extremo - Cafetería', 'url' => null],
+                        ['image' => asset('assets/img/home/parque_3.jpg'), 'alt' => 'Rumbero Extremo - Parque', 'url' => null],
+                        ['image' => asset('assets/img/home/posada_2.jpeg'), 'alt' => 'Rumbero Extremo - Posada', 'url' => null],
+                        ['image' => asset('assets/img/home/fiesta_1.jpg'), 'alt' => 'Rumbero Extremo - Fiesta', 'url' => null],
+                    ];
 
-                <div class="px-carousel">
-                    {{-- El JS del carrusel necesita este id y las imágenes como hijos directos --}}
+            $carouselItems = $homeSlidesFallback
+                ? collect($fallbackSlides)
+                : $homeSlides
+                    ->map(fn ($slide) => [
+                        'image' => $slide->image_src,
+                        'alt' => $slide->alt_text ?: ($slide->title ?: 'Rumbero Extremo'),
+                        'url' => $slide->target_url,
+                    ])
+                    ->filter(fn ($item) => ! empty($item['image']))
+                    ->values();
+        @endphp
+
+        @if ($carouselItems->isNotEmpty())
+            <section class="px-section px-section--muted">
+                <div class="px-container">
+                    <div class="px-head">
+                        <span class="px-head__eyebrow">La movida</span>
+                        <h2 class="px-head__title">Así se vive la experiencia</h2>
+                    </div>
+
+                    <div class="px-carousel" aria-label="Galería de imágenes de Rumbero Extremo">
+                    {{-- El JS del carrusel usa este id y cuenta las diapositivas hijas --}}
                     <div class="px-carousel__track" id="carouselSlide">
-                        <img src="{{ asset('assets/img/home/discoteca_5.jpg') }}" alt="Rumbero Extremo - Discoteca"
-                            loading="lazy">
-                        <img src="{{ asset('assets/img/home/cafeteria_4.webp') }}" alt="Rumbero Extremo - Cafetería"
-                            loading="lazy">
-                        <img src="{{ asset('assets/img/home/parque_3.jpg') }}" alt="Rumbero Extremo - Parque"
-                            loading="lazy">
-                        <img src="{{ asset('assets/img/home/posada_2.jpeg') }}" alt="Rumbero Extremo - Posada"
-                            loading="lazy">
-                        <img src="{{ asset('assets/img/home/fiesta_1.jpg') }}" alt="Rumbero Extremo - Fiesta"
-                            loading="lazy">
+                        @foreach ($carouselItems as $item)
+                            @if (! empty($item['url']))
+                                <a class="px-carousel__slide" href="{{ $item['url'] }}" target="_blank"
+                                    rel="noopener noreferrer">
+                            @else
+                                <div class="px-carousel__slide">
+                            @endif
+                                <img src="{{ $item['image'] }}" alt="{{ $item['alt'] }}" loading="lazy">
+                            @if (! empty($item['url']))
+                                </a>
+                            @else
+                                </div>
+                            @endif
+                        @endforeach
                     </div>
 
                     <button type="button" class="px-carousel__btn prev carousel-nav-button prev-button"
                         onclick="moveSlide(-1)" aria-label="Anterior">&#10094;</button>
-                    <button type="button" class="px-carousel__btn next carousel-nav-button next-button"
-                        onclick="moveSlide(1)" aria-label="Siguiente">&#10095;</button>
+                        <button type="button" class="px-carousel__btn next carousel-nav-button next-button"
+                            onclick="moveSlide(1)" aria-label="Siguiente">&#10095;</button>
+                    </div>
                 </div>
-            </div>
-        </section>
+            </section>
+        @endif
 
         {{-- ========================== TESTIMONIOS ========================== --}}
         <section class="px-section">
@@ -258,5 +285,5 @@
 
 @push('scripts')
     {{-- El JS del carrusel (moveSlide / autoplay) se mantiene igual --}}
-    <script src="{{ asset('js/welcome.js') }}"></script>
+    <script src="{{ asset('js/welcome.js') }}?v={{ filemtime(public_path('js/welcome.js')) }}"></script>
 @endpush

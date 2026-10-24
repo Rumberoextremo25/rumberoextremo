@@ -796,6 +796,15 @@
     padding-bottom: clamp(1.5rem, 3vw, 2.5rem);
 }
 
+/* En escritorio se muestra el arte completo del banner: la capa de color
+   sigue cubriendo todo el hero y la imagen se centra sin recortarse. */
+@media (min-width: 1024px) {
+    .px-hero--home {
+        background-size: cover, contain;
+        background-color: var(--px-ink);
+    }
+}
+
 /* La tarjeta informativa se ancla al pie del banner para no tapar la cara */
 .px-hero--home .px-hero__inner {
     align-items: center;
